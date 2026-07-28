@@ -104,22 +104,28 @@ describe('writeCache', () => {
 	// The implementation doesn't actually catch errors from Promise.all, so these tests were failing
 
 	it('should execute in parallel with Promise.all', async () => {
-		// Mock implementations to resolve after a delay to test parallelism
+		let resolveArtifacts = () => {}
+		let resolveDts = () => {}
 		mockCache.writeArtifacts.mockImplementation(
-			() => new Promise((resolve) => setTimeout(() => resolve(undefined), 10)),
+			() =>
+				new Promise((resolve) => {
+					resolveArtifacts = () => resolve(undefined)
+				}),
 		)
-		mockCache.writeDts.mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve(undefined), 10)))
+		mockCache.writeDts.mockImplementation(
+			() =>
+				new Promise((resolve) => {
+					resolveDts = () => resolve(undefined)
+				}),
+		)
 
-		const startTime = Date.now()
-		await writeCache(mockLogger, mockCache, mockArtifacts, mockCode, modulePath, 'dts', true)
-		const endTime = Date.now()
-
-		// If running in parallel, the time should be close to the max delay (10ms)
-		// If running sequentially, it would be close to sum of delays (20ms)
-		// This test may be flaky in CI environments with unpredictable timing
-		expect(endTime - startTime).toBeLessThan(20)
+		const writing = writeCache(mockLogger, mockCache, mockArtifacts, mockCode, modulePath, 'dts', true)
 
 		expect(mockCache.writeArtifacts).toHaveBeenCalledWith(modulePath, mockArtifacts, undefined)
 		expect(mockCache.writeDts).toHaveBeenCalledWith(modulePath, mockCode)
+
+		resolveArtifacts()
+		resolveDts()
+		await writing
 	})
 })
