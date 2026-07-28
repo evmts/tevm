@@ -27,6 +27,9 @@
 	"bin": {
 		"tevm-lsp": "./bin/tevm-lsp.cjs"
 	},
+	"scripts": {
+		"test:coverage": "vitest run --coverage"
+	},
 	"dependencies": {
 		"@tevm/base-bundler": "workspace:^",
 		"@tevm/bundler-cache": "workspace:^",

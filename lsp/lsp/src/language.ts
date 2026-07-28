@@ -1,14 +1,18 @@
-import type { Language } from '@volar/language-core'
+import type { LanguagePlugin } from '@volar/language-core'
 import { SolFile } from './SolFile.js'
 
-export const language: Language<SolFile> = {
-	createVirtualFile(fileName, snapshot) {
-		if (fileName.endsWith('.sol')) {
-			return new SolFile(fileName, snapshot)
+export const language: LanguagePlugin<any, SolFile> = {
+	getLanguageId(uri) {
+		return uri.path.endsWith('.sol') ? 'solidity' : undefined
+	},
+	createVirtualCode(uri, languageId, snapshot) {
+		if (languageId === 'solidity' || uri.path.endsWith('.sol')) {
+			return new SolFile(uri.fsPath, snapshot)
 		}
 		return undefined
 	},
-	updateVirtualFile(solfile, snapshot) {
+	updateVirtualCode(_uri, solfile, snapshot) {
 		solfile.update(snapshot)
+		return solfile
 	},
 }

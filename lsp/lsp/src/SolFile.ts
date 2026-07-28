@@ -3,12 +3,10 @@ import { mkdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { bundler, type FileAccessObject } from '@tevm/base-bundler'
 import { createCache } from '@tevm/bundler-cache'
 import { loadConfig } from '@tevm/config'
-import { FileCapabilities, FileKind, type VirtualFile } from '@volar/language-core'
+import type { IScriptSnapshot, VirtualCode } from '@volar/language-core'
 import { runSync } from 'effect/Effect'
 import path from 'node:path'
-// @ts-expect-error
 import solc from 'solc'
-import type ts from 'typescript/lib/tsserverlibrary.js'
 
 const hashText = (text: string): number => {
 	let hash = 0
@@ -18,78 +16,69 @@ const hashText = (text: string): number => {
 	return hash
 }
 
-export class SolFile implements VirtualFile {
-	// regular file not typescript host file
-	kind: VirtualFile['kind'] = FileKind.TextFile
-	// diagnostic: true
-	// foldingRange: true
-	// documentFormatting: true
-	// documentSymbol: true
-	// codeAction: true
-	// inlayHint: true
-	capabilities: VirtualFile['capabilities'] = FileCapabilities.full
-	// This seems to be source maps but I can't find anyone using htis
-	codegenStacks: VirtualFile['codegenStacks'] = []
-
-	mappings: VirtualFile['mappings'] = []
-	embeddedFiles: VirtualFile['embeddedFiles'] = []
+export class SolFile implements VirtualCode {
+	readonly id = 'tevm-solidity'
+	readonly languageId = 'typescript'
+	mappings: VirtualCode['mappings'] = []
+	embeddedCodes: VirtualCode[] = []
+	snapshot: IScriptSnapshot
 
 	constructor(
-		public readonly fileName: VirtualFile['fileName'],
-		public snapshot: ts.IScriptSnapshot,
+		public readonly fileName: string,
+		sourceSnapshot: IScriptSnapshot,
 	) {
-		this.update(snapshot)
+		this.snapshot = sourceSnapshot
+		this.update(sourceSnapshot)
 	}
 
-	public update(newSnapshot: ts.IScriptSnapshot) {
-		this.snapshot = newSnapshot
+	public update(sourceSnapshot: IScriptSnapshot) {
 		const projectRoot = path.dirname(this.fileName)
 		const c = runSync(loadConfig(projectRoot))
-		const snapshotText = this.snapshot.getText(0, this.snapshot.getLength())
+		const snapshotText = sourceSnapshot.getText(0, sourceSnapshot.getLength())
 		const snapshotMtimeMs = hashText(snapshotText)
 		const activeFilePath = path.resolve(this.fileName)
 		const isActiveFile = (fileName: string) =>
 			path.resolve(fileName) === activeFilePath || path.resolve(projectRoot, fileName) === activeFilePath
 		const fao = {
-			exists: async (fileName) => isActiveFile(fileName) || existsSync(fileName),
-			existsSync: (fileName) => isActiveFile(fileName) || existsSync(fileName),
+			exists: async (fileName: string) => isActiveFile(fileName) || existsSync(fileName),
+			existsSync: (fileName: string) => isActiveFile(fileName) || existsSync(fileName),
 			mkdir,
 			mkdirSync,
-			readFile: (fileName, encoding) => {
+			readFile: (fileName: string, encoding: BufferEncoding) => {
 				if (isActiveFile(fileName)) {
 					return Promise.resolve(snapshotText)
 				}
 				return readFile(fileName, { encoding })
 			},
-			readFileSync: (fileName, encoding) => {
+			readFileSync: (fileName: string, encoding: BufferEncoding) => {
 				if (isActiveFile(fileName)) {
 					return snapshotText
 				}
 				return readFileSync(fileName, { encoding })
 			},
-			stat: async (fileName) => {
+			stat: async (fileName: string) => {
 				if (!isActiveFile(fileName)) {
 					return stat(fileName)
 				}
 				try {
 					return { ...(await stat(fileName)), mtimeMs: snapshotMtimeMs } as Awaited<ReturnType<typeof stat>>
 				} catch (_e) {
-					return { mtimeMs: snapshotMtimeMs } as Awaited<ReturnType<typeof stat>>
+					return { mtimeMs: snapshotMtimeMs } as any
 				}
 			},
-			statSync: (fileName) => {
+			statSync: (fileName: string) => {
 				if (!isActiveFile(fileName)) {
 					return statSync(fileName)
 				}
 				try {
 					return { ...statSync(fileName), mtimeMs: snapshotMtimeMs } as ReturnType<typeof statSync>
 				} catch (_e) {
-					return { mtimeMs: snapshotMtimeMs } as ReturnType<typeof statSync>
+					return { mtimeMs: snapshotMtimeMs } as any
 				}
 			},
 			writeFile,
 			writeFileSync,
-		} satisfies FileAccessObject
+		} as unknown as FileAccessObject
 		const cache = createCache(c.cacheDir, fao, projectRoot)
 		const b = bundler(
 			c,
@@ -99,32 +88,16 @@ export class SolFile implements VirtualFile {
 			cache,
 		)
 		const tsFile = b.resolveTsModuleSync(this.fileName, projectRoot, false, false)
-		this.embeddedFiles = [
-			{
-				fileName: `${this.fileName}.ts`,
-				snapshot: {
-					getText(start, end) {
-						return tsFile.code.substring(start, end)
-					},
-					getLength() {
-						return tsFile.code.length
-					},
-					getChangeRange() {
-						return undefined
-					},
-				},
-				kind: FileKind.TypeScriptHostFile,
-				capabilities: {
-					...FileCapabilities.full,
-					foldingRange: false,
-					documentSymbol: false,
-					documentFormatting: false,
-				},
-				// TODO generate source mappings https://github.com/evmts/tevm-monorepo/issues/731
-				mappings: [],
-				embeddedFiles: [],
-				codegenStacks: [],
+		this.snapshot = {
+			getText(start, end) {
+				return tsFile.code.substring(start, end)
 			},
-		]
+			getLength() {
+				return tsFile.code.length
+			},
+			getChangeRange() {
+				return undefined
+			},
+		}
 	}
 }

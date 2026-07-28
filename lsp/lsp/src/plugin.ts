@@ -1,35 +1,27 @@
-import type { LanguageServerPlugin } from '@volar/language-server/node.js'
-import { ScriptKind } from 'typescript/lib/tsserverlibrary.js'
+import type { LanguageServicePlugin } from '@volar/language-service'
+import ts from 'typescript/lib/tsserverlibrary.js'
 import { create as createTsService } from 'volar-service-typescript'
 import { language } from './language.js'
 
-export const plugin: LanguageServerPlugin = () => {
-	return {
-		extraFileExtensions: [
-			{
-				extension: 'sol',
-				isMixedContent: false,
-				scriptKind: ScriptKind.Deferred,
-			},
-		],
-		watchFileExtensions: ['sol', 'js', 'ts', 'tsx', 'jsx', 'json'],
-		resolveConfig(config) {
-			// languages
-			config.languages ??= {}
-			config.languages.sol ??= language
-
-			// services
-			config.services ??= {}
-			config.services.sol ??= (context) => ({
-				provideDiagnostics(document) {
-					void document
-					void context
-					return []
-				},
-			})
-			config.services.typescript ??= createTsService()
-
-			return config
+const solidityService: LanguageServicePlugin = {
+	name: 'tevm-solidity',
+	capabilities: {
+		diagnosticProvider: {
+			interFileDependencies: false,
+			workspaceDiagnostics: false,
 		},
+	},
+	create: () => ({
+		provideDiagnostics() {
+			return []
+		},
+	}),
+}
+
+export const plugin = () => {
+	return {
+		languagePlugins: [language],
+		servicePlugins: [solidityService, ...createTsService(ts)],
+		watchFileExtensions: ['sol', 'js', 'ts', 'tsx', 'jsx', 'json'],
 	}
 }
