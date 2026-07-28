@@ -1,6 +1,21 @@
 import { resetForkState } from '../internal/resetForkState.js'
 
 /**
+ * RPC URLs commonly contain API keys in their userinfo, path, or query.
+ * Preserve only the origin in logs.
+ * @param {unknown} value
+ */
+const redactRpcUrl = (value) => {
+	if (typeof value !== 'string') return value
+	try {
+		const url = new URL(value)
+		return `${url.protocol}//${url.host}`
+	} catch {
+		return '<invalid RPC URL>'
+	}
+}
+
+/**
  * Request handler for anvil_setRpcUrl JSON-RPC requests.
  * Sets a new RPC URL for forking mode. This method is primarily used to change
  * the backend RPC node without restarting the Tevm instance.
@@ -54,7 +69,10 @@ export const anvilSetRpcUrlJsonRpcProcedure = (client) => {
 		}
 
 		const oldUrl = 'url' in client.forkTransport ? /** @type {any} */ (client.forkTransport).url : undefined
-		client.logger.info({ oldUrl, newUrl }, 'Updated fork RPC URL backing transport and invalidated snapshots.')
+		client.logger.info(
+			{ oldUrl: redactRpcUrl(oldUrl), newUrl: redactRpcUrl(newUrl) },
+			'Updated fork RPC URL backing transport and invalidated snapshots.',
+		)
 
 		if ('url' in client.forkTransport && typeof (/** @type {any} */ (client.forkTransport).url) === 'string') {
 			/** @type {any} */

@@ -198,6 +198,7 @@ describe('anvilRevertJsonRpcProcedure', () => {
 		const revertProcedure = anvilRevertJsonRpcProcedure(client)
 
 		client.miningConfig = { type: 'interval', blockTime: 7 }
+		client.logger.level = 'info'
 		client.setAutoImpersonate(true)
 		client.setImpersonatedAccount(testAccounts[1].address)
 		client.setNextBlockTimestamp(123n)
@@ -215,6 +216,7 @@ describe('anvilRevertJsonRpcProcedure', () => {
 		})
 
 		client.miningConfig = { type: 'manual' }
+		client.logger.level = 'silent'
 		client.setAutoImpersonate(false)
 		client.setImpersonatedAccount(undefined)
 		client.setNextBlockTimestamp(undefined)
@@ -232,6 +234,7 @@ describe('anvilRevertJsonRpcProcedure', () => {
 		})
 		expect(revert.result).toBe(true)
 		expect(client.miningConfig).toEqual({ type: 'interval', blockTime: 7 })
+		expect(client.logger.level).toBe('info')
 		expect(client.getAutoImpersonate()).toBe(true)
 		expect(client.getImpersonatedAccount()).toBe(testAccounts[1].address)
 		expect(client.getNextBlockTimestamp()).toBe(123n)

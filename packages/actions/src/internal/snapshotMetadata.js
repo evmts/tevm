@@ -34,12 +34,12 @@ export const captureSnapshotMetadata = async (client, vm) => {
 	const metadata = {
 		version: 1,
 		autoImpersonate: client.getAutoImpersonate(),
-		strictImpersonation: client.getStrictImpersonation(),
 		blockchain: {
 			blocks: [.../** @type {Map<any, any>} */ (vm.blockchain.blocks ?? new Map()).entries()],
 			blocksByNumber: [.../** @type {Map<any, any>} */ (vm.blockchain.blocksByNumber ?? new Map()).entries()],
 			blocksByTag: [.../** @type {Map<any, any>} */ (vm.blockchain.blocksByTag ?? new Map()).entries()],
 		},
+		loggingLevel: client.logger.level,
 		miningConfig: client.miningConfig,
 		receiptEntries,
 		txHashes: txs.map((tx) => bytesToHex(tx.hash())),
@@ -97,10 +97,7 @@ export const restoreSnapshotState = async (client, snapshot, vm) => {
 		client.setImpersonatedAccount(undefined)
 	}
 	client.setAutoImpersonate(Boolean(snapshot.autoImpersonate))
-	// Older snapshots predate strictImpersonation so leave the node's current mode alone
-	if (snapshot.strictImpersonation !== undefined) {
-		client.setStrictImpersonation(snapshot.strictImpersonation)
-	}
+	client.logger.level = snapshot.loggingLevel ?? client.logger.level
 	client.miningConfig = snapshot.miningConfig ?? client.miningConfig
 	client.setNextBlockTimestamp(
 		snapshot.nextBlockTimestamp !== undefined ? BigInt(snapshot.nextBlockTimestamp) : undefined,

@@ -1,5 +1,5 @@
 import { createTevmNode } from '@tevm/node'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { anvilSetRpcUrlJsonRpcProcedure } from './anvilSetRpcUrlProcedure.js'
 
 describe('anvilSetRpcUrlJsonRpcProcedure', () => {
@@ -26,7 +26,7 @@ describe('anvilSetRpcUrlJsonRpcProcedure', () => {
 	})
 
 	it('should update the URL for a forked node with mutable transport', async () => {
-		const originalUrl = 'https://mainnet.optimism.io'
+		const originalUrl = 'https://user:secret@rpc.example/path/key?apiKey=secret'
 		const newUrl = 'https://mainnet.infura.io/v3/test'
 
 		const mockTransport = {
@@ -38,6 +38,7 @@ describe('anvilSetRpcUrlJsonRpcProcedure', () => {
 
 		const node = createTevmNode()
 		;(node as any).forkTransport = mockTransport
+		const info = vi.spyOn(node.logger, 'info').mockImplementation(() => undefined)
 		const procedure = anvilSetRpcUrlJsonRpcProcedure(node)
 
 		const result = await procedure({
@@ -55,6 +56,13 @@ describe('anvilSetRpcUrlJsonRpcProcedure', () => {
 		})
 
 		expect(mockTransport.url).toBe(newUrl)
+		expect(info).toHaveBeenCalledWith(
+			{
+				oldUrl: 'https://rpc.example',
+				newUrl: 'https://mainnet.infura.io',
+			},
+			'Updated fork RPC URL backing transport and invalidated snapshots.',
+		)
 	})
 
 	it('should work without id in request', async () => {

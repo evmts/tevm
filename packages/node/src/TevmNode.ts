@@ -15,6 +15,7 @@ import type { MiningConfig } from './MiningConfig.js'
 
 export type SnapshotMetadata = {
 	miningConfig?: MiningConfig
+	loggingLevel?: Logger['level']
 	version?: number
 	nextBlockTimestamp?: bigint
 	blockTimestampInterval?: bigint
