@@ -1,0 +1,80 @@
+# Tevm CLI
+
+The Tevm CLI exposes rc.151 node actions, contract tools, state controls, and Solidity compilation as shell commands. Reach for it when a one-off command or script is more direct than creating a JavaScript client.
+
+## Install and create a local session
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm --version
+tevm session docs --local --json
+```
+
+```text
+1.0.0-rc.151
+{
+  "ok": true,
+  "command": "session",
+  "result": {
+    "version": 1,
+    "name": "docs"
+  },
+  "session": "docs"
+}
+```
+
+A named session reloads and persists local state between commands. Use `--run` to skip the interactive editor and `--json` for the stable `{ ok, command, result, session }` envelope.
+
+## Global options
+
+| Flag | Environment | Effect |
+| --- | --- | --- |
+| `--json`, `--no-json` | `TEVM_JSON` | Select stable JSON or human output. |
+| `--session <name>` | `TEVM_SESSION` | Load and persist a named local or forked state file. |
+| `--run`, `-r` | `TEVM_RUN` | Execute directly instead of opening the parameter editor. |
+| `--rpc <url>` | `TEVM_RPC` | Fork or query the selected JSON-RPC endpoint. |
+
+## Command reference
+
+| Command | Purpose |
+| --- | --- |
+| [`tevm call`](/reference/cli/call) | call command |
+| [`tevm compile`](/reference/cli/compile) | compile command |
+| [`tevm contract`](/reference/cli/contract) | contract command |
+| [`tevm action create-access-list`](/reference/cli/create-access-list) | createAccessList command |
+| [`tevm create-block-filter`](/reference/cli/create-block-filter) | createBlockFilter command |
+| [`tevm create-contract-event-filter`](/reference/cli/create-contract-event-filter) | createContractEventFilter command |
+| [`tevm create-event-filter`](/reference/cli/create-event-filter) | createEventFilter command |
+| [`tevm deploy`](/reference/cli/deploy) | deploy command |
+| [`tevm dump-state`](/reference/cli/dump-state) | dumpState command |
+| [`tevm estimate-fees-per-gas`](/reference/cli/estimate-fees-per-gas) | estimateFeesPerGas command |
+| [`tevm estimate-gas`](/reference/cli/estimate-gas) | estimateGas command |
+| [`tevm get-account`](/reference/cli/get-account) | getAccount command |
+| [`tevm action get-balance`](/reference/cli/get-balance) | getBalance command |
+| [`tevm get-block`](/reference/cli/get-block) | getBlock command |
+| [`tevm get-block-number`](/reference/cli/get-block-number) | getBlockNumber command |
+| [`tevm get-bytecode`](/reference/cli/get-bytecode) | getBytecode command |
+| [`tevm get-chain-id`](/reference/cli/get-chain-id) | getChainId command |
+| [`tevm get-ens-address`](/reference/cli/get-ens-address) | getEnsAddress command |
+| [`tevm get-ens-name`](/reference/cli/get-ens-name) | getEnsName command |
+| [`tevm get-ens-text`](/reference/cli/get-ens-text) | getEnsText command |
+| [`tevm get-gas-price`](/reference/cli/get-gas-price) | getGasPrice command |
+| [`tevm get-storage-at`](/reference/cli/get-storage-at) | getStorageAt command |
+| [`tevm get-transaction`](/reference/cli/get-transaction) | getTransaction command |
+| [`tevm load-state`](/reference/cli/load-state) | loadState command |
+| [`tevm mine`](/reference/cli/mine) | mine command |
+| [`tevm multicall`](/reference/cli/multicall) | multicall command |
+| [`tevm read-contract`](/reference/cli/read-contract) | readContract command |
+| [`tevm action send-raw-transaction`](/reference/cli/send-raw-transaction) | sendRawTransaction command |
+| [`tevm serve`](/reference/cli/serve) | serve command |
+| [`tevm set-account`](/reference/cli/set-account) | setAccount command |
+| [`tevm set-code`](/reference/cli/set-code) | setCode command |
+| [`tevm set-nonce`](/reference/cli/set-nonce) | setNonce command |
+| [`tevm set-storage-at`](/reference/cli/set-storage-at) | setStorageAt command |
+| [`tevm action simulate-calls`](/reference/cli/simulate-calls) | simulateCalls command |
+
+The rc.151 `create`, `generate`, and `tsc` entry points are deliberately absent because their advertised non-interactive examples fail in this release. Their exact failures and disposition are recorded in the documentation ledger.
+
+## Neighbours
+
+[JSON-RPC](/api/json-rpc) · [Actions](/reference/actions) · [Contract tools](/reference/contract) · [State management](/core/managing-state)

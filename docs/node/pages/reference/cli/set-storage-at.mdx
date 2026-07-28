@@ -1,0 +1,44 @@
+# tevm set-storage-at
+
+`tevm set-storage-at` runs this operation: Set a contract storage slot in local state. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+tevm set-storage-at --address 0x1000000000000000000000000000000000000001 --index 0x0 --value 0x2a --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "set-storage-at",
+  "result": {},
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/setStorageAt.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/setStorageAt.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--address [address]` | Contract address to set storage for (env: TEVM_ADDRESS) |
+| Flag | `--index [index]` | Storage slot index (env: TEVM_INDEX) |
+| Flag | `--value [value]` | Value to set at the storage slot (env: TEVM_VALUE) |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm set-nonce`](/reference/cli/set-nonce) · [`tevm action simulate-calls`](/reference/cli/simulate-calls)

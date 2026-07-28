@@ -1,0 +1,55 @@
+# Built-in chain presets
+
+`@tevm/common` exports ready-to-use EVM chain configurations with chain IDs, hardfork histories, and RPC metadata. Reach for a preset when creating a Tevm client for a known network instead of assembling `Common` options by hand.
+
+## Working example
+
+This complete example was run with `@tevm/common@1.0.0-rc.151` and `viem@2.49.3`.
+
+```ts
+import assert from 'node:assert/strict'
+import { anvil, arbitrum, base, mainnet, optimism, sepolia } from '@tevm/common'
+
+const chains = [mainnet, sepolia, anvil, arbitrum, optimism, base]
+assert.deepEqual(
+	chains.map((chain) => [chain.name, chain.id]),
+	[
+		['Ethereum', 1],
+		['Sepolia', 11155111],
+		['Anvil', 31337],
+		['Arbitrum One', 42161],
+		['OP Mainnet', 10],
+		['Base', 8453],
+	],
+)
+
+console.log(chains.map((chain) => `${chain.name}: ${chain.id}`).join('\n'))
+```
+
+```text
+Ethereum: 1
+Sepolia: 11155111
+Anvil: 31337
+Arbitrum One: 42161
+OP Mainnet: 10
+Base: 8453
+```
+
+## Preset exports
+
+The generated [`presets/index.ts`](https://github.com/evmts/tevm-monorepo/blob/main/packages/common/src/presets/index.ts) is the complete export list. These are the primary presets covered by this feature:
+
+| Export | Chain ID | Use |
+| --- | ---: | --- |
+| `mainnet` | 1 | Ethereum mainnet |
+| `sepolia` | 11155111 | Ethereum Sepolia |
+| `anvil` | 31337 | Foundry Anvil |
+| `arbitrum` | 42161 | Arbitrum One |
+| `optimism` | 10 | OP Mainnet |
+| `base` | 8453 | Base mainnet |
+
+Every preset is a `Common` configuration and can be passed as the `common` option to [`createTevmNode`](/core/create-tevm-node) or [`createMemoryClient`](/reference/memory-client).
+
+## Neighbours
+
+[Common reference](/reference/common) · [Create a node](/core/create-tevm-node) · [Forking](/core/forking)

@@ -1,0 +1,48 @@
+# tevm set-account
+
+`tevm set-account` runs this operation: Mutate a local account balance, nonce, code, or storage. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+tevm set-account --address 0x1000000000000000000000000000000000000001 --balance 1000000000000000000 --nonce 0 --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "set-account",
+  "result": {},
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/setAccount.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/setAccount.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--address <address>` | Ethereum address of the account to set (env: TEVM_ADDRESS) |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) (default: http://localhost:8545) |
+| Flag | `--nonce [nonce]` | Account nonce (env: TEVM_NONCE) |
+| Flag | `--balance [balance]` | Account balance in wei (env: TEVM_BALANCE) |
+| Flag | `--deployed-bytecode [deployed-bytecode]` | Contract bytecode to set account to (env: TEVM_DEPLOYED_BYTECODE) |
+| Flag | `--storage-root [storage-root]` | Storage root to set account to (env: TEVM_STORAGE_ROOT) |
+| Flag | `--state [state]` | Key-value mapping to override all slots in the account storage (env: TEVM_STATE) |
+| Flag | `--state-diff [state-diff]` | Key-value mapping to override individual slots in the account storage (env: TEVM_STATE_DIFF) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm serve`](/reference/cli/serve) · [`tevm set-code`](/reference/cli/set-code)

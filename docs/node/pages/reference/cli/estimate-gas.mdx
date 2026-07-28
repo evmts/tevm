@@ -1,0 +1,71 @@
+# tevm estimate-gas
+
+`tevm estimate-gas` runs this operation: Estimate transaction gas. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+mkdir -p src
+cat > src/Counter.sol <<'SOLIDITY'
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Counter {
+    uint256 public number;
+
+    event NumberChanged(uint256 number);
+
+    function setNumber(uint256 next) public {
+        number = next;
+        emit NumberChanged(next);
+    }
+}
+SOLIDITY
+tevm compile --json
+jq '.abi' artifacts/Counter.json > artifacts/Counter.abi.json
+tevm set-account --address 0x1000000000000000000000000000000000000001 --balance 1000000000000000000 --session docs --run --json
+tevm set-code --address 0x1000000000000000000000000000000000000001 --bytecode "$(jq -r '.deployedBytecode' artifacts/Counter.json)" --session docs --run --json
+tevm set-storage-at --address 0x1000000000000000000000000000000000000001 --index 0x0 --value 0x2a --session docs --run --json
+tevm estimate-gas --to 0x1000000000000000000000000000000000000001 --data 0x8381f58a --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "estimate-gas",
+  "result": "23345",
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/estimateGas.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/estimateGas.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--to [to]` | Target contract address (env: TEVM_TO) |
+| Flag | `--from [from]` | Address to send the transaction from (env: TEVM_FROM) |
+| Flag | `--data [data]` | Transaction data (hex encoded) (env: TEVM_DATA) |
+| Flag | `--value [value]` | ETH value to send in wei (env: TEVM_VALUE) |
+| Flag | `--gas [gas]` | Gas limit for the transaction (env: TEVM_GAS) |
+| Flag | `--gas-price [gas-price]` | Gas price in wei (env: TEVM_GAS_PRICE) |
+| Flag | `--max-fee-per-gas [max-fee-per-gas]` | Maximum fee per gas (EIP-1559) (env: TEVM_MAX_FEE_PER_GAS) |
+| Flag | `--max-priority-fee-per-gas [max-priority-fee-per-gas]` | Maximum priority fee per gas (EIP-1559) (env: TEVM_MAX_PRIORITY_FEE_PER_GAS) |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) |
+| Flag | `--block-tag [block-tag]` | Block tag (latest, pending, etc.) or number (env: TEVM_BLOCK_TAG) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm estimate-fees-per-gas`](/reference/cli/estimate-fees-per-gas) · [`tevm get-account`](/reference/cli/get-account)

@@ -35,10 +35,8 @@ const result = await client.tevmCall({
 ### Tree-shakable API
 
 ```ts
-import { tevmCall } from 'tevm'
-import { createTevmTransport } from 'tevm/memory-client'
-import { createTevmNode } from 'tevm/node'
-import { requestEip1193 } from 'tevm/decorators'
+import { createTevmTransport, tevmCall } from 'tevm'
+import { createClient } from 'viem'
 
 const client = createClient({ transport: createTevmTransport() })
 

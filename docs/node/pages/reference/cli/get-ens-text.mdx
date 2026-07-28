@@ -1,0 +1,44 @@
+# tevm get-ens-text
+
+`tevm get-ens-text` runs this operation: Get an ENS text record. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm get-ens-text --name vitalik.eth --key url --universal-resolver-address 0xeeeeeeee14d718c2b47d9923deab1335e144eeee --rpc https://ethereum-rpc.publicnode.com --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "get-ens-text",
+  "result": "https://vitalik.ca"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/getEnsText.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/getEnsText.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--name [name]` | ENS name to lookup (env: TEVM_NAME) |
+| Flag | `--key [key]` | Text record key to retrieve (env: TEVM_KEY) |
+| Flag | `--block-tag [block-tag]` | Block tag (latest, pending, etc.) (env: TEVM_BLOCK_TAG) |
+| Flag | `--block-number [block-number]` | Block number to query at (env: TEVM_BLOCK_NUMBER) |
+| Flag | `--universal-resolver-address [universal-resolver-address]` | Address of ENS Universal Resolver (env: TEVM_UNIVERSAL_RESOLVER_ADDRESS) |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm get-ens-name`](/reference/cli/get-ens-name) · [`tevm get-gas-price`](/reference/cli/get-gas-price)

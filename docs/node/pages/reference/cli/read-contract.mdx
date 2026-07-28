@@ -1,0 +1,67 @@
+# tevm read-contract
+
+`tevm read-contract` runs this operation: Read a decoded contract function. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+mkdir -p src
+cat > src/Counter.sol <<'SOLIDITY'
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Counter {
+    uint256 public number;
+
+    event NumberChanged(uint256 number);
+
+    function setNumber(uint256 next) public {
+        number = next;
+        emit NumberChanged(next);
+    }
+}
+SOLIDITY
+tevm compile --json
+jq '.abi' artifacts/Counter.json > artifacts/Counter.abi.json
+tevm set-account --address 0x1000000000000000000000000000000000000001 --balance 1000000000000000000 --session docs --run --json
+tevm set-code --address 0x1000000000000000000000000000000000000001 --bytecode "$(jq -r '.deployedBytecode' artifacts/Counter.json)" --session docs --run --json
+tevm set-storage-at --address 0x1000000000000000000000000000000000000001 --index 0x0 --value 0x2a --session docs --run --json
+tevm read-contract --address 0x1000000000000000000000000000000000000001 --abi [{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"number","type":"uint256"}],"name":"NumberChanged","type":"event"},{"inputs":[],"name":"number","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"next","type":"uint256"}],"name":"setNumber","outputs":[],"stateMutability":"nonpayable","type":"function"}] --function-name number --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "read-contract",
+  "result": "42",
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/readContract.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/readContract.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--address <address>` | Contract address (env: TEVM_ADDRESS) |
+| Flag | `--abi <abi>` | Contract ABI as JSON string (env: TEVM_ABI) |
+| Flag | `--function-name <function-name>` | Function name to call (env: TEVM_FUNCTION_NAME) |
+| Flag | `--args [args]` | Function arguments as JSON array (env: TEVM_ARGS) |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) (default: http://localhost:8545) |
+| Flag | `--block-tag [block-tag]` | Block tag (latest, pending, etc.) or number (env: TEVM_BLOCK_TAG) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm multicall`](/reference/cli/multicall) · [`tevm action send-raw-transaction`](/reference/cli/send-raw-transaction)

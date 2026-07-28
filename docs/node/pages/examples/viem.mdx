@@ -98,6 +98,7 @@ import { parseEther } from "viem";
 
 const client = createMemoryClient({
   account: PREFUNDED_ACCOUNTS[0], // 10000 ETH
+  miningConfig: { type: "manual" },
 });
 
 const hash = await client.sendTransaction({
@@ -105,20 +106,9 @@ const hash = await client.sendTransaction({
   value: parseEther("1"),
 });
 
-const receipt = await client.waitForTransactionReceipt({ hash });
-
-const deployHash = await client.deployContract({
-  abi: parseAbi([
-    "function greet() view returns (string)",
-    "function setGreeting(string) returns ()",
-  ]),
-  bytecode: "0x608060405234801561...",
-});
-
 await client.mine({ blocks: 1 });
-const { contractAddress } = await client.getTransactionReceipt({
-  hash: deployHash,
-});
+const receipt = await client.getTransactionReceipt({ hash });
+console.log(receipt.status);
 ```
 
 <details>
@@ -126,6 +116,7 @@ const { contractAddress } = await client.getTransactionReceipt({
 
 ```ts
 import { createMemoryClient } from "tevm";
+import { parseEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 const account = privateKeyToAccount(

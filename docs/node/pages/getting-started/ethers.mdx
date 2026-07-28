@@ -35,19 +35,18 @@ bun add tevm@1.0.0-rc.151 viem ethers@6
 
 ## Create a Provider
 
-`createMemoryClient()` is synchronous. Extend its underlying node with
-`requestEip1193()`, await initialization, and give that provider to ethers:
+`createMemoryClient()` is synchronous. Its `request` method follows EIP-1193.
+Pass the client directly to ethers; Tevm preserves typed RPC return values while
+also satisfying ethers' open-ended provider interface:
 
 ```ts
 import { createMemoryClient, getAddress } from 'tevm'
-import { requestEip1193 } from 'tevm/decorators'
 import { BrowserProvider, Wallet, formatEther, parseEther } from 'ethers'
 
 const client = createMemoryClient()
-client.transport.tevm.extend(requestEip1193())
 await client.tevmReady()
 
-const provider = new BrowserProvider(client.transport.tevm, undefined, {
+const provider = new BrowserProvider(client, undefined, {
   cacheTimeout: -1,
 })
 const signer = Wallet.createRandom().connect(provider)

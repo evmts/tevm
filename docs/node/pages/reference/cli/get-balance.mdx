@@ -1,0 +1,44 @@
+# tevm action get-balance
+
+`tevm action get-balance` runs this operation: Get an account Ether balance. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+tevm action get-balance --address 0x1000000000000000000000000000000000000001 --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "get-balance",
+  "result": "1000000000000000000",
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/action/getBalance.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/action/getBalance.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--address [address]` | Account address to get balance for (env: TEVM_ADDRESS) |
+| Flag | `--block-number [block-number]` | Block number to query at (env: TEVM_BLOCK_NUMBER) |
+| Flag | `--block-tag [block-tag]` | Block tag (latest, pending, etc.) (env: TEVM_BLOCK_TAG) |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm get-account`](/reference/cli/get-account) · [`tevm get-block`](/reference/cli/get-block)

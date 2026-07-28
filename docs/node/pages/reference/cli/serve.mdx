@@ -1,0 +1,48 @@
+# tevm serve
+
+`tevm serve` runs this operation: Start a persistent TEVM JSON-RPC server. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm serve --port 9545 --chain-id 900 --json
+```
+
+Output captured from the final command:
+
+```text
+{
+  "ok": true,
+  "command": "serve",
+  "result": {
+    "rpcUrl": "http://localhost:9545",
+    "chainId": "900",
+    "fork": null
+  }
+}
+JSON-RPC eth_chainId response: {"id":1,"jsonrpc":"2.0","method":"eth_chainId","result":"0x384"}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/serve.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/serve.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--port [port]` | Port to listen on (default: 8545) |
+| Flag | `--host [host]` | Host to bind to (default: localhost) |
+| Flag | `--fork [fork]` | URL of network to fork |
+| Flag | `--chain-id [chain-id]` | Use known chain ID (default: 900 (tevm)) |
+| Flag | `--fork-block-number [fork-block-number]` | Set fork block number (default: latest) |
+| Flag | `--logging-level [logging-level]` | Set logging level (default: info) |
+| Flag | `--verbose` | Enable verbose logging of JSON-RPC requests (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm action send-raw-transaction`](/reference/cli/send-raw-transaction) · [`tevm set-account`](/reference/cli/set-account)

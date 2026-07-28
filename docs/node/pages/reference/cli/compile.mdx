@@ -1,0 +1,52 @@
+# tevm compile
+
+`tevm compile` runs this operation: Compile Solidity smart contracts to bytecode and ABI. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+mkdir -p src
+cat > src/Counter.sol <<'SOLIDITY'
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Counter {
+    uint256 public number;
+}
+SOLIDITY
+tevm compile --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "compile",
+  "result": {
+    "artifacts": [
+      "artifacts/Counter.json"
+    ]
+  }
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/compile.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/compile.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `-w, --watch` | Watch for changes (default: false) |
+| Flag | `--no-optimize` | Enable optimizations |
+| Flag | `--target [target]` | Compilation target (choices: "es2015", "es2020", "esnext", default: es2020) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm call`](/reference/cli/call) · [`tevm contract`](/reference/cli/contract)

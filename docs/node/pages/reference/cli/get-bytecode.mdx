@@ -1,0 +1,65 @@
+# tevm get-bytecode
+
+`tevm get-bytecode` runs this operation: Get deployed bytecode at an address. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+mkdir -p src
+cat > src/Counter.sol <<'SOLIDITY'
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Counter {
+    uint256 public number;
+
+    event NumberChanged(uint256 number);
+
+    function setNumber(uint256 next) public {
+        number = next;
+        emit NumberChanged(next);
+    }
+}
+SOLIDITY
+tevm compile --json
+jq '.abi' artifacts/Counter.json > artifacts/Counter.abi.json
+tevm set-account --address 0x1000000000000000000000000000000000000001 --balance 1000000000000000000 --session docs --run --json
+tevm set-code --address 0x1000000000000000000000000000000000000001 --bytecode "$(jq -r '.deployedBytecode' artifacts/Counter.json)" --session docs --run --json
+tevm set-storage-at --address 0x1000000000000000000000000000000000000001 --index 0x0 --value 0x2a --session docs --run --json
+tevm get-bytecode --address 0x1000000000000000000000000000000000000001 --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "get-bytecode",
+  "result": "0x6080604052348015600e575f5ffd5b50600436106030575f3560e01c80633fb5c1cb1460345780638381f58a146045575b5f5ffd5b6043603f3660046098565b605e565b005b604c5f5481565b60405190815260200160405180910390f35b5f8190556040518181527f2fd81fd19d3c5c4b396dd13f451dafc8bcac1b3094c49c5fa90e68456323f0e39060200160405180910390a150565b5f6020828403121560a7575f5ffd5b503591905056fea26469706673582212203ef1a75b09ee91fb7f995d62885094508a883f40d776c10ba4f1d1427a64bd8b64736f6c63430008230033",
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/getBytecode.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/getBytecode.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--address [address]` | Contract address to get bytecode for (env: TEVM_ADDRESS) |
+| Flag | `--block-tag [block-tag]` | Block tag (latest, pending, etc.) (env: TEVM_BLOCK_TAG) |
+| Flag | `--block-number [block-number]` | Block number to get bytecode at (env: TEVM_BLOCK_NUMBER) |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm get-block-number`](/reference/cli/get-block-number) · [`tevm get-chain-id`](/reference/cli/get-chain-id)

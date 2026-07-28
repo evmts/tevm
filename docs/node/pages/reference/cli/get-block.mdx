@@ -1,0 +1,74 @@
+# tevm get-block
+
+`tevm get-block` runs this operation: Get a block by number, hash, or tag. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+tevm get-block --block-tag latest --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "get-block",
+  "result": {
+    "number": "0",
+    "hash": "0x04f3224bc7809708a4b860e9fdd4588b38f4bcadb994f9ae1793a2ed2c38011d",
+    "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "nonce": "0x0000000000000042",
+    "sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "transactionsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+    "stateRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+    "miner": "0x0000000000000000000000000000000000000000",
+    "difficulty": "17179869184",
+    "totalDifficulty": "0",
+    "extraData": "0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa",
+    "size": "1695",
+    "gasLimit": "30000000",
+    "gasUsed": "0",
+    "timestamp": "0",
+    "uncles": [],
+    "transactions": [],
+    "baseFeePerGas": "7",
+    "receiptsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+    "withdrawalsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+    "withdrawals": [],
+    "blobGasUsed": "0",
+    "requestsRoot": "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "requests": [],
+    "excessBlobGas": "0",
+    "parentBeaconBlockRoot": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/getBlock.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/getBlock.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--block-hash [block-hash]` | Block hash to get information for (env: TEVM_BLOCK_HASH) |
+| Flag | `--block-number [block-number]` | Block number to get information for (env: TEVM_BLOCK_NUMBER) |
+| Flag | `--block-tag [block-tag]` | Block tag (latest, pending, etc.) (env: TEVM_BLOCK_TAG) |
+| Flag | `--include-transactions` | Whether to include full transaction objects (env: TEVM_INCLUDE_TRANSACTIONS) (default: false) |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm action get-balance`](/reference/cli/get-balance) · [`tevm get-block-number`](/reference/cli/get-block-number)

@@ -353,8 +353,8 @@ See [Viem Documentation](https://viem.sh/docs/clients/custom.html).
 
 ```ts
 import { createTevmTransport } from 'tevm'
-import { createPublicClient, custom } from 'viem'
-import { requestEip1193 } from 'tevm/decorators'
+import { mainnet } from 'tevm/common'
+import { createPublicClient } from 'viem'
 
 const tevmTransport = createTevmTransport()
 const client = createPublicClient({ chain: mainnet, transport: tevmTransport })
@@ -365,12 +365,11 @@ const client = createPublicClient({ chain: mainnet, transport: tevmTransport })
 See [Ethers Documentation](https://docs.ethers.org/v6/api/providers/#Provider).
 
 ```ts
-import { createTevmNode } from 'tevm'
+import { createMemoryClient } from 'tevm'
 import { BrowserProvider } from 'ethers'
-import { requestEip1193 } from 'tevm/decorators'
 
-const node = createTevmNode().extend(requestEip1193())
-const provider = new BrowserProvider(node)
+const client = createMemoryClient()
+const provider = new BrowserProvider(client)
 ```
 
 ## Error Handling

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zevm"
+  short_description: "Build and embed the Zig EVM implementation"
+  default_prompt: "Use Zevm source APIs to build or embed this Zig EVM task."

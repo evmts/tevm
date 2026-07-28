@@ -1,0 +1,115 @@
+# tevm create-contract-event-filter
+
+`tevm create-contract-event-filter` runs this operation: Create a filter for decoded contract events. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+mkdir -p src
+cat > src/Counter.sol <<'SOLIDITY'
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Counter {
+    uint256 public number;
+
+    event NumberChanged(uint256 number);
+
+    function setNumber(uint256 next) public {
+        number = next;
+        emit NumberChanged(next);
+    }
+}
+SOLIDITY
+tevm compile --json
+jq '.abi' artifacts/Counter.json > artifacts/Counter.abi.json
+tevm set-account --address 0x1000000000000000000000000000000000000001 --balance 1000000000000000000 --session docs --run --json
+tevm set-code --address 0x1000000000000000000000000000000000000001 --bytecode "$(jq -r '.deployedBytecode' artifacts/Counter.json)" --session docs --run --json
+tevm set-storage-at --address 0x1000000000000000000000000000000000000001 --index 0x0 --value 0x2a --session docs --run --json
+tevm create-contract-event-filter --address 0x1000000000000000000000000000000000000001 --abi artifacts/Counter.abi.json --event-name NumberChanged --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "create-contract-event-filter",
+  "result": {
+    "abi": [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "number",
+            "type": "uint256"
+          }
+        ],
+        "name": "NumberChanged",
+        "type": "event"
+      },
+      {
+        "inputs": [],
+        "name": "number",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "next",
+            "type": "uint256"
+          }
+        ],
+        "name": "setNumber",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ],
+    "args": [],
+    "eventName": "NumberChanged",
+    "id": "0xd84a7ad846377eacefca04e3dae1a140",
+    "strict": false,
+    "type": "event"
+  },
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/createContractEventFilter.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/createContractEventFilter.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--abi [abi]` | Contract ABI as JSON string (env: TEVM_ABI) |
+| Flag | `--address [address]` | Contract address to filter events from (env: TEVM_ADDRESS) |
+| Flag | `--event-name [event-name]` | Name of the event to filter (env: TEVM_EVENT_NAME) |
+| Flag | `--args [args]` | Event arguments as JSON array (env: TEVM_ARGS) |
+| Flag | `--from-block [from-block]` | Starting block for filtering (env: TEVM_FROM_BLOCK) |
+| Flag | `--to-block [to-block]` | Ending block for filtering (env: TEVM_TO_BLOCK) |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm create-block-filter`](/reference/cli/create-block-filter) · [`tevm create-event-filter`](/reference/cli/create-event-filter)

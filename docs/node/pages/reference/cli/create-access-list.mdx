@@ -1,0 +1,60 @@
+# tevm action create-access-list
+
+`tevm action create-access-list` runs this operation: Create an EIP-2930 access list. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+tevm action create-access-list --account 0x1000000000000000000000000000000000000001 --to 0x1000000000000000000000000000000000000001 --data 0x8381f58a --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "create-access-list",
+  "result": {
+    "accessList": [
+      {
+        "address": "0x1000000000000000000000000000000000000001",
+        "storageKeys": [
+          "0x0000000000000000000000000000000000000000000000000000000000000000"
+        ]
+      }
+    ],
+    "gasUsed": "23345"
+  },
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/action/createAccessList.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/action/createAccessList.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--account [account]` | Account (address) to create an access list for (env: TEVM_ACCOUNT) |
+| Flag | `--block-number [block-number]` | Block number to create an access list for (env: TEVM_BLOCK_NUMBER) |
+| Flag | `--block-tag [block-tag]` | Block tag to create an access list for (env: TEVM_BLOCK_TAG) |
+| Flag | `--data [data]` | Contract function selector with encoded arguments (env: TEVM_DATA) |
+| Flag | `--gas-price [gas-price]` | Price (in wei) to pay per gas (for Legacy Transactions) (env: TEVM_GAS_PRICE) |
+| Flag | `--max-fee-per-gas [max-fee-per-gas]` | Max fee per gas in wei (for EIP-1559 Transactions) (env: TEVM_MAX_FEE_PER_GAS) |
+| Flag | `--max-priority-fee-per-gas [max-priority-fee-per-gas]` | Max priority fee per gas in wei (for EIP-1559 Transactions) (env: TEVM_MAX_PRIORITY_FEE_PER_GAS) |
+| Flag | `--to [to]` | Transaction recipient address (env: TEVM_TO) |
+| Flag | `--value [value]` | Value (in wei) sent with this transaction (env: TEVM_VALUE) |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm contract`](/reference/cli/contract) · [`tevm create-block-filter`](/reference/cli/create-block-filter)

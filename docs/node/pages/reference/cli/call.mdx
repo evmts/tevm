@@ -1,0 +1,83 @@
+# tevm call
+
+`tevm call` runs this operation: Execute a raw EVM call against a contract or address. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+mkdir -p src
+cat > src/Counter.sol <<'SOLIDITY'
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Counter {
+    uint256 public number;
+
+    event NumberChanged(uint256 number);
+
+    function setNumber(uint256 next) public {
+        number = next;
+        emit NumberChanged(next);
+    }
+}
+SOLIDITY
+tevm compile --json
+jq '.abi' artifacts/Counter.json > artifacts/Counter.abi.json
+tevm set-account --address 0x1000000000000000000000000000000000000001 --balance 1000000000000000000 --session docs --run --json
+tevm set-code --address 0x1000000000000000000000000000000000000001 --bytecode "$(jq -r '.deployedBytecode' artifacts/Counter.json)" --session docs --run --json
+tevm set-storage-at --address 0x1000000000000000000000000000000000000001 --index 0x0 --value 0x2a --session docs --run --json
+tevm call --to 0x1000000000000000000000000000000000000001 --data 0x8381f58a --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "call",
+  "result": {
+    "rawData": "0x000000000000000000000000000000000000000000000000000000000000002a",
+    "executionGasUsed": "2281",
+    "totalGasSpent": "23345",
+    "amountSpent": "163415",
+    "selfdestruct": [],
+    "gas": "29976655",
+    "logs": [],
+    "createdAddresses": []
+  },
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/call.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/call.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--to [to]` | Contract address to call (env: TEVM_TO) (default: 0x0000000000000000000000000000000000000000) |
+| Flag | `--data [data]` | Transaction data (hex encoded) (env: TEVM_DATA) |
+| Flag | `--from [from]` | Address to send the transaction from (env: TEVM_FROM) (default: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266) |
+| Flag | `--value [value]` | ETH value to send in wei (env: TEVM_VALUE) |
+| Flag | `--code [code]` | The encoded code to deploy (with constructor args) (env: TEVM_CODE) |
+| Flag | `--deployed-bytecode [deployed-bytecode]` | Deployed bytecode to put in state before call (env: TEVM_DEPLOYED_BYTECODE) |
+| Flag | `--gas [gas]` | Gas limit for the transaction (env: TEVM_GAS) |
+| Flag | `--gas-price [gas-price]` | Gas price in wei (env: TEVM_GAS_PRICE) |
+| Flag | `--block-tag [block-tag]` | Block tag (latest, pending, etc.) or number (env: TEVM_BLOCK_TAG) |
+| Flag | `--trace` | Render a readable call tree with gas per frame (env: TEVM_TRACE) (default: false) |
+| Flag | `--abi [abi]` | ABI JSON or file used to decode traced calls (env: TEVM_ABI) |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) (default: http://localhost:8545) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `--session [session]` | Load and persist a named local fork session (env: TEVM_SESSION) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm compile`](/reference/cli/compile)

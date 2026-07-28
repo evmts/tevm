@@ -124,7 +124,7 @@ node.logger.error("Error encountered", { details: "Something went wrong" });
 ### Custom Precompiles
 
 ```ts
-import { definePrecompile, createContract, parseAbi } from "tevm";
+import { createContract, createMemoryClient, definePrecompile, parseAbi } from "tevm";
 
 const calculatorPrecompile = definePrecompile({
   contract: createContract({
@@ -132,7 +132,7 @@ const calculatorPrecompile = definePrecompile({
       "function add(uint256 a, uint256 b) returns (uint256)",
       "function subtract(uint256 a, uint256 b) returns (uint256)",
     ]),
-    address: "0xf2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2",
+    address: "0x0000000000000000000000000000000000000100",
   }),
   call: async ({ data, gasLimit }) => {
     return {
@@ -181,9 +181,12 @@ Without one, `tevmDefault` is used.
 import { createMemoryClient, http } from "tevm";
 import { optimism } from "tevm/common";
 
+const rpcUrl = process.env.OPTIMISM_RPC_URL;
+if (!rpcUrl) throw new Error("OPTIMISM_RPC_URL is required");
+
 const client = createMemoryClient({
   common: optimism,
-  fork: { transport: http() },
+  fork: { transport: http(rpcUrl)({}) },
 });
 
 const block = await client.getBlock({ blockTag: "latest" });

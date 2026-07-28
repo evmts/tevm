@@ -63,11 +63,11 @@ console.log(await client.getBalance({ address: account }))
 
 Historical reads at or before the fork block can still resolve remotely. New local blocks, receipts, and state roots are owned by Tevm.
 
-:::warning[rc.151 L2 block fidelity]
-The rc.151 blockchain package filters unsupported Optimism deposit transactions
-(type `0x7e`) and Arbitrum deposit transaction types (`0x6a`–`0x6f`) when it
-loads affected blocks. State reads still work, but a locally reconstructed
-block omitting those transactions has a different hash from the upstream block.
+:::warning[Arbitrum custom transaction types]
+Optimism deposit transactions (type `0x7e`) are reconstructed with exact block
+fidelity. Arbitrum transaction types `0x6a`–`0x6f` are not implemented yet;
+Tevm throws `UnsupportedForkTransactionError` rather than constructing a block
+whose transactions differ from upstream.
 :::
 
 ## Fork Through a Viem Transport

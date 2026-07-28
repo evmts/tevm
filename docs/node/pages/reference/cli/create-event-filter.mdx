@@ -1,0 +1,54 @@
+# tevm create-event-filter
+
+`tevm create-event-filter` runs this operation: Create a filter for blockchain logs. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+tevm create-event-filter --address 0x1000000000000000000000000000000000000001 --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "create-event-filter",
+  "result": {
+    "args": [],
+    "fromBlock": "latest",
+    "id": "0x820e7fce9eda5f36295160d43860bb2a",
+    "strict": false,
+    "toBlock": "latest",
+    "type": "event"
+  },
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/createEventFilter.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/createEventFilter.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--address [address]` | Contract address to filter events from (env: TEVM_ADDRESS) |
+| Flag | `--abi [abi]` | Contract ABI as JSON string (env: TEVM_ABI) |
+| Flag | `--event-name [event-name]` | Name of the event to filter (env: TEVM_EVENT_NAME) |
+| Flag | `--args [args]` | Event arguments as JSON array (env: TEVM_ARGS) |
+| Flag | `--from-block [from-block]` | Starting block for filtering (env: TEVM_FROM_BLOCK) |
+| Flag | `--to-block [to-block]` | Ending block for filtering (env: TEVM_TO_BLOCK) |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm create-contract-event-filter`](/reference/cli/create-contract-event-filter) · [`tevm deploy`](/reference/cli/deploy)

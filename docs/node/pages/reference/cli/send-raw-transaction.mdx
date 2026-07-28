@@ -1,0 +1,43 @@
+# tevm action send-raw-transaction
+
+`tevm action send-raw-transaction` runs this operation: Send a signed raw transaction. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+tevm set-account --address 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --balance 1000000000000000000 --nonce 0 --session docs --run --json
+tevm action send-raw-transaction --serialized-transaction 0x02f86c82038480843b9aca0084773594008252089410000000000000000000000000000000000000010180c001a0f449737ed1e3fcc388aeafc1ff3f947808bc8835cb57e97b7b16401d4fa8537ba0517506d8ab807b8253c682173dfda9aed830cb27bad12683a626c8b6aeecc738 --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "send-raw-transaction",
+  "result": "0xe710a03cd522dd07ce66a31a4a41623eee4dbf47e1f788d68b94f9ad37297e8b",
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/action/sendRawTransaction.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/action/sendRawTransaction.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--serialized-transaction [serialized-transaction]` | The signed serialized transaction (env: TEVM_SERIALIZED_TRANSACTION) |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm read-contract`](/reference/cli/read-contract) · [`tevm serve`](/reference/cli/serve)

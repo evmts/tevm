@@ -1,0 +1,44 @@
+# tevm load-state
+
+`tevm load-state` runs this operation: Load saved state into the local EVM. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+printf '{}\n' > empty-state.json
+tevm load-state --state-file empty-state.json --session loaded --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "load-state",
+  "result": {},
+  "session": "loaded"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/loadState.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/loadState.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) (default: http://localhost:8545) |
+| Flag | `--state-file [state-file]` | Path to JSON file containing the TEVM state (env: TEVM_STATE_FILE) |
+| Flag | `--state-json [state-json]` | JSON string containing the TEVM state (env: TEVM_STATE_JSON) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm get-transaction`](/reference/cli/get-transaction) · [`tevm mine`](/reference/cli/mine)

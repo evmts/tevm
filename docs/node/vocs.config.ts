@@ -37,6 +37,7 @@ export default defineConfig({
 			link: '/introduction/what-is-tevm-node',
 			match: '/introduction',
 		},
+		{ text: 'CLI', link: '/reference/cli', match: '/reference/cli' },
 		{
 			text: 'Quick Start',
 			link: '/getting-started/overview',
@@ -110,6 +111,53 @@ export default defineConfig({
 			],
 		},
 		{
+			text: 'CLI reference',
+			collapsed: true,
+			items: [
+				{ text: 'Overview', link: '/reference/cli' },
+				{ text: 'call', link: '/reference/cli/call' },
+				{ text: 'compile', link: '/reference/cli/compile' },
+				{ text: 'contract', link: '/reference/cli/contract' },
+				{ text: 'action create-access-list', link: '/reference/cli/create-access-list' },
+				{ text: 'create-block-filter', link: '/reference/cli/create-block-filter' },
+				{
+					text: 'create-contract-event-filter',
+					link: '/reference/cli/create-contract-event-filter',
+				},
+				{ text: 'create-event-filter', link: '/reference/cli/create-event-filter' },
+				{ text: 'deploy', link: '/reference/cli/deploy' },
+				{ text: 'dump-state', link: '/reference/cli/dump-state' },
+				{ text: 'estimate-fees-per-gas', link: '/reference/cli/estimate-fees-per-gas' },
+				{ text: 'estimate-gas', link: '/reference/cli/estimate-gas' },
+				{ text: 'get-account', link: '/reference/cli/get-account' },
+				{ text: 'action get-balance', link: '/reference/cli/get-balance' },
+				{ text: 'get-block', link: '/reference/cli/get-block' },
+				{ text: 'get-block-number', link: '/reference/cli/get-block-number' },
+				{ text: 'get-bytecode', link: '/reference/cli/get-bytecode' },
+				{ text: 'get-chain-id', link: '/reference/cli/get-chain-id' },
+				{ text: 'get-ens-address', link: '/reference/cli/get-ens-address' },
+				{ text: 'get-ens-name', link: '/reference/cli/get-ens-name' },
+				{ text: 'get-ens-text', link: '/reference/cli/get-ens-text' },
+				{ text: 'get-gas-price', link: '/reference/cli/get-gas-price' },
+				{ text: 'get-storage-at', link: '/reference/cli/get-storage-at' },
+				{ text: 'get-transaction', link: '/reference/cli/get-transaction' },
+				{ text: 'load-state', link: '/reference/cli/load-state' },
+				{ text: 'mine', link: '/reference/cli/mine' },
+				{ text: 'multicall', link: '/reference/cli/multicall' },
+				{ text: 'read-contract', link: '/reference/cli/read-contract' },
+				{
+					text: 'action send-raw-transaction',
+					link: '/reference/cli/send-raw-transaction',
+				},
+				{ text: 'serve', link: '/reference/cli/serve' },
+				{ text: 'set-account', link: '/reference/cli/set-account' },
+				{ text: 'set-code', link: '/reference/cli/set-code' },
+				{ text: 'set-nonce', link: '/reference/cli/set-nonce' },
+				{ text: 'set-storage-at', link: '/reference/cli/set-storage-at' },
+				{ text: 'action simulate-calls', link: '/reference/cli/simulate-calls' },
+			],
+		},
+		{
 			text: 'Reference',
 			collapsed: true,
 			items: [
@@ -165,6 +213,10 @@ export default defineConfig({
 					items: [
 						{ text: 'Contract (@tevm/contract)', link: '/reference/contract' },
 						{
+							text: 'Contract type generator',
+							link: '/reference/contract-type-generator',
+						},
+						{
 							text: 'Contract Bundler',
 							link: '/reference/bundler',
 							items: [
@@ -196,6 +248,7 @@ export default defineConfig({
 					items: [
 						{ text: 'Utils (@tevm/utils)', link: '/reference/utils' },
 						{ text: 'Common (@tevm/common)', link: '/reference/common' },
+						{ text: 'Built-in chain presets', link: '/reference/chain-presets' },
 						{
 							text: 'Decorators (@tevm/decorators)',
 							link: '/reference/decorators',
@@ -213,6 +266,7 @@ export default defineConfig({
 			collapsed: true,
 			items: [
 				{ text: 'Local Testing Flow', link: '/examples/local-testing' },
+				{ text: 'Reusable test fixtures', link: '/reference/test-fixtures' },
 				{ text: 'Forking Mainnet', link: '/examples/forking-mainnet' },
 				{ text: 'Building a Debugger UI', link: '/examples/debugger-ui' },
 			],

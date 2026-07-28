@@ -1,5 +1,4 @@
 import { createMemoryClient, getAddress } from 'tevm'
-import { requestEip1193 } from 'tevm/decorators'
 import { BrowserProvider, ContractFactory, Wallet, formatEther, parseEther } from 'ethers'
 import { describe, expect, it } from 'vitest'
 
@@ -10,10 +9,9 @@ const counterBytecode =
 
 const setupEthersClient = async () => {
 	const client = createMemoryClient()
-	client.transport.tevm.extend(requestEip1193())
 	await client.tevmReady()
 
-	const provider = new BrowserProvider(client.transport.tevm, undefined, {
+	const provider = new BrowserProvider(client, undefined, {
 		cacheTimeout: -1,
 	})
 	const signer = Wallet.createRandom().connect(provider)

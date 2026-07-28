@@ -1,0 +1,57 @@
+# Reusable EVM test fixtures
+
+`@tevm/test-utils` packages compiled test contracts and shared fork transports used throughout the Tevm test suite. Reach for it when a test needs deterministic bytecode and ABI fixtures without maintaining another Solidity compilation step.
+
+## Working example
+
+This example was run with `@tevm/test-utils@1.0.0-rc.151` and `viem@2.49.3`.
+
+```ts
+import assert from 'node:assert/strict'
+import {
+	AdvancedContract,
+	BlockReader,
+	ErrorContract,
+	SimpleContract,
+	TestERC20,
+	TestERC721,
+	transports,
+} from '@tevm/test-utils'
+
+const fixtures = [AdvancedContract, BlockReader, ErrorContract, SimpleContract, TestERC20, TestERC721]
+for (const fixture of fixtures) {
+	assert.ok(Array.isArray(fixture.abi))
+	assert.match(fixture.bytecode, /^0x[0-9a-f]+$/i)
+}
+assert.equal(typeof transports.optimism, 'object')
+
+console.log(`contracts=${fixtures.length}`)
+console.log(`simpleFunctions=${SimpleContract.abi.filter((item) => item.type === 'function').length}`)
+console.log(`transports=${Object.keys(transports).sort().join(',')}`)
+```
+
+```text
+contracts=6
+simpleFunctions=2
+transports=mainnet,optimism
+```
+
+## Exports
+
+The package entry point in [`test/test-utils/src/index.ts`](https://github.com/evmts/tevm-monorepo/blob/main/test/test-utils/src/index.ts) exposes:
+
+| Export | Kind | Purpose |
+| --- | --- | --- |
+| `AdvancedContract` | Compiled contract | Advanced call and state behavior |
+| `BlockReader` | Compiled contract | Block environment reads |
+| `ErrorContract` | Compiled contract | Revert and error paths |
+| `SimpleContract` | Compiled contract | Basic reads and writes |
+| `TestERC20` | Compiled contract | ERC-20 behavior |
+| `TestERC721` | Compiled contract | ERC-721 behavior |
+| `MUDTestSystem` | Compiled contract | MUD integration tests |
+| `transports` | Object | Shared `mainnet` and `optimism` transports |
+| `getAlchemyUrl` | Function | Resolve the configured Alchemy endpoint |
+
+## Neighbours
+
+[Local testing](/examples/local-testing) · [Memory client](/reference/memory-client) · [Contract reference](/reference/contract)

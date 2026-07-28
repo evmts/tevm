@@ -1,7 +1,7 @@
 import { createTevmNode, definePrecompile, hexToBytes, PREFUNDED_ACCOUNTS } from 'tevm'
 import { createAddress } from 'tevm/address'
 import { createContract } from 'tevm/contract'
-import { EvmError, EvmErrorMessage } from 'tevm/evm'
+import { EvmError } from 'tevm/evm'
 import { createImpersonatedTx } from 'tevm/tx'
 import { parseAbi } from 'tevm/utils'
 import { describe, expect, it } from 'vitest'
@@ -66,7 +66,7 @@ describe('Custom Precompiles', () => {
 					if (gasLimit <= executionGasUsed) {
 						return {
 							returnValue: new Uint8Array(),
-							exceptionError: new EvmError(EvmErrorMessage.OUT_OF_GAS),
+							exceptionError: new EvmError('out of gas'),
 							executionGasUsed: gasLimit,
 						}
 					}

@@ -7,7 +7,7 @@ Full API: [packages/decorators/docs](https://github.com/evmts/tevm-monorepo/tree
 ## Installation
 
 ```bash
-npm install @tevm/decorators
+npm install @tevm/decorators@1.0.0-rc.151 @tevm/node@1.0.0-rc.151 viem
 ```
 
 ## API Reference
@@ -59,21 +59,29 @@ npm install @tevm/decorators
 ## Usage Examples
 
 ```typescript
+import { createTevmNode } from '@tevm/node'
 import { requestEip1193, ethActions, tevmActions } from '@tevm/decorators'
 
-const eip1193Client = createClient({ transport: requestEip1193() })
-const result = await eip1193Client.request({
-  method: 'eth_call',
-  params: [{ to: '0x...', data: '0x...' }],
+const node = createTevmNode()
+
+const eip1193Node = node.extend(requestEip1193())
+const chainId = await eip1193Node.request({ method: 'eth_chainId' })
+
+const ethNode = node.extend(ethActions())
+const balance = await ethNode.eth.getBalance({
+  address: '0x1111111111111111111111111111111111111111',
 })
 
-const ethClient = createClient({ transport: ethActions() })
-const balance = await ethClient.eth.getBalance({ address: '0x...' })
-const code = await ethClient.eth.getCode({ address: '0x...' })
+const tevmNode = node.extend(tevmActions())
+await tevmNode.setAccount({
+  address: '0x1111111111111111111111111111111111111111',
+  balance: 1n,
+})
+const account = await tevmNode.getAccount({
+  address: '0x1111111111111111111111111111111111111111',
+})
 
-const tevmClient = createClient({ transport: tevmActions() })
-const call = await tevmClient.transport.tevm.call({ to: '0x...', data: '0x...' })
-const state = await tevmClient.transport.tevm.dumpState()
+console.log(chainId, balance, account.balance)
 ```
 
 ### Error Codes

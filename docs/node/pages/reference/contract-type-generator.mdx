@@ -1,0 +1,57 @@
+# Solidity contract type generator
+
+`tevm-gen` compiles matching Solidity files and writes adjacent TypeScript contract modules. Reach for it when build tooling cannot transform `.sol` imports directly or when generated modules must be checked into a package.
+
+## Working example
+
+The rc.151 generator must run under Bun. This example was executed with `@tevm/ts-plugin@1.0.0-rc.151`.
+
+```bash
+npm install --save-dev @tevm/ts-plugin@1.0.0-rc.151 typescript@5.9.3
+mkdir -p contracts
+cat > tevm.json <<'JSON'
+{
+  "foundryProject": false
+}
+JSON
+cat > contracts/Counter.sol <<'SOLIDITY'
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Counter {
+    uint256 public number;
+
+    function setNumber(uint256 next) public {
+        number = next;
+    }
+}
+SOLIDITY
+bunx --bun tevm-gen . 'contracts/**/*.sol'
+test -f contracts/Counter.sol.ts
+```
+
+```text
+Generating types from contracts... {
+  dir: ".",
+  include: [ "contracts/**/*.sol" ],
+}
+No caching for module type ts} implemented yet
+```
+
+The generated `contracts/Counter.sol.ts` exports a typed `Counter` contract, its ABI, creation bytecode, deployed bytecode, and compiler artifacts.
+
+## Command API
+
+The argument parser in [`tevm-gen.js`](https://github.com/evmts/tevm-monorepo/blob/main/lsp/ts-plugin/src/bin/tevm-gen.js) exposes:
+
+| Position | Name | Default | Meaning |
+| ---: | --- | --- | --- |
+| 1 | `cwd` | Current directory | Project root containing `tevm.json` |
+| 2 | `include` | `src/**/*.sol` | One or more comma-separated Solidity globs |
+| flag | `-h`, `--help` | false | Print usage |
+
+`tevm-gen` writes `<source>.ts` next to each matching Solidity file.
+
+## Neighbours
+
+[Bundler overview](/reference/bundler/overview) · [Bundler methods](/reference/bundler/methods) · [Contract reference](/reference/contract)

@@ -1,0 +1,47 @@
+# tevm mine
+
+`tevm mine` runs this operation: Mine blocks in the local EVM. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+tevm mine --block-count 1 --interval 1 --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "mine",
+  "result": {
+    "blockHashes": [
+      "0x258130424acf469c3d93f4ffdbbc803688fae2ee9c601c130272fed478d508fe"
+    ]
+  },
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/mine.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/mine.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) (default: http://localhost:8545) |
+| Flag | `--block-count [block-count]` | Number of blocks to mine (env: TEVM_BLOCK_COUNT) |
+| Flag | `--interval [interval]` | Interval between block timestamps in seconds (env: TEVM_INTERVAL) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm load-state`](/reference/cli/load-state) · [`tevm multicall`](/reference/cli/multicall)

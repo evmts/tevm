@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tevm"
+  short_description: "Build and test in-process EVM scripts with Tevm"
+  default_prompt: "Use Tevm rc.151 to implement and verify this EVM simulation or Solidity task."

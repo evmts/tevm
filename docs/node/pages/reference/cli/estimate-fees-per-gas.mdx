@@ -1,0 +1,45 @@
+# tevm estimate-fees-per-gas
+
+`tevm estimate-fees-per-gas` runs this operation: Estimate EIP-1559 gas fees. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+tevm estimate-fees-per-gas --type eip1559 --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "estimate-fees-per-gas",
+  "result": {
+    "maxFeePerGas": "1000000008",
+    "maxPriorityFeePerGas": "1000000000"
+  },
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/estimateFeesPerGas.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/estimateFeesPerGas.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `--type [type]` | Transaction type (env: TEVM_TYPE) |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm dump-state`](/reference/cli/dump-state) · [`tevm estimate-gas`](/reference/cli/estimate-gas)

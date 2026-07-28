@@ -44,12 +44,12 @@ describe('Create Tevm Node', () => {
 			const node = createTevmNode({
 				miningConfig: {
 					type: 'interval',
-					interval: 12_000, // Mine every 12 seconds
+					blockTime: 12, // Mine every 12 seconds
 				},
 			})
 			await node.ready()
 			expect(node.miningConfig.type).toBe('interval')
-			expect(node.miningConfig.type === 'interval' && node.miningConfig.interval).toBe(12_000)
+			expect(node.miningConfig.type === 'interval' && node.miningConfig.blockTime).toBe(12)
 		})
 	})
 
@@ -61,7 +61,7 @@ describe('Create Tevm Node', () => {
 						'function add(uint256 a, uint256 b) returns (uint256)',
 						'function subtract(uint256 a, uint256 b) returns (uint256)',
 					]),
-					address: '0xf2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2',
+					address: '0x0000000000000000000000000000000000000100',
 				}),
 				call: async ({ data, gasLimit }) => {
 					console.log(data, gasLimit)
@@ -116,7 +116,7 @@ describe('Create Tevm Node', () => {
 					transport: http(rpcUrl)({}),
 					blockTag: 'latest',
 				},
-				miningConfig: { type: 'interval', interval: 12000 },
+				miningConfig: { type: 'interval', blockTime: 12 },
 				loggingLevel: 'error',
 			})
 			await prodNode.ready()

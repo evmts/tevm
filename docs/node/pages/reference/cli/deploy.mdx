@@ -1,0 +1,95 @@
+# tevm deploy
+
+`tevm deploy` runs this operation: Deploy bytecode into a local EVM or fork. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+mkdir -p src
+cat > src/Counter.sol <<'SOLIDITY'
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Counter {
+    uint256 public number;
+
+    event NumberChanged(uint256 number);
+
+    function setNumber(uint256 next) public {
+        number = next;
+        emit NumberChanged(next);
+    }
+}
+SOLIDITY
+tevm compile --json
+jq '.abi' artifacts/Counter.json > artifacts/Counter.abi.json
+tevm set-account --address 0x1000000000000000000000000000000000000001 --balance 1000000000000000000 --session docs --run --json
+tevm set-code --address 0x1000000000000000000000000000000000000001 --bytecode "$(jq -r '.deployedBytecode' artifacts/Counter.json)" --session docs --run --json
+tevm set-storage-at --address 0x1000000000000000000000000000000000000001 --index 0x0 --value 0x2a --session docs --run --json
+tevm deploy --bytecode 0x6080604052348015600e575f5ffd5b5060e48061001b5f395ff3fe6080604052348015600e575f5ffd5b50600436106030575f3560e01c80633fb5c1cb1460345780638381f58a146045575b5f5ffd5b6043603f3660046098565b605e565b005b604c5f5481565b60405190815260200160405180910390f35b5f8190556040518181527f2fd81fd19d3c5c4b396dd13f451dafc8bcac1b3094c49c5fa90e68456323f0e39060200160405180910390a150565b5f6020828403121560a7575f5ffd5b503591905056fea26469706673582212203ef1a75b09ee91fb7f995d62885094508a883f40d776c10ba4f1d1427a64bd8b64736f6c63430008230033 --abi artifacts/Counter.abi.json --args [] --skip-balance --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "deploy",
+  "result": {
+    "rawData": "0x6080604052348015600e575f5ffd5b50600436106030575f3560e01c80633fb5c1cb1460345780638381f58a146045575b5f5ffd5b6043603f3660046098565b605e565b005b604c5f5481565b60405190815260200160405180910390f35b5f8190556040518181527f2fd81fd19d3c5c4b396dd13f451dafc8bcac1b3094c49c5fa90e68456323f0e39060200160405180910390a150565b5f6020828403121560a7575f5ffd5b503591905056fea26469706673582212203ef1a75b09ee91fb7f995d62885094508a883f40d776c10ba4f1d1427a64bd8b64736f6c63430008230033",
+    "executionGasUsed": "45697",
+    "totalGasSpent": "102745",
+    "minerValue": "102745000000000",
+    "amountSpent": "102745000719215",
+    "txHash": "0xc154f0faa56a3f07f4ae5f68567e75d593cd0571c69b8dbad02c6069aeb74ceb",
+    "selfdestruct": [],
+    "gas": "29942855",
+    "logs": [],
+    "createdAddresses": [
+      "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+    ],
+    "createdAddress": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+  },
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/deploy.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/deploy.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) (default: http://localhost:8545) |
+| Flag | `--bytecode <bytecode>` | Contract bytecode to deploy (env: TEVM_BYTECODE) |
+| Flag | `--abi [abi]` | Contract ABI (JSON string or path to file) (env: TEVM_ABI) |
+| Flag | `--args [args]` | Constructor arguments (JSON string array) (env: TEVM_ARGS) |
+| Flag | `--salt [salt]` | CREATE2 salt (hex encoded) (env: TEVM_SALT) |
+| Flag | `--from [from]` | Address to deploy from (env: TEVM_FROM) (default: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266) |
+| Flag | `--value [value]` | ETH value to send in wei (env: TEVM_VALUE) |
+| Flag | `--gas [gas]` | Gas limit for the transaction (env: TEVM_GAS) |
+| Flag | `--gas-price [gas-price]` | Gas price in wei (env: TEVM_GAS_PRICE) |
+| Flag | `--max-fee-per-gas [max-fee-per-gas]` | Maximum fee per gas (EIP-1559) (env: TEVM_MAX_FEE_PER_GAS) |
+| Flag | `--max-priority-fee-per-gas [max-priority-fee-per-gas]` | Maximum priority fee per gas (EIP-1559) (env: TEVM_MAX_PRIORITY_FEE_PER_GAS) |
+| Flag | `--gas-refund [gas-refund]` | Gas refund counter (env: TEVM_GAS_REFUND) |
+| Flag | `--block-tag [block-tag]` | Block tag (latest, pending, etc.) or number (env: TEVM_BLOCK_TAG) |
+| Flag | `--caller [caller]` | Address that ran this code (msg.sender) (env: TEVM_CALLER) |
+| Flag | `--origin [origin]` | Address where the call originated from (env: TEVM_ORIGIN) |
+| Flag | `--depth [depth]` | Depth of EVM call stack (env: TEVM_DEPTH) |
+| Flag | `--skip-balance` | Skip balance check (env: TEVM_SKIP_BALANCE) (default: false) |
+| Flag | `--create-trace` | Return a complete trace with the call (env: TEVM_CREATE_TRACE) (default: false) |
+| Flag | `--create-access-list` | Return an access list mapping of addresses to storage keys (env: TEVM_CREATE_ACCESS_LIST) (default: false) |
+| Flag | `--create-transaction [create-transaction]` | Whether to update state (on-success, always, never) (env: TEVM_CREATE_TRANSACTION) (choices: "on-success", "always", "never", default: "always") |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm create-event-filter`](/reference/cli/create-event-filter) · [`tevm dump-state`](/reference/cli/dump-state)

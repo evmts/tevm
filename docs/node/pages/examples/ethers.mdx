@@ -29,18 +29,16 @@ bun add tevm@1.0.0-rc.151 viem ethers@6
 
 ## Create a Provider
 
-Create a memory client, extend its underlying Tevm node with the EIP-1193 request interface, then pass that node to ethers' `BrowserProvider`.
+Create a memory client and pass its EIP-1193 provider interface directly to ethers.
 
 ```ts
 import { createMemoryClient } from 'tevm'
-import { requestEip1193 } from 'tevm/decorators'
 import { BrowserProvider } from 'ethers'
 
 const client = createMemoryClient()
-client.transport.tevm.extend(requestEip1193())
 await client.tevmReady()
 
-const provider = new BrowserProvider(client.transport.tevm, undefined, {
+const provider = new BrowserProvider(client, undefined, {
   // Ethers caches JSON-RPC reads briefly by default. Disable for
   // deterministic local tests where you manually mine blocks.
   cacheTimeout: -1,
@@ -105,14 +103,12 @@ console.log(`Updated count: ${await counter.getFunction('number')()}`)
 
 ```ts filename="ethers-with-tevm.ts"
 import { createMemoryClient, getAddress } from 'tevm'
-import { requestEip1193 } from 'tevm/decorators'
 import { BrowserProvider, ContractFactory, Wallet, formatEther, parseEther } from 'ethers'
 
 const client = createMemoryClient()
-client.transport.tevm.extend(requestEip1193())
 await client.tevmReady()
 
-const provider = new BrowserProvider(client.transport.tevm, undefined, { cacheTimeout: -1 })
+const provider = new BrowserProvider(client, undefined, { cacheTimeout: -1 })
 
 const signer = Wallet.createRandom().connect(provider)
 await client.setBalance({ address: getAddress(signer.address), value: parseEther('10') })

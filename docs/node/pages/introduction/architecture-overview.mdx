@@ -98,12 +98,13 @@ const { txHash } = await client.tevmCall({
 
 if (!txHash) throw new Error('transaction was not added to the txpool')
 
-const pending = await client.getTransaction({ hash: txHash })
+const beforeMining = await client.request({ method: 'txpool_status' })
 await client.tevmMine({ blockCount: 1 })
+const transaction = await client.getTransaction({ hash: txHash })
 const receipt = await client.getTransactionReceipt({ hash: txHash })
 const block = await client.getBlock({ blockHash: receipt.blockHash })
 
-console.log(pending.blockNumber, receipt.status, block.number)
+console.log(beforeMining.pending, transaction.blockNumber, receipt.status, block.number)
 ```
 
 Tevm exposes two deliberately different mining parameter shapes:
@@ -129,7 +130,7 @@ import { mainnet } from 'tevm/common'
 const client = createMemoryClient({
   common: mainnet,
   fork: {
-    transport: http('https://ethereum-rpc.publicnode.com')({}),
+    transport: http('https://eth.drpc.org')({}),
     blockTag: 20_000_000n,
   },
 })

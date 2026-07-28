@@ -1,0 +1,44 @@
+# tevm create-block-filter
+
+`tevm create-block-filter` runs this operation: Create a filter to detect new blocks. Reach for it when you need the operation from a terminal, CI job, or shell script.
+
+## Working example
+
+The commands below were run with `@tevm/cli@1.0.0-rc.151`. They create their own local prerequisites or use the named public endpoint, so no hidden process is required.
+
+```bash
+npm install --global @tevm/cli@1.0.0-rc.151
+tevm session docs --local --json
+tevm create-block-filter --session docs --run --json
+```
+
+Output captured from the final command:
+
+```json
+{
+  "ok": true,
+  "command": "create-block-filter",
+  "result": {
+    "id": "0xa4a682eddb4322c80d9ee2c77074edf2",
+    "type": "block"
+  },
+  "session": "docs"
+}
+```
+
+## Arguments and flags
+
+The command schema in [`cli/src/commands/createBlockFilter.tsx`](https://github.com/evmts/tevm-monorepo/blob/main/cli/src/commands/createBlockFilter.tsx) exposes:
+
+| Kind | Syntax | Description |
+| --- | --- | --- |
+| Flag | `-r, --run` | Run directly without interactive parameter editing (env: TEVM_RUN) (default: false) |
+| Flag | `--rpc [rpc]` | RPC endpoint (env: TEVM_RPC) |
+| Flag | `--json` | Emit the stable machine-readable JSON envelope (env: TEVM_JSON) (default: false) |
+| Flag | `-h, --help` | Show help |
+
+`--json` and `--session <name>` are global options accepted before routing. See the [CLI overview](/reference/cli#global-options) for their environment-variable forms and execution model.
+
+## Neighbours
+
+[CLI overview](/reference/cli) · [`tevm action create-access-list`](/reference/cli/create-access-list) · [`tevm create-contract-event-filter`](/reference/cli/create-contract-event-filter)
