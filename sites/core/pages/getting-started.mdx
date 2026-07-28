@@ -1,0 +1,69 @@
+---
+title: Getting started
+description: Install tevm rc.151 and choose the right core API
+---
+
+# Getting started
+
+This site targets `tevm@1.0.0-rc.151`. Install it with the `viem` peer dependency using `pnpm add tevm@1.0.0-rc.151 viem`, or the equivalent command for your package manager.
+
+## Create a client
+
+`createMemoryClient()` is synchronous. The EVM initializes on the first action. Call `tevmReady()` when initialization should be explicit, especially for a fork.
+
+```ts
+import assert from 'node:assert/strict'
+import { createMemoryClient } from 'tevm'
+
+const client = createMemoryClient()
+
+await client.tevmReady()
+assert.equal(await client.getBlockNumber(), 0n)
+assert.equal(await client.getChainId(), 900)
+```
+
+The client combines five useful surfaces:
+
+| Surface | Use it for | Examples |
+| --- | --- | --- |
+| Public actions | Read chain data | `getBalance`, `getBlock`, `getLogs` |
+| Wallet actions | Submit signed work | `sendTransaction`, `writeContract` |
+| Test actions | Prepare a scenario | `setCode`, `snapshot`, `increaseTime` |
+| tevm actions | Control tevm directly | `tevmCall`, `tevmMine`, `tevmDumpState` |
+| EIP-1193 | Integrate providers and tools | `request({ method, params })` |
+
+## Install contract code
+
+For a test, installing deployed bytecode is often clearer than creating a deployment transaction.
+
+```ts
+import assert from 'node:assert/strict'
+import { createMemoryClient } from 'tevm'
+import { SimpleContract } from 'tevm/contract'
+
+const client = createMemoryClient()
+const contract = SimpleContract.withAddress('0x2222222222222222222222222222222222222222')
+
+await client.setCode({
+  address: contract.address,
+  bytecode: contract.deployedBytecode,
+})
+
+const value = await client.readContract({
+  address: contract.address,
+  abi: contract.abi,
+  functionName: 'get',
+})
+
+assert.equal(value, 0n)
+```
+
+## Choose the next page
+
+| If you need to | Read |
+| --- | --- |
+| Understand the execution layers | [The EVM in tevm](./concepts/evm) |
+| Work at the viem-compatible level | [Memory client](./guides/memory-client) |
+| Choose between client, handler, and JSON-RPC actions | [Actions](./guides/actions) |
+| Read or write raw accounts, code, and storage | [State manager](./guides/state-manager) |
+| Overlay local execution on an existing chain | [Forking](./guides/forking) |

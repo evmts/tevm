@@ -1,0 +1,73 @@
+---
+title: State manager
+description: Read and write raw EVM accounts, contract code, storage, and checkpoints
+---
+
+# State manager
+
+The state manager stores EVM accounts, bytecode, and 32-byte storage slots. Fork mode adds lazy upstream reads, but writes still land in the local state.
+
+Use client test actions for ordinary setup. Use the raw manager for checkpoints, roots, proofs, cache control, or an embedded EVM.
+
+## Accounts and checkpoints
+
+```ts
+import assert from 'node:assert/strict'
+import { createAddress } from 'tevm/address'
+import { createStateManager } from 'tevm/state'
+import { createAccount } from 'tevm/utils'
+
+const state = createStateManager({})
+const address = createAddress('0x6666666666666666666666666666666666666666')
+
+await state.ready()
+await state.putAccount(address, createAccount({ balance: 10n, nonce: 1n }))
+await state.checkpoint()
+await state.modifyAccountFields(address, { balance: 99n })
+
+assert.equal((await state.getAccount(address))?.balance, 99n)
+
+await state.revert()
+assert.equal((await state.getAccount(address))?.balance, 10n)
+```
+
+A checkpoint must end with exactly one `commit()` or `revert()`. Nesting is supported and resolves from the innermost checkpoint outward.
+
+## Code and storage
+
+Storage keys are 32 bytes. Values are stored without leading zero bytes, so reading a value written as 32-byte `0x...02` returns a one-byte array.
+
+```ts
+import assert from 'node:assert/strict'
+import { createAddress } from 'tevm/address'
+import { createStateManager } from 'tevm/state'
+import { bytesToHex, hexToBytes } from 'tevm/utils'
+
+const state = createStateManager({})
+const address = createAddress('0x7777777777777777777777777777777777777777')
+const slot = hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000001')
+
+await state.ready()
+await state.putCode(address, hexToBytes('0x6001600055'))
+await state.putStorage(address, slot, hexToBytes('0x02'))
+
+assert.equal(bytesToHex(await state.getCode(address)), '0x6001600055')
+assert.equal(bytesToHex(await state.getStorage(address, slot)), '0x02')
+
+await state.clearStorage(address)
+assert.equal(bytesToHex(await state.getStorage(address, slot)), '0x')
+```
+
+## Raw operation map
+
+| Concern | Read | Write |
+| --- | --- | --- |
+| Account | `getAccount` | `putAccount`, `modifyAccountFields`, `deleteAccount` |
+| Code | `getCode` | `putCode` |
+| Storage | `getStorage`, `dumpStorage` | `putStorage`, `clearStorage` |
+| State root | `getStateRoot`, `hasStateRoot` | `setStateRoot` |
+| Transaction boundary | current view | `checkpoint`, `commit`, `revert` |
+| Isolation | `shallowCopy` | `deepCopy` |
+| Persistence | `dumpCanonicalGenesis` | `generateCanonicalGenesis` |
+
+State manager addresses use `Address` values from `tevm/address`. Client actions use hex address strings.

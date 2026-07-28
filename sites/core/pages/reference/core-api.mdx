@@ -1,0 +1,70 @@
+---
+title: Core API map
+description: Terse map of tevm core entry points, options, and action groups
+---
+
+# Core API map
+
+## Entry points
+
+| Import | Main exports |
+| --- | --- |
+| `tevm` | `createMemoryClient`, `createTevmNode`, transports, viem helpers |
+| `tevm/actions` | Standalone action handlers |
+| `tevm/address` | EVM address creation and types |
+| `tevm/common` | Chain presets and common configuration |
+| `tevm/evm` | `createEvm`, precompiles, execution types |
+| `tevm/state` | `createStateManager`, state types |
+| `tevm/contract` | Contract descriptors and bundled fixtures |
+| `tevm/utils` | Accounts, bytes, hex, hashing, RLP utilities |
+
+## Memory client options
+
+```ts
+import assert from 'node:assert/strict'
+import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
+
+const client = createMemoryClient({
+  account: PREFUNDED_ACCOUNTS[0],
+  miningConfig: { type: 'manual' },
+  loggingLevel: 'warn',
+})
+
+await client.tevmReady()
+assert.equal(client.account?.address, PREFUNDED_ACCOUNTS[0].address)
+assert.equal(await client.getBlockNumber(), 0n)
+```
+
+| Option | Value | Default |
+| --- | --- | --- |
+| `account` | viem account or address | none |
+| `common` | tevm `Common` | local tevm chain |
+| `fork` | transport plus optional `blockTag` | local genesis |
+| `miningConfig` | `auto`, `manual`, or interval configuration | auto |
+| `loggingLevel` | `debug`, `info`, `warn`, `error`, `silent` | package default |
+| `customPrecompiles` | precompile definitions | none |
+
+## Action groups
+
+| Group | Representative methods |
+| --- | --- |
+| Public | `getBalance`, `getBlock`, `getCode`, `getLogs`, `call`, `readContract` |
+| Wallet | `sendTransaction`, `deployContract`, `writeContract`, signing methods |
+| Test | `setBalance`, `setCode`, `setStorageAt`, `mine`, `snapshot`, `revert`, `increaseTime` |
+| tevm read | `tevmGetAccount`, `tevmDumpState`, `tevmReady` |
+| tevm execute | `tevmCall`, `tevmContract`, `tevmDeploy` |
+| tevm mutate | `tevmSetAccount`, `tevmDeal`, `tevmLoadState`, `tevmMine` |
+| EIP-1193 | `request({ method, params })` |
+
+## Result boundaries
+
+| Operation | Returns |
+| --- | --- |
+| `tevmCall` | Execution data, gas, logs, optional errors, optional `txHash` |
+| `tevmSetAccount` | Updated account result |
+| `tevmMine` | Mined block hashes |
+| `getTransactionReceipt` | viem-formatted canonical receipt |
+| `request` | JSON-RPC-formatted result |
+| `stateManager.getAccount` | Internal account or `undefined` |
+
+All pages on this site execute their TypeScript fences through `pnpm verify:samples`. The verifier rejects unless `tevm` resolves to the published `1.0.0-rc.151` package.

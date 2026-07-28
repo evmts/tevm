@@ -1,0 +1,75 @@
+---
+layout: landing
+title: tevm core
+description: Run an EVM in JavaScript with an in-memory or forked client
+---
+
+import { SiteLinks } from '@tevm/docs-shared/site-links'
+
+<main>
+  <section className="core-hero">
+    <div>
+      <p className="core-hero__eyebrow">tevm core · rc.151</p>
+      <h1>Ethereum execution, inside your process.</h1>
+      <div className="core-hero__lead">
+        tevm is an EVM and viem-compatible client for JavaScript. Create a local chain, fork an existing one, change state, execute transactions, and inspect the result without running a separate node.
+      </div>
+      <div className="core-hero__actions">
+        <a className="core-button core-button--primary" href="/getting-started">Run the first transaction</a>
+        <a className="core-button" href="/concepts/evm">Understand the runtime</a>
+      </div>
+    </div>
+    <div className="core-hero__code" aria-label="tevm quick start">
+      <pre><code>{`import { createMemoryClient } from 'tevm'
+
+const client = createMemoryClient()
+
+await client.setBalance({
+  address: '0x1111…1111',
+  value: 1_000_000n,
+})
+
+const balance = await client.getBalance({
+  address: '0x1111…1111',
+})`}</code></pre>
+    </div>
+  </section>
+
+  <section className="core-pillars" aria-label="Core capabilities">
+    <div className="core-pillar"><strong>Execute locally</strong><span>Run calls, transactions, contracts, and blocks in browsers or server runtimes.</span></div>
+    <div className="core-pillar"><strong>Control state</strong><span>Set accounts, code, storage, time, mining, snapshots, and state roots.</span></div>
+    <div className="core-pillar"><strong>Fork selectively</strong><span>Read upstream data lazily, then keep every write in a local overlay.</span></div>
+  </section>
+</main>
+
+## The complete first transaction
+
+Install `tevm@1.0.0-rc.151` and its `viem` peer, then run:
+
+```ts
+import assert from 'node:assert/strict'
+import { createMemoryClient, parseEther, PREFUNDED_ACCOUNTS } from 'tevm'
+
+const client = createMemoryClient({ miningConfig: { type: 'manual' } })
+const recipient = '0x1111111111111111111111111111111111111111'
+
+const { txHash } = await client.tevmCall({
+  from: PREFUNDED_ACCOUNTS[0].address,
+  to: recipient,
+  value: parseEther('1'),
+  addToMempool: true,
+})
+
+assert.ok(txHash)
+await client.tevmMine({ blockCount: 1 })
+
+const receipt = await client.getTransactionReceipt({ hash: txHash })
+const balance = await client.getBalance({ address: recipient })
+
+assert.equal(receipt.status, 'success')
+assert.equal(balance, parseEther('1'))
+```
+
+`tevmCall` simulates by default. `addToMempool: true` turns the call into a pending transaction, and manual mining makes it canonical.
+
+<SiteLinks current="core" />

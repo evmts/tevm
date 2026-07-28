@@ -1,0 +1,81 @@
+---
+title: Actions
+description: Choose between memory client methods, standalone handlers, and EIP-1193
+---
+
+# Actions
+
+The same operation can be exposed as a memory client method, a standalone handler, or a JSON-RPC request. Pick the layer that matches the surrounding code.
+
+| Form | Input and output | Best fit |
+| --- | --- | --- |
+| Client action | viem-style typed values | Applications and tests |
+| tevm client action | tevm typed values | tevm-specific control |
+| Standalone handler | Function over a `TevmNode` | Small bundles and infrastructure |
+| EIP-1193 request | JSON-RPC quantities | Provider integrations |
+
+## Client actions
+
+Public reads and tevm writes share one client.
+
+```ts
+import assert from 'node:assert/strict'
+import { createMemoryClient } from 'tevm'
+
+const client = createMemoryClient()
+const address = '0x4444444444444444444444444444444444444444'
+
+await client.tevmSetAccount({ address, balance: 25n, nonce: 2n })
+
+const account = await client.tevmGetAccount({ address })
+const publicBalance = await client.getBalance({ address })
+
+assert.equal(account.balance, 25n)
+assert.equal(account.nonce, 2n)
+assert.equal(publicBalance, 25n)
+```
+
+## Standalone handlers
+
+Handlers bind to a node and do not create a client.
+
+```ts
+import assert from 'node:assert/strict'
+import { createTevmNode } from 'tevm'
+import { getAccountHandler, setAccountHandler } from 'tevm/actions'
+
+const node = createTevmNode()
+const address = '0x5555555555555555555555555555555555555555'
+
+await setAccountHandler(node)({ address, balance: 100n })
+const account = await getAccountHandler(node)({ address })
+
+assert.equal(account.balance, 100n)
+```
+
+## EIP-1193
+
+`request` uses JSON-RPC method names and hex quantities. This is the compatibility boundary for wallets, Ethers providers, and RPC-oriented tooling.
+
+```ts
+import assert from 'node:assert/strict'
+import { createMemoryClient } from 'tevm'
+
+const client = createMemoryClient()
+const chainId = await client.request({ method: 'eth_chainId' })
+const blockNumber = await client.request({ method: 'eth_blockNumber' })
+
+assert.equal(chainId, '0x384')
+assert.equal(blockNumber, '0x0')
+```
+
+## Simulation, pending, canonical
+
+| Request | State effect |
+| --- | --- |
+| `tevmCall(params)` | Simulates and returns an execution result |
+| `tevmCall({ ...params, addToMempool: true })` | Simulates and queues a pending transaction |
+| `tevmMine()` | Builds a canonical block from pending transactions |
+| `sendTransaction(params)` | Signs or impersonates, then queues through the wallet surface |
+
+Set `throwOnFail: false` when execution errors should be returned in the result. Use the default throwing behavior when a failed execution should stop the caller.

@@ -1,0 +1,79 @@
+---
+title: The EVM in tevm
+description: How tevm layers execution, state, blocks, actions, and clients
+---
+
+# The EVM in tevm
+
+The EVM is the execution engine. It reads accounts and storage through the state manager, resolves block context through the blockchain, and returns execution results. tevm wraps that engine with a node, action handlers, and a memory client.
+
+| Layer | Owns | Reach for it when |
+| --- | --- | --- |
+| `@tevm/evm` | Opcodes, calls, precompiles, execution events | You are embedding execution |
+| `@tevm/state` | Accounts, code, storage, proofs, checkpoints | You need raw state control |
+| `TevmNode` | VM, blockchain, txpool, receipts, lifecycle | You are building infrastructure |
+| `tevm/actions` | Typed operations over a node | You want tree-shakable commands |
+| `MemoryClient` | viem, test, tevm, and EIP-1193 APIs | You are building an app or test |
+
+## Execute at the EVM layer
+
+The identity precompile returns its input. This example constructs the EVM explicitly and executes a call without a client.
+
+```ts
+import assert from 'node:assert/strict'
+import { createAddress } from 'tevm/address'
+import { createChain } from 'tevm/blockchain'
+import { mainnet } from 'tevm/common'
+import { createEvm } from 'tevm/evm'
+import { createStateManager } from 'tevm/state'
+import { bytesToHex, hexToBytes } from 'tevm/utils'
+
+const stateManager = createStateManager({})
+const blockchain = await createChain({ common: mainnet })
+const evm = await createEvm({ common: mainnet, stateManager, blockchain })
+
+const result = await evm.runCall({
+  to: createAddress(4),
+  data: hexToBytes('0x1234'),
+  gasLimit: 100_000n,
+})
+
+assert.equal(result.execResult.exceptionError, undefined)
+assert.equal(bytesToHex(result.execResult.returnValue), '0x1234')
+```
+
+## Observe execution through the client
+
+Most callers do not need to assemble the EVM. Action hooks expose the same execution while the client handles lifecycle and result formatting.
+
+```ts
+import assert from 'node:assert/strict'
+import { createMemoryClient } from 'tevm'
+
+const client = createMemoryClient()
+let steps = 0
+
+const result = await client.tevmCall({
+  to: '0x0000000000000000000000000000000000000004',
+  data: '0x1234',
+  onStep: () => {
+    steps += 1
+  },
+})
+
+assert.equal(result.rawData, '0x1234')
+assert.equal(result.errors, undefined)
+assert.equal(steps, 0)
+```
+
+Precompiles do not execute bytecode opcodes, so this call records zero opcode steps. Calls to deployed bytecode invoke `onStep` once for each executed opcode.
+
+## Runtime flow
+
+1. A client method or JSON-RPC request selects an action.
+2. The action validates and normalizes parameters.
+3. The node supplies its VM, state, blockchain, txpool, and receipt manager.
+4. The EVM executes against the current state checkpoint.
+5. The action commits, reverts, queues, or only reports the result according to its options.
+
+A plain `tevmCall` is a simulation. A transaction becomes pending only when an action adds it to the txpool. A receipt exists only after mining includes it in a canonical block.

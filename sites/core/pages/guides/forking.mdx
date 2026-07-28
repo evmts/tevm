@@ -1,0 +1,94 @@
+---
+title: Forking
+description: Overlay local tevm execution on a pinned upstream EVM block
+---
+
+# Forking
+
+A fork reads accounts, code, storage, and blocks from an upstream EIP-1193 transport as they are needed. It does not copy the whole chain. Every mutation remains local.
+
+## Create a reproducible fork
+
+Pin the chain and block. This avoids a chain ID discovery request and gives every run the same starting state.
+
+```ts
+import assert from 'node:assert/strict'
+import { createMemoryClient, http } from 'tevm'
+import { mainnet } from 'tevm/common'
+
+const forkBlock = 19_000_000n
+const client = createMemoryClient({
+  common: mainnet,
+  fork: {
+    transport: http('https://eth-mainnet.public.blastapi.io')({}),
+    blockTag: forkBlock,
+  },
+})
+
+await client.tevmReady()
+
+const block = await client.getBlock({ blockNumber: forkBlock })
+assert.equal(block.number, forkBlock)
+assert.match(block.hash, /^0x[0-9a-f]{64}$/)
+```
+
+`http(url)` is a viem transport factory. Invoke it with `({})` and pass the returned transport to `fork.transport`.
+
+## Read upstream, write locally
+
+The first missing read fetches from upstream and enters the local cache. A test action changes the overlay only.
+
+```ts
+import assert from 'node:assert/strict'
+import { createMemoryClient, http } from 'tevm'
+import { mainnet } from 'tevm/common'
+
+const address = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+const rpc = http('https://eth-mainnet.public.blastapi.io')({})
+const upstreamMethods = []
+const upstream = {
+  ...rpc,
+  async request(args) {
+    upstreamMethods.push(args.method)
+    return rpc.request(args)
+  },
+}
+const client = createMemoryClient({
+  common: mainnet,
+  fork: {
+    transport: upstream,
+    blockTag: 19_000_000n,
+  },
+})
+
+const upstreamBalance = await client.getBalance({
+  address,
+  blockNumber: 19_000_000n,
+})
+
+await client.setBalance({ address, value: upstreamBalance + 1n })
+
+assert.equal(await client.getBalance({ address }), upstreamBalance + 1n)
+assert.equal(
+  upstreamMethods.some((method) =>
+    method.startsWith('anvil_') ||
+    method.startsWith('tevm_') ||
+    method === 'eth_sendTransaction'
+  ),
+  false,
+)
+```
+
+## Operational rules
+
+| Choice | Result |
+| --- | --- |
+| Pin `blockTag` | Reproducible state and block context |
+| Omit `blockTag` | Initialize from the upstream head |
+| Set `common` | Known chain rules without a discovery request |
+| Read uncached data | One or more upstream requests |
+| Read cached data | Local lookup |
+| Write state or mine | Local overlay only |
+| Need another base block | Create a new client |
+
+The published rc.151 package does not initialize KZG while reconstructing blob transactions, so the verified example pins a pre-Dencun mainnet block. Optimism deposit transaction fidelity and explicit rejection of Arbitrum custom types were fixed in source after rc.151. Do not use rc.151 to reconstruct blocks containing those transaction forms.

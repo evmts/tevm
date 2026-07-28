@@ -1,0 +1,63 @@
+---
+title: Memory client
+description: Use the viem-compatible in-process tevm client
+---
+
+# Memory client
+
+`createMemoryClient` is the default core interface. It keeps a `TevmNode` in its transport and decorates a viem client with public, wallet, test, and tevm actions.
+
+## Set up and roll back state
+
+Snapshots cover local state, time, and chain changes. They are useful inside a test that performs several actions.
+
+```ts
+import assert from 'node:assert/strict'
+import { createMemoryClient } from 'tevm'
+
+const client = createMemoryClient()
+const address = '0x3333333333333333333333333333333333333333'
+const snapshotId = await client.snapshot()
+
+await client.setBalance({ address, value: 42n })
+assert.equal(await client.getBalance({ address }), 42n)
+
+await client.revert({ id: snapshotId })
+assert.equal(await client.getBalance({ address }), 0n)
+```
+
+## Deploy and call a contract
+
+Choose an account on the client when wallet actions should have a default sender. Manual mining makes the transaction boundary visible.
+
+```ts
+import assert from 'node:assert/strict'
+import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
+import { SimpleContract } from 'tevm/contract'
+
+const client = createMemoryClient({
+  account: PREFUNDED_ACCOUNTS[0],
+  miningConfig: { type: 'manual' },
+})
+
+const hash = await client.deployContract(SimpleContract.deploy(7n))
+await client.mine({ blocks: 1 })
+
+const receipt = await client.getTransactionReceipt({ hash })
+assert.ok(receipt.contractAddress)
+
+const contract = SimpleContract.withAddress(receipt.contractAddress)
+assert.equal(await client.readContract(contract.read.get()), 7n)
+```
+
+## Lifecycle
+
+| Operation | Behavior |
+| --- | --- |
+| `createMemoryClient(options)` | Returns immediately |
+| First action | Initializes the node lazily |
+| `tevmReady()` | Initializes eagerly and rejects on fork setup errors |
+| `client.transport.tevm` | Returns the underlying `TevmNode` |
+| `deepCopy()` on the node | Creates isolated runtime state |
+
+Use the high-level actions for application code. Reach through `client.transport.tevm` when an integration genuinely needs the VM, txpool, receipt manager, or state manager.
