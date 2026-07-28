@@ -106,7 +106,7 @@ Replace `src/App.svelte` with the component below.
           <td>{step.opcode}</td>
           <td>{step.gasLeft.toString()}</td>
           <td>{step.depth}</td>
-          <td>{step.stack.map((value) => `0x${value.toString(16)}`).join(', ') || '—'}</td>
+          <td>{step.stack.map((value) => `0x${value.toString(16)}`).join(', ') || 'none'}</td>
         </tr>
       {/each}
     </tbody>

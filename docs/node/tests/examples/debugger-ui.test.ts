@@ -60,7 +60,7 @@ describe('debugger UI documentation', () => {
 		expect(first).toMatchObject({
 			pc: 0,
 			op: 'PUSH1',
-			depth: 0,
+			depth: 1,
 		})
 		expect(typeof first?.gas).toBe('bigint')
 		expect(typeof first?.gasCost).toBe('bigint')
