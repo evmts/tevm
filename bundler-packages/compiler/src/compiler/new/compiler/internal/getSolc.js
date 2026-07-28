@@ -25,8 +25,10 @@ export const clearSolcCache = () => {
  * @throws {SolcError} If the solc instance fails to load
  */
 export const getSolc = async (version, logger) => {
+	/** @type {Promise<import('@tevm/solc').Solc> | undefined} */
+	let pending
 	try {
-		let pending = solcInstances.get(version)
+		pending = solcInstances.get(version)
 		if (pending === undefined) {
 			pending = createSolc(version)
 			solcInstances.set(version, pending)
@@ -36,7 +38,9 @@ export const getSolc = async (version, logger) => {
 		return solcInstance
 	} catch (error) {
 		// A failed load must not be cached, so the next caller can retry.
-		solcInstances.delete(version)
+		if (solcInstances.get(version) === pending) {
+			solcInstances.delete(version)
+		}
 		const err = new SolcError(`Failed to load solc instance for version ${version}`, {
 			cause: error,
 			meta: { code: 'instantiation_failed', version },

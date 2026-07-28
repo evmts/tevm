@@ -38,6 +38,28 @@ describe('getSolc', () => {
 			expect(mockLogger.debug).toHaveBeenCalledWith('Successfully loaded solc instance for version 0.8.28')
 		})
 
+		it('should share one in-flight load for concurrent callers', async () => {
+			const mockSolc = { compile: vi.fn() } as unknown as Solc
+			mockCreateSolc.mockResolvedValue(mockSolc)
+
+			const [first, second] = await Promise.all([getSolc('0.8.28', mockLogger), getSolc('0.8.28', mockLogger)])
+
+			expect(first).toBe(mockSolc)
+			expect(second).toBe(mockSolc)
+			expect(mockCreateSolc).toHaveBeenCalledTimes(1)
+		})
+
+		it('should reuse a resolved instance for later callers', async () => {
+			const mockSolc = { compile: vi.fn() } as unknown as Solc
+			mockCreateSolc.mockResolvedValue(mockSolc)
+
+			await getSolc('0.8.28', mockLogger)
+			const result = await getSolc('0.8.28', mockLogger)
+
+			expect(result).toBe(mockSolc)
+			expect(mockCreateSolc).toHaveBeenCalledTimes(1)
+		})
+
 		it('should load different versions', async () => {
 			const mockSolc1 = { compile: vi.fn() } as unknown as Solc
 			const mockSolc2 = { compile: vi.fn() } as unknown as Solc
@@ -133,6 +155,33 @@ describe('getSolc', () => {
 			}
 
 			expect(mockLogger.debug).not.toHaveBeenCalled()
+		})
+
+		it('should retry after a failed load', async () => {
+			const originalError = new Error('Network error')
+			const mockSolc = { compile: vi.fn() } as unknown as Solc
+			mockCreateSolc.mockRejectedValueOnce(originalError).mockResolvedValueOnce(mockSolc)
+
+			await expect(getSolc('0.8.28', mockLogger)).rejects.toThrow(SolcError)
+			await expect(getSolc('0.8.28', mockLogger)).resolves.toBe(mockSolc)
+
+			expect(mockCreateSolc).toHaveBeenCalledTimes(2)
+		})
+
+		it('should not let an obsolete failure evict a newer load', async () => {
+			const originalError = new Error('Network error')
+			const mockSolc = { compile: vi.fn() } as unknown as Solc
+			const rejectFirst = Promise.withResolvers<Solc>()
+			mockCreateSolc.mockReturnValueOnce(rejectFirst.promise).mockResolvedValueOnce(mockSolc)
+
+			const obsoleteLoad = getSolc('0.8.28', mockLogger)
+			clearSolcCache()
+			await expect(getSolc('0.8.28', mockLogger)).resolves.toBe(mockSolc)
+			rejectFirst.reject(originalError)
+			await expect(obsoleteLoad).rejects.toThrow(SolcError)
+			await expect(getSolc('0.8.28', mockLogger)).resolves.toBe(mockSolc)
+
+			expect(mockCreateSolc).toHaveBeenCalledTimes(2)
 		})
 
 		it('should have correct error name and tag', async () => {
