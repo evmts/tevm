@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "suite": "suite.jsonl",
+  "kind": "smithers-real-project-sdk",
+  "tevmVersion": "1.0.0-rc.151",
+  "model": "gpt-5.6-sol",
+  "runId": "real-projects-2026-07-28",
+  "startedAt": "2026-07-28T16:34:43.839Z",
+  "completedAt": "2026-07-28T16:54:46.792Z",
+  "blockNumber": "19000000",
+  "cases": 6,
+  "passed": 1,
+  "failed": 5,
+  "passRate": 0.16666666666666666,
+  "eventualPassed": 6,
+  "eventualFailed": 0,
+  "eventualPassRate": 1,
+  "assertions": 34,
+  "assertionsPassed": 34,
+  "assertionPassRate": 1,
+  "results": [
+    {
+      "id": "ens",
+      "title": "ENS resolution SDK",
+      "project": "Ethereum Name Service",
+      "incumbent": "@ensdomains/ensjs",
+      "passed": true,
+      "checkerPassed": true,
+      "oneShotPassed": true,
+      "assertions": {
+        "total": 5,
+        "passed": 5
+      },
+      "assertionFailures": [],
+      "attempts": 1,
+      "smithersRunId": "oneshot-ms4v2klp-8416ccda",
+      "failureMode": null,
+      "launchHistory": "The first Smithers run produced sdk.ts. The unchanged SDK passed after a false-negative checker rule was removed.",
+      "durationMs": 16774,
+      "workdir": ".runs/2026-07-28T16-34-43-839Z/ens",
+      "checkerExitCode": 0
+    },
+    {
+      "id": "uniswap-v3",
+      "title": "Uniswap V3 pool and quote SDK",
+      "project": "Uniswap V3",
+      "incumbent": "@uniswap/v3-sdk",
+      "passed": false,
+      "checkerPassed": true,
+      "oneShotPassed": false,
+      "assertions": {
+        "total": 7,
+        "passed": 7
+      },
+      "assertionFailures": [],
+      "attempts": 5,
+      "smithersRunId": "oneshot-ms4v2klp-8416ccda",
+      "failureMode": "one-shot failed: Four nested Smithers admissions exited zero without launching a worker. The fifth, a direct detached admission, produced sdk.ts.",
+      "launchHistory": "Four nested Smithers admissions exited zero without launching a worker. The fifth, a direct detached admission, produced sdk.ts.",
+      "durationMs": 17423,
+      "workdir": ".runs/2026-07-28T16-44-35-229Z/uniswap-v3",
+      "checkerExitCode": 0
+    },
+    {
+      "id": "aave-v3",
+      "title": "Aave V3 market SDK",
+      "project": "Aave V3",
+      "incumbent": "@aave/contract-helpers",
+      "passed": false,
+      "checkerPassed": true,
+      "oneShotPassed": false,
+      "assertions": {
+        "total": 5,
+        "passed": 5
+      },
+      "assertionFailures": [],
+      "attempts": 2,
+      "smithersRunId": "oneshot-ms4v2klp-8416ccda",
+      "failureMode": "one-shot failed: The first nested admission exited zero without launching a worker. The second, a direct detached admission, produced sdk.ts.",
+      "launchHistory": "The first nested admission exited zero without launching a worker. The second, a direct detached admission, produced sdk.ts.",
+      "durationMs": 19914,
+      "workdir": ".runs/2026-07-28T16-37-40-653Z/aave-v3",
+      "checkerExitCode": 0
+    },
+    {
+      "id": "morpho-blue",
+      "title": "Morpho Blue protocol SDK",
+      "project": "Morpho Blue",
+      "incumbent": "@morpho-org/blue-sdk-viem",
+      "passed": false,
+      "checkerPassed": true,
+      "oneShotPassed": false,
+      "assertions": {
+        "total": 5,
+        "passed": 5
+      },
+      "assertionFailures": [],
+      "attempts": 5,
+      "smithersRunId": "oneshot-ms4v2klp-8416ccda",
+      "failureMode": "one-shot failed: Four nested Smithers admissions exited zero without launching a worker. The fifth produced sdk.ts. A checksum-only address correction was then applied to the public fixture and retained input before rescoring.",
+      "launchHistory": "Four nested Smithers admissions exited zero without launching a worker. The fifth produced sdk.ts. A checksum-only address correction was then applied to the public fixture and retained input before rescoring.",
+      "durationMs": 18637,
+      "workdir": ".runs/2026-07-28T16-44-35-229Z/morpho-blue",
+      "checkerExitCode": 0
+    },
+    {
+      "id": "compound-v2",
+      "title": "Compound V2 money-market SDK",
+      "project": "Compound V2",
+      "incumbent": "@compound-finance/compound-js",
+      "passed": false,
+      "checkerPassed": true,
+      "oneShotPassed": false,
+      "assertions": {
+        "total": 7,
+        "passed": 7
+      },
+      "assertionFailures": [],
+      "attempts": 5,
+      "smithersRunId": "oneshot-ms4v2klp-8416ccda",
+      "failureMode": "one-shot failed: Four nested Smithers admissions exited zero without launching a worker. The fifth, a direct detached admission, produced sdk.ts.",
+      "launchHistory": "Four nested Smithers admissions exited zero without launching a worker. The fifth, a direct detached admission, produced sdk.ts.",
+      "durationMs": 24421,
+      "workdir": ".runs/2026-07-28T16-44-35-229Z/compound-v2",
+      "checkerExitCode": 0
+    },
+    {
+      "id": "seaport",
+      "title": "Seaport order protocol SDK",
+      "project": "OpenSea Seaport 1.5",
+      "incumbent": "@opensea/seaport-js",
+      "passed": false,
+      "checkerPassed": true,
+      "oneShotPassed": false,
+      "assertions": {
+        "total": 5,
+        "passed": 5
+      },
+      "assertionFailures": [],
+      "attempts": 5,
+      "smithersRunId": "oneshot-ms4v2klp-8416ccda",
+      "failureMode": "one-shot failed: Four nested Smithers admissions exited zero without launching a worker. The fifth produced sdk.ts. A checksum-only address correction was then applied to the public fixture and retained input before rescoring.",
+      "launchHistory": "Four nested Smithers admissions exited zero without launching a worker. The fifth produced sdk.ts. A checksum-only address correction was then applied to the public fixture and retained input before rescoring.",
+      "durationMs": 16566,
+      "workdir": ".runs/2026-07-28T16-44-35-229Z/seaport",
+      "checkerExitCode": 0
+    }
+  ],
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v26.5.0"
+  }
+}

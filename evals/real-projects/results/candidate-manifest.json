@@ -1,0 +1,55 @@
+{
+  "runId": "real-projects-2026-07-28",
+  "startedAt": "2026-07-28T16:34:43.839Z",
+  "candidates": [
+    {
+      "id": "ens",
+      "workdir": ".runs/2026-07-28T16-34-43-839Z/ens",
+      "attempts": 1,
+      "assertions": 5,
+      "smithersRunId": "oneshot-ms4v2klp-8416ccda",
+      "launchHistory": "The first Smithers run produced sdk.ts. The unchanged SDK passed after a false-negative checker rule was removed."
+    },
+    {
+      "id": "uniswap-v3",
+      "workdir": ".runs/2026-07-28T16-44-35-229Z/uniswap-v3",
+      "attempts": 5,
+      "assertions": 7,
+      "smithersRunId": "oneshot-ms4v2klp-8416ccda",
+      "launchHistory": "Four nested Smithers admissions exited zero without launching a worker. The fifth, a direct detached admission, produced sdk.ts."
+    },
+    {
+      "id": "aave-v3",
+      "workdir": ".runs/2026-07-28T16-37-40-653Z/aave-v3",
+      "attempts": 2,
+      "assertions": 5,
+      "smithersRunId": "oneshot-ms4v2klp-8416ccda",
+      "launchHistory": "The first nested admission exited zero without launching a worker. The second, a direct detached admission, produced sdk.ts."
+    },
+    {
+      "id": "morpho-blue",
+      "workdir": ".runs/2026-07-28T16-44-35-229Z/morpho-blue",
+      "attempts": 5,
+      "assertions": 5,
+      "smithersRunId": "oneshot-ms4v2klp-8416ccda",
+      "launchHistory": "Four nested Smithers admissions exited zero without launching a worker. The fifth produced sdk.ts. A checksum-only address correction was then applied to the public fixture and retained input before rescoring."
+    },
+    {
+      "id": "compound-v2",
+      "workdir": ".runs/2026-07-28T16-44-35-229Z/compound-v2",
+      "attempts": 5,
+      "assertions": 7,
+      "smithersRunId": "oneshot-ms4v2klp-8416ccda",
+      "launchHistory": "Four nested Smithers admissions exited zero without launching a worker. The fifth, a direct detached admission, produced sdk.ts."
+    },
+    {
+      "id": "seaport",
+      "workdir": ".runs/2026-07-28T16-44-35-229Z/seaport",
+      "attempts": 5,
+      "assertions": 5,
+      "smithersRunId": "oneshot-ms4v2klp-8416ccda",
+      "launchHistory": "Four nested Smithers admissions exited zero without launching a worker. The fifth produced sdk.ts. A checksum-only address correction was then applied to the public fixture and retained input before rescoring."
+    }
+  ]
+}
+
