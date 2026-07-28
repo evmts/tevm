@@ -2,7 +2,7 @@ import { Block } from '@tevm/block'
 import { optimism } from '@tevm/common'
 import { InvalidBlockError, UnknownBlockError } from '@tevm/errors'
 import { bytesToHex, custom } from 'viem'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { createBaseChain } from '../createBaseChain.js'
 import { mockRpcBlocks, mockRpcHashes, mockTransport } from '../test/getBlocks.js'
 import { getBlockFromRpc } from './getBlockFromRpc.js'
@@ -136,26 +136,24 @@ describe('getBlockFromRpc', () => {
 		expect(err).toMatchSnapshot()
 	})
 
-	it('should handle Optimism deposit transactions filtering', async () => {
+	it('should fail loudly for unsupported L2 transaction types', async () => {
 		const common = optimism.copy()
 		const depositTransport = {
 			request: async () => ({
 				...mockRpcBlocks[1],
-				transactions: [{ hash: `0x${'7e'.repeat(32)}`, type: '0x7e' }],
+				transactions: [{ hash: `0x${'6a'.repeat(32)}`, type: '0x6a' }],
 			}),
 		}
 
 		const baseChain = createBaseChain({ common })
-		const consoleWarnSpy = vi.fn()
-		baseChain.logger.warn = consoleWarnSpy
+		const error = await getBlockFromRpc(
+			baseChain,
+			{ transport: depositTransport, blockTag: blockNumber },
+			common,
+		).catch((caught) => caught)
 
-		const [block] = await getBlockFromRpc(baseChain, { transport: depositTransport, blockTag: blockNumber }, common)
-		await getBlockFromRpc(baseChain, { transport: depositTransport, blockTag: blockNumber }, common)
-		await getBlockFromRpc(baseChain, { transport: depositTransport, blockTag: blockNumber }, common)
-		expect(block).toBeInstanceOf(Block)
-		expect(block.toJSON().transactions).toHaveLength(0)
-		expect(consoleWarnSpy).toHaveBeenCalledTimes(3)
-		expect(consoleWarnSpy.mock.calls).toMatchSnapshot()
-		consoleWarnSpy.mockRestore()
+		expect(error).toBeInstanceOf(Error)
+		expect(error.name).toBe('UnsupportedForkTransactionError')
+		expect(error.message).toContain('0x6a')
 	})
 })

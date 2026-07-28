@@ -7,26 +7,6 @@ Docs: https://tevm.sh/reference/tevm/errors/classes/unknownblockerror/
 Version: 1.0.0-next.148]
 `;
 
-exports[`getBlockFromRpc > should handle Optimism deposit transactions filtering 1`] = `
-[
-  [
-    "Warning: Optimism and Arbitrum deposit transactions (types 0x7e and 0x6a-0x6f) are currently not supported and will be filtered out of blocks until support is added
-filtering out tx 0x7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e.
-Note: The block hash will be different because of the excluded txs",
-  ],
-  [
-    "Warning: Optimism and Arbitrum deposit transactions (types 0x7e and 0x6a-0x6f) are currently not supported and will be filtered out of blocks until support is added
-filtering out tx 0x7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e.
-Note: The block hash will be different because of the excluded txs",
-  ],
-  [
-    "Warning: Optimism and Arbitrum deposit transactions (types 0x7e and 0x6a-0x6f) are currently not supported and will be filtered out of blocks until support is added
-filtering out tx 0x7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e.
-Note: The block hash will be different because of the excluded txs",
-  ],
-]
-`;
-
 exports[`getBlockFromRpc > should handle a fetch error 1`] = `
 {
   "code": -1,

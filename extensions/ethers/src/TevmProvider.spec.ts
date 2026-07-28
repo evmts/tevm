@@ -1,5 +1,7 @@
 import { createContract, ERC20 } from '@tevm/contract'
+import type { Eip1193RequestProvider } from '@tevm/decorators'
 import { encodeDeployData, toHex } from '@tevm/utils'
+import type { Eip1193Provider } from 'ethers'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { Interface } from './contract/index.js'
 import { TevmProvider } from './TevmProvider.js'
@@ -13,6 +15,17 @@ describe(TevmProvider.name, () => {
 
 	it('should be able to use like a normal JsonRpcProvider', async () => {
 		expect(await provider.send('eth_chainId', [])).toBe('0x384')
+	})
+
+	it('exposes a typed request function assignable to an open EIP-1193 provider', () => {
+		const assertCompatibility = (tevmProvider: Eip1193RequestProvider) => {
+			const ethersProvider: Eip1193Provider = tevmProvider
+			const blockNumber: Promise<`0x${string}`> = tevmProvider.request({ method: 'eth_blockNumber' })
+			void ethersProvider
+			void blockNumber
+		}
+		void assertCompatibility
+		expect(true).toBe(true)
 	})
 
 	describe('should be able to do tevm specific requests', () => {

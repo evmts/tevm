@@ -16,7 +16,7 @@ import { ProviderRpcError } from '@tevm/node'
 export const requestEip1193 = () => (client) => {
 	const handleRequest = requestProcedure(client)
 	return {
-		request: async (args) => {
+		request: async (/** @type {{method: string, params?: unknown}} */ args) => {
 			const result = await handleRequest(
 				/** @type any*/ ({
 					jsonrpc: '2.0',

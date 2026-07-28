@@ -5,7 +5,17 @@ import { numberToHex } from '@tevm/utils'
 import { withRetry } from 'viem'
 import { customTxTypes } from './CUSTOM_Tx_TYPES.js'
 import { isTevmBlockTag } from './isTevmBlockTag.js'
-import { warnOnce } from './warnOnce.js'
+
+class UnsupportedForkTransactionError extends Error {
+	/**
+	 * @param {string} transactionType
+	 * @param {import('@tevm/utils').Hex} transactionHash
+	 */
+	constructor(transactionType, transactionHash) {
+		super(`Cannot reconstruct forked block: unsupported transaction type ${transactionType} (${transactionHash})`)
+		this.name = 'UnsupportedForkTransactionError'
+	}
+}
 
 /**
  * @param {import('../BaseChain.js').BaseChain} baseChain
@@ -15,7 +25,7 @@ import { warnOnce } from './warnOnce.js'
  * @param {import('@tevm/common').Common} common
  */
 export const getBlockFromRpc = async (baseChain, { transport, blockTag = 'latest' }, common) => {
-	const doWarning = warnOnce(baseChain)
+	void baseChain
 	const fetcher = createJsonRpcFetcher(transport)
 	/**
 	 * @param {import('viem').RpcBlock<import('viem').BlockTag, true>} rpcBlock
@@ -23,9 +33,9 @@ export const getBlockFromRpc = async (baseChain, { transport, blockTag = 'latest
 	 */
 	const asEthjsBlock = (rpcBlock) => {
 		const transactions = rpcBlock.transactions?.filter((tx) => {
-			if (customTxTypes.includes(tx.type)) {
-				doWarning(/** @type {any}*/ (tx))
-				return false
+			const transactionType = /** @type {string} */ (tx.type)
+			if (customTxTypes.includes(transactionType) && transactionType !== '0x7e') {
+				throw new UnsupportedForkTransactionError(transactionType, tx.hash)
 			}
 			if (tx.chainId !== undefined && BigInt(tx.chainId) !== BigInt(common.id)) {
 				return false
@@ -46,7 +56,10 @@ export const getBlockFromRpc = async (baseChain, { transport, blockTag = 'latest
 			},
 			{
 				common,
-				setHardfork: false,
+				// Mainnet presets have canonical activation data, so select the
+				// historical hardfork needed for exact pre-Prague block headers.
+				// Custom/L2 chains may use different activation schedules.
+				setHardfork: common.id === 1,
 				freeze: false,
 				skipConsensusFormatValidation: true,
 			},
