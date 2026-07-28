@@ -35,13 +35,21 @@ export function createCommonOptions() {
 			),
 
 		// Output formatting
-		formatJson: z
+		json: z
 			.boolean()
-			.default(envVar('format_json') !== 'false')
+			.default(envVar('json') === 'true')
 			.describe(
 				option({
-					description: 'Format output as JSON (env: TEVM_FORMAT_JSON)',
-					defaultValueDescription: 'true',
+					description: 'Emit the stable machine-readable JSON envelope (env: TEVM_JSON)',
+					defaultValueDescription: 'false',
+				}),
+			),
+		session: z
+			.string()
+			.optional()
+			.describe(
+				option({
+					description: 'Load and persist a named local fork session (env: TEVM_SESSION)',
 				}),
 			),
 	}
@@ -173,6 +181,24 @@ export function createCallOptions() {
 			.describe(
 				option({
 					description: commonOptionDescriptions.blockTag,
+				}),
+			),
+
+		trace: z
+			.boolean()
+			.default(false)
+			.describe(
+				option({
+					description: 'Render a readable call tree with gas per frame (env: TEVM_TRACE)',
+				}),
+			),
+
+		abi: z
+			.string()
+			.optional()
+			.describe(
+				option({
+					description: 'ABI JSON or file used to decode traced calls (env: TEVM_ABI)',
 				}),
 			),
 

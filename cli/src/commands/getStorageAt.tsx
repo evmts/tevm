@@ -4,7 +4,8 @@ import CliAction from '../components/CliAction.js'
 import { useAction } from '../hooks/useAction.js'
 
 // Add command description for help output
-export const description = 'Get the raw storage data at a specific position for a contract address'
+export const description =
+	'Read a raw contract storage slot\nExample: tevm get-storage-at --address 0x4200000000000000000000000000000000000006 --slot 0x0 --rpc https://mainnet.optimism.io --run'
 
 // Options definitions and descriptions
 const optionDescriptions = {
@@ -79,13 +80,13 @@ export const options = z.object({
 		),
 
 	// Output formatting
-	formatJson: z
+	json: z
 		.boolean()
 		.optional()
 		.describe(
 			option({
-				description: 'Format output as JSON (env: TEVM_FORMAT_JSON)',
-				defaultValueDescription: 'true',
+				description: 'Emit the stable machine-readable JSON envelope (env: TEVM_JSON)',
+				defaultValueDescription: 'false',
 			}),
 		),
 })
@@ -113,11 +114,15 @@ const parseBlockNumber = (blockNumber?: string): bigint | undefined => {
 	}
 }
 
-const parseSlot = (slot: string): string => {
+const parseSlot = (slot: string): `0x${string}` => {
 	if (!/^0x[0-9a-fA-F]+$/.test(slot)) {
 		throw new Error(`Invalid storage slot "${slot}". Expected a hex value like 0x0.`)
 	}
-	return slot
+	const hex = slot.slice(2)
+	if (hex.length > 64) {
+		throw new Error(`Invalid storage slot "${slot}". Expected at most 32 bytes.`)
+	}
+	return `0x${hex.padStart(64, '0')}`
 }
 
 export default function GetStorageAt({ options }: Props) {
@@ -132,7 +137,7 @@ export default function GetStorageAt({ options }: Props) {
 		createParams: (enhancedOptions: Record<string, any>) => {
 			const params: Record<string, any> = {
 				address: enhancedOptions['address'] || defaultValues['address'],
-				position: parseSlot(enhancedOptions['slot'] || defaultValues['slot']),
+				slot: parseSlot(enhancedOptions['slot'] || defaultValues['slot']),
 			}
 
 			// Add block identifier - only one should be used
@@ -147,7 +152,20 @@ export default function GetStorageAt({ options }: Props) {
 
 		// Execute the action
 		executeAction: async (client: any, params: any): Promise<any> => {
-			return await client.getStorageAt(params)
+			const rpcValue = await client.getStorageAt(params)
+			if (!client.tevmGetAccount) {
+				return rpcValue
+			}
+			const account = await client.tevmGetAccount({
+				address: params.address,
+				returnStorage: true,
+				...(params.blockTag ? { blockTag: params.blockTag } : {}),
+			})
+			const value = account.storage?.[params.slot]
+			if (typeof value !== 'string' || !value.startsWith('0x')) {
+				return rpcValue
+			}
+			return `0x${value.slice(2).padStart(64, '0')}`
 		},
 	})
 

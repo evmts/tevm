@@ -84,7 +84,8 @@ export async function createEditorProject(actionName, options, createParams) {
 			console.error('Failed to update installation status:', error)
 		}
 	}
-	bunInstallProcess.on('exit', handleInstallExit)
+	const bunInstallProcessEvents = /** @type {any} */ (bunInstallProcess)
+	bunInstallProcessEvents.on('exit', handleInstallExit)
 
 	// Don't wait for it to complete - let it run in the background
 	bunInstallProcess.unref()
@@ -126,12 +127,13 @@ export async function openEditor(projectDir) {
 				resolve(1)
 			}
 		)
+		const editorProcessEvents = /** @type {any} */ (editorProcess)
 
 		// Handle process completion
-		editorProcess.on('exit', handleEditorExit)
+		editorProcessEvents.on('exit', handleEditorExit)
 
 		// Handle process errors
-		editorProcess.on('error', handleEditorError)
+		editorProcessEvents.on('error', handleEditorError)
 	})
 }
 
@@ -186,14 +188,15 @@ export async function executeTsFile(projectDir) {
 				reject(new Error(`Failed to execute: ${error.message}`))
 			}
 		)
+		const bunProcessEvents = /** @type {any} */ (bunProcess)
 
 		bunProcess.stdout.on('data', handleStdoutData)
 
 		bunProcess.stderr.on('data', handleStderrData)
 
-		bunProcess.on('exit', handleBunExit)
+		bunProcessEvents.on('exit', handleBunExit)
 
-		bunProcess.on('error', handleBunError)
+		bunProcessEvents.on('error', handleBunError)
 	})
 }
 

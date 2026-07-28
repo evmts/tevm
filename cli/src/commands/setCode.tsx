@@ -4,7 +4,8 @@ import CliAction from '../components/CliAction.js'
 import { useAction } from '../hooks/useAction.js'
 
 // Add command description for help output
-export const description = 'Set the bytecode for a contract address'
+export const description =
+	'Set bytecode at an address in local state\nExample: tevm set-code --address 0x0000000000000000000000000000000000000001 --bytecode 0x00 --session demo --run'
 
 // Options definitions and descriptions
 const optionDescriptions = {
@@ -59,13 +60,13 @@ export const options = z.object({
 		),
 
 	// Output formatting
-	formatJson: z
+	json: z
 		.boolean()
 		.optional()
 		.describe(
 			option({
-				description: 'Format output as JSON (env: TEVM_FORMAT_JSON)',
-				defaultValueDescription: 'true',
+				description: 'Emit the stable machine-readable JSON envelope (env: TEVM_JSON)',
+				defaultValueDescription: 'false',
 			}),
 		),
 })

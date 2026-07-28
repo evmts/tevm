@@ -5,7 +5,8 @@ import CliAction from '../components/CliAction.js'
 import { envVar, useAction } from '../hooks/useAction.js'
 
 // Add command description for help output
-export const description = 'Mine new blocks on the blockchain (for development and testing)'
+export const description =
+	'Mine blocks in the local EVM\nExample: tevm mine --block-count 1 --rpc https://mainnet.optimism.io --session demo --run --json'
 
 // Options definitions and descriptions
 const optionDescriptions = {
@@ -59,13 +60,13 @@ export const options = z.object({
 		),
 
 	// Output formatting
-	formatJson: z
+	json: z
 		.boolean()
-		.default(envVar('format_json') !== 'false')
+		.default(envVar('json') === 'true')
 		.describe(
 			option({
-				description: 'Format output as JSON (env: TEVM_FORMAT_JSON)',
-				defaultValueDescription: 'true',
+				description: 'Emit the stable machine-readable JSON envelope (env: TEVM_JSON)',
+				defaultValueDescription: 'false',
 			}),
 		),
 })

@@ -10,6 +10,8 @@ import React from 'react'
 
 import { isViemAction, loadViemClient } from '../utils/clients.js'
 import { cleanupProject, createEditorProject, executeTsFile, openEditor, waitForDependencies } from '../utils/editor.js'
+import { formatHumanResult, formatJsonFailure, formatJsonSuccess } from '../utils/output.js'
+import { normalizeSessionState, readSession, writeSession } from '../utils/session.js'
 
 // Configure JSON BigInt for handling large numbers
 const JSON_BIG = JSONBig({
@@ -79,6 +81,8 @@ export function useAction<TParams, TResult>({
 			const envKey = key.replace(/([A-Z])/g, '_$1').toLowerCase() // Convert camelCase to snake_case for env vars
 			enhancedOptions[key] = options[key] ?? envVar(envKey) ?? defaultValues[key] ?? undefined
 		})
+		enhancedOptions['json'] = options['json'] === true || envVar('json') === 'true'
+		enhancedOptions['session'] = options['session'] ?? envVar('session')
 
 		return enhancedOptions
 	}, [options, optionDescriptions, defaultValues])
@@ -147,34 +151,77 @@ export function useAction<TParams, TResult>({
 	})
 
 	// Direct action execution query - only runs when run flag is true
-	const {
-		isLoading: isActionLoading,
-		error: actionError,
-		data: result,
-	} = useQuery({
+	const { isLoading: isActionLoading, data: actionOutcome } = useQuery({
 		queryKey: [actionName, JSON_BIG.stringify(baseOptions)],
 		queryFn: async () => {
-			let client
+			try {
+				let client
+				const sessionName =
+					typeof baseOptions['session'] === 'string' && baseOptions['session'].length > 0
+						? baseOptions['session']
+						: undefined
+				const session = sessionName ? readSession(sessionName) : undefined
+				const local = baseOptions['local'] === true || (sessionName !== undefined && session?.forkUrl === undefined)
+				const rpcUrl = session?.forkUrl || (local ? undefined : baseOptions['rpc'] || 'http://localhost:8545')
 
-			// Create the appropriate client based on action type
-			if (isViemAction(actionName)) {
-				client = await loadViemClient(baseOptions['rpc'] || 'http://localhost:8545')
-				if (!client) {
-					throw new Error('Failed to create Viem client')
+				// Create the appropriate client based on action type
+				if (isViemAction(actionName) && !sessionName) {
+					client = await loadViemClient(rpcUrl || 'http://localhost:8545')
+					if (!client) {
+						throw new Error('Failed to create Viem client')
+					}
+				} else {
+					client = createMemoryClient(
+						rpcUrl
+							? {
+									loggingLevel: 'fatal',
+									fork: {
+										transport: http(rpcUrl),
+										...(session?.forkBlock ? { blockTag: BigInt(session.forkBlock) } : {}),
+									},
+								}
+							: { loggingLevel: 'fatal' },
+					)
+					await client.tevmReady()
+					if (session?.state) {
+						await client.tevmLoadState(normalizeSessionState(session.state) as any)
+					}
 				}
-			} else {
-				client = createMemoryClient({
-					fork: { transport: http(baseOptions['rpc'] || 'http://localhost:8545') },
-				})
-			}
 
-			// Create the parameters and execute the action
-			const params = await createParams(baseOptions)
-			return await executeAction(client, params)
+				// Create the parameters and execute the action
+				const params = await createParams(baseOptions)
+				const actionResult = await executeAction(client, params)
+				if (sessionName) {
+					const sessionClient = client as any
+					const state = await sessionClient.tevmDumpState()
+					const forkBlock = rpcUrl
+						? (session?.forkBlock ?? (await sessionClient.getBlockNumber()).toString())
+						: undefined
+					writeSession({
+						version: 1,
+						name: sessionName,
+						...(rpcUrl ? { forkUrl: rpcUrl } : {}),
+						...(forkBlock ? { forkBlock } : {}),
+						updatedAt: new Date().toISOString(),
+						state: state as unknown as Record<string, unknown>,
+					})
+				}
+				return { result: (actionResult === undefined ? {} : actionResult) as TResult }
+			} catch (error) {
+				const normalizedError =
+					error instanceof Error
+						? error
+						: new Error(
+								error && typeof error === 'object' && 'message' in error ? String(error.message) : String(error),
+							)
+				return { error: normalizedError }
+			}
 		},
 		enabled: options['run'] === true,
 		retry: false,
 	})
+	const result = actionOutcome?.result
+	const actionError = actionOutcome?.error ?? null
 
 	// Cleanup on unmount
 	React.useEffect(() => {
@@ -187,23 +234,33 @@ export function useAction<TParams, TResult>({
 
 	// Determine the final result based on either interactive or direct execution
 	const finalResult = interactiveResult ?? result
+	const commandName = actionName
+		.replace(/^tevm/, '')
+		.replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+		.replace(/^-/, '')
+		.toLowerCase()
+	const sessionName = typeof baseOptions['session'] === 'string' ? baseOptions['session'] : undefined
 	const formattedResult =
 		finalResult === undefined || finalResult === null
 			? undefined
-			: baseOptions['formatJson'] === false
-				? String(finalResult)
-				: JSON_BIG.stringify(finalResult, null, 2)
+			: baseOptions['json'] === true
+				? formatJsonSuccess(commandName, finalResult, sessionName)
+				: formatHumanResult(commandName, finalResult, baseOptions)
+	const error = interactiveError ?? actionError
+	const formattedError =
+		error && baseOptions['json'] === true ? formatJsonFailure(commandName, error, sessionName) : undefined
 
 	// If editor is active, return an object indicating not to render anything
 	if (editorActive || editorInProgressRef.current) {
 		return {
-			result: null,
 			formattedResult: undefined,
 			isInteractiveLoading: false,
 			isActionLoading: false,
 			isInstallingDeps: false,
 			interactiveError: null,
 			actionError: null,
+			formattedError: undefined,
+			actionName: commandName,
 			options: baseOptions,
 			editorActive: true,
 		}
@@ -211,7 +268,6 @@ export function useAction<TParams, TResult>({
 
 	return {
 		// Results
-		result: finalResult,
 		formattedResult,
 
 		// Loading states
@@ -222,6 +278,8 @@ export function useAction<TParams, TResult>({
 		// Errors
 		interactiveError: interactiveError as Error | null,
 		actionError: actionError as Error | null,
+		formattedError,
+		actionName: commandName,
 
 		// Options
 		options: baseOptions,

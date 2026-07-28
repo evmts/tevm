@@ -1,18 +1,18 @@
 import fs, { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { access, mkdir, readFile, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-// Import required dependencies for Tevm bundler
-import { bundler, type FileAccessObject } from '@tevm/base-bundler'
-import { createCache } from '@tevm/bundler-cache'
+import type { FileAccessObject } from '@tevm/base-bundler'
 import { loadConfig } from '@tevm/config'
-import { runSync } from 'effect/Effect'
+import { Logger } from 'effect'
+import { provide, runSync } from 'effect/Effect'
 import { glob } from 'glob'
 import { Box, Newline, Text } from 'ink'
 import Spinner from 'ink-spinner'
 import { argument, option } from 'pastel'
 import { useEffect, useState } from 'react'
-import * as solc from 'solc'
 import zod from 'zod'
+import RawOutput from '../components/RawOutput.js'
+import { formatJsonFailure, formatJsonSuccess } from '../utils/output.js'
 
 // Define FileAccessObject for use with the Tevm bundler
 const fao: FileAccessObject = {
@@ -36,7 +36,8 @@ const fao: FileAccessObject = {
 }
 
 // Add command description for help output
-export const description = 'Generate strongly typed TypeScript files from solidity contracts'
+export const description =
+	'Generate strongly typed TypeScript from Solidity\nExample: tevm generate contract Counter --dir .'
 
 export const args = zod.tuple([
 	zod.enum(['contract', 'test', 'script', 'all']).describe(
@@ -111,7 +112,7 @@ type Props = {
 
 export default function Generate({ args, options }: Props) {
 	const [type, name] = args
-	const [isGenerating, setIsGenerating] = useState(false)
+	const [isGenerating, setIsGenerating] = useState(true)
 	const [currentTask, setCurrentTask] = useState<string>('')
 	const [result, setResult] = useState<{
 		success: boolean
@@ -157,6 +158,11 @@ export default function Generate({ args, options }: Props) {
 
 		const generateContractTypes = async () => {
 			const cwd = path.resolve(options.dir)
+			const [{ bundler }, { createCache }, { default: solc }] = await Promise.all([
+				import('@tevm/base-bundler'),
+				import('@tevm/bundler-cache'),
+				import('solc'),
+			])
 			const includePatterns = options.include.split(',')
 			const errors: string[] = []
 			const generatedFiles: string[] = []
@@ -206,13 +212,27 @@ export default function Generate({ args, options }: Props) {
 						// Actual implementation using Tevm bundler
 						try {
 							setCurrentTask(`Loading config for ${fileName}...`)
-							const config = runSync(loadConfig(cwd) as any)
+							const configEffect = loadConfig(cwd)
+							const config =
+								process.env['TEVM_JSON'] === 'true'
+									? runSync(provide(configEffect as any, Logger.replace(Logger.defaultLogger, Logger.none)))
+									: runSync(configEffect as any)
 
 							setCurrentTask(`Creating cache for ${fileName}...`)
 							const solcCache = createCache((config as any).cacheDir, fao, cwd)
 
 							setCurrentTask(`Bundling ${fileName}...`)
-							const plugin = bundler(config as any, console, fao, solc, solcCache, 'tevm/contract')
+							const logger =
+								process.env['TEVM_JSON'] === 'true'
+									? {
+											debug: () => undefined,
+											error: () => undefined,
+											info: () => undefined,
+											log: () => undefined,
+											warn: () => undefined,
+										}
+									: console
+							const plugin = bundler(config as any, logger as Console, fao, solc, solcCache, 'tevm/contract')
 							const tsContent = await plugin.resolveTsModule(sourcePath, cwd, false, true)
 
 							// Ensure directory exists
@@ -278,6 +298,14 @@ export default function Generate({ args, options }: Props) {
 					</Box>
 				)}
 			</Box>
+		)
+	}
+
+	if (process.env['TEVM_JSON'] === 'true') {
+		return result.success ? (
+			<RawOutput value={formatJsonSuccess('generate', { files: result.files, warnings: result.errors })} />
+		) : (
+			<RawOutput value={formatJsonFailure('generate', new Error(result.errors.join('\n')))} exitCode={1} />
 		)
 	}
 

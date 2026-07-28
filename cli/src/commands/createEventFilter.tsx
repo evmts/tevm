@@ -1,10 +1,12 @@
+import { readFileSync } from 'node:fs'
 import { option } from 'pastel'
 import { z } from 'zod'
 import CliAction from '../components/CliAction.js'
 import { useAction } from '../hooks/useAction.js'
 
 // Add command description for help output
-export const description = 'Create a filter for all blockchain events based on specified criteria'
+export const description =
+	'Create a filter for blockchain logs\nExample: tevm create-event-filter --address 0x4200000000000000000000000000000000000006 --rpc https://mainnet.optimism.io --run'
 
 // Options definitions and descriptions
 const optionDescriptions = {
@@ -99,13 +101,13 @@ export const options = z.object({
 		),
 
 	// Output formatting
-	formatJson: z
+	json: z
 		.boolean()
 		.optional()
 		.describe(
 			option({
-				description: 'Format output as JSON (env: TEVM_FORMAT_JSON)',
-				defaultValueDescription: 'true',
+				description: 'Emit the stable machine-readable JSON envelope (env: TEVM_JSON)',
+				defaultValueDescription: 'false',
 			}),
 		),
 })
@@ -154,7 +156,7 @@ const defaultValues: Record<string, any> = {
 const parseAbi = (abiString?: string): any => {
 	if (!abiString) return DEFAULT_EVENT_ABI
 	try {
-		return JSON.parse(abiString)
+		return JSON.parse(abiString.trim().startsWith('[') ? abiString : readFileSync(abiString, 'utf8'))
 	} catch (e) {
 		throw new Error(`Invalid ABI JSON: ${(e as Error).message}`)
 	}

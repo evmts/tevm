@@ -4,7 +4,8 @@ import CliAction from '../components/CliAction.js'
 import { useAction } from '../hooks/useAction.js'
 
 // Add command description for help output
-export const description = 'Set the storage value at a specific slot for a contract address'
+export const description =
+	'Set a contract storage slot in local state\nExample: tevm set-storage-at --address 0x0000000000000000000000000000000000000001 --index 0x0 --value 0x01 --session demo --run'
 
 // Options definitions and descriptions
 const optionDescriptions = {
@@ -69,13 +70,13 @@ export const options = z.object({
 		),
 
 	// Output formatting
-	formatJson: z
+	json: z
 		.boolean()
 		.optional()
 		.describe(
 			option({
-				description: 'Format output as JSON (env: TEVM_FORMAT_JSON)',
-				defaultValueDescription: 'true',
+				description: 'Emit the stable machine-readable JSON envelope (env: TEVM_JSON)',
+				defaultValueDescription: 'false',
 			}),
 		),
 })
@@ -93,22 +94,20 @@ const defaultValues: Record<string, any> = {
 	rpc: 'http://localhost:8545',
 }
 
-// Helper function to ensure hex format
-const ensureHex = (value?: string): string => {
-	if (!value) return '0x0'
+// Helper function to ensure a 32-byte hex word
+const ensureHex = (value?: string): `0x${string}` => {
+	if (!value) return `0x${'0'.repeat(64)}`
 
-	if (value.startsWith('0x')) {
-		return value
-	}
-
+	let hex: string
 	try {
-		// Try to convert number to hex
-		const num = BigInt(value)
-		return `0x${num.toString(16)}`
+		hex = value.startsWith('0x') ? value.slice(2) : BigInt(value).toString(16)
 	} catch (_e) {
-		// If not a number, return as hex string
-		return `0x${value}`
+		hex = value.startsWith('0x') ? value.slice(2) : value
 	}
+	if (hex.length > 64) {
+		throw new Error(`Storage word is longer than 32 bytes: ${value}`)
+	}
+	return `0x${hex.padStart(64, '0')}`
 }
 
 export default function SetStorageAt({ options }: Props) {
@@ -121,32 +120,21 @@ export default function SetStorageAt({ options }: Props) {
 
 		// Create params
 		createParams: (enhancedOptions: Record<string, any>) => {
-			// Parse index to number if possible
-			let index = enhancedOptions['index'] || defaultValues['index']
-			if (typeof index === 'string' && index.startsWith('0x')) {
-				try {
-					index = parseInt(index, 16)
-				} catch (_e) {
-					// If parsing fails, keep as string
-				}
-			}
-
 			return {
 				address: enhancedOptions['address'] || defaultValues['address'],
-				index,
+				index: ensureHex(enhancedOptions['index'] || defaultValues['index']),
 				value: ensureHex(enhancedOptions['value'] || defaultValues['value']),
 			}
 		},
 
 		// Execute the action
 		executeAction: async (client: any, params: any): Promise<any> => {
-			// Check if client has test actions
-			if (!client.setStorageAt) {
-				throw new Error(
-					'setStorageAt action is not available on this client. Make sure you are using an Anvil or TEVM client.',
-				)
-			}
-			return await client.setStorageAt(params)
+			return await client.tevmSetAccount({
+				address: params.address,
+				stateDiff: {
+					[params.index]: params.value,
+				},
+			})
 		},
 	})
 

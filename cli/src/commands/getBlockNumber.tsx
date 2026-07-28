@@ -4,7 +4,8 @@ import CliAction from '../components/CliAction.js'
 import { useAction } from '../hooks/useAction.js'
 
 // Add command description for help output
-export const description = 'Get the current block number of the blockchain'
+export const description =
+	'Get the current block number\nExample: tevm get-block-number --rpc https://mainnet.optimism.io --run --json'
 
 // Options definitions and descriptions
 const optionDescriptions = {
@@ -49,13 +50,13 @@ export const options = z.object({
 		),
 
 	// Output formatting
-	formatJson: z
+	json: z
 		.boolean()
 		.optional()
 		.describe(
 			option({
-				description: 'Format output as JSON (env: TEVM_FORMAT_JSON)',
-				defaultValueDescription: 'true',
+				description: 'Emit the stable machine-readable JSON envelope (env: TEVM_JSON)',
+				defaultValueDescription: 'false',
 			}),
 		),
 })

@@ -4,7 +4,8 @@ import CliAction from '../../components/CliAction.js'
 import { useAction } from '../../hooks/useAction.js'
 
 // Add command description for help output
-export const description = 'Create an EIP-2930 access list for a transaction to optimize gas usage'
+export const description =
+	'Create an EIP-2930 access list\nExample: tevm action create-access-list --to 0x4200000000000000000000000000000000000006 --rpc https://mainnet.optimism.io --run'
 
 // Options definitions and descriptions
 const optionDescriptions = {
@@ -130,13 +131,13 @@ export const options = z.object({
 		),
 
 	// Output formatting
-	formatJson: z
+	json: z
 		.boolean()
 		.optional()
 		.describe(
 			option({
-				description: 'Format output as JSON (env: TEVM_FORMAT_JSON)',
-				defaultValueDescription: 'true',
+				description: 'Emit the stable machine-readable JSON envelope (env: TEVM_JSON)',
+				defaultValueDescription: 'false',
 			}),
 		),
 })

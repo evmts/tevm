@@ -1,11 +1,12 @@
 import { Box, Text, useApp } from 'ink'
 import Spinner from 'ink-spinner'
 import { useEffect } from 'react'
+import RawOutput from './RawOutput.js'
 
 export interface CliActionProps {
 	// Results
-	result?: any
 	formattedResult?: string
+	formattedError?: string
 
 	// Loading states
 	isInteractiveLoading?: boolean
@@ -28,26 +29,29 @@ export interface CliActionProps {
 
 export default function CliAction({
 	formattedResult,
+	formattedError,
 	isInteractiveLoading,
 	isActionLoading,
 	isInstallingDeps,
 	interactiveError,
 	actionError,
 	targetName,
+	options,
 	editorActive = false,
 }: CliActionProps) {
 	const { exit } = useApp()
 	const error = interactiveError || actionError
+	const isJson = options?.['json'] === true
 
 	useEffect(() => {
-		if (!error) {
+		if (!error || formattedError) {
 			return
 		}
 
 		process.exitCode = 1
 		const timeout = setTimeout(() => exit(error), 0)
 		return () => clearTimeout(timeout)
-	}, [error, exit])
+	}, [error, exit, formattedError])
 
 	// If editor is active, render absolutely nothing
 	if (editorActive) {
@@ -78,6 +82,9 @@ export default function CliAction({
 
 	// Priority 3: Show errors if present
 	if (error) {
+		if (formattedError) {
+			return <RawOutput value={formattedError} exitCode={1} />
+		}
 		return (
 			<Box>
 				<Text color="red">{(error as Error).message || 'An error occurred'}</Text>
@@ -87,6 +94,9 @@ export default function CliAction({
 
 	// Priority 4: Show just the result
 	if (formattedResult) {
+		if (isJson) {
+			return <RawOutput value={formattedResult} />
+		}
 		return (
 			<Box>
 				<Text>{formattedResult}</Text>

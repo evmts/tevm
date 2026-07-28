@@ -6,7 +6,8 @@ import CliAction from '../components/CliAction.js'
 import { envVar, useAction } from '../hooks/useAction.js'
 
 // Add command description for help output
-export const description = 'Load a saved blockchain state from a file into the current node'
+export const description =
+	'Load saved state into the local EVM\nExample: tevm load-state --state-file state.json --rpc https://mainnet.optimism.io --run'
 
 // Options definitions and descriptions
 const optionDescriptions = {
@@ -60,13 +61,13 @@ export const options = z.object({
 		),
 
 	// Output formatting
-	formatJson: z
+	json: z
 		.boolean()
-		.default(envVar('format_json') !== 'false')
+		.default(envVar('json') === 'true')
 		.describe(
 			option({
-				description: 'Format output as JSON (env: TEVM_FORMAT_JSON)',
-				defaultValueDescription: 'true',
+				description: 'Emit the stable machine-readable JSON envelope (env: TEVM_JSON)',
+				defaultValueDescription: 'false',
 			}),
 		),
 })

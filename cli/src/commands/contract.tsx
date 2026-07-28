@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import type { ContractParams, ContractResult } from '@tevm/actions'
 import { option } from 'pastel'
 import { z } from 'zod'
@@ -5,7 +6,8 @@ import CliAction from '../components/CliAction.js'
 import { envVar, useAction } from '../hooks/useAction.js'
 
 // Add command description for help output
-export const description = 'Call a contract function with ABI and arguments'
+export const description =
+	'Call a contract function with ABI and arguments\nExample: tevm contract --to 0x4200000000000000000000000000000000000006 --abi ./erc20.json --function-name name --rpc https://mainnet.optimism.io --run'
 
 // Options definitions and descriptions
 const optionDescriptions = {
@@ -239,13 +241,13 @@ export const options = z.object({
 		),
 
 	// Output formatting
-	formatJson: z
+	json: z
 		.boolean()
-		.default(envVar('format_json') !== 'false')
+		.default(envVar('json') === 'true')
 		.describe(
 			option({
-				description: 'Format output as JSON (env: TEVM_FORMAT_JSON)',
-				defaultValueDescription: 'true',
+				description: 'Emit the stable machine-readable JSON envelope (env: TEVM_JSON)',
+				defaultValueDescription: 'false',
 			}),
 		),
 })
@@ -279,9 +281,11 @@ const parseAbi = (abiString: string) => {
 		// Try parsing as JSON first
 		return JSON.parse(abiString)
 	} catch (_e) {
-		// If JSON parsing fails, try reading from file (would require fs module in Node.js)
-		// For browser CLI, we'd need to handle this differently
-		throw new Error('ABI must be a valid JSON string. File reading not supported in this context.')
+		try {
+			return JSON.parse(readFileSync(abiString, 'utf8'))
+		} catch {
+			throw new Error('ABI must be valid inline JSON or a readable JSON file')
+		}
 	}
 }
 

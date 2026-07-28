@@ -1,10 +1,12 @@
+import { readFileSync } from 'node:fs'
 import { option } from 'pastel'
 import { z } from 'zod'
 import CliAction from '../components/CliAction.js'
 import { useAction } from '../hooks/useAction.js'
 
 // Add command description for help output
-export const description = 'Execute multiple contract calls in a single RPC request'
+export const description =
+	'Read several contracts in one request\nExample: tevm multicall --contracts ./calls.json --rpc https://mainnet.optimism.io --run --json'
 
 // Options definitions and descriptions
 const optionDescriptions = {
@@ -107,13 +109,13 @@ export const options = z.object({
 		),
 
 	// Output formatting
-	formatJson: z
+	json: z
 		.boolean()
 		.optional()
 		.describe(
 			option({
-				description: 'Format output as JSON (env: TEVM_FORMAT_JSON)',
-				defaultValueDescription: 'true',
+				description: 'Emit the stable machine-readable JSON envelope (env: TEVM_JSON)',
+				defaultValueDescription: 'false',
 			}),
 		),
 })
@@ -126,6 +128,7 @@ type Props = {
 // COMPREHENSIVE DEFAULTS
 const defaultValues: Record<string, any> = {
 	contracts: '[]', // Empty array as default
+	multicallAddress: '0xcA11bde05977b3631167028862bE2a173976CA11',
 	allowFailure: true,
 	blockTag: 'latest',
 	rpc: 'http://localhost:8545',
@@ -135,14 +138,15 @@ const defaultValues: Record<string, any> = {
 const parseContracts = (contractsStr?: string): any[] => {
 	if (!contractsStr) return []
 	try {
-		const contracts = JSON.parse(contractsStr)
+		const source = contractsStr.trim().startsWith('[') ? contractsStr : readFileSync(contractsStr, 'utf8')
+		const contracts = JSON.parse(source)
 		if (!Array.isArray(contracts)) {
 			throw new Error('Contracts must be a JSON array')
 		}
 		return contracts
 	} catch (e) {
 		if (e instanceof SyntaxError) {
-			throw new Error('Contracts must be valid JSON')
+			throw new Error('Contracts must be inline JSON or a readable JSON file')
 		}
 		throw e
 	}

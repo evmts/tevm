@@ -6,10 +6,14 @@ import { z } from 'zod'
 import { Creating } from '../components/Creating.js'
 import { FancyCreateTitle } from '../components/FancyCreateTitle.js'
 import { InteractivePrompt } from '../components/InteractivePrompt.js'
+import RawOutput from '../components/RawOutput.js'
 import type { State } from '../state/State.js'
 import { useStore } from '../state/Store.js'
-import { type args } from '../utils/create-args.js'
-import { type options } from '../utils/create-options.js'
+import { args } from '../utils/create-args.js'
+import { options } from '../utils/create-options.js'
+import { formatJsonSuccess } from '../utils/output.js'
+
+export { args, options }
 
 type Props = {
 	options: z.infer<typeof options>
@@ -17,7 +21,7 @@ type Props = {
 }
 
 // Add command description for help output
-export const description = 'Create a new Ethereum account or smart contract'
+export const description = 'Create a new TEVM project\nExample: tevm create my-tevm-app --skip-prompts'
 
 export default function Create({ options, args: [defaultName] }: Props) {
 	const createdRef = useRef(false)
@@ -40,6 +44,7 @@ export default function Create({ options, args: [defaultName] }: Props) {
 	}, [defaultName, options.skipPrompts, options.template])
 
 	const store = useStore()
+	const currentPage = options.skipPrompts && store.currentPage === 'interactive' ? 'creating' : store.currentPage
 
 	useEffect(() => {
 		if (store.currentPage !== 'creating' || createdRef.current) {
@@ -139,13 +144,22 @@ libs = ["lib"]
 	const pages = {
 		interactive: <InteractivePrompt defaultName={defaultName} store={store} />,
 		creating: <Creating store={store} />,
-		complete: <Text>Created {store.path}</Text>,
+		complete:
+			process.env['TEVM_JSON'] === 'true' ? (
+				<RawOutput value={formatJsonSuccess('create', { path: store.path })} />
+			) : (
+				<Text>Created {store.path}</Text>
+			),
+	}
+
+	if (process.env['TEVM_JSON'] === 'true') {
+		return pages[currentPage]
 	}
 
 	return (
 		<Box display="flex" flexDirection="column">
-			<FancyCreateTitle key={store.currentPage} loading={store.currentPage === 'creating'} />
-			{pages[store.currentPage]}
+			<FancyCreateTitle key={currentPage} loading={currentPage === 'creating'} />
+			{pages[currentPage]}
 		</Box>
 	)
 }

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { option } from 'pastel'
 import { z } from 'zod'
 import CliAction from '../components/CliAction.js'
@@ -5,7 +6,8 @@ import { useAction } from '../hooks/useAction.js'
 import { ReadContractParams } from '../utils/action-types.js'
 
 // Add command description for help output
-export const description = 'Read data from a contract by calling a read-only function'
+export const description =
+	'Read a decoded contract function\nExample: tevm read-contract --address 0x4200000000000000000000000000000000000006 --abi ./erc20.json --function-name name --rpc https://mainnet.optimism.io --run'
 
 // Options definitions and descriptions
 const optionDescriptions = {
@@ -82,13 +84,13 @@ export const options = z.object({
 		),
 
 	// Output formatting
-	formatJson: z
+	json: z
 		.boolean()
-		.default(true)
+		.optional()
 		.describe(
 			option({
-				description: 'Format output as JSON (env: TEVM_FORMAT_JSON)',
-				defaultValueDescription: 'true',
+				description: 'Emit the stable machine-readable JSON envelope (env: TEVM_JSON)',
+				defaultValueDescription: 'false',
 			}),
 		),
 })
@@ -130,10 +132,11 @@ export default function ReadContract({ options }: Props) {
 		createParams: (enhancedOptions: Record<string, any>): ReadContractParams => {
 			let abi
 			try {
+				const abiOption = (enhancedOptions as any).abi
 				abi =
-					typeof (enhancedOptions as any).abi === 'string'
-						? JSON.parse((enhancedOptions as any).abi)
-						: (enhancedOptions as any).abi || fallbackERC20Abi
+					typeof abiOption === 'string'
+						? JSON.parse(abiOption.trim().startsWith('[') ? abiOption : readFileSync(abiOption, 'utf8'))
+						: abiOption || fallbackERC20Abi
 			} catch (e) {
 				throw new Error(`Invalid ABI JSON: ${(e as Error).message}`)
 			}

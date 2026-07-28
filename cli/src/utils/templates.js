@@ -82,7 +82,7 @@ function generateScriptTemplate(actionName, options, isViem, needsERC20) {
 	 */
 	const paramsObj = {}
 	Object.entries(options).forEach(([key, value]) => {
-		if (key === 'run' || key === 'formatJson' || key === 'rpc') return
+		if (key === 'run' || key === 'json' || key === 'session' || key === 'rpc') return
 		paramsObj[key] = value
 	})
 

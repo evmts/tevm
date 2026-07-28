@@ -7,17 +7,30 @@
  * @type {string[]}
  */
 const viemActionNames = [
+	'createAccessList',
+	'createBlockFilter',
+	'createContractEventFilter',
+	'createEventFilter',
+	'estimateFeesPerGas',
 	'readContract',
 	'estimateGas',
 	'getBalance',
 	'getBlock',
 	'getBlockNumber',
+	'getBytecode',
 	'getChainId',
+	'getEnsAddress',
+	'getEnsName',
+	'getEnsText',
 	'getGasPrice',
+	'getStorageAt',
 	'getTransaction',
 	'getTransactionCount',
 	'getTransactionReceipt',
+	'multicall',
+	'sendRawTransaction',
 	'sendTransaction',
+	'simulateCalls',
 ]
 
 /**
@@ -38,22 +51,19 @@ export function isViemAction(actionName) {
  */
 export const loadViemClient = async (rpcUrl) => {
 	try {
-		// biome-ignore lint/suspicious/noAsyncPromiseExecutor: we're keeping this here
-		return await new Promise(async (resolve) => {
-			try {
-				// Using dynamic import with safety checks
-				const module = await Function('return import("viem")')()
-				const client = module.createPublicClient({
-					transport: module.http(rpcUrl),
-				})
-				resolve(client)
-			} catch (e) {
-				console.error('Failed to load viem:', e)
-				resolve(null)
-			}
+		const [module, chains] = await Promise.all([
+			Function('return import("viem")')(),
+			Function('return import("viem/chains")')(),
+		])
+		const transport = module.http(rpcUrl)
+		const unconfiguredClient = module.createPublicClient({ transport })
+		const chainId = await unconfiguredClient.getChainId()
+		const chain = Object.values(chains).find((candidate) => candidate && candidate.id === chainId)
+		return module.createPublicClient({
+			...(chain ? { chain } : {}),
+			transport,
 		})
-	} catch (e) {
-		console.error('Could not load viem client:', e)
+	} catch (_e) {
 		return null
 	}
 }

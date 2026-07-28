@@ -23,7 +23,7 @@ const ActionTab: React.FC<ActionTabProps> = ({ actionName, interactive, rpcUrl, 
 			options={{
 				interactive: true,
 				rpc: rpcUrl,
-				formatJson: true,
+				json: true,
 			}}
 			args={[]}
 		/>

@@ -1,3 +1,4 @@
+import { traceCallHandler } from '@tevm/actions'
 import { z } from 'zod'
 import CliAction from '../components/CliAction.js'
 import { useAction } from '../hooks/useAction.js'
@@ -5,7 +6,8 @@ import { CallParams, CallResult } from '../utils/action-types.js'
 import { createCallOptions } from '../utils/options.js'
 
 // Add command description for help output
-export const description = 'Execute a raw EVM call against a contract or address'
+export const description =
+	'Execute a raw EVM call against a contract or address\nExample: tevm call --to 0x4200000000000000000000000000000000000006 --data 0x06fdde03 --rpc https://mainnet.optimism.io --run'
 
 // Empty args tuple since we're using options for all parameters
 export const args = z.tuple([])
@@ -21,7 +23,7 @@ type Props = {
 export default function Call({ options }: Props) {
 	// Use the action hook to handle all the complexity
 	const actionResult = useAction<CallParams, CallResult>({
-		actionName: 'tevmCall',
+		actionName: 'call',
 		options,
 		defaultValues: {
 			to: '0x0000000000000000000000000000000000000000',
@@ -76,7 +78,7 @@ export default function Call({ options }: Props) {
 			}
 
 			// Boolean flags
-			if (enhancedOptions['createTrace']) {
+			if (enhancedOptions['trace'] || enhancedOptions['createTrace']) {
 				params.createTrace = true
 			}
 			if (enhancedOptions['createAccessList']) {
@@ -95,7 +97,21 @@ export default function Call({ options }: Props) {
 
 		// Execute the call against the client
 		executeAction: async (client: any, params: CallParams): Promise<CallResult> => {
-			return await client.tevmCall(params)
+			if (!params.createTrace) {
+				return await client.tevmCall(params)
+			}
+			const trace = await traceCallHandler(client.transport.tevm)({
+				tracer: 'callTracer',
+				to: params.to as `0x${string}`,
+				from: params.from as `0x${string}`,
+				data: params.data as `0x${string}`,
+				gas: params.gas,
+				gasPrice: params.gasPrice,
+				value: params.value,
+				blockTag: params.blockTag as any,
+			})
+			const result = await client.tevmCall({ ...params, createTrace: false })
+			return { ...result, trace } as CallResult
 		},
 	})
 

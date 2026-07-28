@@ -4,7 +4,8 @@ import CliAction from '../components/CliAction.js'
 import { useAction } from '../hooks/useAction.js'
 
 // Add command description for help output
-export const description = 'Get the text record associated with an ENS name'
+export const description =
+	'Get an ENS text record\nExample: tevm get-ens-text --name vitalik.eth --key url --rpc https://eth.llamarpc.com --run'
 
 // Options definitions and descriptions
 const optionDescriptions = {
@@ -89,13 +90,13 @@ export const options = z.object({
 		),
 
 	// Output formatting
-	formatJson: z
+	json: z
 		.boolean()
 		.optional()
 		.describe(
 			option({
-				description: 'Format output as JSON (env: TEVM_FORMAT_JSON)',
-				defaultValueDescription: 'true',
+				description: 'Emit the stable machine-readable JSON envelope (env: TEVM_JSON)',
+				defaultValueDescription: 'false',
 			}),
 		),
 })

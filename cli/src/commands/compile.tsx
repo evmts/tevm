@@ -4,11 +4,12 @@ import { glob } from 'glob'
 import { Box, Newline, Text } from 'ink'
 import { option } from 'pastel'
 import { useEffect, useState } from 'react'
-import solc from 'solc'
 import zod from 'zod'
+import RawOutput from '../components/RawOutput.js'
+import { formatJsonFailure, formatJsonSuccess } from '../utils/output.js'
 
 // Add command description for help output
-export const description = 'Compile Solidity smart contracts to bytecode and ABI'
+export const description = 'Compile Solidity smart contracts to bytecode and ABI\nExample: tevm compile --json'
 
 export const options = zod.object({
 	watch: zod
@@ -54,7 +55,7 @@ export default function Compile({ options }: Props) {
 	const [state, setState] = useState<CompileState>({ status: 'compiling', artifacts: [], errors: [] })
 
 	useEffect(() => {
-		const compileContracts = () => {
+		const compileContracts = async (): Promise<void> => {
 			const cwd = process.cwd()
 			const files = glob.sync('src/**/*.sol', { cwd, nodir: true })
 
@@ -86,6 +87,7 @@ export default function Compile({ options }: Props) {
 					},
 				},
 			}
+			const solc = (await import('solc')).default
 			const output = JSON.parse(solc.compile(JSON.stringify(input)))
 			const errors = (output.errors ?? [])
 				.filter((error: { severity?: string }) => error.severity === 'error')
@@ -134,13 +136,13 @@ export default function Compile({ options }: Props) {
 			setState({ status: 'done', artifacts, errors: [] })
 		}
 
-		compileContracts()
+		void compileContracts()
 
 		if (!options.watch) {
 			return
 		}
 
-		const interval = setInterval(compileContracts, 1000)
+		const interval = setInterval(() => void compileContracts(), 1000)
 		return () => clearInterval(interval)
 	}, [options.optimize, options.watch])
 
@@ -149,6 +151,9 @@ export default function Compile({ options }: Props) {
 	}
 
 	if (state.status === 'error') {
+		if (process.env['TEVM_JSON'] === 'true') {
+			return <RawOutput value={formatJsonFailure('compile', new Error(state.errors.join('\n')))} exitCode={1} />
+		}
 		return (
 			<Box flexDirection="column">
 				<Text color="red">Compilation failed:</Text>
@@ -160,6 +165,10 @@ export default function Compile({ options }: Props) {
 				))}
 			</Box>
 		)
+	}
+
+	if (process.env['TEVM_JSON'] === 'true') {
+		return <RawOutput value={formatJsonSuccess('compile', { artifacts: state.artifacts })} />
 	}
 
 	return (

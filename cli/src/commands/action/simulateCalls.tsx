@@ -1,17 +1,19 @@
+import { readFileSync } from 'node:fs'
 import { option } from 'pastel'
 import { z } from 'zod'
 import CliAction from '../../components/CliAction.js'
 import { useAction } from '../../hooks/useAction.js'
 
 // Add command description for help output
-export const description = 'Simulate multiple contract calls without committing them to the blockchain'
+export const description =
+	'Simulate a bundle of calls without committing state\nExample: tevm action simulate-calls --calls ./calls.json --rpc https://mainnet.optimism.io --run --json'
 
 // Options definitions and descriptions
 const optionDescriptions = {
 	account: 'Account to simulate calls from (env: TEVM_ACCOUNT)',
 	blockNumber: 'Block number to simulate at (env: TEVM_BLOCK_NUMBER)',
 	blockTag: 'Block tag (latest, pending, etc.) to simulate at (env: TEVM_BLOCK_TAG)',
-	calls: 'Array of calls to simulate (edited interactively) (env: TEVM_CALLS)',
+	calls: 'Calls as inline JSON or a JSON file path (env: TEVM_CALLS)',
 	traceAssetChanges: 'Whether to trace asset changes (env: TEVM_TRACE_ASSET_CHANGES)',
 	traceTransfers: 'Whether to trace transfers (env: TEVM_TRACE_TRANSFERS)',
 	validation: 'Whether to enable validation mode (env: TEVM_VALIDATION)',
@@ -68,6 +70,15 @@ export const options = z.object({
 			}),
 		),
 
+	calls: z
+		.string()
+		.optional()
+		.describe(
+			option({
+				description: optionDescriptions.calls,
+			}),
+		),
+
 	traceAssetChanges: z
 		.boolean()
 		.optional()
@@ -118,13 +129,13 @@ export const options = z.object({
 		),
 
 	// Output formatting
-	formatJson: z
+	json: z
 		.boolean()
 		.optional()
 		.describe(
 			option({
-				description: 'Format output as JSON (env: TEVM_FORMAT_JSON)',
-				defaultValueDescription: 'true',
+				description: 'Emit the stable machine-readable JSON envelope (env: TEVM_JSON)',
+				defaultValueDescription: 'false',
 			}),
 		),
 })
@@ -172,6 +183,21 @@ const parseCallValues = (calls: any[]): any[] => {
 	})
 }
 
+const parseCalls = (calls: unknown): any[] => {
+	if (Array.isArray(calls)) {
+		return calls
+	}
+	if (typeof calls !== 'string') {
+		return defaultValues['calls']
+	}
+	const source = calls.trim().startsWith('[') ? calls : readFileSync(calls, 'utf8')
+	const parsed = JSON.parse(source)
+	if (!Array.isArray(parsed)) {
+		throw new Error('Calls must be a JSON array')
+	}
+	return parsed
+}
+
 export default function SimulateCalls({ options }: Props) {
 	// Use the action hook
 	const actionResult = useAction({
@@ -212,7 +238,7 @@ export default function SimulateCalls({ options }: Props) {
 			}
 
 			// Process calls array to ensure each contract call has an ABI if needed
-			const calls = Array.isArray(enhancedOptions['calls']) ? enhancedOptions['calls'] : defaultValues['calls']
+			const calls = parseCalls(enhancedOptions['calls'])
 
 			const processedCalls = calls.map((call: Record<string, any>) => {
 				// If it has functionName but no ABI, add the default ABI

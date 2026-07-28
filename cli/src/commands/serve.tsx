@@ -8,6 +8,8 @@ import zod from 'zod'
 import ActionTab from '../components/ActionTab.js'
 import HomeTab from '../components/HomeTab.js'
 import LogViewer from '../components/LogViewer.js'
+import RawOutput from '../components/RawOutput.js'
+import { formatJsonFailure, formatJsonSuccess } from '../utils/output.js'
 import { initializeServer } from '../utils/server.js'
 // Import action components
 import Call from './call.js'
@@ -15,7 +17,8 @@ import GetAccount from './getAccount.js'
 import SetAccount from './setAccount.js'
 
 // Add command description for help output
-export const description = 'Start an Ethereum JSON-RPC server with TEVM features'
+export const description =
+	'Start a persistent TEVM JSON-RPC server\nExample: tevm serve --fork https://mainnet.optimism.io --port 8545'
 
 export const options = zod.object({
 	port: zod
@@ -88,6 +91,7 @@ type Props = {
 export default function Serve({ options }: Props) {
 	const [activeTab, setActiveTab] = useState(0)
 	const [isInteractive, setIsInteractive] = useState(false)
+	const json = process.env['TEVM_JSON'] === 'true'
 
 	// Generate the RPC URL for the local server
 	const rpcUrl = `http://${options.host}:${options.port}`
@@ -139,28 +143,34 @@ export default function Serve({ options }: Props) {
 	})
 
 	// Handle keyboard navigation and interaction
-	useInput((_, key) => {
-		// If in interactive mode, only handle Escape to exit
-		if (isInteractive) {
-			if (key.escape) {
-				setIsInteractive(false)
+	useInput(
+		(_, key) => {
+			// If in interactive mode, only handle Escape to exit
+			if (isInteractive) {
+				if (key.escape) {
+					setIsInteractive(false)
+				}
+				return
 			}
-			return
-		}
 
-		// Tab navigation when not in interactive mode
-		if (key.tab || key.rightArrow) {
-			setActiveTab((prev) => (prev + 1) % tabs.length)
-		} else if ((key.shift && key.tab) || key.leftArrow) {
-			setActiveTab((prev) => (prev - 1 + tabs.length) % tabs.length)
-		} else if (key.return && activeTab > 0) {
-			// Enter on a tab enters interactive mode
-			setIsInteractive(true)
-		}
-	})
+			// Tab navigation when not in interactive mode
+			if (key.tab || key.rightArrow) {
+				setActiveTab((prev) => (prev + 1) % tabs.length)
+			} else if ((key.shift && key.tab) || key.leftArrow) {
+				setActiveTab((prev) => (prev - 1 + tabs.length) % tabs.length)
+			} else if (key.return && activeTab > 0) {
+				// Enter on a tab enters interactive mode
+				setIsInteractive(true)
+			}
+		},
+		{ isActive: !json },
+	)
 
 	// Display loading state while server is starting
 	if (isLoading) {
+		if (json) {
+			return null
+		}
 		return (
 			<Box>
 				<Text>
@@ -175,10 +185,26 @@ export default function Serve({ options }: Props) {
 
 	// Display error state if server failed to start
 	if (isError) {
+		if (json) {
+			return <RawOutput value={formatJsonFailure('serve', error)} exitCode={1} />
+		}
 		return (
 			<Box flexDirection="column">
 				<Text color="red">Error starting server: {error instanceof Error ? error.message : String(error)}</Text>
 			</Box>
+		)
+	}
+
+	if (json) {
+		return (
+			<RawOutput
+				value={formatJsonSuccess('serve', {
+					rpcUrl,
+					chainId: options.chainId,
+					fork: options.fork ?? null,
+				})}
+				exitOnWrite={false}
+			/>
 		)
 	}
 
