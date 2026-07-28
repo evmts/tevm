@@ -1,90 +1,49 @@
-# @tevm/vm
+---
+title: Virtual Machine
+description: Reference for the low-level Tevm VM
+---
 
-High-performance EVM implementation for Tevm. Handles bytecode execution, transaction processing, block building, and state transitions across supported hardforks and EIPs.
+# Virtual Machine
 
-## Installation
+`@tevm/vm` coordinates the EVM, state manager, blockchain, block building, and transaction execution. Most applications should use `createMemoryClient`; direct VM access is intended for runtime integrations.
 
-```bash
-npm install @tevm/vm
-```
+## Access the Configured VM
 
-## API Reference
+```ts
+import { createTevmNode } from 'tevm'
+import { createAddress } from 'tevm/address'
+import { createImpersonatedTx } from 'tevm/tx'
 
-### Core Types
+const node = createTevmNode()
+const vm = await node.getVm()
 
-- [`Vm`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/Vm.ts#L6) - core VM type.
-
-### Block Building
-
-- [`BlockBuilder`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/BlockBuilder.ts)
-- [`BuildBlock`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/buildBlock.ts#L5)
-- [`BuildBlockOpts`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/BuildBlockOpts.ts)
-- [`BuildStatus`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/BuildStatus.ts)
-
-### Transaction Processing
-
-- [`RunTx`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/runTx.ts)
-- [`RunTxOpts`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/RunTxOpts.ts)
-- [`RunTxResult`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/RunTxResult.ts)
-
-### Block Processing
-
-- [`RunBlock`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/runBlock.ts)
-- [`RunBlockOpts`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/RunBlockOpts.ts)
-- [`RunBlockResult`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/RunBlockResult.ts)
-
-### Events
-
-- [`AfterTxEvent`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/events/AfterTxEvent.ts)
-- [`AfterBlockEvent`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/events/AfterBlockEvent.ts)
-- [`VMEvents`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/utils/VMEvents.ts)
-
-### Core Functions
-
-- [`createVm`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/createVm.js#L11)
-- [`deepCopy`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/deepCopy.js#L20)
-- [`applyBlock`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/applyBlock.ts#L24)
-- [`buildBlock`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/buildBlock.ts#L8)
-- [`genTxTrie`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/genTxTrie.ts#L6)
-- [`validateRunTx`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/validateRunTx.js#L10)
-- [`applyDAOHardfork`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/applyDAOHardfork.js)
-- [`execHardfork`](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/execHardfork.js#L14)
-
-## Usage Examples
-
-```typescript
-import { createVm } from '@tevm/vm'
-import { Common } from '@tevm/common'
-
-const common = new Common({ chain: 'mainnet' })
-const vm = createVm({ common })
-
-const blockBuilder = await vm.buildBlock({
-  parentBlock: block,
-  blockOpts: { /* options */ },
+const tx = createImpersonatedTx({
+  impersonatedAddress: createAddress(
+    '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+  ),
+  to: createAddress('0x1111111111111111111111111111111111111111'),
+  value: 1n,
+  gasLimit: 21_000n,
+  maxFeePerGas: 10n,
+  maxPriorityFeePerGas: 1n,
 })
-await blockBuilder.addTransaction(tx)
-const built = await blockBuilder.build()
 
-const blockResult = await vm.runBlock({ block: built })
-
-const txResult = await vm.runTx({ tx })
-console.log(txResult.gasUsed.toString(), txResult.execResult.returnValue)
+const result = await vm.runTx({ tx })
+console.log(result.totalGasSpent, result.execResult.returnValue)
 ```
 
-## Configuration
+The node constructs compatible `common`, `stateManager`, `blockchain`, `evm`, txpool, and receipt components. Prefer this over assembling a partial VM unless you are implementing a custom runtime.
 
-```typescript
-const vm = createVm({
-  common,
-  stateManager,
-  blockchain,
-  activatePrecompiles: true,
-})
-```
+## Important VM Methods
 
-## Related Packages
+- `runTx` executes a typed transaction.
+- `runBlock` executes and validates a block.
+- `buildBlock` creates a block builder.
+- `deepCopy` creates an isolated runtime copy.
+- `stateManager`, `blockchain`, and `evm` expose the configured subcomponents.
 
-- [@tevm/state](./state)
-- [@tevm/common](./common)
-- [@tevm/blockchain](./blockchain)
+Direct execution follows checkpoint and hardfork rules. For simulations with Tevm error handling, tracing, overrides, and ABI decoding, use `client.tevmCall` or `client.tevmContract`.
+
+## Related
+
+[TevmNode Interface](../core/tevm-node-interface) · [EVM](./evm) · [State](./state) · [Blockchain](./blockchain)

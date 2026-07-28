@@ -1,357 +1,91 @@
 ---
-title: Performance & Profiler
-description: How to measure EVM performance with Tevm Node
+title: Performance Profiler
+description: Measure opcode execution and gas with Tevm traces and profiler logs
 ---
 
-# Performance & Profiler
+# Performance Profiler
 
-Tevm Node ships a built-in profiler that tracks execution time, gas, and other metrics per EVM operation.
+Tevm provides two inspection levels:
 
-## Quick Start
+- `createTrace: true` returns a serializable per-opcode trace for one call.
+- `profiler: true` enables the low-level EVM performance log collector.
 
-### Basic Setup
+Use traces for application tooling and profiler logs when investigating the EVM implementation itself.
 
-```typescript showLineNumbers filename="basic-profiling.ts"
-import { createTevmNode } from 'tevm'
+## Profile a Call with a Trace
 
-const node = createTevmNode({
-  profiler: {
-    enabled: true,
-    includeOpcodes: true,
-    includePrecompiles: true,
-  }
+```ts
+import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
+
+const client = createMemoryClient()
+const contract = '0x4444444444444444444444444444444444444444'
+
+await client.tevmSetAccount({
+  address: contract,
+  deployedBytecode: '0x6001600055',
 })
 
-const vm = await node.getVm()
-await vm.runTx({ /* transaction details */ })
+const result = await client.tevmCall({
+  from: PREFUNDED_ACCOUNTS[0].address,
+  to: contract,
+  createTrace: true,
+})
 
+const gasByOpcode = new Map<string, bigint>()
+for (const step of result.trace?.structLogs ?? []) {
+  gasByOpcode.set(
+    step.op,
+    (gasByOpcode.get(step.op) ?? 0n) + step.gasCost,
+  )
+}
+
+console.log(result.executionGasUsed, gasByOpcode)
+```
+
+`executionGasUsed` covers EVM execution. `totalGasSpent` also includes intrinsic transaction costs when available.
+
+## Stream Live Steps
+
+```ts
+import { createMemoryClient } from 'tevm'
+
+const client = createMemoryClient()
+let stepCount = 0
+
+await client.tevmCall({
+  deployedBytecode: '0x6001600055',
+  onStep(step, next) {
+    stepCount += 1
+    console.log(step.pc, step.opcode.name, step.gasLeft)
+    next?.()
+  },
+})
+
+console.log(stepCount)
+```
+
+Live callbacks avoid retaining a full trace but add work to every opcode. Keep handlers small and always call `next?.()`.
+
+## Low-Level Profiler Logs
+
+```ts
+import { createMemoryClient } from 'tevm'
+
+const client = createMemoryClient({ profiler: true })
+await client.tevmReady()
+
+await client.tevmCall({
+  deployedBytecode: '0x6001600055',
+})
+
+const vm = await client.transport.tevm.getVm()
 const logs = vm.evm.getPerformanceLogs()
-vm.evm.clearPerformanceLogs()
+
+console.log(logs)
 ```
 
-### Complete Example
+Profiler mode has runtime and memory overhead. Enable it only around measurements, warm up initialization before timing, and compare the same bytecode and chain configuration.
 
-```typescript showLineNumbers filename="contract-profiling.ts"
-import { createTevmNode } from 'tevm'
+## Related
 
-const node = createTevmNode({
-  profiler: {
-    enabled: true,
-    includeOpcodes: true,
-    includePrecompiles: true,
-    includeMemory: true,
-    includeStorage: true,
-    callStackDepth: 10,
-  }
-})
-
-const vm = await node.getVm()
-const deployTx = createTx({ /* deployment transaction */ })
-await vm.runTx({ tx: deployTx })
-const contractAddress = deployTx.createdAddress
-
-vm.evm.clearPerformanceLogs()
-
-const callTx = createTx({
-  to: contractAddress,
-  data: '0xa9059cbb000000000000000000000000123...',
-})
-await vm.runTx({ tx: callTx })
-
-const logs = vm.evm.getPerformanceLogs()
-const analysis = analyzePerformance(logs)
-
-console.log(`Total execution time: ${analysis.totalTime}ms`)
-console.log(`Total gas used: ${analysis.totalGas}`)
-console.log(`Hotspots: ${JSON.stringify(analysis.hotspots)}`)
-```
-
-## Profiler Configuration
-
-- **Opcode Tracking** — execution time and gas per opcode
-- **Call Stack Analysis** — full call tree
-- **Gas Analysis** — most gas-hungry operations
-- **Memory Usage** — allocation and access patterns
-- **Storage I/O** — SLOAD/SSTORE impact
-- **Precompile Usage** — built-in and custom precompiles
-
-:::tip[Configuration Options]
-For general use, opcode + call tracking is a good balance between detail and overhead.
-:::
-
-## Log Types
-
-All log entries share a base shape:
-
-```typescript showLineNumbers filename="log-types.ts"
-interface PerformanceLog {
-  type: 'opcode' | 'precompile' | 'call' | 'create'
-  startTime: number     // Performance.now() start
-  endTime: number       // Performance.now() end
-  executionTime: number // ms
-  gasUsed?: bigint
-}
-```
-
-```typescript showLineNumbers filename="opcode-logs.ts"
-interface OpcodeLog extends PerformanceLog {
-  type: 'opcode'
-  opcode: string  // e.g. "ADD", "SSTORE"
-  pc: number
-  stack?: bigint[]
-}
-```
-
-```typescript showLineNumbers filename="call-logs.ts"
-interface CallLog extends PerformanceLog {
-  type: 'call'
-  from: string
-  to: string
-  value: bigint
-  input: Uint8Array
-  depth: number
-}
-```
-
-```typescript showLineNumbers filename="precompile-logs.ts"
-interface PrecompileLog extends PerformanceLog {
-  type: 'precompile'
-  address: string
-  name: string
-  input: Uint8Array
-}
-```
-
-## Performance Analysis
-
-### Opcode Analysis
-
-```typescript showLineNumbers filename="opcode-analysis.ts"
-const opcodeStats = logs
-  .filter(log => log.type === 'opcode')
-  .reduce((acc, log) => {
-    const key = log.opcode
-    acc[key] = acc[key] || { count: 0, totalTime: 0, totalGas: 0n }
-    acc[key].count++
-    acc[key].totalTime += log.executionTime
-    acc[key].totalGas += log.gasUsed ?? 0n
-    return acc
-  }, {})
-
-const expensiveOpsByTime = Object.entries(opcodeStats)
-  .sort(([, a], [, b]) => b.totalTime - a.totalTime)
-  .slice(0, 5)
-  .map(([opcode, stats]) => ({
-    opcode,
-    count: stats.count,
-    totalTimeMs: stats.totalTime.toFixed(2),
-    avgTimeMs: (stats.totalTime / stats.count).toFixed(2)
-  }))
-
-console.table(expensiveOpsByTime)
-```
-
-:::note[Common Hotspots]
-Storage ops (SLOAD, SSTORE), modular math (MULMOD, ADDMOD), and external calls (CALL, DELEGATECALL) are typically the most expensive.
-:::
-
-### Call Tree Analysis
-
-```typescript showLineNumbers filename="call-analysis.ts"
-const callTree = logs
-  .filter(log => log.type === 'call')
-  .map(log => ({
-    from: log.from,
-    to: log.to,
-    executionTime: log.executionTime,
-    gasUsed: log.gasUsed,
-    depth: log.depth
-  }))
-
-const contractTimes = callTree.reduce((acc, call) => {
-  acc[call.to] = (acc[call.to] || 0) + call.executionTime
-  return acc
-}, {})
-
-const slowestContracts = Object.entries(contractTimes)
-  .sort(([, a], [, b]) => b - a)
-  .slice(0, 3)
-  .map(([address, time]) => `${address}: ${time.toFixed(2)}ms`)
-```
-
-### Gas Analysis
-
-```typescript showLineNumbers filename="gas-analysis.ts"
-const gasTimeline = logs
-  .filter(log => log.gasUsed !== undefined)
-  .map(log => ({ timestamp: log.startTime, gasUsed: log.gasUsed, type: log.type }))
-
-const gasEfficiencyByType = gasTimeline.reduce((acc, log) => {
-  acc[log.type] = acc[log.type] || { totalGas: 0n, totalTime: 0, count: 0 }
-  acc[log.type].totalGas += log.gasUsed
-  acc[log.type].totalTime += log.executionTime
-  acc[log.type].count++
-  return acc
-}, {})
-
-Object.entries(gasEfficiencyByType).forEach(([type, stats]) => {
-  const gasPerMs = Number(stats.totalGas) / stats.totalTime
-  console.log(`${type}: ${gasPerMs.toFixed(2)} gas/ms (${stats.count} operations)`)
-})
-```
-
-## Use Cases
-
-### Smart Contract Optimization
-
-```typescript showLineNumbers filename="contract-optimization.ts"
-const vm = await node.getVm()
-const deployTx = createTx({ data: contractBytecode })
-await vm.runTx({ tx: deployTx })
-const contractAddress = deployTx.createdAddress
-
-vm.evm.clearPerformanceLogs()
-
-const functionCallTx = createTx({
-  to: contractAddress,
-  data: encodeFunctionData({ abi, functionName: 'expensiveFunction', args: [param1, param2] })
-})
-
-await vm.runTx({ tx: functionCallTx })
-const logs = vm.evm.getPerformanceLogs()
-const hotspots = identifyHotspots(logs)
-console.log('Optimization targets:', hotspots)
-```
-
-### Compare Different Implementations
-
-```typescript showLineNumbers filename="implementation-comparison.ts"
-async function compareImplementations(implementations) {
-  const results = []
-  const vm = await node.getVm()
-
-  for (const impl of implementations) {
-    vm.evm.clearPerformanceLogs()
-    const deployTx = createTx({ data: impl.bytecode })
-    await vm.runTx({ tx: deployTx })
-
-    const callTx = createTx({ to: deployTx.createdAddress, data: impl.encodedFunctionCall })
-    await vm.runTx({ tx: callTx })
-    const logs = vm.evm.getPerformanceLogs()
-    results.push(analyzePerformance(logs, impl.name))
-  }
-
-  return compareResults(results)
-}
-
-// Example output:
-// Implementation A: 1.2ms, 45,000 gas
-// Implementation B: 0.8ms, 32,000 gas (29% improvement)
-```
-
-### Gas Optimization
-
-```typescript showLineNumbers filename="gas-optimization.ts"
-const contractGasUsage = logs
-  .filter(log => log.type === 'opcode' && log.gasUsed)
-  .reduce((acc, log) => {
-    const pcKey = log.pc.toString().padStart(4, '0')
-    acc[pcKey] = acc[pcKey] || { opcode: log.opcode, count: 0, totalGas: 0n }
-    acc[pcKey].count++
-    acc[pcKey].totalGas += log.gasUsed
-    return acc
-  }, {})
-
-const gasHotspots = Object.entries(contractGasUsage)
-  .sort(([, a], [, b]) => Number(b.totalGas - a.totalGas))
-  .slice(0, 10)
-```
-
-## Best Practices
-
-### Targeted Profiling
-
-Profile specific operations in isolation for accurate results.
-
-```typescript showLineNumbers filename="targeted-profiling.ts"
-vm.evm.clearPerformanceLogs()
-await vm.runTx({ tx: specificOperationTx })
-
-const logs = vm.evm.getPerformanceLogs()
-const analysis = analyzePerformance(logs)
-
-vm.evm.clearPerformanceLogs()
-```
-
-### Memory Management
-
-:::warning[Handle Large Log Volumes]
-Profiling generates a lot of data. Clear logs periodically.
-:::
-
-```typescript showLineNumbers filename="memory-management.ts"
-async function profileWithMemoryManagement(operations) {
-  const results = []
-
-  for (const op of operations) {
-    vm.evm.clearPerformanceLogs()
-    await vm.runTx({ tx: op.tx })
-
-    const logs = vm.evm.getPerformanceLogs()
-    const summary = summarizeLogs(logs)
-
-    results.push({ operation: op.name, summary })
-    vm.evm.clearPerformanceLogs()
-  }
-
-  return results
-}
-```
-
-### Comparative Analysis
-
-Always measure before/after optimization.
-
-```typescript showLineNumbers filename="comparative-analysis.ts"
-async function measureOptimizationImpact(originalCode, optimizedCode) {
-  vm.evm.clearPerformanceLogs()
-  await runImplementation(originalCode)
-  const beforeMetrics = analyzePerformance(vm.evm.getPerformanceLogs())
-
-  vm.evm.clearPerformanceLogs()
-  await runImplementation(optimizedCode)
-  const afterMetrics = analyzePerformance(vm.evm.getPerformanceLogs())
-
-  return {
-    timeImprovement: (1 - afterMetrics.totalTime / beforeMetrics.totalTime) * 100,
-    gasImprovement: (1 - Number(afterMetrics.totalGas) / Number(beforeMetrics.totalGas)) * 100,
-    details: compareMetrics(beforeMetrics, afterMetrics)
-  }
-}
-```
-
-### Production Use
-
-:::warning[Profiler Overhead]
-The profiler adds overhead. Use selective options in production.
-:::
-
-```typescript showLineNumbers filename="production-profiling.ts"
-const node = createTevmNode({
-  profiler: {
-    enabled: process.env.ENABLE_PROFILING === 'true',
-    includeOpcodes: false,
-    samplingRate: 0.01,         // Profile 1% of operations
-    includeMemory: false,
-    includeStorage: false,
-    includeHighLevelCalls: true
-  }
-})
-```
-
-## Related Resources
-
-- [VM & Submodules](../api/vm-and-submodules)
-- [Gas Estimation](../api/methods)
-- [Transaction Pool](./txpool)
-- [Solidity Optimizer](https://docs.soliditylang.org/en/latest/internals/optimizer.html)
+[EVM Events](../api/evm-events) · [Building a Debugger UI](../examples/debugger-ui) · [Call API](../api/tevm-call)

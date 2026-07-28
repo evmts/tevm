@@ -63,12 +63,9 @@ const common = createCommon({ ...mainnet, hardfork: 'shanghai' })
 const custom = createCommon({
   name: 'Custom Chain',
   id: 1337,
-  defaultHardfork: 'shanghai',
-  consensus: {
-    type: 'poa',
-    algorithm: 'clique',
-    clique: { period: 15, epoch: 30000 },
-  },
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: { default: { http: ['http://localhost:8545'] } },
+  hardfork: 'shanghai',
 })
 
 const withKzg = createCommon({
@@ -76,8 +73,8 @@ const withKzg = createCommon({
   customCrypto: { kzg: createMockKzg() },
 })
 
-const optimismCommon = createCommon({ ...optimism, hardfork: 'bedrock' })
-const arbitrumCommon = createCommon({ ...arbitrum, hardfork: 'nitro' })
+const optimismCommon = createCommon({ ...optimism })
+const arbitrumCommon = createCommon({ ...arbitrum })
 ```
 
 The returned `Common` is a viem chain object plus:

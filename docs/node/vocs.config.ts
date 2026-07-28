@@ -25,7 +25,8 @@ export default defineConfig({
 	},
 	// Banner for important updates or announcements
 	banner: {
-		content: '🚀 Tevm Node is in Beta! Join our [Telegram community](https://t.me/+ANThR9bHDLAwMjUx)',
+		content:
+			'Tevm 1.0 docs target `tevm@1.0.0-rc.151`. [Install the release candidate](/getting-started/overview).',
 		dismissable: true,
 		backgroundColor: '#e6f7ff',
 	},
@@ -177,7 +178,6 @@ export default defineConfig({
 									text: 'Troubleshooting',
 									link: '/reference/bundler/troubleshooting',
 								},
-								{ text: 'Contract Loader', link: '/api/whatsabi-integration' },
 							],
 						},
 						{

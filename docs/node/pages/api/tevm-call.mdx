@@ -35,7 +35,7 @@ const result = await client.tevmCall({
 ### Tree-shakable API
 
 ```ts
-import { tevmCall } from 'tevm/actions'
+import { tevmCall } from 'tevm'
 import { createTevmTransport } from 'tevm/memory-client'
 import { createTevmNode } from 'tevm/node'
 import { requestEip1193 } from 'tevm/decorators'
@@ -174,7 +174,7 @@ const result = await client.tevmCall({
 
 if (result.trace) {
   result.trace.structLogs.forEach(log => {
-    console.log(log.op, log.stack, log.memory)
+    console.log(log.op, log.stack, log.gas, log.gasCost)
   })
 }
 ```
@@ -184,7 +184,7 @@ if (result.trace) {
 Monitor execution in real-time:
 
 ```ts
-import { createMemoryClient } from 'tevm'
+import { bytesToHex, createMemoryClient } from 'tevm'
 import { encodeFunctionData } from 'viem'
 
 const client = createMemoryClient()
@@ -212,7 +212,7 @@ const result = await client.tevmCall({
     next?.()
   },
   onAfterMessage: (result, next) => {
-    console.log(`Result: ${result.execResult.returnValue.toString('hex')}`,
+    console.log(`Result: ${bytesToHex(result.execResult.returnValue)}`,
                 `Gas used: ${result.execResult.executionGasUsed.toString()}`)
     if (result.execResult.exceptionError) {
       console.error(`Error: ${result.execResult.exceptionError.error}`)

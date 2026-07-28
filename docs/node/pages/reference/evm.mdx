@@ -36,7 +36,7 @@ import { createStateManager } from '@tevm/state'
 import { createAddress } from '@tevm/address'
 
 const common = mainnet.copy()
-const stateManager = createStateManager({ common })
+const stateManager = createStateManager({})
 const blockchain = await createChain({ common })
 
 const evm = await createEvm({

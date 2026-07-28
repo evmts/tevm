@@ -36,11 +36,9 @@ Always `await node.ready()` before using the node.
 
 ```ts
 import { createImpersonatedTx } from 'tevm/tx'
-import { Block } from 'tevm/block'
 import { createAddress } from 'tevm/address'
 
 const vm = await node.getVm()
-const block = new Block()
 
 const tx = createImpersonatedTx({
   impersonatedAddress: createAddress('0x1234567890123456789012345678901234567890'),
@@ -52,7 +50,7 @@ const tx = createImpersonatedTx({
   value: 1000000000000000000n, // 1 ETH
 })
 
-const result = await vm.runTx({ tx, block, skipNonce: true, skipBalance: true })
+const result = await vm.runTx({ tx, skipNonce: true, skipBalance: true })
 
 if (!result.execResult.exceptionError) {
   console.log('Gas used:', result.totalGasSpent)
@@ -229,13 +227,12 @@ The `tevm`-prefixed actions provide direct EVM execution with debugging hooks.
 Low-level EVM call with execution tracing:
 
 ```ts
-import { tevmCall } from 'tevm/actions'
 import { encodeFunctionData } from 'viem'
-import { createMemoryClient } from 'tevm'
+import { bytesToHex, createMemoryClient } from 'tevm'
 
 const client = createMemoryClient()
 
-const result = await tevmCall(client, {
+const result = await client.tevmCall({
   to: '0x1234...',
   data: encodeFunctionData({ abi, functionName: 'myFunction', args: [arg1, arg2] }),
   onStep: (step, next) => {
@@ -251,7 +248,7 @@ const result = await tevmCall(client, {
     next?.()
   },
   onAfterMessage: (result, next) => {
-    console.log(`Return: ${result.execResult.returnValue.toString('hex')}`)
+    console.log(`Return: ${bytesToHex(result.execResult.returnValue)}`)
     next?.()
   }
 })
@@ -266,14 +263,14 @@ const result = await tevmCall(client, {
 High-level contract interaction with event monitoring:
 
 ```ts
-import { tevmContract } from 'tevm/actions'
+import { tevmContract } from 'tevm'
 import { createMemoryClient } from 'tevm'
 
 const client = createMemoryClient()
 
 const result = await tevmContract(client, {
   abi,
-  address: '0x1234...',
+  to: '0x1234567890123456789012345678901234567890',
   functionName: 'myFunction',
   args: [arg1, arg2],
   onStep: (step, next) => {
@@ -292,7 +289,7 @@ const result = await tevmContract(client, {
 Contract deployment with execution monitoring:
 
 ```ts
-import { tevmDeploy } from 'tevm/actions'
+import { tevmDeploy } from 'tevm'
 import { createMemoryClient } from 'tevm'
 
 const client = createMemoryClient()
@@ -311,8 +308,8 @@ const deployResult = await tevmDeploy(client, {
   }
 })
 
-console.log('Deployed:', deployResult.address)
-console.log('Gas used:', deployResult.gasUsed)
+console.log('Deployed:', deployResult.createdAddress)
+console.log('Gas used:', deployResult.executionGasUsed)
 ```
 
 Debug use cases: gas profiling, contract testing, security auditing, educational EVM visualizers.
@@ -339,20 +336,11 @@ Extension methods have full access to the base node's functionality.
 
 ### State Cloning
 
-```ts
-// Deep copy with independent state
-const nodeCopy = await node.deepCopy()
-
-// Fork from another node
-const forkedNode = createTevmNode({
-  fork: { transport: node }
-})
-
-await nodeCopy.sendTransaction({ ... })
-// Original state unchanged
-```
-
-State copying is useful for test scenarios, alternative execution paths, and state snapshots.
+`await node.deepCopy()` creates an independent copy of the node's blockchain,
+state manager, txpool, and receipt data. State copying is useful for alternative
+execution paths and expensive test setup. Use the higher-level
+`client.snapshot()` and `client.revert({ id })` actions when a test only needs
+to restore one client.
 
 ## JSON-RPC Support
 
@@ -426,8 +414,5 @@ For the exhaustive list, see the [JSON-RPC Guide](./json-rpc#supported-methods).
 - `tevm_revert`
 - `tevm_mine`
 - `tevm_setAccount`
-
-**Utility Actions**
-- `whatsabi` **[Coming Soon]** Analyze contract bytecode, discover function selectors, resolve proxy implementations, and determine ABIs even for unverified contracts.
 
 See [Complete JSON-RPC API](../api/json-rpc).

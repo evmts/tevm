@@ -7,10 +7,6 @@ description: A reference guide to Tevm's bundler functionality
 
 Import Solidity files directly into TypeScript with type safety and IDE integration.
 
-:::note
-See the new [Bundler Reference](/reference/bundler/) — this page is preserved for backlink compatibility.
-:::
-
 - **[Overview](/reference/bundler/overview)** - Introduction, key benefits, available plugins
 - **[Internals](/reference/bundler/internals)** - How the bundler works under the hood
 - **[Methods & Exports](/reference/bundler/methods)** - Key APIs for advanced usage
@@ -22,9 +18,4 @@ At build time, the bundler reads `.sol` files, runs solc on the dependency graph
 
 For a quickstart, see [Bundler Quickstart](/getting-started/bundler).
 
-## Coming Soon
-
-- **Inline Solidity with `sol` tag** - inline contracts via template literals
-- **CAIP-10 contract imports** - import contracts from any chain by standardized identifier
-
-See [Upcoming Features](/reference/bundler/overview#coming-soon-features).
+The supported surface is direct `.sol` imports through the package-specific plugins described in the overview. The reference does not document unreleased inline-Solidity or chain-address loaders.

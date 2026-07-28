@@ -1,337 +1,164 @@
 ---
 title: Building a Debugger UI
-description: Create a minimal EVM debugger interface using Svelte and Tevm Node
+description: Build a minimal Svelte EVM debugger with Tevm's opcode hooks and traces
 ---
 
 # Building a Debugger UI
 
-:::warning
-These docs have not been checked for correctness yet. Use with caution.
-:::
+This Svelte example runs a real EVM call in the browser and renders its opcode, stack, gas, and trace data. It uses the public `MemoryClient` call API from `tevm@1.0.0-rc.151`; it does not depend on internal VM event emitters.
 
-A minimal EVM debugger using [Svelte](https://svelte.dev) and Tevm Node. Shows live opcode execution, stack, memory, errors, and gas usage.
-
-## Project Setup
+## Create the App
 
 ```bash
 npm create vite@latest tevm-debugger -- --template svelte-ts
 cd tevm-debugger
-npm install tevm tevm/contract
+npm install
+npm install tevm@1.0.0-rc.151
 ```
 
-## Components
+Replace `src/App.svelte` with the component below.
 
-### EVMDebugger.svelte
+## Debugger Component
 
 ```svelte
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte'
-  import { createTevmNode } from 'tevm/node'
-  import { createImpersonatedTx } from 'tevm/tx'
-  import type { InterpreterStep } from 'tevm/evm'
+  import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
 
-  let steps: InterpreterStep[] = []
-  let currentStep: InterpreterStep | null = null
-  let errors: string[] = []
+  type DisplayStep = {
+    pc: number
+    opcode: string
+    gasLeft: bigint
+    depth: number
+    stack: bigint[]
+  }
+
+  const client = createMemoryClient()
+  const contract = '0x4444444444444444444444444444444444444444'
+
+  let steps: DisplayStep[] = []
+  let error = ''
   let gasUsed = 0n
-  let isRunning = false
+  let running = false
 
-  const node = createTevmNode()
-  let vm: Awaited<ReturnType<typeof node.getVm>>
-
-  onMount(async () => {
-    vm = await node.getVm()
-    vm.evm.events?.on('step', (step, next) => {
-      currentStep = step
-      steps = [...steps, step]
-      next?.()
-    })
-    vm.evm.events?.on('afterMessage', (result, next) => {
-      if (result.execResult.exceptionError) {
-        errors = [...errors, result.execResult.exceptionError.error]
-      }
-      gasUsed = result.execResult.executionGasUsed
-      next?.()
-    })
-  })
-
-  onDestroy(() => vm?.evm.events?.removeAllListeners())
-
-  async function runSampleTx() {
-    isRunning = true
+  async function run() {
+    running = true
     steps = []
-    errors = []
+    error = ''
+
     try {
-      const tx = createImpersonatedTx({ to: '0x1234...', data: '0x...' })
-      await vm.runTx({ tx })
-    } catch (error) {
-      errors = [...errors, error.message]
+      // PUSH1 1; PUSH1 0; SSTORE
+      await client.tevmSetAccount({
+        address: contract,
+        deployedBytecode: '0x6001600055',
+      })
+
+      const result = await client.tevmCall({
+        from: PREFUNDED_ACCOUNTS[0].address,
+        to: contract,
+        createTrace: true,
+        throwOnFail: false,
+        onStep(step, next) {
+          steps = [
+            ...steps,
+            {
+              pc: step.pc,
+              opcode: step.opcode.name,
+              gasLeft: step.gasLeft,
+              depth: step.depth,
+              stack: Array.from(step.stack),
+            },
+          ]
+          next?.()
+        },
+      })
+
+      gasUsed = result.executionGasUsed
+      error = result.errors?.map((item) => item.message).join('\n') ?? ''
+    } catch (cause) {
+      error = cause instanceof Error ? cause.message : String(cause)
+    } finally {
+      running = false
     }
-    isRunning = false
   }
 </script>
 
-<div class="debugger">
-  <div class="controls">
-    <button on:click={runSampleTx} disabled={isRunning}>
-      {isRunning ? 'Running...' : 'Run Transaction'}
-    </button>
-    <div class="gas">Gas Used: {gasUsed.toString()}</div>
-  </div>
-
-  <div class="execution">
-    <h3>Current Step</h3>
-    {#if currentStep}
-      <div class="step">
-        <div>PC: {currentStep.pc}</div>
-        <div>Opcode: {currentStep.opcode.name}</div>
-        <div>Gas Left: {currentStep.gasLeft.toString()}</div>
-        <div>Depth: {currentStep.depth}</div>
-      </div>
-    {/if}
-  </div>
-
-  <div class="stack">
-    <h3>Stack</h3>
-    {#if currentStep?.stack}
-      <div class="stack-items">
-        {#each currentStep.stack as item}
-          <div class="stack-item">{item.toString(16)}</div>
-        {/each}
-      </div>
-    {/if}
-  </div>
-
-  <div class="errors">
-    <h3>Errors</h3>
-    {#each errors as error}
-      <div class="error">{error}</div>
-    {/each}
-  </div>
-
-  <div class="history">
-    <h3>Execution History ({steps.length} steps)</h3>
-    <div class="steps">
-      {#each steps as step}
-        <div class="history-step">
-          {step.opcode.name} (Gas: {step.gasLeft.toString()})
-        </div>
-      {/each}
-    </div>
-  </div>
-</div>
-
-<style>
-  .debugger { padding: 1rem; display: grid; gap: 1rem; grid-template-columns: repeat(2, 1fr); }
-  .controls { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; }
-  button { padding: 0.5rem 1rem; background: #4a5568; color: white; border: none; border-radius: 0.25rem; cursor: pointer; }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  .execution, .stack, .errors, .history { background: #2d3748; padding: 1rem; border-radius: 0.5rem; color: #e2e8f0; }
-  .stack-items { display: flex; flex-direction: column; gap: 0.5rem; }
-  .stack-item { font-family: monospace; padding: 0.25rem; background: #4a5568; border-radius: 0.25rem; }
-  .error { color: #fc8181; padding: 0.5rem; margin: 0.25rem 0; background: #742a2a; border-radius: 0.25rem; }
-  .steps { height: 200px; overflow-y: auto; }
-  .history-step { padding: 0.25rem; border-bottom: 1px solid #4a5568; font-family: monospace; }
-</style>
-```
-
-### App.svelte
-
-```svelte
-<script lang="ts">
-  import EVMDebugger from './lib/EVMDebugger.svelte'
-</script>
+<svelte:head><title>Tevm Debugger</title></svelte:head>
 
 <main>
-  <h1>Tevm Debugger</h1>
-  <EVMDebugger />
-</main>
-
-<style>
-  main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
-  h1 { color: #2d3748; margin-bottom: 2rem; }
-</style>
-```
-
-## Advanced Features
-
-### Memory Viewer Component
-
-```svelte
-<script lang="ts">
-  export let memory: Uint8Array
-  export let startOffset = 0
-  export let bytesPerRow = 16
-
-  $: rows = chunk(memory, bytesPerRow)
-
-  function chunk(array: Uint8Array, size: number) {
-    const chunks = []
-    for (let i = 0; i < array.length; i += size) chunks.push(array.slice(i, i + size))
-    return chunks
-  }
-  const formatByte = (b: number) => b.toString(16).padStart(2, '0')
-  const formatAscii = (b: number) => (b >= 32 && b <= 126 ? String.fromCharCode(b) : '.')
-</script>
-
-<div class="memory-viewer">
-  {#each rows as row, i}
-    <div class="memory-row">
-      <span class="offset">{(startOffset + i * bytesPerRow).toString(16).padStart(8, '0')}:</span>
-      <span class="hex">{#each row as byte}{formatByte(byte)}{/each}</span>
-      <span class="ascii">{#each row as byte}{formatAscii(byte)}{/each}</span>
-    </div>
-  {/each}
-</div>
-
-<style>
-  .memory-viewer { font-family: monospace; white-space: pre; }
-  .memory-row { display: flex; gap: 1rem; padding: 0.25rem 0; }
-  .offset { color: #718096; }
-  .hex { letter-spacing: 0.1em; }
-  .ascii { color: #718096; }
-</style>
-```
-
-### Storage Viewer Component
-
-```svelte
-<script lang="ts">
-  import type { Address } from 'tevm/utils'
-  import { createTevmNode } from 'tevm/node'
-
-  export let address: Address
-  let storage = new Map<string, string>()
-  let loading = false
-  const node = createTevmNode()
-
-  async function loadStorage() {
-    loading = true
-    try {
-      const vm = await node.getVm()
-      const dump = await vm.stateManager.dumpStorage(address)
-      storage = new Map(Object.entries(dump))
-    } catch (error) {
-      console.error('Failed to load storage:', error)
-    }
-    loading = false
-  }
-</script>
-
-<div class="storage">
-  <button on:click={loadStorage} disabled={loading}>
-    {loading ? 'Loading...' : 'Load Storage'}
+  <h1>Tevm EVM Debugger</h1>
+  <button onclick={run} disabled={running}>
+    {running ? 'Running…' : 'Run sample bytecode'}
   </button>
-  {#if storage.size > 0}
-    <div class="storage-items">
-      {#each [...storage] as [slot, value]}
-        <div class="storage-item">
-          <span class="slot">{slot}:</span>
-          <span class="value">{value}</span>
-        </div>
-      {/each}
-    </div>
+  <p>Execution gas used: {gasUsed.toString()}</p>
+
+  {#if error}
+    <pre class="error">{error}</pre>
   {/if}
-</div>
 
-<style>
-  .storage { padding: 1rem; }
-  .storage-items { margin-top: 1rem; }
-  .storage-item { display: flex; gap: 1rem; padding: 0.25rem 0; font-family: monospace; }
-  .slot { color: #718096; }
-</style>
-```
-
-## Usage
-
-Project structure:
-
-```
-tevm-debugger/
-├── src/
-│   ├── lib/
-│   │   ├── EVMDebugger.svelte
-│   │   ├── MemoryViewer.svelte
-│   │   └── StorageViewer.svelte
-│   ├── App.svelte
-│   └── main.ts
-└── package.json
-```
-
-Run `npm run dev`, then use the debugger:
-
-```ts
-import { createImpersonatedTx } from 'tevm/tx'
-
-const deployTx = createImpersonatedTx({ data: bytecode })
-await vm.runTx({ tx: deployTx })
-
-const callTx = createImpersonatedTx({ to: '0x...', data: '0x...' })
-await vm.runTx({ tx: callTx })
-```
-
-## Customization
-
-### Adding Transaction History
-
-```svelte
-<script lang="ts">
-  import { writable } from 'svelte/store'
-
-  const transactions = writable<{ hash: string; to: string; data: string; status: 'success' | 'error' }[]>([])
-
-  vm.evm.events?.on('afterMessage', (result, next) => {
-    transactions.update(txs => [...txs, {
-      hash: result.execResult.hash?.toString() ?? '',
-      to: result.execResult.to?.toString() ?? '',
-      data: result.execResult.data?.toString('hex') ?? '',
-      status: result.execResult.exceptionError ? 'error' : 'success'
-    }])
-    next?.()
-  })
-</script>
-
-<div class="transactions">
-  <h3>Transaction History</h3>
-  {#each $transactions as tx}
-    <div class="transaction" class:error={tx.status === 'error'}>
-      <div>Hash: {tx.hash}</div>
-      <div>To: {tx.to}</div>
-      <div>Data: {tx.data}</div>
-    </div>
-  {/each}
-</div>
-```
-
-### Adding Gas Profiling
-
-```svelte
-<script lang="ts">
-  const gasProfile = new Map<string, { count: number; totalGas: bigint }>()
-
-  vm.evm.events?.on('step', (step, next) => {
-    const stats = gasProfile.get(step.opcode.name) ?? { count: 0, totalGas: 0n }
-    stats.count++
-    stats.totalGas += BigInt(step.opcode.fee)
-    gasProfile.set(step.opcode.name, stats)
-    next?.()
-  })
-</script>
-
-<div class="gas-profile">
-  <h3>Gas Profile</h3>
   <table>
-    <thead><tr><th>Opcode</th><th>Count</th><th>Total Gas</th></tr></thead>
+    <thead>
+      <tr><th>PC</th><th>Opcode</th><th>Gas left</th><th>Depth</th><th>Stack</th></tr>
+    </thead>
     <tbody>
-      {#each [...gasProfile] as [opcode, stats]}
-        <tr><td>{opcode}</td><td>{stats.count}</td><td>{stats.totalGas.toString()}</td></tr>
+      {#each steps as step}
+        <tr>
+          <td>{step.pc}</td>
+          <td>{step.opcode}</td>
+          <td>{step.gasLeft.toString()}</td>
+          <td>{step.depth}</td>
+          <td>{step.stack.map((value) => `0x${value.toString(16)}`).join(', ') || '—'}</td>
+        </tr>
       {/each}
     </tbody>
   </table>
-</div>
+</main>
+
+<style>
+  :global(body) { margin: 0; background: #111827; color: #e5e7eb; font-family: system-ui; }
+  main { max-width: 72rem; margin: 0 auto; padding: 2rem; }
+  button { padding: .65rem 1rem; border: 0; border-radius: .4rem; cursor: pointer; }
+  button:disabled { cursor: wait; opacity: .6; }
+  table { width: 100%; margin-top: 1.5rem; border-collapse: collapse; font-family: ui-monospace, monospace; }
+  th, td { padding: .65rem; border-bottom: 1px solid #374151; text-align: left; }
+  .error { padding: 1rem; background: #7f1d1d; white-space: pre-wrap; }
+</style>
 ```
 
-## Related
+The call executes three instructions, so the table should show `PUSH1`, `PUSH1`, and `SSTORE`. `Array.from(step.stack)` copies each live interpreter stack into stable display data.
 
-- [EVM Events](../api/evm-events)
-- [Performance Profiler](../advanced/performance-profiler)
+## Use the Returned Trace
+
+The same call can return a serializable Geth-style trace. It contains `pc`, `op`, `gas`, `gasCost`, `depth`, and stack values for each instruction.
+
+```ts
+import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
+
+const client = createMemoryClient()
+const contract = '0x4444444444444444444444444444444444444444'
+
+await client.tevmSetAccount({
+  address: contract,
+  deployedBytecode: '0x6001600055',
+})
+
+const result = await client.tevmCall({
+  from: PREFUNDED_ACCOUNTS[0].address,
+  to: contract,
+  createTrace: true,
+})
+
+for (const step of result.trace?.structLogs ?? []) {
+  console.log(step.pc, step.op, step.gas, step.stack)
+}
+```
+
+Use the callback for a live UI and the returned trace for export, filtering, comparisons, or persistence. Always call `next?.()` from a callback so execution can continue.
+
+## Next Steps
+
+- Add a source map from bytecode offsets to Solidity locations.
+- Group trace steps by `depth` to visualize nested calls.
+- Display `step.memory` from the live callback when building a memory inspector.
+- Persist traces as JSON after converting bigint fields to strings.
+
+See [EVM Events](../api/evm-events), [Call API](../api/tevm-call), and [Performance Profiling](../advanced/performance-profiler) for the underlying APIs.

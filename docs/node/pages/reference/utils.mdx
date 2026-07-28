@@ -130,10 +130,9 @@ parseGwei('1.0')                   // 1000000000n
 ### Cryptography
 
 ```typescript
-import { keccak256, ecrecover, ecsign, randomBytes } from '@tevm/utils'
+import { keccak256, ecrecover, randomBytes } from '@tevm/utils'
 
 const hash = keccak256('0x1234')
-const signature = ecsign(messageHash, privateKey)
 const address = ecrecover(messageHash, v, r, s)
 const random = randomBytes(32)
 ```
@@ -142,17 +141,30 @@ const random = randomBytes(32)
 
 ```typescript
 import {
-  encodeAbiParameters,
-  decodeAbiParameters,
+  parseAbi,
   encodeFunctionData,
   decodeFunctionData,
   encodeEventTopics,
-  decodeEventLog,
 } from '@tevm/utils'
 
-const data = encodeFunctionData({ abi: [...], functionName: 'transfer', args: [address, amount] })
-const result = decodeFunctionData({ abi: [...], data: '0x...' })
-const topics = encodeEventTopics({ abi: [...], eventName: 'Transfer', args: [from, to, null] })
+const abi = parseAbi([
+  'function transfer(address to, uint256 amount) returns (bool)',
+  'event Transfer(address indexed from, address indexed to, uint256 amount)',
+])
+const from = '0x1111111111111111111111111111111111111111'
+const to = '0x2222222222222222222222222222222222222222'
+
+const data = encodeFunctionData({
+  abi,
+  functionName: 'transfer',
+  args: [to, 1n],
+})
+const decoded = decodeFunctionData({ abi, data })
+const topics = encodeEventTopics({
+  abi,
+  eventName: 'Transfer',
+  args: { from, to },
+})
 ```
 
 ### RLP
@@ -171,16 +183,6 @@ import { createMemoryDb } from '@tevm/utils'
 
 const db = createMemoryDb()
 const db2 = createMemoryDb(new Map())
-```
-
-### Event Emitter
-
-```typescript
-import { AsyncEventEmitter } from '@tevm/utils'
-
-const emitter = new AsyncEventEmitter()
-emitter.on('event', async (data) => { /* ... */ })
-await emitter.emit('event', data)
 ```
 
 ## Types
@@ -231,7 +233,7 @@ GWEI_TO_WEI // 1000000000n
 ```typescript
 import { invariant } from '@tevm/utils'
 
-invariant(condition, 'Error message')
+invariant(condition, new Error('Error message'))
 ```
 
 ## See Also

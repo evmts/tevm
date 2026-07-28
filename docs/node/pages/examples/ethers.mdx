@@ -14,16 +14,16 @@ Tevm works with Ethers.js through Tevm's EIP-1193 provider interface. Use Tevm f
 
 :::code-group
 ```bash [npm]
-npm install tevm ethers
+npm install tevm@1.0.0-rc.151 ethers@6
 ```
 ```bash [pnpm]
-pnpm add tevm ethers
+pnpm add tevm@1.0.0-rc.151 ethers@6
 ```
 ```bash [yarn]
-yarn add tevm ethers
+yarn add tevm@1.0.0-rc.151 ethers@6
 ```
 ```bash [bun]
-bun add tevm ethers
+bun add tevm@1.0.0-rc.151 ethers@6
 ```
 :::
 
@@ -52,11 +52,12 @@ console.log(`Connected to block ${await provider.getBlockNumber()}`)
 ## Fund a Wallet
 
 ```ts
+import { getAddress } from 'tevm'
 import { Wallet, formatEther, parseEther } from 'ethers'
 
 const signer = Wallet.createRandom().connect(provider)
 
-await client.setBalance({ address: signer.address, value: parseEther('10') })
+await client.setBalance({ address: getAddress(signer.address), value: parseEther('10') })
 
 const balance = await provider.getBalance(signer.address)
 console.log(`Wallet balance: ${formatEther(balance)} ETH`)
@@ -84,7 +85,7 @@ await client.mine({ blocks: 1 })
 
 const counter = await deployment.waitForDeployment()
 console.log(`Counter deployed at ${await counter.getAddress()}`)
-console.log(`Initial count: ${await counter.number()}`)
+console.log(`Initial count: ${await counter.getFunction('number')()}`)
 ```
 
 ## Send a Transaction
@@ -92,18 +93,18 @@ console.log(`Initial count: ${await counter.number()}`)
 Transactions sent by ethers go through `eth_sendRawTransaction` and enter Tevm's mempool. Mine a block before waiting for the receipt.
 
 ```ts
-const tx = await counter.increment()
+const tx = await counter.getFunction('increment')()
 
 await client.mine({ blocks: 1 })
 await tx.wait()
 
-console.log(`Updated count: ${await counter.number()}`)
+console.log(`Updated count: ${await counter.getFunction('number')()}`)
 ```
 
 ## Complete Example
 
 ```ts filename="ethers-with-tevm.ts"
-import { createMemoryClient } from 'tevm'
+import { createMemoryClient, getAddress } from 'tevm'
 import { requestEip1193 } from 'tevm/decorators'
 import { BrowserProvider, ContractFactory, Wallet, formatEther, parseEther } from 'ethers'
 
@@ -114,7 +115,7 @@ await client.tevmReady()
 const provider = new BrowserProvider(client.transport.tevm, undefined, { cacheTimeout: -1 })
 
 const signer = Wallet.createRandom().connect(provider)
-await client.setBalance({ address: signer.address, value: parseEther('10') })
+await client.setBalance({ address: getAddress(signer.address), value: parseEther('10') })
 
 console.log(`Wallet balance: ${formatEther(await provider.getBalance(signer.address))} ETH`)
 
@@ -132,13 +133,13 @@ await client.mine({ blocks: 1 })
 
 const counter = await deployment.waitForDeployment()
 console.log(`Counter deployed at ${await counter.getAddress()}`)
-console.log(`Initial count: ${await counter.number()}`)
+console.log(`Initial count: ${await counter.getFunction('number')()}`)
 
-const tx = await counter.increment()
+const tx = await counter.getFunction('increment')()
 await client.mine({ blocks: 1 })
 await tx.wait()
 
-console.log(`Updated count: ${await counter.number()}`)
+console.log(`Updated count: ${await counter.getFunction('number')()}`)
 ```
 
 ## Notes

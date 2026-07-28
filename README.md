@@ -33,15 +33,15 @@
 
 ---
 
-## Release Candidate
+## Tevm 1.0 Release Candidate
 
-Tevm 1.0 is now available on the npm `rc` dist-tag.
+The documentation and examples in this repository target `tevm@1.0.0-rc.151`, published on the npm `rc` dist-tag.
 
 ```bash
-npm install tevm@rc viem
+npm install tevm@1.0.0-rc.151
 ```
 
-The release candidate includes the new block, mining, receipt, txpool, JSON-RPC, tracing, and viem-compatible client work that replaces the older pre-1.0 README examples. The npm `latest` tag may still point at the older `next` series, so use `tevm@rc` when trying the current 1.0 release candidate.
+This release candidate includes the block, mining, receipt, txpool, JSON-RPC, tracing, and viem-compatible client APIs documented below. Use the pinned version when reproducing these examples; `tevm@rc` currently resolves to the same build.
 
 ## What Is Tevm?
 
@@ -51,7 +51,7 @@ It runs in Node, Bun, browsers, serverless functions, edge runtimes, and desktop
 
 ## Why Use It?
 
-- **Fork any EVM chain locally**: run calls against mainnet, L2s, L3s, or appchains while overriding accounts, storage, and block context.
+- **Fork EVM state locally**: run calls against mainnet, L2s, L3s, or appchains while overriding accounts, storage, and block context.
 - **Use viem actions directly**: `createMemoryClient` includes viem public, wallet, and Anvil-style test actions.
 - **Control mining behavior**: choose automatic, manual, or interval mining and decide when pending transactions become canonical blocks.
 - **Inspect real execution**: collect traces, receipts, logs, access lists, created addresses, and block-level results from local execution.
@@ -110,7 +110,7 @@ import { optimism } from "tevm/common";
 const client = createMemoryClient({
   common: optimism,
   fork: {
-    transport: http("https://mainnet.optimism.io"),
+    transport: http("https://mainnet.optimism.io")({}),
     blockTag: "latest",
   },
   miningConfig: { type: "manual" },

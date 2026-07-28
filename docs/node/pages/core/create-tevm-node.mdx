@@ -14,8 +14,8 @@ import { createMemoryClient } from "tevm";
 
 const client = createMemoryClient();
 
-// Optional: wait for ready (useful for profiling/debugging)
-await client.ready();
+// Optional: eagerly finish lazy initialization
+await client.tevmReady();
 ```
 
 ## With configuration
@@ -34,7 +34,7 @@ const client = createMemoryClient({
   loggingLevel: "debug",
 });
 
-await client.ready();
+await client.tevmReady();
 ```
 
 :::tip
@@ -59,7 +59,7 @@ const node = createMemoryClient({
     blockTag: 17_000_000n, // optional
   },
 });
-await node.ready();
+await node.tevmReady();
 ```
 
 :::note
@@ -72,9 +72,9 @@ Forked state is fetched lazily and cached locally. First access is slow, subsequ
 // Auto: mine after each tx
 const node = createMemoryClient({ miningConfig: { type: "auto" } });
 
-// Interval: mine every N ms
+// Interval: mine every N seconds
 const intervalNode = createMemoryClient({
-  miningConfig: { type: "interval", interval: 12_000 },
+  miningConfig: { type: "interval", blockTime: 12 },
 });
 ```
 
@@ -82,10 +82,15 @@ const intervalNode = createMemoryClient({
 
 ```ts
 import { createMemoryClient } from "tevm";
-import { Common } from "tevm/common";
+import { createCommon } from "tevm/common";
 
 const customNode = createMemoryClient({
-  common: Common.custom({ chainId: 1337, networkId: 1337 }),
+  common: createCommon({
+    id: 1337,
+    name: "Local chain",
+    nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+    rpcUrls: { default: { http: ["http://localhost:8545"] } },
+  }),
 });
 ```
 
@@ -146,9 +151,9 @@ const node = createMemoryClient({
 
 ```ts
 const node = createMemoryClient({ profiler: true });
-await node.ready();
+await node.tevmReady();
 
-const vm = await node.getVm();
+const vm = await node.transport.tevm.getVm();
 const performanceLogs = vm.evm.getPerformanceLogs();
 ```
 
@@ -159,7 +164,7 @@ const performanceLogs = vm.evm.getPerformanceLogs();
 | `fork`                       | `{ transport: EIP1193RequestFn; blockTag?: BlockTag; }`        | -                  | Enables forking from a live network or another Tevm instance |
 | `common`                     | `Common`                                                       | `tevmDevnet`       | Chain configuration object                                   |
 | `loggingLevel`               | `"fatal" \| "error" \| "warn" \| "info" \| "debug" \| "trace"` | `"info"`           | Logging verbosity level                                      |
-| `miningConfig`               | `{ type: 'auto' } \| { type: 'interval', interval: number }`   | `{ type: 'auto' }` | Block mining behavior                                        |
+| `miningConfig`               | `{ type: 'manual' } \| { type: 'auto' } \| { type: 'interval', blockTime: number }` | `{ type: 'manual' }` | Block mining behavior |
 | `customPrecompiles`          | `Precompile[]`                                                 | `[]`               | Additional precompiled contracts                             |
 | `allowUnlimitedContractSize` | `boolean`                                                      | `false`            | Disables EIP-170 contract size checks                        |
 
@@ -181,18 +186,17 @@ const client = createMemoryClient({
   fork: { transport: http() },
 });
 
-// op-stack-aware: enables l1DataFee calculation
-const { l1DataFee } = await client.call({ data });
+const block = await client.getBlock({ blockTag: "latest" });
 ```
 
 ### Choose the right mining config
 
-Default is manual mining (recommended). `auto` mines on each tx; `interval` mines every N ms; `gas` mines when a gas threshold is hit.
+Default is manual mining. `auto` mines submitted transactions immediately; `interval` uses `blockTime` in seconds.
 
 ```ts
 const testNode = createMemoryClient({ miningConfig: { type: "auto" } });
 const simulationNode = createMemoryClient({
-  miningConfig: { type: "interval", interval: 12_000 },
+  miningConfig: { type: "interval", blockTime: 12 },
 });
 ```
 
@@ -204,7 +208,7 @@ Tevm produces many debug logs — pipe them through an LLM to triage.
 const client = createMemoryClient({ loggingLevel: "debug" });
 ```
 
-### Call `client.ready()` when profiling
+### Call `client.tevmReady()` when profiling
 
 Otherwise the first action absorbs init time. Tevm init is fast (no sync).
 

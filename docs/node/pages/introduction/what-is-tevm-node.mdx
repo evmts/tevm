@@ -49,7 +49,7 @@ const client = createMemoryClient();
 const balance = await client.getBalance({ address: "0x..." });
 const blockNumber = await client.getBlockNumber();
 
-await client.tevmMine({ blocks: 1 });
+await client.tevmMine({ blockCount: 1 });
 await client.tevmSetAccount({
   address: "0x...",
   balance: 100000000000000000n,

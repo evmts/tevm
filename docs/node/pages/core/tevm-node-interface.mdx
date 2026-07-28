@@ -1,597 +1,106 @@
 ---
 title: TevmNode Interface
-description: Detailed look at the main node interface and its capabilities
+description: The low-level runtime interface underneath MemoryClient
 ---
 
 # TevmNode Interface
 
-`TevmNode` is the core low-level API. It exposes the EVM, transaction pool, state, receipts, account impersonation, filters, and extensibility hooks.
+`TevmNode` owns Tevm's stateful runtime. Most applications should use `createMemoryClient`; use the node directly when building decorators, servers, or execution tooling.
 
-## Interface Overview
-
-```ts
-export type TevmNode<
-  TMode extends "fork" | "normal" = "fork" | "normal",
-  TExtended = {},
-> = {
-  // Logging & status
-  readonly logger: Logger;
-  status: "INITIALIZING" | "READY" | "SYNCING" | "MINING" | "STOPPED";
-  readonly ready: () => Promise<true>;
-
-  // Core components
-  readonly getVm: () => Promise<Vm>;
-  readonly getTxPool: () => Promise<TxPool>;
-  readonly getReceiptsManager: () => Promise<ReceiptsManager>;
-  readonly miningConfig: MiningConfig;
-
-  // Forking support
-  readonly mode: TMode;
-  readonly forkTransport?: { request: EIP1193RequestFn };
-
-  // Account management
-  readonly getImpersonatedAccount: () => Address | undefined;
-  readonly setImpersonatedAccount: (address: Address | undefined) => void;
-
-  // Event filtering
-  readonly setFilter: (filter: Filter) => void;
-  readonly getFilters: () => Map<Hex, Filter>;
-  readonly removeFilter: (id: Hex) => void;
-
-  // Extensibility
-  readonly extend: <TExtension>(
-    decorator: (client: TevmNode<TMode, TExtended>) => TExtension,
-  ) => TevmNode<TMode, TExtended & TExtension>;
-
-  // State management
-  readonly deepCopy: () => Promise<TevmNode<TMode, TExtended>>;
-} & EIP1193EventEmitter &
-  TExtended;
-```
-
-## Key Capabilities
-
-- [EVM Access](#virtual-machine-access)
-- [Transaction Pool](#transaction-pool-management)
-- [Account Impersonation](#account-impersonation)
-- [Event Filtering](#event-filtering)
-- [Extensibility](#extensibility)
-
-## Initialization & Status
-
-:::warning
-Always `await node.ready()` before using other components.
-:::
+## Create and Initialize a Node
 
 ```ts
-import { createTevmNode } from "tevm";
-
-const node = createTevmNode();
-await node.ready();
-
-console.log(`Node status: ${node.status}`); // 'READY'
-node.logger.debug("Node successfully initialized");
-```
-
-Status values:
-
-- `INITIALIZING` — starting up
-- `READY` — ready for use
-- `SYNCING` — synchronizing (usually fork mode)
-- `MINING` — mining a block
-- `STOPPED` — stopped or fatal error
-
-## Virtual Machine Access
-
-```ts
-import { createTevmNode } from "tevm";
-import { createAddress } from "tevm/address";
-import { createImpersonatedTx } from "tevm/tx";
-import { hexToBytes } from "viem";
-
-const node = createTevmNode();
-await node.ready();
-
-const vm = await node.getVm();
-
-// Run a transaction
-const tx = createImpersonatedTx({
-  to: "0x1234567890123456789012345678901234567890",
-  value: 1000000000000000000n,
-  nonce: 0n,
-  gasLimit: 21000n,
-  gasPrice: 10000000000n,
-});
-const txResult = await vm.runTx({ tx });
-
-// Run a call directly on the EVM
-const evmResult = await vm.evm.runCall({
-  to: createAddress("0x1234567890123456789012345678901234567890"),
-  caller: createAddress("0x5678901234567890123456789012345678901234"),
-  data: hexToBytes(
-    "0xa9059cbb000000000000000000000000abcdef0123456789abcdef0123456789abcdef0000000000000000000000000000000000000000000000008ac7230489e80000",
-  ),
-  gasLimit: 100000n,
-});
-
-// Step-level tracing
-vm.evm.events.on("step", (data, next) => {
-  console.log(`${data.pc}: ${data.opcode.name}`);
-  next?.();
-});
-```
-
-## Transaction Pool Management
-
-```ts
-import { createTevmNode } from "tevm";
-import { parseEther } from "viem";
-
-const node = createTevmNode();
-await node.ready();
-
-const txPool = await node.getTxPool();
-
-await txPool.add({
-  from: "0x1234567890123456789012345678901234567890",
-  to: "0x5678901234567890123456789012345678901234",
-  value: parseEther("1.5"),
-  gasLimit: 21000n,
-  maxFeePerGas: 30000000000n,
-});
-
-const pendingTxs = await txPool.content();
-const orderedTxs = await txPool.txsByPriceAndNonce();
-const txsForAddress = await txPool.contentFrom(
-  "0x1234567890123456789012345678901234567890",
-);
-```
-
-## Receipt & Log Management
-
-```ts
-import { createTevmNode } from "tevm";
-
-const node = createTevmNode();
-await node.ready();
-
-const receiptsManager = await node.getReceiptsManager();
-
-const receipt = await receiptsManager.getReceiptByTxHash(
-  "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-);
-
-const transferLogs = await receiptsManager.getLogs({
-  fromBlock: 0n,
-  toBlock: "latest",
-  address: "0x1234567890123456789012345678901234567890",
-  topics: [
-    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer
-    null,
-    "0x0000000000000000000000005678901234567890123456789012345678901234",
-  ],
-});
-
-const subId = await receiptsManager.newLogSubscription({
-  address: "0x1234567890123456789012345678901234567890",
-  topics: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],
-});
-
-receiptsManager.on("log", (log) => {
-  if (log.subscriptionId === subId) {
-    console.log("New transfer:", log);
-  }
-});
-```
-
-## Account Impersonation
-
-Impersonate any address in fork mode without its private key:
-
-```ts
-import { createTevmNode, http } from "tevm";
-import { createImpersonatedTx } from "tevm/tx";
-import { parseEther } from "viem";
+import { createTevmNode } from 'tevm'
 
 const node = createTevmNode({
-  fork: { transport: http("https://mainnet.infura.io/v3/YOUR-KEY") },
-});
-await node.ready();
+  miningConfig: { type: 'manual' },
+})
 
-node.setImpersonatedAccount("0x28C6c06298d514Db089934071355E5743bf21d60");
-
-const vm = await node.getVm();
-const tx = createImpersonatedTx({
-  from: "0x28C6c06298d514Db089934071355E5743bf21d60",
-  to: "0x1234567890123456789012345678901234567890",
-  value: parseEther("10"),
-  gasLimit: 21000n,
-});
-
-const txResult = await vm.runTx({ tx });
-
-const currentImpersonated = node.getImpersonatedAccount();
-node.setImpersonatedAccount(undefined); // stop
+console.log(node.mode, node.miningConfig)
+await node.ready()
 ```
 
-## Event Filtering
+`createTevmNode()` is synchronous. `ready()` eagerly completes the lazy VM, chain, state, txpool, and receipt initialization.
+
+## Component Access
 
 ```ts
-import { createTevmNode } from "tevm";
-import { formatEther } from "viem";
+import { createTevmNode } from 'tevm'
 
-const node = createTevmNode();
-await node.ready();
+const node = createTevmNode()
+const vm = await node.getVm()
+const txPool = await node.getTxPool()
+const receipts = await node.getReceiptsManager()
+const head = await vm.blockchain.getCanonicalHeadBlock()
 
-// All Transfer events
-node.setFilter({
-  id: "0x1",
-  fromBlock: 0n,
-  toBlock: "latest",
-  address: "0x1234567890123456789012345678901234567890",
-  topics: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],
-});
-
-// Transfers to a specific recipient
-node.setFilter({
-  id: "0x2",
-  fromBlock: 0n,
-  toBlock: "latest",
-  topics: [
-    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-    null,
-    "0x0000000000000000000000001234567890123456789012345678901234567890",
-  ],
-});
-
-const filters = node.getFilters();
-
-const receiptManager = await node.getReceiptsManager();
-const logs = await receiptManager.getFilterLogs("0x1");
-
-logs.forEach((log) => {
-  const from = "0x" + log.topics[1].slice(26);
-  const to = "0x" + log.topics[2].slice(26);
-  const value = BigInt(log.data);
-  console.log(`Transfer: ${from} -> ${to}: ${formatEther(value)} ETH`);
-});
-
-node.removeFilter("0x1");
+console.log({
+  blockNumber: head.header.number,
+  pooledSenders: txPool.pool.size,
+  maximumLogs: receipts.GET_LOGS_LIMIT,
+})
 ```
 
-## Extensibility
+These objects use low-level Ethereum types. Prefer public actions for normal account, block, transaction, receipt, and log queries.
 
-`extend` adds custom methods via decorators:
+## Add APIs with Decorators
+
+The base node does not expose `request`. Add the EIP-1193 decorator explicitly:
 
 ```ts
-import { createTevmNode } from "tevm";
-import { createImpersonatedTx } from "tevm/tx";
-import { parseEther, formatEther } from "viem";
+import { createTevmNode } from 'tevm'
+import { requestEip1193, tevmActions } from 'tevm/decorators'
 
-const node = createTevmNode();
-await node.ready();
+const node = createTevmNode()
+  .extend(tevmActions())
+  .extend(requestEip1193())
 
-const enhancedNode = node.extend((baseNode) => ({
-  async getBalance(address) {
-    const vm = await baseNode.getVm();
-    const account = await vm.stateManager.getAccount(address);
-    return account.balance;
+const chainId = await node.request({ method: 'eth_chainId' })
+const account = await node.getAccount({
+  address: '0x1111111111111111111111111111111111111111',
+})
+
+console.log(chainId, account.balance)
+```
+
+Other built-in decorators include `ethActions` and `tevmSend`. Decorators return an extended node and share the original node's state.
+
+## Runtime Controls
+
+```ts
+import { createTevmNode } from 'tevm'
+
+const node = createTevmNode()
+
+node.setMiningConfig({ type: 'interval', blockTime: 5 })
+node.setNextBlockTimestamp(2_000_000_000n)
+node.setNextBlockGasLimit(30_000_000n)
+node.setTracesEnabled(true)
+node.setAutoImpersonate(true)
+
+node.setMiningConfig({ type: 'manual' })
+await node.close()
+```
+
+`close()` stops interval mining and releases node resources.
+
+## Extend with Application Logic
+
+```ts
+import { createTevmNode } from 'tevm'
+
+const node = createTevmNode().extend((baseNode) => ({
+  async getHeadNumber() {
+    const vm = await baseNode.getVm()
+    const head = await vm.blockchain.getCanonicalHeadBlock()
+    return head.header.number
   },
+}))
 
-  async transferETH(from, to, amount) {
-    const vm = await baseNode.getVm();
-    const tx = createImpersonatedTx({ from, to, value: amount, gasLimit: 21000n });
-    const result = await vm.runTx({ tx });
-    return {
-      success: !result.execResult.exceptionError,
-      gasUsed: result.gasUsed,
-    };
-  },
-
-  async getAllBalances(addresses) {
-    const results = {};
-    for (const addr of addresses) {
-      results[addr] = formatEther(await this.getBalance(addr));
-    }
-    return results;
-  },
-}));
-
-const balance = await enhancedNode.getBalance("0x1234567890123456789012345678901234567890");
-const transfer = await enhancedNode.transferETH(
-  "0x1234567890123456789012345678901234567890",
-  "0x5678901234567890123456789012345678901234",
-  parseEther("1.5"),
-);
-const balances = await enhancedNode.getAllBalances([
-  "0x1234567890123456789012345678901234567890",
-  "0x5678901234567890123456789012345678901234",
-]);
+console.log(await node.getHeadNumber())
 ```
 
-## State Management
+Keep extensions thin and compose existing node methods. Use the handler factories in `tevm/actions` when an extension needs Tevm or JSON-RPC behavior.
 
-`deepCopy` clones a node with identical but independent state:
+## Related
 
-```ts
-import { createTevmNode } from "tevm";
-import { parseEther } from "viem";
-
-const baseNode = createTevmNode();
-await baseNode.ready();
-
-const vm = await baseNode.getVm();
-await vm.stateManager.putAccount("0x1234567890123456789012345678901234567890", {
-  nonce: 0n,
-  balance: parseEther("100"),
-  codeHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-  storageRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
-});
-
-const scenarioNode = await baseNode.deepCopy();
-const scenarioVm = await scenarioNode.getVm();
-await scenarioVm.stateManager.putAccount("0x1234567890123456789012345678901234567890", {
-  nonce: 0n,
-  balance: parseEther("200"),
-  codeHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-  storageRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
-});
-
-// Independent state — original is unchanged.
-```
-
-## Practical Examples
-
-:::code-group
-
-```ts [Contract Deployment]
-import { createTevmNode } from "tevm";
-import { hexToBytes } from "viem";
-
-const node = createTevmNode();
-await node.ready();
-
-const bytecode = "0x60806040..."; // truncated
-
-const vm = await node.getVm();
-const deployResult = await vm.runTx({
-  tx: {
-    nonce: 0n,
-    gasLimit: 2000000n,
-    gasPrice: 10000000000n,
-    data: hexToBytes(bytecode),
-  },
-});
-
-if (deployResult.execResult.exceptionError) {
-  throw new Error(`Deployment failed: ${deployResult.execResult.exceptionError}`);
-}
-
-const contractAddress = deployResult.createdAddress;
-
-const callResult = await vm.runTx({
-  tx: {
-    to: contractAddress,
-    data: hexToBytes(
-      "0x70a08231000000000000000000000000" +
-        "1234567890123456789012345678901234567890".slice(2),
-    ), // balanceOf(address)
-    gasLimit: 100000n,
-  },
-});
-```
-
-```ts [Contract Debugging]
-import { createTevmNode } from "tevm";
-import { hexToBytes } from "viem";
-
-const node = createTevmNode();
-await node.ready();
-const vm = await node.getVm();
-
-const opcodeCounts = {};
-const memoryAccesses = [];
-const stackChanges = [];
-
-vm.evm.events.on("step", (data, next) => {
-  opcodeCounts[data.opcode.name] = (opcodeCounts[data.opcode.name] || 0) + 1;
-
-  if (["MLOAD", "MSTORE", "MSTORE8"].includes(data.opcode.name)) {
-    memoryAccesses.push({
-      op: data.opcode.name,
-      offset: data.stack[data.stack.length - 1]?.toString(16),
-    });
-  }
-
-  if (data.opcode.name === "PUSH1") {
-    stackChanges.push({
-      pc: data.pc,
-      op: data.opcode.name,
-      value: data.opcode.pushValue?.toString(16),
-    });
-  }
-
-  next?.();
-});
-
-const result = await vm.runTx({
-  tx: {
-    to: "0x1234567890123456789012345678901234567890",
-    data: hexToBytes(
-      "0xa9059cbb000000000000000000000000abcdef0123456789abcdef0123456789abcdef0000000000000000000000000000000000000000000000008ac7230489e80000",
-    ),
-    gasLimit: 100000n,
-  },
-});
-
-console.log(`Gas used: ${result.gasUsed}`);
-console.log(
-  "Top opcodes:",
-  Object.entries(opcodeCounts).sort((a, b) => b[1] - a[1]).slice(0, 5),
-);
-console.log("Memory accesses:", memoryAccesses.length);
-console.log("PUSH operations:", stackChanges.length);
-
-vm.evm.events.removeAllListeners("step");
-```
-
-```ts [Chain Simulation]
-import { createTevmNode } from "tevm";
-import { parseEther } from "viem";
-
-async function simulateICO() {
-  const node = createTevmNode({ miningConfig: { type: "auto" } });
-  await node.ready();
-  const vm = await node.getVm();
-
-  const deployer = "0x1111111111111111111111111111111111111111";
-  const investors = [
-    "0x2222222222222222222222222222222222222222",
-    "0x3333333333333333333333333333333333333333",
-    "0x4444444444444444444444444444444444444444",
-  ];
-
-  await vm.stateManager.putAccount(deployer, {
-    nonce: 0n,
-    balance: parseEther("100"),
-    codeHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-    storageRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
-  });
-
-  for (const investor of investors) {
-    await vm.stateManager.putAccount(investor, {
-      nonce: 0n,
-      balance: parseEther("10"),
-      codeHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      storageRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
-    });
-  }
-
-  for (const investor of investors) {
-    await vm.runTx({
-      tx: {
-        from: investor,
-        to: deployer, // pretend this is the ICO contract
-        value: parseEther("5"),
-        gasLimit: 21000n,
-      },
-    });
-  }
-
-  const deployerAccount = await vm.stateManager.getAccount(deployer);
-  console.log(`Deployer balance: ${deployerAccount.balance}`);
-
-  for (const investor of investors) {
-    const acc = await vm.stateManager.getAccount(investor);
-    console.log(`Investor ${investor}: ${acc.balance}`);
-  }
-}
-
-simulateICO().catch(console.error);
-```
-
-:::
-
-## Best Practices
-
-### 1. Initialization Flow
-
-```ts
-const node = createTevmNode();
-await node.ready();
-const vm = await node.getVm();
-```
-
-### 2. Error Handling
-
-```ts
-try {
-  const vm = await node.getVm();
-  const result = await vm.runTx({ tx: { /* ... */ } });
-
-  if (result.execResult.exceptionError) {
-    console.error(`Execution failed: ${result.execResult.exceptionError}`);
-    console.error(`At PC: ${result.execResult.exceptionError.pc}`);
-  }
-} catch (error) {
-  console.error("Unexpected error:", error.message);
-}
-```
-
-### 3. Resource Management
-
-```ts
-// Filters
-node.getFilters().forEach((_, id) => node.removeFilter(id));
-
-// VM listeners
-const vm = await node.getVm();
-vm.evm.events.removeAllListeners("step");
-
-// Receipt subscriptions
-const receiptsManager = await node.getReceiptsManager();
-receiptsManager.removeAllListeners("log");
-```
-
-### 4. State Isolation
-
-```ts
-const baseNode = createTevmNode();
-await baseNode.ready();
-
-async function runTestCase(scenario) {
-  const testNode = await baseNode.deepCopy();
-  // mutate testNode; baseNode unchanged
-}
-```
-
-### 5. Performance
-
-```ts
-const node = createTevmNode({ profiler: false });
-
-const vm = await node.getVm();
-const stateManager = vm.stateManager;
-
-const addresses = ["0x1111...", "0x2222...", "0x3333..."];
-for (const address of addresses) {
-  await stateManager.putAccount(address, { /* ... */ });
-}
-
-await node.mine({ blocks: 1 });
-```
-
-## Type Safety
-
-`TevmNode` is fully typed:
-
-```ts
-import type { TevmNode } from "tevm/node";
-
-function setupNode<TMode extends "fork" | "normal">(node: TevmNode<TMode>) {
-  return async () => {
-    await node.ready();
-    if (node.mode === "fork") {
-      node.setImpersonatedAccount("0x...");
-      return { mode: "fork", impersonatedAccount: node.getImpersonatedAccount() };
-    }
-    return { mode: "normal" };
-  };
-}
-
-function createEnhancedNode() {
-  const baseNode = createTevmNode();
-  const enhancedNode = baseNode.extend((base) => ({
-    async getBalance(address: string): Promise<bigint> {
-      const vm = await base.getVm();
-      const account = await vm.stateManager.getAccount(address);
-      return account.balance;
-    },
-  }));
-  return enhancedNode;
-}
-```
-
-## Next Steps
-
-[Forking](./forking) · [State Management](./managing-state) · [Mining Modes](./mining-modes) · [JSON-RPC](../api/json-rpc) · [EVM Events](../api/evm-events) · [Custom Precompiles](../advanced/custom-precompiles)
+[Architecture Overview](../introduction/architecture-overview) · [Memory Client](../reference/memory-client) · [Decorators](../api/decorators)

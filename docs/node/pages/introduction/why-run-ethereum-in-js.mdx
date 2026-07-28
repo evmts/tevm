@@ -30,34 +30,34 @@ Tevm Node is part of a larger ecosystem that includes [Tevm Bundler](https://tev
 - **Local-first gas estimation** — No loading spinner, no RPC credits burned.
 - **🔄 Powerful JS interop** — Simulate multiple transactions, plug directly into the EVM, or write custom contracts in JS.
 
-## Optimistic updates
+## Optimistic previews
 
-Show users the expected state of their account — pending transactions, state changes, or snappy UI with a pending icon. Tevm makes optimistic state simple.
+Simulate the user's transaction with `tevmCall` before submitting it to a
+network. The result includes return data, gas used, logs, and optional traces
+without changing canonical state:
 
 ```typescript
-// create a client in rebase mode so it updates optimistic state as new blocks come in
+import { createMemoryClient, http } from 'tevm'
+import { mainnet } from 'tevm/common'
+
 const client = createMemoryClient({
+  common: mainnet,
   fork: {
-    transport: http("https://mainnet.optimism.io"),
-    rebase: true,
+    transport: http('https://ethereum-rpc.publicnode.com')({}),
+    blockTag: 20_000_000n,
   },
-  common: optimism,
-});
+})
 
-// When we send a transaction to the network send it to Tevm too
-// We do not mine the transaction as we want it to just be in our mempool
-const txHash = await client.sendRawTransaction(tx);
+await client.tevmReady()
 
-client.waitForTransactionReceipt({ hash: txHash }).then(() => {
-  // remove the tx from optimistic state after it is included in chain
-  const mempool = await client.transport.tevm.getTxPool();
-  await mempool.removeTxByHash(txHash);
-});
+const preview = await client.tevmCall({
+  from: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+  to: '0x1111111111111111111111111111111111111111',
+  value: 1n,
+  createTrace: true,
+})
 
-// continue to query the latest state by default
-await client.getBalance({ address, blockTag: "latest" });
-// or query optimistic state with 'pending' block tag
-await client.getBalance({ address, blockTag: "pending" });
+console.log(preview.executionGasUsed, preview.errors)
 ```
 
 ### Real-World Performance Benefits
@@ -66,13 +66,8 @@ await client.getBalance({ address, blockTag: "pending" });
 Tevm's local execution provides instantaneous gas estimation.
 :::
 
-```typescript showLineNumbers {1-4,8-11} filename="performance-comparison.ts"
-const gasEstimate0 = await client.estimateGas({ ... }) // ~200ms as it fetches state (unless you prewarmed the cache)
-const gasEstimate0 = await client.estimateGas({ ... }) // ~Instant on future estimations with cache saved
-const gasEstimate0 = await client.estimateGas({ ... }) // ~Instant on future estimations with cache saved
-```
-
-Because Tevm plugs directly into wagmi this works via `useGasEstimate` too.
+Fork-backed reads populate Tevm's local caches, so repeated simulations can
+reuse account code and storage already fetched from the upstream RPC.
 
 ## Enhanced User Experiences
 
@@ -112,22 +107,6 @@ console.log(MyContract.abi);
 
 You can import from node_modules or foundry projects. Tevm supports remappings, lib, and other advanced options. Unlike Foundry, Tevm supports node_module resolution by default.
 
-#### Use contracts via address
-
-If your contract is deployed, just reference it by address — Tevm pulls the ABI at build time (even for unverified contracts):
-
-```typescript
-// create a macro file for your contracts
-import { client } from "./clients.js";
-
-export const MyContract = await client.whatsabi(`0x...`);
-```
-
-```typescript
-// import your macro using tevm and Tevm will fetch your contracts at buildtime
-import {MyContract} from './MyContract.js' as {type: 'tevm'}
-```
-
 ### Low level control of the EVM
 
 Tools like `anvil` run in a separate process over HTTP. Tevm runs in memory with direct node access — enabling programmability no other tool offers.
@@ -156,32 +135,27 @@ Write contracts in JavaScript. Precompiles are like Foundry cheat codes, but ins
 
 ```typescript
 import {
-  defineCall,
   definePrecompile,
   createContract,
   createMemoryClient,
 } from "tevm";
-import { readFile } from "fs/promises";
+import { hexToBytes, stringToHex } from "tevm/utils";
 
 const contract = createContract({
   address: `0x${"1234".repeat(10)}`,
-  humanReadableAbi: ["function readFile(string fileName) returns string"],
+  humanReadableAbi: ["function hello() returns (bytes)"],
 });
 
 const { precompile } = definePrecompile({
   contract,
-  call: defineCall(contract.abi, {
-    readFile: ({ args }) => {
-      return {
-        data: await readFile(args.fileName, "utf8"),
-        gasUsed: 0n,
-      };
-    },
+  call: async () => ({
+    returnValue: hexToBytes(stringToHex("hello")),
+    executionGasUsed: 200n,
   }),
 });
 
 const memoryClient = createMemoryClient({
-  precompiles: [precompile()],
+  customPrecompiles: [precompile()],
 });
 ```
 

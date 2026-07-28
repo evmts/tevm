@@ -5,194 +5,122 @@ description: Configure block production in Tevm Node
 
 # Mining Modes
 
-Mining modes determine when transactions are included in blocks. Pick the mode that matches your scenario.
+Mining controls when pending transactions become part of the canonical chain. `tevm@1.0.0-rc.151` supports manual, automatic, and interval mining.
 
-## Available Mining Modes
+## Configure a Mode
 
-- **Auto** — mine after each transaction
-- **Interval** — mine at fixed time intervals
-- **Manual** — mine only when explicitly requested
-- **Gas** — mine when accumulated gas crosses a threshold
+```ts
+import { createMemoryClient } from 'tevm'
 
-:::code-group
+const manualClient = createMemoryClient({
+  miningConfig: { type: 'manual' },
+})
 
-```typescript [Auto Mining] filename="auto-mining.ts"
-const node = createTevmNode({
-  miningConfig: { type: "auto" },
-});
+const autoClient = createMemoryClient({
+  miningConfig: { type: 'auto' },
+})
 
-const txHash = await node.sendTransaction({ /* ... */ });
-
-// Already confirmed
-const receipt = await node.getTransactionReceipt({ hash: txHash });
-console.log("Block number:", receipt.blockNumber);
-```
-
-```typescript [Interval Mining] filename="interval-mining.ts"
-const node = createTevmNode({
+const intervalClient = createMemoryClient({
   miningConfig: {
-    type: "interval",
-    interval: 12000, // 12 seconds, similar to Ethereum
+    type: 'interval',
+    blockTime: 12, // seconds
   },
-});
-
-const txHash = await node.sendTransaction({ /* ... */ });
-
-setTimeout(async () => {
-  const receipt = await node.getTransactionReceipt({ hash: txHash });
-  console.log("Block number:", receipt.blockNumber);
-}, 12000);
+})
 ```
 
-```typescript [Manual Mining] filename="manual-mining.ts"
-const node = createTevmNode({
-  miningConfig: { type: "manual" },
-});
+- **Manual** keeps submitted transactions in the txpool until a mine action runs. Use it for deterministic tests.
+- **Auto** mines a block after each submitted transaction. Use it for fast local development.
+- **Interval** mines on a timer. `blockTime` is measured in seconds; `0` disables the timer while preserving manual mining.
 
-const txHash = await node.sendTransaction({ /* ... */ });
+Gas-threshold mining is not a supported rc.151 mining mode.
 
-await node.mine();
+## Submit and Mine Manually
 
-const receipt = await node.getTransactionReceipt({ hash: txHash });
-console.log("Block number:", receipt.blockNumber);
+```ts
+import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
+
+const client = createMemoryClient({
+  miningConfig: { type: 'manual' },
+})
+
+const { txHash } = await client.tevmCall({
+  from: PREFUNDED_ACCOUNTS[0].address,
+  to: '0x1111111111111111111111111111111111111111',
+  value: 1n,
+  addToMempool: true,
+})
+
+if (!txHash) throw new Error('transaction was not added to the txpool')
+
+await client.tevmMine({ blockCount: 1, interval: 1 })
+const receipt = await client.getTransactionReceipt({ hash: txHash })
+
+console.log(receipt.blockNumber)
 ```
 
-```typescript [Gas-Based Mining] filename="gas-based-mining.ts"
-const node = createTevmNode({
-  miningConfig: {
-    type: "gas",
-    gasLimit: 15000000,
-  },
-});
+`interval` on `tevmMine` is the number of seconds added between the timestamps of blocks created by that call. It is separate from the interval mining policy's `blockTime`.
 
-// Transactions accumulate until total gas exceeds gasLimit
-await node.sendTransaction({ /* small tx */ });
-await node.sendTransaction({ /* large tx that triggers mining */ });
+## Tevm and Viem Mining Actions
+
+The memory client exposes both APIs:
+
+```ts
+import { createMemoryClient } from 'tevm'
+
+const client = createMemoryClient()
+
+// Tevm action
+await client.tevmMine({ blockCount: 2, interval: 1 })
+
+// viem's Anvil-compatible test action
+await client.mine({ blocks: 2, interval: 1 })
 ```
 
-:::
+Do not mix the parameter names: Tevm uses `blockCount`; viem uses `blocks`.
 
-**Best for:**
-- *Auto*: quick dev, immediate confirmation, instant-finality simulation.
-- *Interval*: time-dependent logic, realistic network conditions, pending queues.
-- *Manual*: deterministic tests, precise timing, mempool behavior.
-- *Gas*: gas-dependent behavior, block-fullness simulation, load testing.
+## Change the Policy at Runtime
 
-## Changing Mining Modes
+The low-level node owns the current policy and the interval timer.
 
-You can switch modes at runtime:
-
-```typescript filename="changing-mining-modes.ts"
-await node.setMiningConfig({ type: "interval", interval: 5000 });
-await node.setMiningConfig({ type: "manual" });
-```
-
-## Event Handlers
-
-`mine()` accepts handlers to observe blocks, receipts, and logs in real time:
-
-```typescript filename="mine-with-events.ts"
-import { createMemoryClient } from "tevm";
-
-const client = createMemoryClient();
-
-const result = await client.mine({
-  blockCount: 2,
-  onBlock: (block, next) => {
-    console.log(`Block #${block.header.number} mined:`, {
-      hash: block.hash().toString("hex"),
-      timestamp: block.header.timestamp,
-      gasUsed: block.header.gasUsed,
-    });
-    next?.();
-  },
-  onReceipt: (receipt, blockHash, next) => {
-    console.log(`Receipt for tx ${receipt.transactionHash}:`, {
-      blockHash,
-      gasUsed: receipt.gasUsed,
-    });
-    next?.();
-  },
-  onLog: (log, receipt, next) => {
-    console.log(`Log from ${log.address}:`, {
-      topics: log.topics,
-      data: log.data,
-    });
-    next?.();
-  },
-});
-```
-
-:::note
-Handlers run synchronously; always call `next()` to continue (middleware pattern).
-:::
-
-## Best Practices
-
-**Pick by use case:**
-- Development → `auto` (fastest feedback)
-- Testing → `manual` (deterministic)
-- Simulation → `interval` (realistic)
-- Load testing → `gas` (congestion)
-
-:::warning
-Performance trade-offs: `auto` is resource-intensive with many txs; `interval` delays processing; `gas` requires careful tuning.
-:::
-
-```typescript filename="testing-strategies.ts"
-const timeNode = createTevmNode({ miningConfig: { type: "interval", interval: 10000 } });
-const deterministicNode = createTevmNode({ miningConfig: { type: "manual" } });
-const gasNode = createTevmNode({ miningConfig: { type: "gas", gasLimit: 8000000 } });
-```
-
-## Example: Comparing Modes
-
-:::code-group
-
-```typescript [Comparative Example] filename="mining-mode-comparison.ts"
+```ts
 import { createTevmNode } from 'tevm'
 
-const autoNode = createTevmNode({ miningConfig: { type: 'auto' } })
-const intervalNode = createTevmNode({
-  miningConfig: { type: 'interval', interval: 12000 }
-})
-const manualNode = createTevmNode({ miningConfig: { type: 'manual' } })
-
-await autoNode.sendTransaction({...})     // Mines immediately
-await intervalNode.sendTransaction({...}) // Mines after interval
-await manualNode.sendTransaction({...})   // Stays pending
-await manualNode.mine()                   // Now mined
-```
-
-```typescript [Real-world Simulation] filename="real-world-simulation.ts"
-import { createTevmNode, http } from "tevm";
-import { mainnet } from "tevm/common";
-
 const node = createTevmNode({
-  fork: {
-    transport: http("https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY"),
-    common: mainnet,
-  },
-  miningConfig: { type: "interval", interval: 12000 },
-});
+  miningConfig: { type: 'manual' },
+})
 
-const txHash = await node.sendTransaction({
-  from: "0x123...",
-  to: "0x456...",
-  value: 1000000000000000000n,
-});
+node.setMiningConfig({ type: 'interval', blockTime: 5 })
+node.setMiningConfig({ type: 'auto' })
+node.setMiningConfig({ type: 'manual' })
 
-const pending = await node.getTxPoolContent();
-console.log("Pending transactions:", pending);
-
-setTimeout(async () => {
-  const receipt = await node.getTransactionReceipt({ hash: txHash });
-  console.log("Transaction mined in block:", receipt.blockNumber);
-}, 12000);
+await node.close()
 ```
 
-:::
+Call `node.close()` when an application is finished with an interval-mining node so its timer is stopped.
+
+## Observe Mining
+
+The Tevm mine action accepts execution callbacks. Each callback must call `next?.()` to continue.
+
+```ts
+import { createMemoryClient } from 'tevm'
+
+const client = createMemoryClient()
+const mined: bigint[] = []
+
+await client.tevmMine({
+  blockCount: 2,
+  onBlock(block, next) {
+    mined.push(block.header.number)
+    next?.()
+  },
+})
+
+console.log(mined)
+```
+
+For application-level results, prefer viem queries such as `getBlock`, `getTransaction`, `getTransactionReceipt`, and `getLogs` after mining.
 
 ## Related
 
-[Transaction Pool](../advanced/txpool) · [Performance Profiler](../advanced/performance-profiler) · [Block Methods](../api/methods#block-methods)
+[Transaction Pool](../advanced/txpool) · [Receipts and Logs](../advanced/receipts-and-logs) · [Call API](../api/tevm-call)

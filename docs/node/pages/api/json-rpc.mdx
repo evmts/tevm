@@ -15,7 +15,7 @@ import { requestEip1193 } from 'tevm/decorators'
 
 const node = createTevmNode().extend(requestEip1193())
 
-const blockNum = await node.request({ method: 'eth_blockNumber', params: [] })
+const blockNum = await node.request({ method: 'eth_blockNumber' })
 ```
 
 ## Supported Methods
@@ -429,49 +429,37 @@ See:
 
 ## Using Tevm Actions
 
-High-level actions from `tevm/actions` (see [actions docs](https://github.com/evmts/tevm-monorepo/tree/main/packages/actions/docs)):
+High-level action functions are exported by `tevm`. Handler factories and parameter/result types are exported by `tevm/actions`.
 
 ```ts
 import {
+  createMemoryClient,
   tevmCall,
   tevmMine,
   tevmGetAccount,
   tevmSetAccount,
-  tevmDeal
-} from 'tevm/actions'
-import { createTevmNode } from 'tevm'
+} from 'tevm'
 
-const node = createTevmNode()
+const client = createMemoryClient()
+const address = '0x1111111111111111111111111111111111111111'
 
-const result = await tevmCall(node, {
-  to: '0x...',
-  data: '0x...',
+const result = await tevmCall(client, {
+  to: address,
   value: 0n,
-  createTransaction: true
 })
 
-await tevmMine(node)
+await tevmMine(client, { blockCount: 1 })
 
-const account = await tevmGetAccount(node, { address: '0x...', blockTag: 'latest' })
+const account = await tevmGetAccount(client, {
+  address,
+  blockTag: 'latest',
+})
 
-await tevmSetAccount(node, {
-  address: '0x...',
+await tevmSetAccount(client, {
+  address,
   balance: 100n,
   nonce: 0n,
-  deployedBytecode: '0x...'
-})
-
-// Native ETH
-await tevmDeal(node, {
-  account: '0x...',
-  amount: 1000000000000000000n // 1 ETH
-})
-
-// ERC20
-await tevmDeal(node, {
-  erc20: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC mainnet
-  account: '0x...',
-  amount: 1000000n // 1 USDC (6 decimals)
+  deployedBytecode: '0x',
 })
 ```
 
@@ -482,55 +470,4 @@ Type references:
 - [`SetAccountParams`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases/SetAccountParams.md)
 - [`AnvilDealParams`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases/AnvilDealParams.md)
 
-:::note
-Tevm actions require manual mining via [`tevmMine()`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/functions/mineHandler.md) by default. For automatic application, either use lower-level `vm.runCall` or configure `miningConfig: { type: 'auto' }`.
-:::
-
-## Optimistic Updates with Receipt Manager
-
-See [Ethereum Receipts](https://ethereum.org/en/developers/docs/transactions/transaction-receipts/).
-
-```ts
-import { createTevmNode } from 'tevm'
-import { tevmCall, tevmMine } from 'tevm/actions'
-
-const node = createTevmNode()
-const receiptsManager = await node.getReceiptsManager()
-
-// Submit
-const { txHash } = await tevmCall(node, {
-  method: 'eth_sendTransaction',
-  params: [tx],
-  createTransaction: true
-})
-
-const pendingReceipt = await receiptsManager.getReceiptByTxHash(txHash)
-updateUI(pendingReceipt)
-
-const realReceipt = await node.request({
-  method: 'eth_getTransactionReceipt',
-  params: [txHash]
-})
-
-if (receiptsAreDifferent(pendingReceipt, realReceipt)) {
-  await receiptsManager.removeReceipt(txHash)
-  updateUI(realReceipt)
-}
-
-// Rebase on new blocks
-node.on('block', async (blockNumber) => {
-  const block = await node.request({
-    method: 'eth_getBlockByNumber',
-    params: [blockNumber, true]
-  })
-
-  const pendingTxs = await receiptsManager.getPendingTransactions()
-
-  for (const tx of pendingTxs) {
-    const result = await tevmCall(node, { ...tx, blockTag: 'pending' })
-    await receiptsManager.putReceipt(tx.hash, result)
-  }
-
-  await tevmMine(node)
-})
-```
+Tevm calls are simulations unless they create a transaction. Use `addToMempool: true` and mine for a receipt, or configure `{ miningConfig: { type: 'auto' } }`.

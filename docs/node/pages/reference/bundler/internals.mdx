@@ -1,113 +1,19 @@
 ---
 title: Bundler Internals
-description: How the Tevm bundler works under the hood
+description: Ownership boundaries inside the Tevm Solidity import pipeline
 ---
 
 # Bundler Internals
 
-All Tevm bundler plugins share a unified core (`@tevm/base-bundler`). Each plugin adapts the same pipeline to its build tool.
+The public plugin packages share a base bundler. Host-specific plugins adapt file loading and module resolution, while the shared pipeline owns Solidity resolution, compilation, cache keys, and contract-module generation.
 
-## 1. Import Detection & Resolution
+## Boundaries
 
-For each `.sol` import the bundler:
+- `tevm/bundler/*-plugin` integrates with a host bundler.
+- `tevm/bundler/base-bundler` coordinates resolution and compilation.
+- `tevm/bundler/config` loads Tevm compiler configuration.
+- `tevm/bundler/compiler` and `tevm/bundler/solc` expose lower-level compiler pieces.
 
-- Parses the import statement and converts relative paths to absolute paths.
-- Applies remappings from tsconfig paths, foundry remappings, and `tevm.config.json`.
-- Resolves node_modules for npm packages.
-- Special-cases `.s.sol` for bytecode inclusion.
+These low-level entry points are intended for plugin authors. Their asynchronous Effect-based return values and file-access interfaces are not interchangeable with older pre-1.0 helper signatures.
 
-```
-User Import → Node.js Resolution + Foundry Remappings → Absolute File Path
-```
-
-## 2. Compilation
-
-- Builds a dependency graph of imported Solidity files.
-- Passes the graph to solc.
-- `.s.sol` emits ABI + bytecode; `.sol` emits ABI only.
-- Extracts metadata, NatSpec, and optionally the AST.
-
-## 3. Code Generation
-
-- Emits a TypeScript (or JavaScript) module exporting a Tevm Contract instance.
-- Generates types for methods, events, and errors.
-- Maps Solidity types to TS (uint256 → bigint, address → string, etc.).
-- Preserves NatSpec as JSDoc for editor hovers.
-- Adds `.read` / `.write` method interfaces.
-
-## 4. Caching
-
-- Stores compiled artifacts in `.tevm/`.
-- Hashes file content for invalidation.
-- Stores artifacts (ABI, bytecode) separately from generated code.
-- Invalidates only affected entries when deps or compiler settings change.
-
-## 5. LSP & TS Plugin Integration
-
-- `@tevm/ts-plugin` hooks into the TypeScript compiler.
-- Provides type info for `.sol` imports from bundler outputs.
-- Powers auto-completion, go-to-definition, hover docs, and type checking.
-
-## Internal Implementation Details
-
-### Module Factory
-
-```ts
-function moduleFactory(entry, source, remappings, libs) {
-  const modules = new Map()
-  const queue = [{ path: entry, source }]
-
-  while (queue.length > 0) {
-    const { path, source } = queue.shift()
-    if (modules.has(path)) continue
-
-    const imports = resolveImports(path, source, remappings, libs)
-    modules.set(path, { id: path, source, imports: imports.map((i) => i.path) })
-
-    for (const imp of imports) {
-      if (!modules.has(imp.path)) {
-        queue.push({ path: imp.path, source: readFile(imp.path) })
-      }
-    }
-  }
-
-  return modules
-}
-```
-
-### Solidity Compiler Integration
-
-```ts
-function compile(sources, settings) {
-  const input = {
-    language: 'Solidity',
-    sources: Object.fromEntries(
-      Array.from(sources.entries()).map(([path, { content }]) => [path, { content }]),
-    ),
-    settings: {
-      outputSelection: {
-        '*': { '*': ['abi', 'evm.bytecode', 'evm.deployedBytecode', 'metadata', 'userdoc', 'devdoc'] },
-      },
-      ...settings,
-    },
-  }
-  return solc.compile(JSON.stringify(input), { import: resolveImport })
-}
-```
-
-### Contract Instance Generation
-
-```ts
-import { createContract } from 'tevm/contract'
-
-export const MyContract = createContract({
-  abi: [...],
-  bytecode: '0x...',       // only for .s.sol
-  deployedBytecode: '0x...', // only for .s.sol
-})
-```
-
-## Further Reading
-
-- [Methods & Exports](/reference/bundler/methods)
-- [Troubleshooting](/reference/bundler/troubleshooting)
+Applications should use a supported plugin and import Solidity normally. See [Methods and Exports](./methods) for the stable package entry points.

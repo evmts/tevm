@@ -1,159 +1,28 @@
 ---
-title: Bundler Methods & Exports
-description: Key APIs and utilities exposed by the Tevm bundler
+title: Bundler Methods and Exports
+description: Supported Tevm bundler package entry points in rc.151
 ---
 
-# Notable Methods & Exports
+# Bundler Methods and Exports
 
-Internal utilities for custom bundling workflows, debugging compilation, or extending Tevm.
+For application builds, use one of the plugin exports:
 
-## Core Bundler (`@tevm/base-bundler`)
+- `vitePluginTevm`
+- `rollupPluginTevm`
+- `esbuildPluginTevm`
+- `WebpackPluginTevm`
+- `RspackPluginTevm`
+- `bunPluginTevm`
 
-```ts
-import { bundler } from '@tevm/base-bundler'
-import { createCache } from '@tevm/bundler-cache'
-import { createSolc } from '@tevm/solc'
-import { loadConfig } from '@tevm/config'
+The main `tevm/bundler` entry point re-exports the public bundler packages. Dedicated subpaths are recommended because they make the host dependency and bundle boundary explicit.
 
-const tevmBundler = bundler(config, console, fileAccessObj, solcInstance, cacheInstance)
+Advanced packages are available at:
 
-const { code, modules } = await tevmBundler.resolveTsModule(
-  'MyContract.s.sol',
-  process.cwd(),
-  false, // includeAst
-  true,  // includeBytecode
-)
-```
+- `tevm/bundler/base-bundler`
+- `tevm/bundler/compiler`
+- `tevm/bundler/config`
+- `tevm/bundler/solc`
 
-Available methods:
+Use their shipped TypeScript declarations as the rc.151 reference. Older helpers such as `resolveImports`, `generateTevmBody`, and `generateTevmBodyDts` are not public rc.151 exports.
 
-- `resolveTsModule` - TypeScript output
-- `resolveEsmModule` - ESM output
-- `resolveCjsModule` - CommonJS output
-- `resolveDts` - TypeScript declarations
-
-Each has a `*Sync` variant.
-
-[Source: bundler.js](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/base-bundler/src/bundler.js)
-
-## Import Resolution (`@tevm/resolutions`)
-
-```ts
-import { moduleFactory, resolveImports } from '@tevm/resolutions'
-
-const imports = await resolveImports(
-  '/path/to/Contract.sol',
-  contractSourceCode,
-  { '@openzeppelin/': 'node_modules/@openzeppelin/' },
-  ['lib', 'node_modules'],
-  false, // async
-)
-
-const modules = await moduleFactory(
-  '/path/to/Contract.sol',
-  contractSourceCode,
-  remappings,
-  libraryPaths,
-  fileAccessObj,
-  false,
-)
-```
-
-- `resolveImports()` - parse Solidity imports into absolute paths.
-- `moduleFactory()` - build a dependency graph.
-
-[moduleFactory.js](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/resolutions/src/moduleFactory.js) | [resolveImports.js](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/resolutions/src/resolveImports.js)
-
-## Compilation (`@tevm/compiler`)
-
-```ts
-import { resolveArtifacts } from '@tevm/compiler'
-
-const { artifacts, modules, asts } = await resolveArtifacts(
-  'MyContract.s.sol',
-  process.cwd(),
-  console,
-  config,
-  true,  // includeAst
-  true,  // includeBytecode
-  fileAccessObj,
-  solcInstance,
-)
-```
-
-Also has `resolveArtifactsSync()`.
-
-[resolveArtifacts.js](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/compiler/src/resolveArtifacts.js)
-
-## Caching (`@tevm/bundler-cache`)
-
-```ts
-import { createCache } from '@tevm/bundler-cache'
-
-const cache = createCache('.tevm', fileAccessObj, process.cwd())
-
-await cache.writeArtifacts(contractPath, compiledContracts)
-const artifacts = await cache.readArtifacts(contractPath)
-
-await cache.writeDts(contractPath, dtsContent)
-const dts = await cache.readDts(contractPath)
-```
-
-Methods: `readArtifacts`/`writeArtifacts`, `readDts`/`writeDts`, `readMjs`/`writeMjs`, `readCjs`/`writeCjs`. Each has a `*Sync` variant.
-
-[createCache.js](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/bundler-cache/src/createCache.js)
-
-## Configuration (`@tevm/config`)
-
-```ts
-import { loadConfig } from '@tevm/config'
-
-const config = await loadConfig(process.cwd())
-config.remappings
-config.libs
-config.cacheDir
-```
-
-Merges Foundry remappings, tsconfig, and `tevm.config.json`.
-
-[loadConfig.js](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/config/src/loadConfig.js)
-
-## Runtime (`@tevm/runtime`)
-
-```ts
-import { generateTevmBody, generateTevmBodyDts } from '@tevm/runtime'
-
-const tsCode = generateTevmBody('MyContract', artifacts, 'tevm/contract', true)
-const dtsCode = generateTevmBodyDts('MyContract', artifacts, 'tevm/contract', true)
-```
-
-[generateTevmBody.js](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/runtime/src/generateTevmBody.js) | [generateTevmBodyDts.js](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/runtime/src/generateTevmBodyDts.js)
-
-## Creating a Custom Bundler
-
-```ts
-import { loadConfig } from '@tevm/config'
-import { createSolc } from '@tevm/solc'
-import { createCache } from '@tevm/bundler-cache'
-import { bundler } from '@tevm/base-bundler'
-import fs from 'node:fs/promises'
-
-const fileAccess = {
-  readFile: (path, enc) => fs.readFile(path, { encoding: enc }),
-  writeFile: fs.writeFile,
-}
-
-const config = await loadConfig(process.cwd())
-const cache = createCache('.tevm', fileAccess, process.cwd())
-const solc = await createSolc()
-const myBundler = bundler(config, console, fileAccess, solc, cache)
-
-const result = await myBundler.resolveTsModule('path/to/Contract.sol', process.cwd(), false, true)
-console.log(result.code)
-```
-
-## Further Reading
-
-- [Bundler Internals](/reference/bundler/internals)
-- [Troubleshooting](/reference/bundler/troubleshooting)
-- [bundler-packages source](https://github.com/evmts/tevm-monorepo/tree/main/bundler-packages)
+See [Bundler Quickstart](../../getting-started/bundler) for configurations that can be copied directly.

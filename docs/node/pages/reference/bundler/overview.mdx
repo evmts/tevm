@@ -1,207 +1,41 @@
 ---
 title: Bundler Overview
-description: Key benefits and features of the Tevm bundler
+description: Tevm Solidity import pipeline and supported plugin entry points
 ---
 
 # Bundler Overview
 
-## Key Benefits
+The Tevm bundler turns a Solidity import into a typed JavaScript module during a normal application build.
 
-- **Direct imports**: import `.sol` files like any TS module.
-- **Type safety**: full type checking for methods, args, and return values.
-- **IDE integration**: go-to-definition, auto-completion, hover docs.
-- **NatSpec**: contract docs appear in your editor.
-- **HMR**: Solidity changes update during development.
-- **Framework support**: Vite, Webpack, Next.js, Bun, and more.
+## Pipeline
 
-## Available Plugins
+1. A plugin sees a `.sol` or `.s.sol` import.
+2. Tevm resolves Solidity imports and remappings.
+3. solc compiles the dependency graph.
+4. Tevm converts the selected contract output into a contract module.
+5. The host bundler includes the generated JavaScript and TypeScript types.
 
-| Bundler | Plugin Import Path | Repository |
-|---------|-------------------|------------|
-| Vite | `tevm/bundler/vite-plugin` | [@tevm/vite-plugin](https://github.com/evmts/tevm-monorepo/tree/main/bundler-packages/vite) |
-| Webpack | `tevm/bundler/webpack-plugin` | [@tevm/webpack-plugin](https://github.com/evmts/tevm-monorepo/tree/main/bundler-packages/webpack) |
-| Rollup | `tevm/bundler/rollup-plugin` | [@tevm/rollup-plugin](https://github.com/evmts/tevm-monorepo/tree/main/bundler-packages/rollup) |
-| ESBuild | `tevm/bundler/esbuild-plugin` | [@tevm/esbuild-plugin](https://github.com/evmts/tevm-monorepo/tree/main/bundler-packages/esbuild) |
-| Bun | `tevm/bundler/bun-plugin` | [@tevm/bun-plugin](https://github.com/evmts/tevm-monorepo/tree/main/bundler-packages/bun) |
-| Rspack | `tevm/bundler/rspack-plugin` | [@tevm/rspack-plugin](https://github.com/evmts/tevm-monorepo/tree/main/bundler-packages/rspack) |
+The emitted contract object contains the ABI, optional bytecode and deployed bytecode, type-safe `read` and `write` action creators, event helpers, and `withAddress`.
 
-For plugin configuration, see the [Quickstart Guide](/getting-started/bundler).
+## Plugin Entry Points
 
-## Prerequisites & Key Points
+| Bundler | Entry point | Export |
+| --- | --- | --- |
+| Vite | `tevm/bundler/vite-plugin` | `vitePluginTevm` |
+| Rollup | `tevm/bundler/rollup-plugin` | `rollupPluginTevm` |
+| esbuild | `tevm/bundler/esbuild-plugin` | `esbuildPluginTevm` |
+| Webpack | `tevm/bundler/webpack-plugin` | `WebpackPluginTevm` |
+| rspack | `tevm/bundler/rspack-plugin` | `RspackPluginTevm` |
+| Bun | `tevm/bundler/bun-plugin` | `bunPluginTevm` |
 
-- **Optional**: use `tevm generate contract` if you don't want a bundler hook.
+See the [quickstart](../../getting-started/bundler) for executable configuration examples.
 
-  ```bash
-  tevm generate contract
-  tevm generate contract "ERC20Token"
-  tevm generate contract --include "contracts/**/*.sol" --output "types/"
-  ```
+## Runtime Independence
 
-- **TypeScript**: add `@tevm/ts-plugin` to tsconfig for editor support.
-- **`.s.sol` for bytecode**: `.sol` produces ABI only; `.s.sol` includes deployable bytecode.
-- **Cache**: artifacts live in `.tevm/` — add it to `.gitignore`. The directory is ephemeral.
-- **Foundry/remappings**: configure in `tevm.config.json` (see [below](#bundler-configuration)).
-- **Next.js**: type-checker conflicts; use [codegen](/reference/bundler/troubleshooting#codegen-approach) or disable Next typechecking.
+Generated contracts are compatible with viem-style contract calls. They can be used with a `MemoryClient`, a remote viem client, or any integration that accepts the generated action parameters.
 
-## Basic Usage
+The rc.151 package does not export the proposed inline `sol` template tag or a `loadContract` address loader.
 
-```ts
-import { Counter } from './Counter.sol'
-import { createMemoryClient } from 'tevm'
+## Related
 
-const client = createMemoryClient()
-const deployed = await client.deployContract(Counter)
-
-const count = await deployed.read.count()
-await deployed.write.increment()
-await client.mine({ blocks: 1 })
-const newCount = await deployed.read.count()
-```
-
-The imported value is a [Tevm Contract](/reference/contract) instance with abi, optional bytecode, deployment helpers, `.read` / `.write` methods, and event filters.
-
-## Importing Dependencies
-
-```ts
-import { MyToken } from './contracts/MyToken.sol'
-import { ERC20 } from '@openzeppelin/contracts/token/ERC20/ERC20.sol'
-```
-
-## Integration with Viem and Ethers
-
-:::code-group
-
-```ts [viem]
-import { createPublicClient, http } from 'viem'
-import { mainnet } from 'viem/chains'
-import { MyToken } from './contracts/MyToken.sol'
-
-const client = createPublicClient({ chain: mainnet, transport: http() })
-
-const balance = await client.readContract({
-  ...MyToken.read.balanceOf('0x123...'),
-  address: '0x456...',
-})
-
-const hash = await client.writeContract({
-  ...MyToken.write.transfer('0x789...', 1000n),
-  address: '0x456...',
-})
-```
-
-```ts [ethers]
-import { ethers } from 'ethers'
-import { MyToken } from './contracts/MyToken.sol'
-
-const provider = new ethers.BrowserProvider(window.ethereum)
-const signer = await provider.getSigner()
-
-const tokenContract = new ethers.Contract('0x456...', MyToken.abi, signer)
-const balance = await tokenContract.balanceOf('0x123...')
-const tx = await tokenContract.transfer('0x789...', 1000n)
-```
-
-:::
-
-## Bundler Configuration
-
-```json
-{
-  "foundryProject": true,
-  "libs": ["lib", "node_modules"],
-  "remappings": {
-    "@openzeppelin/": "node_modules/@openzeppelin/"
-  },
-  "debug": false,
-  "cacheDir": ".tevm",
-  "jsonAsConst": ["**/*.abi.json"]
-}
-```
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `foundryProject` | `boolean \| string` | Enable Foundry (`true`) or path to `foundry.toml` |
-| `libs` | `string[]` | Library paths for Solidity imports |
-| `remappings` | `Record<string, string>` | Custom import remappings |
-| `debug` | `boolean` | Extra debug logs and files in `.tevm` |
-| `cacheDir` | `string` | Artifact location (default: `.tevm`) |
-| `jsonAsConst` | `string \| string[]` | Glob patterns for `as const` JSON imports |
-
-## Coming Soon Features
-
-### Inline Solidity with `sol` Tag
-
-:::info
-This feature is coming soon and is not yet available in the current release.
-:::
-
-```ts
-import { sol } from 'tevm'
-
-const { bytecode, abi } = sol`
-  pragma solidity ^0.8.19;
-
-  contract Counter {
-    uint256 private count = 0;
-
-    function increment() public {
-      count += 1;
-    }
-
-    function count() public view returns (uint256) {
-      return count;
-    }
-  }
-`
-```
-
-### Network Imports via Macros
-
-:::info
-This feature is coming soon and is not yet available in the current release.
-:::
-
-Build-time contract imports from any chain, offering stronger type safety than runtime imports.
-
-```ts
-// contract-macros.js
-import { createMemoryClient, loadContract } from 'tevm'
-import { http } from 'viem'
-import { SourcifyABILoader, EtherscanABILoader } from 'tevm/whatsabi'
-
-const client = createMemoryClient({
-  fork: {
-    transport: http('https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY'),
-    blockNumber: 19000000n,
-  },
-})
-
-export async function wethContract() {
-  return loadContract(client, {
-    address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-    followProxies: true,
-    loaders: [new SourcifyABILoader(), new EtherscanABILoader({ apiKey: 'YOUR_ETHERSCAN_KEY' })],
-  })
-}
-
-// app.js
-import { wethContract } from './contract-macros.js' with { type: 'macro' }
-```
-
-Enable macros in `tevm.config.json` for security:
-
-```json
-{
-  "macros": true,
-  "foundryProject": true,
-  "libs": ["lib", "node_modules"]
-}
-```
-
-Full documentation: [Contract Loader](/api/whatsabi-integration#network-imports-via-macros).
-
-## Further Reading
-
-- [Bundler Internals](/reference/bundler/internals)
-- [Methods & Exports](/reference/bundler/methods)
-- [Troubleshooting](/reference/bundler/troubleshooting)
+[Methods and Exports](./methods) · [Internals](./internals) · [Troubleshooting](./troubleshooting)

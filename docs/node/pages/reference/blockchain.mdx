@@ -61,7 +61,7 @@ const chain = await createChain({
   common: createCommon({ ...mainnet }),
   loggingLevel: 'debug',
   fork: {
-    transport: { request: http('https://mainnet.infura.io/v3/YOUR-KEY') },
+    transport: http('https://mainnet.infura.io/v3/YOUR-KEY')({}),
     blockTag: 'latest',
   },
 })

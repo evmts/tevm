@@ -61,19 +61,6 @@ const nft = ERC721.withAddress('0x...')
 const ownerAction = nft.read.ownerOf(1n)
 ```
 
-### Deployless Scripts
-
-```typescript
-import { ERC20 } from '@tevm/contract'
-
-const script = ERC20.script({
-  bytecode: '0x...',
-  args: ['MyToken', 'MTK', 1000000n],
-})
-
-const name = await client.contract(script.read.name())
-```
-
 ### Event Filters
 
 ```typescript
@@ -106,15 +93,12 @@ const tx = contract.write.complexOperation('0x...', {
 
 ```typescript
 import type {
-  Contract,
   CreateContractFn,
   CreateContractParams,
   EventActionCreator,
   ReadActionCreator,
   WriteActionCreator,
 } from '@tevm/contract'
-
-type MyContract = Contract<typeof myAbi>
 ```
 
 ## See Also

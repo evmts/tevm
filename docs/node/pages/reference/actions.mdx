@@ -109,7 +109,7 @@ npm install @tevm/actions
 
 ```typescript
 import { createTevmNode } from 'tevm'
-import { callHandler, contractHandler, deployHandler, ethCallHandler } from 'tevm/actions'
+import { callHandler, ethCallHandler } from 'tevm/actions'
 
 const client = createTevmNode()
 
@@ -117,19 +117,6 @@ const call = await callHandler(client)({
   to: '0x1234567890123456789012345678901234567890',
   data: '0x',
   value: 1000n,
-})
-
-const contract = await contractHandler(client)({
-  to: '0x1234567890123456789012345678901234567890',
-  abi: [...],
-  functionName: 'transfer',
-  args: ['0x0000000000000000000000000000000000000000', 1000n],
-})
-
-const deploy = await deployHandler(client)({
-  bytecode: '0x...',
-  abi: [...],
-  args: ['constructor arg'],
 })
 
 const ethCall = await ethCallHandler(client)({

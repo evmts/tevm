@@ -1,537 +1,133 @@
 ---
-title: Forking & Reforking
-description: How to fork from live networks and other Tevm instances
+title: Forking
+description: Overlay local Tevm state and blocks on an upstream EVM chain
 ---
 
-# Forking & Reforking
+# Forking
 
-Forking creates a local copy of an Ethereum (or any EVM) network at a point in time. Use it for:
+A Tevm fork reads historical chain data from an upstream EIP-1193 transport and stores local changes in an in-memory overlay. It does not copy the entire remote chain and never writes upstream.
 
-- Testing against production contracts and state
-- Debugging complex transactions
-- Developing with real-world data
-- Simulating DeFi protocols
-- "What-if" analysis
-
-## Basic Forking
-
-### Fork from Mainnet
+## Create a Reproducible Fork
 
 ```ts
-import { createTevmNode, http } from "tevm";
+import { createMemoryClient, http } from 'tevm'
+import { mainnet } from 'tevm/common'
 
-const node = createTevmNode({
+const client = createMemoryClient({
+  common: mainnet,
   fork: {
-    transport: http("https://eth-mainnet.g.alchemy.com/v2/YOUR-API-KEY")({}),
-    blockTag: "latest",
+    transport: http('https://ethereum-rpc.publicnode.com')({}),
+    blockTag: 20_000_000n,
   },
-});
+})
 
-await node.ready();
+await client.tevmReady()
+
+const block = await client.getBlock({ blockNumber: 20_000_000n })
+console.log(block.hash)
 ```
 
-### Fork from Optimism
+`fork.transport` is an EIP-1193 request function. viem's `http(url)` returns a transport factory, so invoke it with `({})` before passing it to Tevm.
+
+Set `common` when the chain is known. This avoids an extra chain-ID request and selects the correct hardfork and chain behavior. Pin `blockTag` for tests; omit it only when following the current upstream head is intended.
+
+## Read Remote State, Write Locally
+
+Missing accounts, code, storage, and blocks are fetched lazily and cached. Test actions modify only the overlay.
 
 ```ts
-import { createTevmNode, http } from "tevm";
-import { optimism } from "tevm/common";
+import { createMemoryClient, http } from 'tevm'
+import { mainnet } from 'tevm/common'
 
-const node = createTevmNode({
+const client = createMemoryClient({
+  common: mainnet,
   fork: {
-    transport: http("https://mainnet.optimism.io")({}),
-    blockTag: "latest",
+    transport: http('https://ethereum-rpc.publicnode.com')({}),
+    blockTag: 20_000_000n,
   },
-  common: optimism,
-});
+})
 
-await node.ready();
+const account = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+const remoteBalance = await client.getBalance({
+  address: account,
+  blockNumber: 20_000_000n,
+})
+
+await client.setBalance({
+  address: account,
+  value: remoteBalance + 1n,
+})
+
+console.log(await client.getBalance({ address: account }))
 ```
 
-### Fork from a Specific Block
+Historical reads at or before the fork block can still resolve remotely. New local blocks, receipts, and state roots are owned by Tevm.
 
-```ts
-import { createTevmNode, http } from "tevm";
-
-const node = createTevmNode({
-  fork: {
-    transport: http("https://eth-mainnet.g.alchemy.com/v2/YOUR-API-KEY")({}),
-    blockTag: 17_500_000n,
-  },
-});
-
-await node.ready();
-```
-
-:::warning
-Call the transport with an empty object `({})` — required for the viem transport to initialize.
+:::warning[rc.151 L2 block fidelity]
+The rc.151 blockchain package filters unsupported Optimism deposit transactions
+(type `0x7e`) and Arbitrum deposit transaction types (`0x6a`–`0x6f`) when it
+loads affected blocks. State reads still work, but a locally reconstructed
+block omitting those transactions has a different hash from the upstream block.
 :::
 
-## Fork Transport Options
+## Fork Through a Viem Transport
 
-Tevm forks from any EIP-1193 compatible provider:
+The `fork.transport` option accepts the transport object returned by a viem
+transport factory:
 
 ```ts
-import { createTevmNode, http } from "tevm";
-import { createPublicClient, http as viemHttp } from "viem";
-import { BrowserProvider } from "ethers";
+import { createMemoryClient, http } from 'tevm'
+import { mainnet } from 'tevm/common'
 
-// 1. Tevm http transport (recommended)
-const tevmNode1 = createTevmNode({
-  fork: { transport: http("https://mainnet.infura.io/v3/YOUR-KEY")({}) },
-});
+const upstream = http('https://ethereum-rpc.publicnode.com')({})
 
-// 2. viem PublicClient
-const publicClient = createPublicClient({
-  transport: viemHttp("https://mainnet.infura.io/v3/YOUR-KEY"),
-});
-const tevmNode2 = createTevmNode({
-  fork: { transport: publicClient },
-});
-
-// 3. Ethers.js Provider (wrap to match EIP-1193)
-const ethersProvider = new BrowserProvider(window.ethereum);
-const tevmNode3 = createTevmNode({
+const client = createMemoryClient({
+  common: mainnet,
   fork: {
-    transport: {
-      request: async ({ method, params }) =>
-        ethersProvider.send(method, params || []),
-    },
+    transport: upstream,
+    blockTag: 20_000_000n,
   },
-});
+})
+
+await client.tevmReady()
+console.log(await client.getBlockNumber())
 ```
 
-### Provider Selection
+Pass the transport object, not an already-created viem client.
 
-| Provider              | Pros                                     | Cons                             |
-| --------------------- | ---------------------------------------- | -------------------------------- |
-| `http` from Tevm      | Optimized for Tevm, minimal dependencies | Limited middleware support       |
-| Public RPC nodes      | Free, easy to use                        | Rate limits, may be slow         |
-| Alchemy/Infura/etc    | Fast, reliable, archive data             | Requires API key, may have costs |
-| Local Ethereum node   | Full control, no rate limits             | Resource intensive to run        |
-| Another Tevm instance | Memory efficient                         | Adds complexity                  |
+## Test a Fork with Snapshots
 
-:::note
-For large-scale testing, use a dedicated RPC provider (Alchemy, Infura) or your own node.
-:::
-
-## How Forking Works
-
-Tevm uses **lazy loading with local caching**:
-
-1. **Initial Fork**: no immediate copy of the chain.
-2. **Lazy Loading**: only accessed accounts/slots are fetched from the remote.
-3. **Local Cache**: fetched data is cached locally; subsequent reads skip the network.
-4. **Local Modifications**: writes are stored locally and override forked state.
+Snapshots isolate local changes without refetching the fork:
 
 ```ts
-import { createTevmNode, http } from "tevm";
-import { createAddress } from "tevm/address";
-import { performance } from "node:perf_hooks";
+import { createMemoryClient, http } from 'tevm'
+import { mainnet } from 'tevm/common'
 
-const node = createTevmNode({
-  fork: { transport: http("https://mainnet.infura.io/v3/YOUR-KEY")({}) },
-});
-await node.ready();
-
-const vm = await node.getVm();
-const daiAddress = createAddress("0x6B175474E89094C44Da98b954EedeAC495271d0F");
-
-const t0 = performance.now();
-const daiContract = await vm.stateManager.getAccount(daiAddress);
-console.log(`First access: ${performance.now() - t0}ms`);
-
-const t1 = performance.now();
-await vm.stateManager.getAccount(daiAddress);
-console.log(`Cached access: ${performance.now() - t1}ms`);
-```
-
-## Reforking Strategies
-
-Two approaches:
-
-### 1. Use a Node as Transport (recommended)
-
-Memory-efficient — reuses the source's cached state:
-
-```ts
-import { createTevmNode, http, hexToBigInt } from "tevm";
-import { requestEip1193 } from "tevm/decorators";
-
-const sourceNode = createTevmNode({
+const client = createMemoryClient({
+  common: mainnet,
   fork: {
-    transport: http("https://mainnet.infura.io/v3/YOUR-KEY")({}),
-    blockTag: 17_000_000n,
+    transport: http('https://ethereum-rpc.publicnode.com')({}),
+    blockTag: 20_000_000n,
   },
-}).extend(requestEip1193());
+})
 
-await sourceNode.ready();
+const snapshotId = await client.snapshot()
 
-const currentBlock = await sourceNode.request({ method: "eth_blockNumber" });
+await client.setCode({
+  address: '0x1111111111111111111111111111111111111111',
+  bytecode: '0x6001600055',
+})
 
-const forkNode = createTevmNode({
-  fork: {
-    transport: sourceNode,
-    blockTag: hexToBigInt(currentBlock),
-  },
-});
-
-await forkNode.ready();
-// Changes in forkNode do not affect sourceNode
+await client.revert({ id: snapshotId })
 ```
 
-Advantages: memory-efficient, avoids duplicate fetches, isolated, multi-fork from one source.
+## Failure and Cache Behavior
 
-### 2. Deep Copy
+- The first uncached read can fail if the upstream transport is unavailable.
+- Cached fork data and all local state remain usable without another network request.
+- An invalid `blockTag` fails during initialization or the first read.
+- rc.151 does not provide an automatic rebase mode. Create a new client when a test needs a different fork block.
 
-For full isolation (memory-intensive):
+## Related
 
-```ts
-import { createTevmNode, http } from "tevm";
-
-const originalNode = createTevmNode({
-  fork: { transport: http("https://mainnet.infura.io/v3/YOUR-KEY")({}) },
-});
-await originalNode.ready();
-
-const independentNode = await originalNode.deepCopy();
-```
-
-:::warning
-`deepCopy` duplicates the entire state tree. Prefer using the node as transport when possible.
-:::
-
-## Working with Forked State
-
-### Reading State
-
-```ts
-import { createTevmNode, http } from "tevm";
-import { createAddress } from "tevm/address";
-import { formatEther, hexToBytes } from "viem";
-
-const node = createTevmNode({
-  fork: { transport: http("https://mainnet.infura.io/v3/YOUR-KEY")({}) },
-});
-await node.ready();
-
-const vm = await node.getVm();
-
-// 1. EOA state
-const vitalikAddress = createAddress("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045");
-const vitalikAccount = await vm.stateManager.getAccount(vitalikAddress);
-if (vitalikAccount) {
-  console.log(`Balance: ${formatEther(vitalikAccount.balance)} ETH`);
-  console.log(`Nonce: ${vitalikAccount.nonce}`);
-}
-
-// 2. Contract code
-const uniswapV2Router = createAddress("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D");
-const routerCode = await vm.stateManager.getContractCode(uniswapV2Router);
-console.log(`Code size: ${routerCode.length} bytes`);
-
-// 3. Storage
-const slot0 = await vm.stateManager.getContractStorage(
-  uniswapV2Router,
-  hexToBytes("0x0000000000000000000000000000000000000000000000000000000000000000"),
-);
-
-// 4. Low-level call
-const result = await vm.evm.runCall({
-  to: uniswapV2Router,
-  data: hexToBytes("0xc45a0155"), // factory()
-  gasLimit: 100000n,
-});
-console.log("Factory address:", result.execResult.returnValue);
-```
-
-### Modifying State
-
-```ts
-import { createTevmNode, http } from "tevm";
-import { createAddress } from "tevm/address";
-import { createImpersonatedTx } from "tevm/tx";
-import { parseEther, formatEther, hexToBytes } from "viem";
-
-const node = createTevmNode({
-  fork: { transport: http("https://mainnet.infura.io/v3/YOUR-KEY")({}) },
-});
-await node.ready();
-
-const vm = await node.getVm();
-
-// 1. Modify balance
-const testAddress = createAddress("0x1234567890123456789012345678901234567890");
-let account = await vm.stateManager.getAccount(testAddress);
-if (!account) {
-  account = {
-    nonce: 0n,
-    balance: 0n,
-    storageRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
-    codeHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-  };
-}
-account.balance += parseEther("100");
-await vm.stateManager.putAccount(testAddress, account);
-
-// 2. Impersonate
-node.setImpersonatedAccount("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045");
-
-const tx = createImpersonatedTx({
-  from: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-  to: testAddress,
-  value: parseEther("1"),
-  gasLimit: 21000n,
-});
-
-const txResult = await vm.runTx({ tx });
-console.log(`Success: ${!txResult.execResult.exceptionError}`);
-console.log(`Gas used: ${txResult.gasUsed}`);
-
-// 3. Direct storage write
-const uniswapV3Factory = createAddress("0x1F98431c8aD98523631AE4a59f267346ea31F984");
-await vm.stateManager.putContractStorage(
-  uniswapV3Factory,
-  hexToBytes("0x0000000000000000000000000000000000000000000000000000000000000000"),
-  hexToBytes("0x0000000000000000000000001234567890123456789012345678901234567890"),
-);
-```
-
-## Advanced Use Cases
-
-- **DeFi protocol testing** — flash loans, liquidations, arbitrage
-- **Vulnerability analysis** — manipulate state to trigger edge cases
-- **Governance simulation** — DAO votes, proposals
-- **MEV strategy testing** — without risking real capital
-
-### DeFi Protocol Example
-
-```ts
-import { createTevmNode, http } from "tevm";
-import { createAddress } from "tevm/address";
-import { createImpersonatedTx } from "tevm/tx";
-import { hexToBytes, parseEther } from "viem";
-
-async function simulateFlashLoan() {
-  const node = createTevmNode({
-    fork: { transport: http("https://mainnet.infura.io/v3/YOUR-KEY")({}) },
-  });
-  await node.ready();
-
-  const trader = createAddress("0x1234567890123456789012345678901234567890");
-  const vm = await node.getVm();
-
-  await vm.stateManager.putAccount(trader, {
-    nonce: 0n,
-    balance: parseEther("10"),
-    storageRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
-    codeHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-  });
-
-  const aaveLendingPool = createAddress("0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9");
-  const flashLoanCalldata = hexToBytes("0xab9c4b5d...");
-
-  const tx = createImpersonatedTx({
-    from: trader,
-    to: aaveLendingPool,
-    data: flashLoanCalldata,
-    gasLimit: 5000000n,
-  });
-
-  const result = await vm.runTx({ tx });
-  console.log(`Success: ${!result.execResult.exceptionError}`);
-  if (result.execResult.exceptionError) {
-    console.log(`Error: ${result.execResult.exceptionError}`);
-  } else {
-    console.log(`Gas used: ${result.gasUsed}`);
-  }
-
-  const finalAccount = await vm.stateManager.getAccount(trader);
-  console.log(`Final balance: ${finalAccount.balance}`);
-}
-
-simulateFlashLoan();
-```
-
-## Performance Optimization
-
-### Efficient State Access
-
-```ts
-import { createTevmNode, http } from "tevm";
-import { createAddress } from "tevm/address";
-
-const node = createTevmNode({
-  fork: {
-    transport: http("https://mainnet.infura.io/v3/YOUR-KEY")({}),
-    blockTag: 17_000_000n, // Pin block to avoid moving target
-  },
-});
-await node.ready();
-
-async function optimizedStateAccess() {
-  const vm = await node.getVm();
-  const stateManager = vm.stateManager;
-
-  // Batch related requests
-  const addresses = [
-    "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
-    "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT
-    "0x6B175474E89094C44Da98b954EedeAC495271d0F", // DAI
-  ].map(createAddress);
-
-  const accounts = await Promise.all(
-    addresses.map((addr) => stateManager.getAccount(addr)),
-  );
-
-  // Parallel code + storage reads
-  const usdcAddress = addresses[0];
-  const [code, slot0, slot1] = await Promise.all([
-    stateManager.getContractCode(usdcAddress),
-    stateManager.getContractStorage(usdcAddress, Buffer.from("0".padStart(64, "0"), "hex")),
-    stateManager.getContractStorage(usdcAddress, Buffer.from("1".padStart(64, "0"), "hex")),
-  ]);
-
-  return { accounts, code, storage: [slot0, slot1] };
-}
-```
-
-### Selective Forking
-
-Skip forking when you don't need real state:
-
-```ts
-// Minimal local node
-const lightNode = createTevmNode({
-  common: { chainId: 1 },
-});
-
-// Conditional fork
-const conditionalFork =
-  process.env.USE_FORK === "true"
-    ? {
-        transport: http("https://mainnet.infura.io/v3/YOUR-KEY")({}),
-        blockTag: "latest",
-      }
-    : undefined;
-
-const node = createTevmNode({ fork: conditionalFork });
-```
-
-### Cache Warmer
-
-Pre-fetch hot contracts:
-
-```ts
-async function warmCache(node) {
-  const vm = await node.getVm();
-  const contracts = [
-    "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
-    "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
-    "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", // UniswapV2Router
-  ].map(createAddress);
-
-  await Promise.all(
-    contracts.map((addr) =>
-      vm.stateManager.getAccount(addr).then(() => vm.stateManager.getContractCode(addr)),
-    ),
-  );
-}
-```
-
-## Best Practices
-
-### 1. RPC Provider Setup
-
-```ts
-// Call http transport with empty object
-const node = createTevmNode({
-  fork: { transport: http("https://ethereum.quicknode.com/YOUR-API-KEY")({}) },
-});
-
-// Pin a block for deterministic tests
-const node = createTevmNode({
-  fork: {
-    transport: http("https://mainnet.infura.io/v3/YOUR-KEY")({}),
-    blockTag: 17_000_000n,
-  },
-});
-```
-
-### 2. Error Handling
-
-```ts
-try {
-  const node = createTevmNode({
-    fork: { transport: http("https://mainnet.infura.io/v3/YOUR-KEY")({}) },
-  });
-  await node.ready();
-} catch (error) {
-  if (error.message.includes("rate limit")) {
-    console.error("RPC rate limit exceeded.");
-  } else if (error.message.includes("network")) {
-    console.error("Network error.");
-  } else {
-    console.error("Fork init failed:", error);
-  }
-}
-```
-
-### 3. State Handling
-
-```ts
-// Null-check accounts
-const account = await vm.stateManager.getAccount(address);
-if (account) {
-  account.balance += parseEther("1");
-  await vm.stateManager.putAccount(address, account);
-}
-
-// Handle RPC failures
-try {
-  const code = await vm.stateManager.getContractCode(contractAddress);
-} catch (error) {
-  console.error("Failed to fetch contract code:", error);
-}
-```
-
-### 4. Performance
-
-```ts
-const node = createTevmNode({
-  fork: {
-    transport: http("https://mainnet.infura.io/v3/YOUR-KEY")({}),
-    // 'latest' for recent txs; pinned number for reproducibility
-    blockTag: process.env.NODE_ENV === "test" ? 17_000_000n : "latest",
-  },
-});
-// First access: slow (RPC); subsequent: fast (cache).
-```
-
-### 5. Testing Setup
-
-```ts
-// Fresh fork per test (isolation)
-beforeEach(async () => {
-  node = createTevmNode({
-    fork: {
-      transport: http("https://mainnet.infura.io/v3/YOUR-KEY")({}),
-      blockTag: 17_000_000n,
-    },
-  });
-  await node.ready();
-});
-
-// Or: shared base + deepCopy per test
-let baseNode;
-before(async () => {
-  baseNode = createTevmNode({ fork: { /* ... */ } });
-  await baseNode.ready();
-});
-beforeEach(async () => {
-  node = await baseNode.deepCopy();
-});
-```
-
-## Next Steps
-
-[State Management](/core/managing-state) · [Mining Modes](/core/mining-modes) · [Transaction Pool](/advanced/txpool) · [Forking Example](/examples/forking-mainnet)
+[Architecture Overview](../introduction/architecture-overview) · [Managing State](./managing-state) · [Local Testing](../examples/local-testing)

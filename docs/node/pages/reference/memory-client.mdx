@@ -1,162 +1,108 @@
 ---
-title: "MemoryClient"
-description: "A viem-based client that bundles Tevm Node functionalities—forking, testing, and wallet actions—into a single interface."
+title: Memory Client
+description: Reference for the viem-compatible in-memory Tevm client
 ---
 
-# @tevm/memory-client
+# Memory Client
 
-In-memory Ethereum client combining viem with Tevm's EVM. Supports forking, manual/auto mining, and Tevm-specific actions on top of standard viem public, wallet, and test actions.
-
-## Installation
+Install the rc.151 client through the main package:
 
 ```bash
-npm install @tevm/memory-client
+npm install tevm@1.0.0-rc.151
 ```
 
-## API Reference
+`createMemoryClient` returns synchronously and combines a Tevm transport with viem public, wallet, test, and Tevm actions.
 
-### Type Aliases
+## Create a Client
 
-- [CreateMemoryClientFn](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/type-aliases/CreateMemoryClientFn.md)
-- [MemoryClient](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/type-aliases/MemoryClient.md)
-- [MemoryClientOptions](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/type-aliases/MemoryClientOptions.md)
-- [TevmActions](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/type-aliases/TevmActions.md)
-- [TevmContract](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/type-aliases/TevmContract.md)
-- [TevmRpcSchema](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/type-aliases/TevmRpcSchema.md)
-- [TevmTransport](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/type-aliases/TevmTransport.md)
-- [TevmViemActionsApi](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/type-aliases/TevmViemActionsApi.md)
-
-### Actions
-
-- [createClient](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/createClient.md)
-- [createMemoryClient](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/createMemoryClient.md)
-- [createTevmTransport](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/createTevmTransport.md)
-- [publicActions](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/publicActions.md)
-- [testActions](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/testActions.md)
-- [tevmCall](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/tevmCall.md)
-- [tevmContract](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/tevmContract.md)
-- [tevmDeal](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/tevmDeal.md) - add native ETH or ERC20 tokens.
-- [tevmDeploy](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/tevmDeploy.md)
-- [tevmDumpState](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/tevmDumpState.md)
-- [tevmGetAccount](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/tevmGetAccount.md)
-- [tevmLoadState](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/tevmLoadState.md)
-- [tevmMine](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/tevmMine.md)
-- [tevmReady](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/tevmReady.md)
-- [tevmSetAccount](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/tevmSetAccount.md)
-- [tevmViemActions](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/tevmViemActions.md)
-- [walletActions](https://github.com/evmts/tevm-monorepo/tree/main/packages/memory-client/docs/functions/walletActions.md)
-
-## Client Options
-
-```typescript
-interface MemoryClientOptions<TCommon, TAccountOrAddress, TRpcSchema> {
-  common?: TCommon
-  fork?: {
-    transport: Transport
-    blockTag?: string | number
-  }
-  name?: string
-  account?: TAccountOrAddress
-  pollingInterval?: number
-  cacheTime?: number
-}
-```
-
-## Usage Examples
-
-```typescript
-import { createMemoryClient, http, PREFUNDED_ACCOUNTS } from 'tevm'
-import { optimism } from 'tevm/common'
-
-const rpcUrl = process.env.OPTIMISM_RPC_URL
-if (!rpcUrl) {
-  throw new Error('OPTIMISM_RPC_URL is required for fork mode')
-}
+```ts
+import { createMemoryClient } from 'tevm'
 
 const client = createMemoryClient({
-  fork: {
-    transport: http(rpcUrl)({}),
-    blockTag: 'latest',
-  },
-  common: optimism,
-})
-
-const manualMining = createMemoryClient({
   miningConfig: { type: 'manual' },
-  account: PREFUNDED_ACCOUNTS[0],
-})
-await manualMining.mine({ blocks: 1 })
-
-await client.setAccount({
-  address: '0x1234567890123456789012345678901234567890',
-  balance: 100n,
-  nonce: 1n,
-  state: {
-    '0x0000000000000000000000000000000000000000000000000000000000000000':
-      '0x0000000000000000000000000000000000000000000000000000000000000001',
-  },
-})
-const account = await client.getAccount({
-  address: '0x1234567890123456789012345678901234567890',
-  returnStorage: true,
 })
 
-const deployResult = await client.tevmDeploy({
-  abi: contractAbi,
-  bytecode: contractBytecode,
-  args: ['Constructor', 'Args'],
-})
-
-const callResult = await client.tevmCall({
-  to: contractAddress,
-  data: encodeFunctionData(/* ... */),
-})
-
-const contractResult = await client.tevmContract({
-  contract: myContract,
-  method: 'myMethod',
-  args: [arg1, arg2],
-})
-
-const hash = await client.writeContract({
-  address: contractAddress,
-  abi: contractAbi,
-  functionName: 'myFunction',
-  args: [arg1, arg2],
-})
-const receipt = await client.waitForTransactionReceipt({ hash })
+await client.tevmReady()
+console.log(await client.getBlockNumber())
 ```
 
-### State Persistence
+`tevmReady()` is optional for local clients and useful for eagerly initializing a fork.
 
-```typescript
-import { createMemoryClient, createSyncPersister } from '@tevm/memory-client'
+## Action Groups
+
+- **Public:** `getBalance`, `getBlock`, `getTransaction`, `getTransactionReceipt`, `getLogs`, `readContract`
+- **Wallet:** `sendTransaction`, `writeContract`, `deployContract`, signing actions
+- **Test:** `setBalance`, `setCode`, `setStorageAt`, `mine`, `snapshot`, `revert`
+- **Tevm:** `tevmCall`, `tevmContract`, `tevmDeploy`, `tevmGetAccount`, `tevmSetAccount`, `tevmMine`, `tevmDumpState`, `tevmLoadState`
+
+## State and Mining
+
+```ts
+import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
 
 const client = createMemoryClient({
-  persister: createSyncPersister({ storage: localStorage }),
+  miningConfig: { type: 'manual' },
 })
+const recipient = '0x1111111111111111111111111111111111111111'
+
+await client.tevmSetAccount({
+  address: recipient,
+  balance: 10n,
+})
+
+const account = await client.tevmGetAccount({ address: recipient })
+
+const { txHash } = await client.tevmCall({
+  from: PREFUNDED_ACCOUNTS[0].address,
+  to: recipient,
+  value: 1n,
+  addToMempool: true,
+})
+
+if (!txHash) throw new Error('transaction was not added to the txpool')
+
+await client.tevmMine({ blockCount: 1 })
+const receipt = await client.getTransactionReceipt({ hash: txHash })
+
+console.log(account.balance, receipt.status)
 ```
 
-### HTTP Server Integration
+Use `client.mine({ blocks: 1 })` for the viem test action and `client.tevmMine({ blockCount: 1 })` for the Tevm action.
 
-```typescript
-import { createServer } from '@tevm/server'
-import { createMemoryClient } from '@tevm/memory-client'
+## Forking
 
-const server = createServer({ request: createMemoryClient().request })
-server.listen(8545)
+```ts
+import { createMemoryClient, http } from 'tevm'
+import { mainnet } from 'tevm/common'
+
+const client = createMemoryClient({
+  common: mainnet,
+  fork: {
+    transport: http('https://ethereum-rpc.publicnode.com')({}),
+    blockTag: 20_000_000n,
+  },
+})
+
+await client.tevmReady()
+console.log(await client.getBlockNumber())
 ```
 
-## Network Support
+## Persistence
 
-Officially supported: Ethereum mainnet, standard OP Stack chains. Other EVM chains may work but aren't officially supported.
+`createSyncStoragePersister` is exported from `tevm` and `tevm/sync-storage-persister`. Pass the persister through client options when an application needs state hydration and synchronous persistence.
 
-## EIP Support
+## Low-Level Node
 
-Always enabled: EIP-1559, EIP-4895, EIP-4844, EIP-4788.
+The underlying node is available as `client.transport.tevm`. This is an advanced escape hatch:
 
-## See Also
+```ts
+import { createMemoryClient } from 'tevm'
 
-- [What is Tevm Node?](../introduction/what-is-tevm-node)
-- [Creating a Node](../core/create-tevm-node)
-- [Viem Documentation](https://viem.sh)
+const client = createMemoryClient()
+const node = client.transport.tevm
+const vm = await node.getVm()
+
+console.log((await vm.blockchain.getCanonicalHeadBlock()).header.number)
+```
+
+Prefer the client actions unless direct VM, txpool, or receipt-manager access is required.

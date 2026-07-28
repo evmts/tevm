@@ -58,7 +58,7 @@ Use [viem's public actions](https://viem.sh/docs/actions/public/introduction) to
 ```ts
 import { createMemoryClient } from "tevm";
 import { ERC20 } from "tevm/contract";
-import { parseAbi } from "viem";
+import { encodeFunctionData, parseAbi } from "viem";
 
 const client = createMemoryClient();
 const tokenAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
@@ -107,12 +107,17 @@ const hash = await client.sendTransaction({
 
 const receipt = await client.waitForTransactionReceipt({ hash });
 
-const { contractAddress } = await client.deployContract({
+const deployHash = await client.deployContract({
   abi: parseAbi([
     "function greet() view returns (string)",
     "function setGreeting(string) returns ()",
   ]),
   bytecode: "0x608060405234801561...",
+});
+
+await client.mine({ blocks: 1 });
+const { contractAddress } = await client.getTransactionReceipt({
+  hash: deployHash,
 });
 ```
 
@@ -155,7 +160,7 @@ await client.setBalance({
   value: parseEther("100"),
 });
 
-await client.setNextBlockTimestamp(1695311333n);
+await client.setNextBlockTimestamp({ timestamp: 1695311333n });
 await client.mine({ blocks: 1 });
 
 // Snapshot and revert
@@ -182,7 +187,7 @@ Tevm-specific actions for enhanced EVM control.
 ```ts
 import { createMemoryClient } from "tevm";
 import { ERC20 } from "tevm/contract";
-import { parseAbi } from "viem";
+import { encodeFunctionData, parseAbi } from "viem";
 
 const client = createMemoryClient();
 const tokenAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
@@ -190,7 +195,7 @@ const holderAddress = "0x1234567890123456789012345678901234567890";
 
 const result = await client.tevmContract({
   abi: parseAbi(["function balanceOf(address) view returns (uint256)"]),
-  address: tokenAddress,
+  to: tokenAddress,
   deployedBytecode: ERC20.deployedBytecode,
   functionName: "balanceOf",
   args: [holderAddress],
@@ -200,9 +205,11 @@ const result = await client.tevmContract({
 const callResult = await client.tevmCall({
   to: tokenAddress,
   deployedBytecode: ERC20.deployedBytecode,
-  data:
-    "0x70a08231000000000000000000000000" +
-    holderAddress.slice(2),
+  data: encodeFunctionData({
+    abi: parseAbi(["function balanceOf(address) view returns (uint256)"]),
+    functionName: "balanceOf",
+    args: [holderAddress],
+  }),
 });
 ```
 
@@ -262,9 +269,9 @@ await client.setBalance({
   value: 123456789n,
 });
 
-await client.tevmLoadState({ state: savedState });
+await client.tevmLoadState({ state: savedState.state });
 
-await client.tevmMine({ blocks: 5 });
+await client.tevmMine({ blockCount: 5 });
 ```
 
 :::warning
@@ -276,19 +283,14 @@ await client.tevmMine({ blocks: 5 });
 A MemoryClient is a viem client with Tevm functionality. Build one from scratch:
 
 ```ts
-import { createTevmNode } from "tevm";
-import { requestEip1193 } from "tevm/decorators";
+import { createTevmTransport } from "tevm";
 import { tevmViemActions } from "tevm/memory-client";
-import { http, custom, createClient, publicActions, testActions, walletActions } from "viem";
+import { createClient, publicActions, testActions, walletActions } from "viem";
 
 const rpcUrl = process.env.OPTIMISM_RPC_URL ?? "https://mainnet.optimism.io";
-const forkTransport = http(rpcUrl)({});
-
-const node = createTevmNode({
-  fork: { transport: forkTransport },
-}).extend(requestEip1193());
-
-const memoryClient = createClient({ transport: custom(node) })
+const memoryClient = createClient({
+  transport: createTevmTransport(),
+})
   .extend(tevmViemActions())
   .extend(publicActions)
   .extend(walletActions)

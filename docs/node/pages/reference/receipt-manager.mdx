@@ -77,7 +77,7 @@ GET_LOGS_BLOCK_RANGE_LIMIT = 2500
 
 ```typescript
 await receiptsManager.saveReceipts(block, receipts)
-const receipts = await receiptsManager.getReceipts(blockHash)
+const blockReceipts = await receiptsManager.getReceipts(blockHash)
 const receipt = await receiptsManager.getReceiptByTxHash(txHash)
 const logs = await receiptsManager.getLogs(fromBlock, toBlock, addresses, topics)
 ```

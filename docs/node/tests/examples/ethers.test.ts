@@ -1,4 +1,4 @@
-import { createMemoryClient } from 'tevm'
+import { createMemoryClient, getAddress } from 'tevm'
 import { requestEip1193 } from 'tevm/decorators'
 import { BrowserProvider, ContractFactory, Wallet, formatEther, parseEther } from 'ethers'
 import { describe, expect, it } from 'vitest'
@@ -19,7 +19,7 @@ const setupEthersClient = async () => {
 	const signer = Wallet.createRandom().connect(provider)
 
 	await client.setBalance({
-		address: signer.address,
+		address: getAddress(signer.address),
 		value: parseEther('10'),
 	})
 
@@ -34,6 +34,21 @@ describe('Ethers example docs', () => {
 		expect(formatEther(await provider.getBalance(signer.address))).toBe('10.0')
 	})
 
+	it('mines an ethers transaction through the Tevm txpool', async () => {
+		const { client, signer } = await setupEthersClient()
+		const recipient = '0x1111111111111111111111111111111111111111'
+		const tx = await signer.sendTransaction({
+			to: recipient,
+			value: parseEther('1'),
+		})
+
+		await client.mine({ blocks: 1 })
+		const receipt = await tx.wait()
+
+		expect(receipt?.status).toBe(1)
+		expect(await client.getBalance({ address: recipient })).toBe(parseEther('1'))
+	})
+
 	it('deploys and writes to a contract through ethers', async () => {
 		const { client, provider, signer } = await setupEthersClient()
 		const factory = new ContractFactory(counterAbi, counterBytecode, signer)
@@ -43,15 +58,15 @@ describe('Ethers example docs', () => {
 
 		const counter = await deployment.waitForDeployment()
 		expect(await counter.getAddress()).toMatch(/^0x[a-fA-F0-9]{40}$/)
-		expect(await counter.number()).toBe(0n)
+		expect(await counter.getFunction('number')()).toBe(0n)
 		expect(await provider.getTransactionCount(signer.address)).toBe(1)
 
-		const tx = await counter.increment()
+		const tx = await counter.getFunction('increment')()
 
 		await client.mine({ blocks: 1 })
 		await tx.wait()
 
-		expect(await counter.number()).toBe(1n)
+		expect(await counter.getFunction('number')()).toBe(1n)
 		expect(await provider.getTransactionCount(signer.address)).toBe(2)
 	})
 })

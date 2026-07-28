@@ -14,29 +14,13 @@ Retrieve the current state of an account.
 ### Parameters
 
 ```ts
-type GetAccountParams = {
-  address: Address
-  blockTag?: 'latest' | 'pending' | 'earliest' | number
-  returnStorage?: boolean // expensive
-  throwOnFail?: boolean // defaults to true
-}
+import type { GetAccountParams } from 'tevm'
 ```
 
 ### Return Type
 
 ```ts
-type GetAccountResult = {
-  address: Address
-  nonce: bigint
-  balance: bigint
-  deployedBytecode: Hex
-  storageRoot: Hex
-  codeHash: Hex
-  isContract: boolean
-  isEmpty: boolean
-  storage?: { [key: Hex]: Hex } // when returnStorage=true
-  errors?: TevmGetAccountError[]
-}
+import type { GetAccountResult } from 'tevm'
 ```
 
 ### Example
@@ -75,23 +59,13 @@ Modify account state directly.
 ### Parameters
 
 ```ts
-type SetAccountParams = {
-  address: Address
-  nonce?: bigint
-  balance?: bigint
-  deployedBytecode?: Hex
-  state?: { [key: Hex]: Hex }
-  stateDiff?: { [key: Hex]: Hex }
-  throwOnFail?: boolean // defaults to true
-}
+import type { SetAccountParams } from 'tevm'
 ```
 
 ### Return Type
 
 ```ts
-type SetAccountResult = {
-  errors?: TevmSetAccountError[]
-}
+import type { SetAccountResult } from 'tevm'
 ```
 
 ### Examples

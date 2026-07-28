@@ -1,381 +1,141 @@
 ---
 title: EVM Events
-description: Listen to internal EVM events during execution
+description: Observe opcode, message, contract-creation, and mining events in Tevm calls
 ---
 
 # EVM Events
 
-Tevm Node exposes low-level EVM events for monitoring and debugging contract execution.
+Tevm call actions accept callbacks for live execution inspection. They are useful for debuggers, tracers, profilers, and test assertions.
 
-## Available Events
+## Call Events
 
-```ts
-type EVMEvent = {
-  newContract: (data: { address: Address, code: Uint8Array }, next?: () => void) => void
-  beforeMessage: (data: Message, next?: () => void) => void
-  afterMessage: (data: EVMResult, next?: () => void) => void
-  step: (data: InterpreterStep, next?: () => void) => void
-}
-```
+The four callbacks are:
 
-### InterpreterStep
+- `onStep(step, next)` before each opcode;
+- `onBeforeMessage(message, next)` before an EVM call frame;
+- `onAfterMessage(result, next)` after an EVM call frame;
+- `onNewContract(contract, next)` when execution creates a contract.
+
+Callbacks use a middleware continuation. Always call `next?.()` or execution will stop at that callback.
 
 ```ts
-interface InterpreterStep {
-  pc: number                    // program counter
-  opcode: {
-    name: string                // e.g. 'SSTORE', 'CALL'
-    fee: number                 // base gas fee
-    dynamicFee?: bigint         // additional dynamic gas
-    isAsync: boolean
-  }
-  gasLeft: bigint
-  gasRefund: bigint
-  stateManager: StateManager
-  stack: Uint8Array[]
-  returnStack: bigint[]         // for RETURNSUB
-  account: Account              // account owning the running code
-  address: Address
-  depth: number                 // 0 for top-level call
-  memory: Uint8Array
-  memoryWordCount: bigint       // size in 32-byte words
-  codeAddress: Address          // differs from address in DELEGATECALL/CALLCODE
-}
-```
-
-- [`Address`](/reference/address), [`StateManager`](/reference/state), [`Account`](/reference/node)
-
-### NewContractEvent
-
-```ts
-interface NewContractEvent {
-  address: Address
-  code: Uint8Array
-}
-```
-
-### Message
-
-```ts
-interface Message {
-  to?: Address                  // undefined for contract creation
-  value: bigint
-  caller: Address
-  gasLimit: bigint
-  data: Uint8Array
-  code?: Uint8Array
-  codeAddress?: Address
-  depth: number
-  isStatic: boolean
-  isCompiled: boolean           // precompiled contract
-  delegatecall: boolean
-  callcode: boolean
-  salt?: Uint8Array             // CREATE2
-  authcallOrigin?: Address      // AUTH
-}
-```
-
-### EVMResult
-
-```ts
-interface EVMResult {
-  execResult: {
-    returnValue: Uint8Array
-    executionGasUsed: bigint
-    gasRefund?: bigint
-    exceptionError?: {
-      error: string             // e.g. 'revert', 'out of gas'
-      errorType?: string
-    }
-    logs?: Log[]
-    selfdestruct?: Record<string, true>
-    gas?: bigint
-  }
-  gasUsed: bigint               // includes intrinsic costs
-  createdAddress?: Address
-  gasRefund?: bigint
-}
-```
-
-## Using with tevmCall Family
-
-The recommended access pattern is through the tevmCall family. Two API styles:
-
-### Client-based API
-
-```ts
-import { createMemoryClient } from 'tevm'
-import { encodeFunctionData } from 'viem'
+import {
+  bytesToHex,
+  createMemoryClient,
+  PREFUNDED_ACCOUNTS,
+} from 'tevm'
 
 const client = createMemoryClient()
+const contract = '0x4444444444444444444444444444444444444444'
 
-const result = await client.tevmCall({
-  to: contractAddress,
-  data: encodeFunctionData({ abi, functionName: 'myFunction', args: [arg1, arg2] }),
-  onStep: (step, next) => {
-    console.log('EVM Step:', {
-      pc: step.pc,
-      opcode: step.opcode,
-      gasLeft: step.gasLeft,
-      stack: step.stack,
-      depth: step.depth,
-    })
-    next?.()
-  },
-  onNewContract: (data, next) => {
-    console.log('New contract deployed:', {
-      address: data.address.toString(),
-      codeSize: data.code.length,
-    })
-    next?.()
-  },
-  onBeforeMessage: (message, next) => {
-    console.log('Executing message:', {
-      to: message.to?.toString(),
-      value: message.value.toString(),
-      delegatecall: message.delegatecall,
-    })
-    next?.()
-  },
-  onAfterMessage: (result, next) => {
-    console.log('Message result:', {
-      gasUsed: result.execResult.executionGasUsed.toString(),
-      returnValue: result.execResult.returnValue.toString('hex'),
-      error: result.execResult.exceptionError?.error,
-    })
-    next?.()
-  }
+await client.tevmSetAccount({
+  address: contract,
+  deployedBytecode: '0x6001600055',
 })
+
+const opcodes: string[] = []
+const result = await client.tevmCall({
+  from: PREFUNDED_ACCOUNTS[0].address,
+  to: contract,
+  createTrace: true,
+  onStep(step, next) {
+    opcodes.push(step.opcode.name)
+    console.log(step.pc, step.gasLeft, Array.from(step.stack))
+    next?.()
+  },
+  onBeforeMessage(message, next) {
+    console.log('call', message.to?.toString(), message.value)
+    next?.()
+  },
+  onAfterMessage(messageResult, next) {
+    console.log(
+      messageResult.execResult.executionGasUsed,
+      bytesToHex(messageResult.execResult.returnValue),
+    )
+    next?.()
+  },
+})
+
+console.log(opcodes, result.executionGasUsed, result.trace?.structLogs)
 ```
 
-### Tree-shakable API
+The live `step` object contains interpreter state, including memory and the mutable stack. Copy values with `Array.from(step.stack)` before retaining them in a UI.
+
+## Tree-Shakable Calls
+
+The standalone action works with a viem client using a Tevm transport.
 
 ```ts
-import { tevmCall } from 'tevm/actions'
+import { createTevmTransport, tevmCall } from 'tevm'
 import { createClient } from 'viem'
-import { createTevmNode } from 'tevm/node'
-import { requestEip1193 } from 'tevm/decorators'
-import { encodeFunctionData } from 'viem'
 
-const tevmTransport = createTevmTransport()
-const client = createClient({ transport: tevmTransport })
+const client = createClient({
+  transport: createTevmTransport(),
+})
 
 const result = await tevmCall(client, {
-  to: contractAddress,
-  data: encodeFunctionData({ abi, functionName: 'myFunction', args: [arg1, arg2] }),
-  onStep: (step, next) => {
-    console.log('EVM Step:', { pc: step.pc, opcode: step.opcode, gasLeft: step.gasLeft, stack: step.stack, depth: step.depth })
-    next?.()
-  },
-  onNewContract: (data, next) => {
-    console.log('New contract:', { address: data.address.toString(), codeSize: data.code.length })
-    next?.()
-  },
-  onBeforeMessage: (message, next) => {
-    console.log('Message:', { to: message.to?.toString(), value: message.value.toString(), delegatecall: message.delegatecall })
-    next?.()
-  },
-  onAfterMessage: (result, next) => {
-    console.log('Result:', {
-      gasUsed: result.execResult.executionGasUsed.toString(),
-      returnValue: result.execResult.returnValue.toString('hex'),
-      error: result.execResult.exceptionError?.error,
-    })
-    next?.()
-  }
+  deployedBytecode: '0x6001600055',
+  createTrace: true,
 })
+
+console.log(result.trace?.structLogs)
 ```
 
-## Advanced Examples
+Standalone Tevm action functions are exported from `tevm`. `tevm/actions` exports lower-level handler factories and types.
 
-### Debug Tracer
+## Returned Traces
+
+`createTrace: true` adds a Geth-style trace to the call result:
 
 ```ts
 import { createMemoryClient } from 'tevm'
-import { tevmCall } from 'tevm/actions'
 
 const client = createMemoryClient()
-
-const trace = { steps: [], contracts: new Set(), errors: [] }
-
-await tevmCall(client, {
-  to: contractAddress,
-  data: '0x...',
-  onStep: (step, next) => {
-    trace.steps.push({
-      pc: step.pc,
-      opcode: step.opcode.name,
-      gasCost: step.opcode.fee,
-      stack: step.stack.map(item => item.toString(16)),
-    })
-    next?.()
-  },
-  onNewContract: (data, next) => {
-    trace.contracts.add(data.address.toString())
-    next?.()
-  },
-  onAfterMessage: (result, next) => {
-    if (result.execResult.exceptionError) {
-      trace.errors.push({
-        error: result.execResult.exceptionError.error,
-        returnData: result.execResult.returnValue.toString('hex'),
-      })
-    }
-    next?.()
-  }
+const result = await client.tevmCall({
+  deployedBytecode: '0x6001600055',
+  createTrace: true,
 })
 
-console.log('Trace:', {
-  stepCount: trace.steps.length,
-  contracts: Array.from(trace.contracts),
-  errors: trace.errors,
-})
-```
-
-### Gas Profiler
-
-```ts
-import { createMemoryClient } from 'tevm'
-import { tevmCall } from 'tevm/actions'
-
-const client = createMemoryClient()
-const profile = { opcodes: new Map(), totalGas: 0n }
-
-await tevmCall(client, {
-  to: contractAddress,
-  data: '0x...',
-  onStep: (step, next) => {
-    const opName = step.opcode.name
-    const gasCost = BigInt(step.opcode.fee)
-    const stats = profile.opcodes.get(opName) || { count: 0, totalGas: 0n }
-    stats.count++
-    stats.totalGas += gasCost
-    profile.totalGas += gasCost
-    profile.opcodes.set(opName, stats)
-    next?.()
-  }
-})
-
-for (const [opcode, stats] of profile.opcodes) {
-  console.log(`${opcode}:`, {
-    count: stats.count,
-    totalGas: stats.totalGas.toString(),
-    percentageOfTotal: Number(stats.totalGas * 100n / profile.totalGas),
+for (const step of result.trace?.structLogs ?? []) {
+  console.log({
+    pc: step.pc,
+    opcode: step.op,
+    gasLeft: step.gas,
+    gasCost: step.gasCost,
+    depth: step.depth,
+    stack: step.stack,
   })
 }
 ```
 
-### Error Handling
-
-```ts
-import { createMemoryClient } from 'tevm'
-import { tevmCall } from 'tevm/actions'
-
-const client = createMemoryClient()
-
-await tevmCall(client, {
-  to: contractAddress,
-  data: '0x...',
-  onAfterMessage: (result, next) => {
-    if (result.execResult.exceptionError) {
-      const error = result.execResult.exceptionError
-      switch (error.error) {
-        case 'out of gas':
-          console.error('Out of gas')
-          break
-        case 'revert':
-          console.error('Reverted:', result.execResult.returnValue.toString('hex'))
-          break
-        case 'invalid opcode':
-          console.error('Invalid opcode')
-          break
-        default:
-          console.error('Unknown error:', error)
-      }
-    }
-    next?.()
-  }
-})
-```
-
-## Best Practices
-
-Always call `next?.()` to continue execution:
-
-```ts
-onStep: (step, next) => {
-  // process step
-  next?.()
-}
-```
-
-Handle errors so one bad handler doesn't break execution:
-
-```ts
-onStep: (step, next) => {
-  try {
-    // process step
-  } catch (error) {
-    console.error('Step handler error:', error)
-  }
-  next?.()
-}
-```
-
-Filter to what you need for performance:
-
-```ts
-onStep: (step, next) => {
-  if (step.opcode.name === 'SSTORE') {
-    console.log('Storage write:', {
-      key: step.stack[step.stack.length - 1].toString(16),
-      value: step.stack[step.stack.length - 2].toString(16)
-    })
-  }
-  next?.()
-}
-```
+The returned trace is easier to serialize than live interpreter objects. Use callbacks when updates must stream during execution and `result.trace` when post-processing is enough.
 
 ## Mining Events
 
-Mining operations also emit events:
+`tevmMine` can report each block as it is produced:
 
 ```ts
 import { createMemoryClient } from 'tevm'
-import { mine } from 'tevm/actions'
 
 const client = createMemoryClient()
+const blockNumbers: bigint[] = []
 
-await client.mine({
-  blockCount: 1,
-  onBlock: (block, next) => {
-    console.log('Block:', {
-      number: block.header.number,
-      hash: block.hash().toString('hex'),
-      timestamp: block.header.timestamp
-    })
+await client.tevmMine({
+  blockCount: 2,
+  onBlock(block, next) {
+    blockNumbers.push(block.header.number)
     next?.()
   },
-  onReceipt: (receipt, blockHash, next) => {
-    console.log('Receipt:', {
-      txHash: receipt.transactionHash,
-      blockHash,
-      gasUsed: receipt.gasUsed
-    })
-    next?.()
-  },
-  onLog: (log, receipt, next) => {
-    console.log('Log:', { address: log.address, topics: log.topics, data: log.data })
-    next?.()
-  }
 })
+
+console.log(blockNumbers)
 ```
 
-Mining handlers also require `next?.()` to continue.
+Query canonical results with viem actions such as `getBlock`, `getTransactionReceipt`, and `getLogs`.
 
-## Related Topics
-- [Tevm Call API](../api/tevm-call)
-- [Methods](../api/methods)
-- [Mining Modes](../core/mining-modes)
+## Related
+
+- [Call API](./tevm-call)
+- [Building a Debugger UI](../examples/debugger-ui)
 - [Performance Profiler](../advanced/performance-profiler)
-- [Gas Estimation](../api/methods)
+- [Mining Modes](../core/mining-modes)

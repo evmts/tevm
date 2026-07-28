@@ -1,6 +1,6 @@
 ---
 title: Architecture Overview
-description: A detailed overview of Tevm Node's architecture, components, and extension capabilities
+description: How Tevm's memory client, node, state, EVM, txpool, mining, receipts, and fork proxy work together
 authors:
   - "[William Cory](https://x.com/fucory)"
   - "[Tevm Team](https://github.com/evmts)"
@@ -8,405 +8,190 @@ authors:
 
 # Tevm Architecture Overview
 
-:::warning[Advanced Content]
-This page covers Tevm's internal architecture — intended for advanced users, contributors, or those who want to know how Tevm works under the hood. If you're getting started, see the [viem API guide](../getting-started/viem) instead.
-:::
+Tevm is an Ethereum execution node embedded in JavaScript. The batteries-included `MemoryClient` presents a viem-compatible API, while a `TevmNode` owns the EVM, state, blockchain, transaction pool, receipts, mining policy, and optional fork connection underneath it.
 
-Tevm's architecture is modular, extensible, and compatible with the broader JavaScript ecosystem.
+## The Runtime at a Glance
 
-For the native ZEVM client's ownership boundary between ZEVM, Voltaire, and Guillotine Mini, see ZEVM's [Architecture and Upstream Ownership](https://zevm.sh/docs/concepts/architecture-and-upstream-ownership/) docs. Tevm's boundary is different: Tevm owns the JavaScript APIs, transports, package facades, and integration behavior described below while using ZEVM-backed primitives where noted.
-
-## Design Philosophy: Objects and Actions
-
-Tevm separates **Objects** (stateful components) from **Actions** (pure functions over them). This [viem](https://viem.sh/)-inspired pattern enables tree-shaking and a composable API, and Tevm follows it internally for maximum viem compatibility.
-
-**Objects** — stateful components that encapsulate data:
-- `TevmNode` — the core Node interface
-- `Evm` — the Ethereum Virtual Machine
-- `StateManager` — manages blockchain state
-- `Blockchain` — handles blocks and chain state
-
-**Actions** — pure functions taking an object as their first parameter:
-- Tree-shakable for minimal bundle size
-- Single-purpose with clear input/output
-- Composable for complex operations
-- Can be imported individually
-
-### Example: Using an Action
-
-```ts showLineNumbers {1-2,5,8,11} filename="action-example.ts"
-import { createTevmNode, PREFUNDED_ACCOUNTS } from "tevm";
-import { getAccountHandler } from "tevm/actions"; // [!code focus]
-
-const node = createTevmNode(); // [!code focus]
-
-const getAccount = getAccountHandler(node); // [!code focus]
-
-const account = await getAccount({
-  // [!code focus]
-  address: PREFUNDED_ACCOUNTS[0].address,
-});
-
-console.log(account.balance);
+```text
+Application, viem action, or EIP-1193 consumer
+                       │
+                 MemoryClient
+        (viem public/wallet/test + tevm* actions)
+                       │
+                 Tevm transport
+                       │
+                    TevmNode
+       ┌───────────────┼────────────────┐
+       │               │                │
+    TxPool         Mining policy    ReceiptsManager
+       │               │                ▲
+       └──────────► VM / EVM ───────────┘
+                       │
+             StateManager + Blockchain
+                       │
+            optional fork transport proxy
+                       │
+                 upstream JSON-RPC
 ```
 
-This lets you import only the actions you need, create specialized handlers, and follow a consistent interface.
+`createMemoryClient()` constructs this stack synchronously. The underlying node initializes lazily; `client.tevmReady()` lets callers eagerly wait for initialization, which is useful for forks.
 
-:::tip
-`TevmNode` is the low-level node implementation. It is NOT recommended you use `createTevmNode` directly (especially if you are an LLM) unless you have an advanced use case.
-:::
+## MemoryClient and the Transport Boundary
 
-## Client Options: Convenience vs. Tree Shaking
+`MemoryClient` is a viem client configured with a Tevm transport. It includes:
 
-Tevm offers two main approaches:
+- viem public actions such as `getBlock`, `getBalance`, `getLogs`, and `getTransactionReceipt`;
+- viem wallet and Anvil-compatible test actions such as `sendTransaction`, `setBalance`, `mine`, `snapshot`, and `revert`;
+- Tevm actions such as `tevmCall`, `tevmSetAccount`, `tevmDumpState`, and `tevmMine`.
 
-:::code-group
-
-```ts [MemoryClient: All-in-One]
-import { createMemoryClient, http } from 'tevm'
-
-// Create a client with all actions pre-attached
-const client = createMemoryClient({
-  fork: {
-    transport: http('https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY')
-  }
-})
-
-// Standard viem actions
-const code = await client.getContractCode({
-  address: '0x1234567890123456789012345678901234567890'
-})
-
-// Tevm-specific actions (prefixed with 'tevm')
-const state = await client.tevmDumpState()
-const balance = await client.getBalance({
-  address: '0x1234567890123456789012345678901234567890'
-})
-```
-
-```ts [Tree-Shakable: Optimized]
-import { createClient, http } from 'viem'
-import { createTevmTransport } from 'tevm'
-import { getBlock, getBlockNumber } from 'viem/actions'
-import { tevmSetAccount, tevmMine } from 'tevm/actions'
-
-const client = createClient({
-  transport: createTevmTransport({
-    fork: {
-      transport: http('https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY')
-    }
-  })
-})
-
-// Import only the actions you need
-const blockNumber = await getBlockNumber(client)
-const block = await getBlock(client)
-
-await tevmSetAccount(client, {
-  address: '0x1234...',
-  balance: 1000000000000000000n
-})
-await tevmMine(client, { blocks: 1 })
-```
-
-:::
-
-:::info
-MemoryClient is great for quick prototyping. Tree-shakable actions are ideal for production and browser apps where bundle size matters.
-:::
-
-**MemoryClient**: ✅ easy to start · ✅ all methods available · ✅ less code · ❌ larger bundle
-
-**Tree-Shakable Actions**: ✅ smallest bundle · ✅ only what you use · ✅ works with code-splitting · ❌ more verbose imports
-
-For more on tree-shakable actions, see the [viem docs on tree-shaking](https://wagmi.sh/react/guides/viem).
-
-## Core Architecture Components
-
-::::steps
-
-### VM
-
-The most important component, made up of the ZEVM-backed interpreter facade, StateManager, Blockchain, Common, TxPool, and ReceiptsManager. The VM runs transactions and builds blocks, coordinating state through its subcomponents.
-
-It is NOT recommended you use the VM directly except for advanced use cases — use the `viem` API instead.
-
-### Interpreter (EVM)
-
-Runs EVM bytecode with full support for active hardfork opcodes, built-in precompiles, and Tevm custom precompiles. Tevm's public EVM facade is backed by `@evmts/zevm/evm`, wrapped with Tevm-specific state, tracing, predeploy, logging, and profiling hooks.
+Each action becomes an EIP-1193-style request or a direct Tevm action at the transport boundary. The transport routes it to the same `TevmNode`, so viem, Ethers, raw `request`, and Tevm actions observe one chain.
 
 ```ts
-// Access via
-const evm = (await node.getVm()).evm;
-
-// Features
-evm.events.on("step", (data, next) => {
-  console.log(`Opcode: ${data.opcode.name}`);
-  next();
-});
-
-// Control execution gas limits, precompiles, etc.
-```
-
-For the most minimal way to execute bytecode, the EVM facade with the common and stateManager modules can be a good fit. For most use cases, prefer the viem API or MemoryClient.
-
-The EVM wraps ZEVM's JavaScript/Wasm-compatible EVM primitives rather than the older pre-ZEVM implementation, keeping Tevm's low-level types aligned with `@evmts/zevm` while preserving the higher-level viem-style API.
-
-### State Manager
-
-Maintains account balances, contract code, and storage state with forking capability from live networks. Tevm's custom state layer built around ZEVM-compatible account, trie, and utility primitives.
-
-```ts
-// Access via
-const stateManager = (await node.getVm()).stateManager;
-
-// Features
-await stateManager.putAccount(address, account);
-await stateManager.getAccount(address);
-await stateManager.getStorage(address, key);
-await stateManager.checkpoint(); // Create state snapshot
-await stateManager.revert(); // Revert to the latest checkpoint
-```
-
-The StateManager keeps low-level methods Tevm's VM needs while adding Tevm-specific behavior: fork-backed reads, snapshots, and state dumping.
-
-### Blockchain
-
-Manages blocks, chain state, forked block lookup, and block production (auto, interval, manual mining).
-
-```ts
-// Access via
-const blockchain = (await node.getVm()).blockchain;
-
-// Features
-await blockchain.getBlock(blockHash);
-await blockchain.getBlockByNumber(blockNumber);
-await blockchain.putBlock(block);
-await blockchain.getLatestBlock();
-```
-
-A Tevm implementation backed by Tevm block types and ZEVM-compatible primitives. Not recommended to use directly — prefer viem actions, MemoryClient methods, or JSON-RPC unless you're building Tevm extensions.
-
-### Common
-
-A config object holding chain-specific information such as hardfork and EIP info.
-
-### Transaction Pool
-
-Manages pending transactions, orders them by gas price, and handles transaction validation.
-
-```ts
-// Access via
-const txPool = await node.getTxPool();
-
-// Features
-await txPool.add(transaction);
-await txPool.getTransactions();
-const pendingTxs = txPool.getPendingTransactions();
-const pendingNonces = txPool.getPendingNonce(address);
-```
-
-::::
-
-Custom viem API actions for the transaction pool are planned but not high priority. Join the Telegram if you want this.
-
-### Receipt Manager
-
-A cache for receipts and logs so Tevm doesn't have to re-execute transactions to derive them. Don't interact with it directly except for very advanced use cases (of which there may be none).
-
-### Custom Tool Opportunities
-
-- **Transaction Simulators** — Preview transaction outcomes before sending to mainnet
-- **EVM Debuggers** — Step through transactions with full state visibility
-- **Local-first dApps** — Apps that work offline with optimistic updates
-- **Educational Tools** — Interactive EVM learning experiences
-- **CI/CD Integration** — Test smart contracts in continuous integration pipelines
-- **Gas Optimization** — Analyze contract gas usage patterns with precision
-- **Serverless Execution** — Run Ethereum nodes in serverless or edge environments
-- **State Snapshots** — Create, save, and restore blockchain state at precise points
-
-For examples, see [examples](../examples/viem.mdx).
-
-## API Interfaces
-
-:::tip[Choose Your API Level]
-Tevm provides multiple API layers to suit different needs and styles.
-:::
-
-| API Level              | Description                                                        | Best For                            |
-| ---------------------- | ------------------------------------------------------------------ | ----------------------------------- |
-| **Viem Client API**    | Standard viem actions plus Tevm-specific actions                   | Most application development        |
-| **JSON-RPC API**       | Standard Ethereum RPC methods plus Anvil and Tevm-specific methods | Direct RPC integration, tooling     |
-| **Low-Level TevmNode** | Direct access to EVM, StateManager, Blockchain, etc.               | Tool developers, deep customization |
-
-**API layers at a glance:**
-- Viem Client API (high-level): `client.getBalance()`, `client.tevmMine()`, `client.sendTransaction()`
-- JSON-RPC API: `eth_getBalance`, `anvil_mine`, `tevm_dumpState`
-- TevmNode API: `node.getVm()`, `node.getTxPool()`, `node.extend()`
-- Low-Level Components: `vm.evm.runCall()`, `stateManager.getAccount()`, `blockchain.putBlock()`
-
-:::code-group
-
-```ts [Client API]
 import { createMemoryClient } from 'tevm'
 
 const client = createMemoryClient()
 
-// Standard viem actions
-const balance = await client.getBalance({ address: '0x123...' })
 const blockNumber = await client.getBlockNumber()
+const chainId = await client.request({ method: 'eth_chainId' })
 
-// Tevm-specific actions
-await client.tevmSetAccount({
-  address: '0x123...',
-  balance: 1000000000000000000n
-})
-await client.tevmMine()
+console.log(blockNumber, chainId)
 ```
 
-```ts [JSON-RPC API]
-import { createTevmNode } from 'tevm'
-import { requestEip1193 } from 'tevm/decorators'
+The `request` shape is `{ method, params? }`. JSON-RPC envelope fields such as `id` and `jsonrpc` belong to HTTP serialization, not EIP-1193 calls.
 
-const node = createTevmNode().extend(requestEip1193())
+## StateManager and the EVM
 
-// Standard Ethereum JSON-RPC methods
-const balance = await node.request({
-  method: 'eth_getBalance',
-  params: ['0x123...', 'latest']
+The `StateManager` owns Ethereum account state: nonce, balance, bytecode, and storage. It supports checkpoints, commits, reverts, state dumps, and fork-backed reads.
+
+The EVM executes bytecode against that state. A call can:
+
+1. checkpoint the current state;
+2. execute opcodes and precompiles;
+3. collect logs, created addresses, gas data, and an optional trace;
+4. commit when execution becomes canonical or revert when it is only a simulation.
+
+`tevmCall` is a simulation by default. With `addToMempool: true`, Tevm also creates a pending transaction. State only becomes canonical when that transaction is mined.
+
+## TxPool, Mining, Blocks, and Receipts
+
+The txpool holds valid pending transactions and orders executable transactions by sender nonce and fees. The configured mining policy decides when a miner drains it:
+
+- `{ type: 'manual' }` keeps transactions pending until a mine action.
+- `{ type: 'auto' }` mines submitted transactions immediately.
+- `{ type: 'interval', blockTime: seconds }` mines on a timer.
+
+During mining, Tevm selects executable transactions, runs each through the VM, commits the resulting state root, builds a canonical block, removes included transactions from the pool, and indexes receipts and logs. This ordering is why a receipt is unavailable before mining and queryable afterward.
+
+```ts
+import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
+
+const client = createMemoryClient({
+  miningConfig: { type: 'manual' },
 })
 
-// Anvil-compatible methods
-await node.request({
-  method: 'anvil_setBalance',
-  params: ['0x123...', '0x10000000000000000']
+const { txHash } = await client.tevmCall({
+  from: PREFUNDED_ACCOUNTS[0].address,
+  to: '0x1111111111111111111111111111111111111111',
+  value: 1n,
+  addToMempool: true,
 })
 
-// Tevm-specific methods
-const state = await node.request({
-  method: 'tevm_dumpState',
-  params: []
+if (!txHash) throw new Error('transaction was not added to the txpool')
+
+const pending = await client.getTransaction({ hash: txHash })
+await client.tevmMine({ blockCount: 1 })
+const receipt = await client.getTransactionReceipt({ hash: txHash })
+const block = await client.getBlock({ blockHash: receipt.blockHash })
+
+console.log(pending.blockNumber, receipt.status, block.number)
+```
+
+Tevm exposes two deliberately different mining parameter shapes:
+
+- Tevm action: `client.tevmMine({ blockCount: 2, interval: 1 })`
+- viem test action: `client.mine({ blocks: 2, interval: 1 })`
+
+The receipt manager stores receipts by block and transaction hash and provides the log index used by `eth_getLogs` and viem's `getLogs`.
+
+## The Forking Proxy
+
+A fork does not download the entire remote chain. It keeps a local overlay and asks the upstream transport for missing data:
+
+1. the local blockchain resolves the fork block and older remote blocks through the transport;
+2. the state manager fetches missing accounts, code, and storage at the fork block;
+3. fetched values are cached locally;
+4. local writes, pending transactions, and mined blocks live in the overlay and never modify the upstream chain.
+
+```ts
+import { createMemoryClient, http } from 'tevm'
+import { mainnet } from 'tevm/common'
+
+const client = createMemoryClient({
+  common: mainnet,
+  fork: {
+    transport: http('https://ethereum-rpc.publicnode.com')({}),
+    blockTag: 20_000_000n,
+  },
+})
+
+await client.tevmReady()
+
+const remoteBalance = await client.getBalance({
+  address: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+  blockNumber: 20_000_000n,
+})
+
+await client.setBalance({
+  address: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+  value: remoteBalance + 1n,
 })
 ```
 
-```ts [Low-Level API]
+Setting `common` avoids a chain-ID discovery request. Pin `blockTag` in repeatable tests; omit it when the latest upstream state is intentional.
+
+## Low-Level Access
+
+`TevmNode` is the ownership boundary for the runtime. Advanced integrations can inspect its components directly:
+
+```ts
 import { createTevmNode } from 'tevm'
-import { createAddress } from 'tevm/address'
-import { createAccount } from 'tevm/utils'
 
 const node = createTevmNode()
+await node.ready()
+
 const vm = await node.getVm()
+const txPool = await node.getTxPool()
+const receipts = await node.getReceiptsManager()
+const head = await vm.blockchain.getCanonicalHeadBlock()
 
-// Direct EVM access
-vm.evm.events.on('step', (data, next) => {
-  console.log(data.opcode.name, data.stack)
-  next?.()
-})
-
-// Direct state management
-await vm.stateManager.putAccount(
-  createAddress('0x1234567890123456789012345678901234567890'),
-  createAccount({
-    nonce: 0n,
-    balance: 10000000000000000000n
-  })
-)
-
-// Direct blockchain control
-const block = await vm.blockchain.getBlockByNumber(1n)
+console.log(head.header.number, txPool.pool.size, receipts.GET_LOGS_LIMIT)
 ```
 
-:::
+Prefer `MemoryClient` for application code. Low-level components use Ethereum-native byte arrays, address objects, typed transactions, and explicit checkpoint rules; they are intended for custom execution tools and Tevm contributors.
 
-:::info
-The Client API is the most developer-friendly and perfect for most applications. The Low-Level API provides maximum control but requires deeper understanding of EVM internals.
-:::
+## Execution and Data Flow
 
-For component API details, see:
+### Read
 
-- [State Manager](/reference/state)
-- [Transaction Pool](/reference/txpool)
-- [Blockchain](/reference/blockchain)
-- [EVM](/reference/evm)
-- [Receipt Manager](/reference/receipt-manager)
+`getBalance` → viem action → Tevm transport → node handler → state manager → local cache or fork proxy.
 
-## Advanced Features
+### Simulate
 
-::::steps
+`tevmCall` → checkpoint → EVM execution → result and optional trace → revert checkpoint.
 
-### Contract Utilities
+### Submit and Mine
 
-Tevm's type-safe contract interactions are Tevm-agnostic — they work with viem, ethers, and wagmi. We may upstream this abstraction to viem in the future.
+`sendTransaction` or `tevmCall({ addToMempool: true })` → txpool → mining policy → VM execution → state commit → block → receipt and log indexes.
 
-```ts
-import { createContract } from "tevm/contract";
+### Query History
 
-const erc20Contract = createContract({
-  abi: [
-    "function balanceOf(address owner) view returns (uint256)",
-    "function transfer(address to, uint256 amount) returns (bool)",
-    "event Transfer(address indexed from, address indexed to, uint256 value)",
-  ],
-  address: "0x123...",
-});
+`getBlock`, `getTransactionReceipt`, or `getLogs` → local blockchain and receipt indexes, falling back to the upstream transport only for fork history that is not local.
 
-const balance = await erc20Contract.read.balanceOf("0x456...");
-const txHash = await erc20Contract.write.transfer("0x789...", 1000n);
-```
+## Where to Go Next
 
-::::
-
-For Tevm Bundler users, import Solidity directly with full type safety:
-
-```ts
-import { ERC20 } from "./ERC20.sol";
-
-const token = ERC20.withAddress("0x123...");
-
-const decimals = await token.read.decimals();
-```
-
-## Extensibility Model
-
-:::details[Node Extension API]
-Tevm's plugin system allows adding new functionality to nodes:
-
-```ts
-import { createTevmNode } from "tevm";
-
-const node = createTevmNode().extend((baseNode) => {
-  return {
-    async simulateBulkTransactions(txs) {
-      const results = [];
-      for (const tx of txs) {
-        const vm = await baseNode.getVm();
-        results.push(await vm.runTx({ tx }));
-      }
-      return results;
-    },
-
-    async resetToSnapshot(snapshot) {
-      const vm = await baseNode.getVm();
-      return vm.stateManager.revert(snapshot);
-    },
-  };
-});
-
-const snapshot = await node.getVm().stateManager.checkpoint();
-const results = await node.simulateBulkTransactions([tx1, tx2, tx3]);
-await node.resetToSnapshot(snapshot);
-```
-
-This model allows powerful customizations while preserving the core API.
-:::
-
-## Further Resources
-
-| Resource                                                    | Description                                        |
-| ----------------------------------------------------------- | -------------------------------------------------- |
-| [TevmNode Interface Reference](/reference/node)             | Detailed API reference for the core node interface |
-| [GitHub Repository](https://github.com/evmts/tevm-monorepo) | Source code and contributions                      |
-| [Custom Precompiles Guide](../advanced/custom-precompiles)  | Learn how to extend the EVM                        |
-| [Performance Profiling](../advanced/performance-profiler)   | Optimize your Ethereum applications                |
-
-Next: [Create a Tevm Node](../core/create-tevm-node) · [Viem Integration](../examples/viem) · [Practical Examples](../examples/local-testing)
+- [Create a Tevm Node](../core/create-tevm-node)
+- [Mining Modes](../core/mining-modes)
+- [Forking](../core/forking)
+- [Managing State](../core/managing-state)
+- [Receipts and Logs](../advanced/receipts-and-logs)
+- [Transaction Pool](../advanced/txpool)

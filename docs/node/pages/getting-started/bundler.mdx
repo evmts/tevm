@@ -1,529 +1,108 @@
 ---
 title: Bundler Quickstart
-description: Quickly set up Tevm bundler to import Solidity contracts directly in TypeScript
+description: Import Solidity files as typed TypeScript modules with Tevm
 ---
 
 # Bundler Quickstart
 
-Set up the Tevm bundler to import Solidity contracts directly into TypeScript/JavaScript.
+Tevm bundler plugins compile `.sol` imports at build time and generate modules containing ABI, bytecode, and type-safe contract helpers.
 
-## Overview
-
-Tevm bundler enables:
-
-- `.sol` files imported directly in your code
-- Full TypeScript type info for contract methods
-- Go-to-definition and hover docs for Solidity
-- Type-safe contract interaction
-
-## Prerequisites
-
-- Node.js 18+ and npm/yarn/pnpm
-- A supported bundler (Vite, Webpack, Rollup, ESBuild, or Bun)
-
-## Step 1: Install Tevm and TypeScript Plugin
+## Install
 
 ```bash
-npm install tevm
-npm install -D @tevm/ts-plugin
+npm install tevm@1.0.0-rc.151
 ```
 
-## Step 2: Configure Your Bundler
+The `tevm` package exposes plugin entry points for Vite, Rollup, esbuild, Webpack, rspack, and Bun.
 
-The bundler plugin compiles Solidity during your build, so the JS output contains ABIs, bytecode, and TypeScript interfaces.
-
-:::tip
-Complex projects or Foundry imports? See [Advanced Configuration](#advanced-configuration) for `tevm.config.json`.
-
-The bundler creates a `.tevm` cache directory — add it to `.gitignore`:
-
-```bash
-# .gitignore
-.tevm
-```
-:::
-
-### For Vite (recommended)
+## Vite
 
 ```ts
-// vite.config.ts
 import { defineConfig } from 'vite'
 import { vitePluginTevm } from 'tevm/bundler/vite-plugin'
-import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  plugins: [react(), vitePluginTevm()],
+  plugins: [vitePluginTevm()],
 })
 ```
 
-### For Other Bundlers
+## Rollup
 
-:::details[Webpack]
-
-```js
-// webpack.config.mjs
-import { webpackPluginTevm } from 'tevm/bundler/webpack-plugin'
-
-export default {
-  plugins: [webpackPluginTevm()],
-}
-```
-:::
-
-:::details[Next.js]
-
-```js
-// next.config.js
-const nextConfig = {
-  webpack: (config) => config,
-  typescript: {
-    // LSP typechecking works in-editor but not during `next build` yet.
-    // For build-time typechecking, generate .ts files via `npx evmts-gen`.
-    ignoreBuildErrors: true,
-  }
-}
-
-export default nextConfig
-```
-
-:::warning
-Next.js' type-checking pipeline may conflict with Solidity imports. If `next build` errors:
-1. Set `typescript.ignoreBuildErrors: true` (above), or
-2. Use codegen: `npx tevm gen` to generate explicit `.ts` files.
-:::
-:::
-
-:::details[Rollup]
-
-```js
-// rollup.config.js
+```ts
 import { rollupPluginTevm } from 'tevm/bundler/rollup-plugin'
 
 export default {
+  input: 'src/index.ts',
   plugins: [rollupPluginTevm()],
 }
 ```
-:::
 
-:::details[Rspack]
-
-```js
-// rspack.config.mjs
-import { rspackPluginTevm } from 'tevm/bundler/rspack-plugin'
-
-export default {
-  plugins: [rspackPluginTevm()],
-}
-```
-:::
-
-:::details[Bun]
+## esbuild
 
 ```ts
-// plugins.ts
-import { plugin } from 'bun'
-import { tevmBunPlugin } from 'tevm/bundler/bun-plugin'
-
-plugin(tevmBunPlugin({}))
-```
-
-```toml
-# bunfig.toml
-preload = ["./plugins.ts"]
-
-[test]
-preload = ["./plugins.ts"]
-```
-:::
-
-:::details[ESBuild]
-
-```js
-// build.mjs
 import { build } from 'esbuild'
 import { esbuildPluginTevm } from 'tevm/bundler/esbuild-plugin'
 
-build({
-  entryPoints: ['src/index.js'],
-  outdir: 'dist',
+await build({
+  entryPoints: ['src/index.ts'],
   bundle: true,
+  outfile: 'dist/index.js',
   plugins: [esbuildPluginTevm()],
 })
 ```
-:::
 
-## Step 3: Configure TypeScript
+## Webpack
 
-The TypeScript plugin enables editor features (completion, type checking, go-to-definition) for Solidity imports. Add to `tsconfig.json`:
+```ts
+import { WebpackPluginTevm } from 'tevm/bundler/webpack-plugin'
 
-```json
-{
-  "compilerOptions": {
-    "plugins": [
-      { "name": "@tevm/ts-plugin" }
-    ]
-  }
+export default {
+  plugins: [new WebpackPluginTevm()],
 }
 ```
 
-## Step 4: Configure Your Editor
+The Webpack export is the `WebpackPluginTevm` constructor with an uppercase `W`.
 
-### VS Code and Cursor
+## Import a Contract
 
-Use the workspace TypeScript (the workspace install is what loads `@tevm/ts-plugin`):
-
-1. Command Palette (Ctrl/Cmd+Shift+P, or ⌘K/Ctrl+K in Cursor)
-2. "TypeScript: Select TypeScript Version"
-3. "Use Workspace Version"
-
-### Vim, Neovim, Other Editors
-
-Works automatically as long as the editor uses the project's workspace TypeScript (required to load `@tevm/ts-plugin`).
-
-## Step 5: Create a Solidity Contract
-
-Name it `Counter.s.sol` to include bytecode (the `.s.sol` extension tells Tevm to generate deployable bytecode):
-
-:::note
-**`.sol` vs `.s.sol`:**
-
-- **`.sol`** — ABI only. For interacting with existing deployed contracts. Cannot be deployed (no bytecode). `import { Token } from './Token.sol'`
-- **`.s.sol`** — ABI + bytecode. Deployable or usable as an interface. Larger bundle. `import { Token } from './Token.s.sol'`
-:::
+Given:
 
 ```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+// src/Counter.sol
+pragma solidity ^0.8.20;
 
 contract Counter {
-    uint256 private count = 0;
-
-    function increment() public {
-        count += 1;
-    }
-
-    function getCount() public view returns (uint256) {
-        return count;
-    }
+    uint256 public number;
+    function setNumber(uint256 next) public { number = next; }
 }
 ```
 
-## Step 6: Import and Use the Contract
+Import the generated contract module:
 
-```tsx
-// src/App.tsx
-import { Counter } from './Counter.s.sol'
+```ts
+import { Counter } from './Counter.sol'
 import { createMemoryClient } from 'tevm'
-import { useState, useEffect } from 'react'
 
-function App() {
-  const [count, setCount] = useState<bigint>(0n)
-  const [client] = useState(() => createMemoryClient())
-  const [deployedAddress, setDeployedAddress] = useState<string>('')
-
-  useEffect(() => {
-    const deploy = async () => {
-      const deployed = await client.deployContract(Counter.deploy())
-      setDeployedAddress(deployed.address)
-      setCount(await deployed.read.getCount())
-    }
-    deploy()
-  }, [client])
-
-  const handleIncrement = async () => {
-    if (!deployedAddress) return
-    const contract = Counter.withAddress(deployedAddress)
-    await client.writeContract(contract.write.increment())
-    await client.mine({ blocks: 1 })
-    setCount(await client.readContract(contract.read.getCount()))
-  }
-
-  return (
-    <div>
-      <h1>Tevm Counter Example</h1>
-      <p>Count: {count.toString()}</p>
-      <button onClick={handleIncrement}>Increment</button>
-    </div>
-  )
-}
-
-export default App
-```
-
-### Type-Safe Method Calls
-
-```ts
-// Read methods (view/pure)
-const balance = await client.readContract(
-  ERC20.read.balanceOf('0x' + '20'.repeat(20))
+const client = createMemoryClient()
+const counter = Counter.withAddress(
+  '0x2222222222222222222222222222222222222222',
 )
 
-// Write methods (state-changing)
-await client.writeContract(
-  ERC20.write.transfer('0x' + '30'.repeat(20), 1000000n)
-)
-
-// Events
-client.watchEvent(
-  ERC20.events.Transfer({
-    from: '0x' + '20'.repeat(20),
-    to: null // `null` is a wildcard
-  }),
-  (log) => console.log('Transfer event:', log)
-)
-```
-
-## What's Happening?
-
-When you import `Counter.s.sol`, Tevm:
-
-1. Compiles via solc.
-2. Generates TypeScript with ABI, bytecode, and a Contract instance.
-3. Provides a fully typed interface.
-
-The `Counter` object is a [Tevm Contract](/reference/contract) with:
-
-- `abi`
-- `address` (if set via `withAddress()`)
-- `bytecode` — creation bytecode (undefined for `.sol`)
-- `deployedBytecode` — runtime bytecode (undefined for `.sol`)
-- `deploy()` — deployment data with constructor args
-- `read` — type-safe read methods
-- `write` — type-safe write methods
-- `events` — type-safe event filters
-- `withAddress()` — new instance with an address
-
-:::note
-`bytecode` and `deployedBytecode` are only available for `.s.sol` imports. Regular `.sol` files cannot be deployed.
-:::
-
-## Advanced Configuration
-
-### Foundry Integration
-
-By default Tevm uses Node.js resolution. For Foundry projects or custom remappings, create `tevm.config.json`:
-
-```json
-{
-  "foundryProject": true,
-  "libs": ["lib", "node_modules"],
-  "remappings": {
-    "@openzeppelin/": "node_modules/@openzeppelin/"
-  },
-  "cacheDir": ".tevm"
-}
-```
-
-:::tip
-Add `.tevm` to `.gitignore`:
-
-```bash
-# .gitignore
-.tevm
-```
-
-It's ephemeral — safe to delete, but will require recompiling on next build.
-:::
-
-`"foundryProject": true` will:
-
-- Auto-read remappings from `foundry.toml`/`remappings.txt`
-- Include Foundry library paths (`lib/` by default)
-- Allow Foundry-style import paths
-- Merge with manual `remappings`/`libs`
-
-Manual config without Foundry:
-
-```json
-{
-  "foundryProject": false,
-  "libs": [
-    "./contracts",
-    "node_modules"
-  ],
-  "remappings": {
-    "@openzeppelin/": "node_modules/@openzeppelin/",
-    "ds-test/": "lib/forge-std/lib/ds-test/src/",
-    "solmate/": "node_modules/solmate/src/"
-  }
-}
-```
-
-Useful for mixed Foundry/JS projects, Forge libraries (OpenZeppelin, Solmate), or complex Solidity import paths.
-
-See the [Foundry example](https://github.com/evmts/tevm-monorepo/tree/main/examples/vite) for a complete project.
-
-## Using Third-Party Contracts
-
-### NPM Packages
-
-```ts
-// Use .s.sol when bytecode is needed
-import { ERC20 } from '@openzeppelin/contracts/token/ERC20/ERC20.s.sol'
-
-const myToken = await client.deployContract(
-  ERC20.deploy("MyToken", "MTK")
-)
-```
-
-### Coming Soon Features
-
-#### Network Imports with Macros
-
-:::note
-The macros-based network import feature is coming soon and is not yet available.
-:::
-
-Upcoming: import contracts from any EVM network via build-time macros, resolved during build for better performance and type safety:
-
-```ts
-// contract-macros.js
-import { createMemoryClient } from 'tevm'
-import { http } from 'viem'
-import { mainnet, optimism } from 'viem/chains'
-import { loadContract } from 'tevm'
-import { SourcifyABILoader, EtherscanABILoader } from 'tevm/whatsabi'
-
-// Use fixed block heights for reproducible builds
-const mainnetClient = createMemoryClient({
-  fork: {
-    transport: http('https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY'),
-    blockNumber: 19000000n
-  }
+await client.setCode({
+  address: counter.address,
+  bytecode: counter.deployedBytecode,
 })
 
-const optimismClient = createMemoryClient({
-  fork: {
-    transport: http('https://mainnet.optimism.io'),
-    blockNumber: 116000000n
-  }
-})
-
-const mainnetLoaders = [
-  new SourcifyABILoader(),
-  new EtherscanABILoader({ apiKey: 'YOUR_ETHERSCAN_KEY' })
-]
-
-const optimismLoaders = [
-  new SourcifyABILoader(),
-  new EtherscanABILoader({
-    apiKey: 'YOUR_ETHERSCAN_KEY',
-    baseUrl: 'https://api-optimistic.etherscan.io/api'
-  })
-]
-
-export async function wethContract() {
-  return loadContract(mainnetClient, {
-    address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-    followProxies: true,
-    loaders: mainnetLoaders
-  })
-}
-
-export async function usdcContract() {
-  return loadContract(optimismClient, {
-    address: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
-    followProxies: true,
-    loaders: optimismLoaders
-  })
-}
+const number = await client.readContract(counter.read.number())
+console.log(number)
 ```
 
-Import with the `with {type: 'macro'}` attribute:
+`.s.sol` script contracts include creation bytecode. Plain `.sol` imports always provide ABI helpers and provide bytecode when the compiler output includes it.
 
-```ts
-import { wethContract } from './contract-macros.js' with { type: 'macro' }
-import { usdcContract } from './contract-macros.js' with { type: 'macro' }
+## Supported rc.151 Surface
 
-const wethBalance = await client.readContract({
-  ...wethContract.read.balanceOf('0x123...'),
-  address: wethContract.address
-})
+The rc.151 bundler supports filesystem Solidity imports and the package plugin entry points above. It does not export the proposed `sol` template tag or `loadContract`/CAIP-10 contract loader APIs.
 
-console.log(`USDC decimals: ${await client.readContract({
-  ...usdcContract.read.decimals(),
-  address: usdcContract.address
-})}`)
-console.log(`Human readable ABI: ${usdcContract.humanReadableAbi}`)
-console.log(`Implementation address: ${usdcContract.proxyDetails?.[0]?.implementation || 'Not a proxy'}`)
-```
+## Related
 
-Enable macros in `tevm.config.json` (required for security):
-
-```json
-{
-  "macros": true,
-  "foundryProject": true,
-  "libs": ["lib", "node_modules"]
-}
-```
-
-ABIs resolve at build time with full type safety. See [Contract Loader](/api/whatsabi-integration#network-imports-via-macros).
-
-#### Inline Solidity with Template Literals
-
-:::note
-Inline Solidity is coming soon and is not yet available.
-:::
-
-For prototyping, define contracts inline:
-
-```ts
-import { sol } from 'tevm'
-
-const { Counter } = sol`
-  // SPDX-License-Identifier: MIT
-  pragma solidity ^0.8.0;
-
-  contract Counter {
-    uint256 private count = 0;
-
-    function increment() public {
-      count += 1;
-    }
-
-    function getCount() public view returns (uint256) {
-      return count;
-    }
-  }
-`
-
-const deployed = await client.deployContract(Counter.deploy())
-await deployed.write.increment()
-const count = await deployed.read.getCount()
-```
-
-Same type-safety and features as file-based imports.
-
-## Documentation Resources
-
-- Bundler Reference:
-  - [Overview](/reference/bundler/overview)
-  - [Internals](/reference/bundler/internals)
-  - [Methods & Exports](/reference/bundler/methods)
-  - [Troubleshooting](/reference/bundler/troubleshooting)
-- Full docs as plain text for LLMs: [https://node.tevm.sh/llms-full.txt](https://node.tevm.sh/llms-full.txt)
-
-## Troubleshooting
-
-- **Red underlines in imported Solidity** — use the workspace TypeScript version.
-- **No bytecode available** — use `.s.sol` for deployable contracts.
-- **Deployment errors** — pass required constructor args to `.deploy()`.
-- **Compilation errors** — check Solidity code and version compatibility.
-- **TypeScript errors** — verify the TS plugin is configured.
-- **Red underlines in editor** — confirm workspace TS with plugin loaded.
-- **Import resolution failures** (Foundry-style imports like `@openzeppelin/contracts/...`):
-  - Create `tevm.config.json` with `"foundryProject": true`
-  - Check `foundry.toml` remappings
-  - Add explicit remappings in `tevm.config.json`
-- **Test runners** — Vitest/Jest work out-of-the-box once the bundler plugin is configured.
-
-## Next Steps
-
-- [Tevm Contracts](/reference/contract)
-- [Bundler Overview](/reference/bundler/overview)
-- [Bundler Internals](/reference/bundler/internals)
-- [Advanced Methods & APIs](/reference/bundler/methods)
-- [Troubleshooting](/reference/bundler/troubleshooting)
-- [Build with Tevm Node](/core/create-tevm-node)
-- [Examples repo](https://github.com/evmts/tevm-monorepo/tree/main/examples)
+[Bundler Overview](../reference/bundler/overview) · [Plugin Reference](../reference/bundler-plugins) · [Troubleshooting](../reference/bundler/troubleshooting)

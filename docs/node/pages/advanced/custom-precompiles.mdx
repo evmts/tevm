@@ -17,7 +17,6 @@ import { createAddress } from 'tevm/address'
 import { createContract } from 'tevm/contract'
 import { hexToBytes, parseAbi } from 'tevm/utils'
 import { createImpersonatedTx } from 'tevm/tx'
-import { EvmError, EvmErrorMessage } from 'tevm/evm'
 
 const customPrecompile = definePrecompile({
   contract: createContract({
@@ -62,28 +61,24 @@ When calling `vm.runTx()` directly, build a valid transaction for the active har
 
 ```typescript showLineNumbers filename="advanced-precompile.ts"
 import { createTevmNode, definePrecompile } from 'tevm'
-import { createAddress } from 'tevm/address'
 import { createContract } from 'tevm/contract'
-import { parseAbi, hexToBytes } from 'tevm/utils'
-import { createImpersonatedTx } from 'tevm/tx'
-import { EvmError, EvmErrorMessage } from 'tevm/evm'
-import { keccak256 } from 'tevm/crypto'
+import { parseAbi, hexToBytes, keccak256 } from 'tevm/utils'
 
 const hashPrecompile = definePrecompile({
   contract: createContract({
     abi: parseAbi(['function hash(bytes) returns (bytes32)']),
     address: '0x0000000000000000000000000000000000000321'
   }),
-  call: async ({ data, gasLimit }) => {
+  call: async ({ data }) => {
     const gasPerByte = 10n
     const gasUsed = BigInt(hexToBytes(data).length) * gasPerByte + 100n
-    const hash = keccak256(data)
+    const hash = hexToBytes(keccak256(data))
     return { returnValue: hash, executionGasUsed: gasUsed }
   },
 })
 
 const node = createTevmNode({
-  customPrecompiles: [customPrecompile.precompile(), hashPrecompile.precompile()],
+  customPrecompiles: [hashPrecompile.precompile()],
 })
 ```
 
@@ -155,7 +150,7 @@ const gasPrecompile = definePrecompile({
     if (gasUsed > gasLimit) {
       return {
         returnValue: new Uint8Array(),
-        exceptionError: new EvmError(EvmErrorMessage.OUT_OF_GAS),
+        exceptionError: new EvmError('out of gas'),
         executionGasUsed: gasLimit,
       }
     }
@@ -185,7 +180,9 @@ const errorPrecompile = definePrecompile({
     } catch (error) {
       return {
         returnValue: new Uint8Array(),
-        exceptionError: new EvmError(`Precompile error: ${error.message}`),
+        exceptionError: new EvmError(
+          `Precompile error: ${error instanceof Error ? error.message : String(error)}`,
+        ),
         executionGasUsed: gasLimit,
       }
     }
@@ -246,7 +243,7 @@ const precompile = definePrecompile({
     if (totalGas > gasLimit) {
       return {
         returnValue: new Uint8Array(),
-        exceptionError: new EvmError(EvmErrorMessage.OUT_OF_GAS),
+        exceptionError: new EvmError('out of gas'),
         executionGasUsed: gasLimit,
       }
     }
@@ -279,41 +276,11 @@ const precompile = definePrecompile({
       console.error('Precompile execution error:', error)
       return {
         returnValue: new Uint8Array(),
-        exceptionError: new EvmError(error.message || 'Unknown precompile error'),
-        executionGasUsed: Math.min(100n, gasLimit),
+        exceptionError: new EvmError(
+          error instanceof Error ? error.message : 'Unknown precompile error',
+        ),
+        executionGasUsed: gasLimit < 100n ? gasLimit : 100n,
       }
-    }
-  },
-})
-```
-
-### State Management
-
-For precompiles that maintain state across calls via EVM storage:
-
-```typescript showLineNumbers filename="state-best-practices.ts"
-const statePrecompile = definePrecompile({
-  contract: createContract({
-    abi: parseAbi(['function getData(bytes32) returns (bytes32)', 'function setData(bytes32,bytes32)']),
-    address: createAddress('0x0000000000000000000000000000000000000124')
-  }),
-  call: async ({ data, gasLimit }) => {
-    const vm = await node.getVm()
-    const stateManager = vm.stateManager
-    const address = createAddress(statePrecompile.contract.address)
-
-    const selector = data.slice(0, 4)
-    const isGetData = selector[0] === 0x9b & selector[1] === 0x18 & selector[2] === 0x30 & selector[3] === 0x4c
-
-    if (isGetData) {
-      const key = data.slice(4, 36)
-      const value = await stateManager.getStorage(address, key)
-      return { returnValue: value, executionGasUsed: 200n }
-    } else {
-      const key = data.slice(4, 36)
-      const value = data.slice(36, 68)
-      await stateManager.putStorage(address, key, value)
-      return { returnValue: new Uint8Array(), executionGasUsed: 500n }
     }
   },
 })

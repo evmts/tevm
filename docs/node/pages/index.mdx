@@ -2,132 +2,73 @@
 layout: landing
 ---
 
-import { Button, HomePage } from "vocs/components";
-import { Card } from "../components";
+import { HomePage } from "vocs/components";
 import "../styles/index.css";
 
 <HomePage.Root>
   <div style={{ textAlign: 'center', margin: '0 auto', maxWidth: '200px' }}>
     <img src="/tevm-logo-dark.png" alt="Tevm Logo" style={{ width: '100%', height: 'auto' }} />
   </div>
-  <HomePage.Tagline>Ethereum Node for Viem</HomePage.Tagline>
-  <HomePage.InstallPackage name="tevm" type="install" />
+
+  <HomePage.Tagline>Tevm 1.0 Release Candidate</HomePage.Tagline>
 
   <HomePage.Description>
-    An Ethereum Node built to run in Browser, Bun, Deno, and Node.js
+    An in-process Ethereum node and viem-compatible client for browsers, Node.js, Bun, and Deno. These docs target <code>tevm@1.0.0-rc.151</code>.
   </HomePage.Description>
 
   <div className="code-snippet" style={{ maxWidth: '800px', margin: '1.5rem 0', backgroundColor: 'var(--vocs-color_background2)', borderRadius: 'var(--vocs-borderRadius_4)', padding: '1rem', overflow: 'auto', textAlign: 'left' }}>
+    ```bash
+    npm install tevm@1.0.0-rc.151
+    ```
+  </div>
+
+  <div className="code-snippet" style={{ maxWidth: '800px', margin: '1.5rem 0', backgroundColor: 'var(--vocs-color_background2)', borderRadius: 'var(--vocs-borderRadius_4)', padding: '1rem', overflow: 'auto', textAlign: 'left' }}>
     ```ts
-    // @noErrors
-    // Runs in browsers, Node.js, Deno, Bun and beyond. Zero native dependencies
-    import { createMemoryClient } from "tevm";
-    // Direct Solidity imports with the Tevm Bundler
-    import { ComplexSimulation } from "../contracts/ComplexSimulation.s.sol";
+    import { createMemoryClient, PREFUNDED_ACCOUNTS } from "tevm";
 
-    const client = createMemoryClient();
-
-    const {
-      data, error, logs, createdAddresses, executionGasUsed,
-      l1Fee, trace, accessList, txHash,
-    } = await client.tevmContract({
-      deployedBytecode: ComplexSimulation.deployedBytecode,
-      ...ComplexSimulation.read.simulate(2n, "arg2"),
-      createTrace: true,
-      createAccessList: true,
-      createTransaction: true,
-      throwOnFail: false,
-      onStep: (step, next) => {
-        console.log(step.opcode);
-        next?.();
-      },
+    const client = createMemoryClient({
+      miningConfig: { type: "manual" },
     });
+
+    const { txHash } = await client.tevmCall({
+      from: PREFUNDED_ACCOUNTS[0].address,
+      to: "0x1111111111111111111111111111111111111111",
+      value: 1n,
+      addToMempool: true,
+    });
+
+    if (!txHash) throw new Error("transaction was not added to the txpool");
+
+    await client.tevmMine({ blockCount: 1 });
+    const receipt = await client.getTransactionReceipt({ hash: txHash });
+
+    console.log(receipt.status);
     ```
   </div>
 
   <HomePage.Buttons>
-    <HomePage.Button href="/getting-started/overview" variant="accent">Get started</HomePage.Button>
-    <HomePage.Button href="/examples/viem">Viem Guide</HomePage.Button>
-    <HomePage.Button href="/introduction/what-is-tevm-node">Learn More</HomePage.Button>
+    <HomePage.Button href="https://node.tevm.sh/getting-started/overview" variant="accent">
+      Read the 1.0 docs
+    </HomePage.Button>
+    <HomePage.Button href="https://node.tevm.sh/getting-started/viem">
+      Viem guide
+    </HomePage.Button>
+    <HomePage.Button href="https://github.com/evmts/tevm-monorepo">
+      GitHub
+    </HomePage.Button>
   </HomePage.Buttons>
 
   <div className="max-w-[900px] mx-auto my-12">
     <ul>
-      <li><strong><a href="/introduction/why-run-ethereum-in-js">JavaScript-Native EVM</a></strong> — run Ethereum anywhere JavaScript runs.</li>
-      <li><strong><a href="/introduction/why-run-ethereum-in-js#performance--efficiency">Up to 10× Faster Than Remote Calls</a></strong> — local execution, no network roundtrips; instant gas estimates.</li>
-      <li><strong><a href="/reference/bundler">Import Solidity Files Directly</a></strong> — .sol files as ES modules with full TypeScript types.</li>
-      <li><strong><a href="/core/forking">Fork Any Chain</a></strong> — instant local copies of Ethereum, Optimism, or any EVM chain. No Anvil/Hardhat required.</li>
-      <li><strong><a href="/api/evm-events">EVM Execution Hooks</a></strong> — plug into execution at opcode level for debuggers, tracers, profilers.</li>
-      <li><strong><a href="/introduction/what-is-tevm-node#library-compatibility">Works With Tools You Know</a></strong> — native viem integration; compatible with ethers.js, wagmi, any EIP-1193 library.</li>
+      <li><strong>In-memory or forked execution</strong> — run a local chain or overlay local state on an upstream EVM network.</li>
+      <li><strong>Viem-compatible</strong> — use public, wallet, and Anvil-style test actions on the same client.</li>
+      <li><strong>Real blocks and receipts</strong> — submit pending transactions, mine canonical blocks, and query indexed receipts and logs.</li>
+      <li><strong>Execution inspection</strong> — collect opcode hooks, traces, access lists, gas data, and state overrides.</li>
+      <li><strong>Direct Solidity imports</strong> — compile <code>.sol</code> modules with the Tevm bundler plugins.</li>
     </ul>
   </div>
 
-  <div className="max-w-[800px] mx-auto my-12 p-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-    <blockquote className="m-0 text-base border-l-4 border-blue-500 pl-4">
-      "If you're building a blockchain application on the web, I'm almost certain there is a use case for Tevm. It might change everything, and at worst it would most likely improve your devX."
-      <div className="mt-3 font-medium">
-        polarzero
-        <a href="https://twitter.com/0xpolarzero" className="text-sm text-blue-500 ml-2">@0xpolarzero</a>
-      </div>
-    </blockquote>
-  </div>
-
-  <div className="max-w-[800px] mx-auto my-20 text-center">
-    <h2 style={{ fontSize: "2.5rem", fontWeight: "bold", marginBottom: "1rem" }}>Turn Solidity into TypeScript</h2>
-    <p className="mb-6 text-lg" style={{ fontSize: "1.25rem", maxWidth: "700px", margin: "0 auto 2rem auto", lineHeight: "1.6" }}>
-      The Tevm Bundler imports Solidity contracts directly into your JS/TS. No ABI copying, no artifact management — just import .sol files with full type safety and auto-completion.
-    </p>
-
-    <div className="code-snippet" style={{ maxWidth: '800px', margin: '1.5rem auto', backgroundColor: 'var(--vocs-color_background2)', borderRadius: 'var(--vocs-borderRadius_4)', padding: '1.2rem', overflow: 'auto', textAlign: 'left' }}>
-      ```ts
-      // @noErrors
-      // Import Solidity contracts directly
-      import { ERC20 } from '@openzeppelin/contracts/token/ERC20/ERC20.sol'
-
-      const tokenContract = ERC20.withAddress('0x123...')
-
-      // Type-safe contract methods
-      const balance = await client.readContract(
-        tokenContract.read.balanceOf('0x456...')
-      )
-
-      // Coming soon: import contracts from any chain
-      import { WETH } from 'caip10:eip155:1:0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
-
-      // Coming soon: inline Solidity
-      import { sol } from 'tevm'
-
-      const { abi, bytecode } = sol`
-        pragma solidity ^0.8.19;
-
-        contract Counter {
-          uint256 private count = 0;
-
-          function increment() public {
-            count += 1;
-          }
-
-          function getCount() public view returns (uint256) {
-            return count;
-          }
-        }
-      `
-      ```
-    </div>
-
-    <div className="button-group flex gap-4 justify-center flex-wrap mt-8">
-      <Button href="/getting-started/bundler" variant="accent">Bundler Quickstart</Button>
-      <Button href="/reference/bundler">Bundler Reference</Button>
-    </div>
-  </div>
-
-  <div className="max-w-[600px] mx-auto my-16 text-center">
-    <Button href="/getting-started/overview" variant="accent" className="text-lg px-8 py-4" style={{ fontSize: "1.25rem", padding: "1rem 3rem" }}>
-      Ready to get started?
-    </Button>
-  </div>
-
   <div className="mt-12 text-sm opacity-80">
-    Here's our <a href="https://node.tevm.sh/llms-full.txt">documentation as plain text</a> for providing context to LLM systems
+    LLM-friendly versions: <a href="https://node.tevm.sh/llms.txt">llms.txt</a> and <a href="https://node.tevm.sh/llms-full.txt">llms-full.txt</a>.
   </div>
 </HomePage.Root>

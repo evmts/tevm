@@ -101,14 +101,14 @@ await stateManager.clearStorage(address)
 ```
 
 ```typescript [Client API] filename="client-contract-management.ts"
-import { createMemoryClient, hexToBytes } from 'tevm'
+import { createMemoryClient } from 'tevm'
 
 const client = createMemoryClient()
 const contractAddress = '0x1234567890123456789012345678901234567890'
 
 await client.setCode({
   address: contractAddress,
-  bytecode: hexToBytes('0x608060405234801561001057600080fd5b50...')
+  bytecode: '0x608060405234801561001057600080fd5b50'
 })
 
 const code = await client.getCode({
@@ -201,7 +201,9 @@ Dump and restore canonical state to any storage backend (localStorage, DB, etc.)
 const state = await stateManager.dumpCanonicalGenesis()
 localStorage.setItem('tevmState', JSON.stringify(state))
 
-const savedState = JSON.parse(localStorage.getItem('tevmState'))
+const serialized = localStorage.getItem('tevmState')
+if (!serialized) throw new Error('No saved Tevm state')
+const savedState = JSON.parse(serialized)
 await stateManager.generateCanonicalGenesis(savedState)
 ```
 
