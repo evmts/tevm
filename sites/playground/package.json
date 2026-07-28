@@ -1,0 +1,28 @@
+{
+	"name": "@tevm/playground",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@codemirror/lang-javascript": "^6.2.2",
+		"@codemirror/state": "^6.5.0",
+		"@codemirror/theme-one-dark": "^6.1.2",
+		"@codemirror/view": "^6.36.1",
+		"@replit/codemirror-lang-solidity": "^6.0.2",
+		"codemirror": "^6.0.1",
+		"readable-stream": "3.6.2",
+		"tevm": "npm:tevm@1.0.0-rc.151",
+		"viem": "^2.49.3",
+		"zod": "4.4.3"
+	},
+	"devDependencies": {
+		"typescript": "^5.7.2",
+		"vite": "^6.0.7",
+		"vite-plugin-node-polyfills": "^0.28.0"
+	}
+}

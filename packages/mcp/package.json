@@ -1,0 +1,77 @@
+{
+	"name": "@tevm/mcp",
+	"version": "1.0.0-rc.151",
+	"private": false,
+	"description": "An MCP server that gives AI agents an in-process Tevm EVM",
+	"keywords": [
+		"solidity",
+		"evm",
+		"mcp",
+		"ai",
+		"agent"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/evmts/tevm-monorepo.git",
+		"directory": "packages/mcp"
+	},
+	"license": "MIT",
+	"contributors": [
+		"Will Cory <willcory10@gmail.com>"
+	],
+	"sideEffects": false,
+	"type": "module",
+	"exports": {
+		"./package.json": "./package.json",
+		".": {
+			"import": {
+				"types": "./types/index.d.ts",
+				"default": "./dist/index.js"
+			}
+		}
+	},
+	"bin": {
+		"tevm-mcp": "./dist/cli.js"
+	},
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "types/index.d.ts",
+	"files": [
+		"dist",
+		"src",
+		"!src/**/*.spec.ts",
+		"types",
+		"README.md"
+	],
+	"scripts": {
+		"all": "bun run build && bun lint && bun format && bun test:run && bun generate:docs",
+		"build": "nx run-many --targets=build:dist,build:types --projects=@tevm/mcp",
+		"build:dist": "tsup",
+		"build:types": "tsup --dts-only && tsc --emitDeclarationOnly --declaration",
+		"format": "biome format . --write",
+		"format:check": "biome format .",
+		"generate:docs": "typedoc",
+		"lint": "biome check . --write --unsafe",
+		"lint:check": "biome check . --verbose",
+		"test": "vitest --watch",
+		"test:coverage": "vitest --coverage --run",
+		"test:run": "vitest run",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.30.0",
+		"@tevm/common": "workspace:^",
+		"@tevm/memory-client": "workspace:^",
+		"solc": "0.8.35",
+		"viem": "^2.49.3",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@tevm/tsconfig": "workspace:^",
+		"@tevm/tsupconfig": "workspace:^",
+		"vitest": "^4.1.6"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}

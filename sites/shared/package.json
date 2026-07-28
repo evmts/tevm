@@ -1,0 +1,14 @@
+{
+	"name": "@tevm/docs-shared",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/config.ts",
+		"./site-links": "./src/SiteLinks.tsx",
+		"./styles.css": "./src/styles.css"
+	},
+	"peerDependencies": {
+		"react": "^19"
+	}
+}

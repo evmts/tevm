@@ -6,11 +6,13 @@ packages:
   - cli
   - configs/*
   - docs/*
+  - evals
   - examples/*
   - extensions/*
   - lsp/*
   - packages/*
   - scripts
+  - sites/*
   - src
   - src/ui
   - tevm

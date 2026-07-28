@@ -31,7 +31,9 @@
 		"lint": "biome check . --write --unsafe",
 		"lint:check": "biome check . --verbose",
 		"lint:deps": "bunx depcheck",
-		"test": "prettier --check . && xo && ava"
+		"test": "prettier --check . && xo && ava",
+		"test:coverage": "vitest run --coverage",
+		"test:run": "vitest run"
 	},
 	"files": [
 		"dist"

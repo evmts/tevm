@@ -1,0 +1,26 @@
+{
+	"name": "@tevm/core-docs",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "vocs build",
+		"dev": "vocs dev",
+		"preview": "vocs preview",
+		"verify:samples": "node scripts/verify-samples.mjs",
+		"verify": "pnpm verify:samples && pnpm build"
+	},
+	"dependencies": {
+		"@tevm/docs-shared": "workspace:*",
+		"react": "^19.2.6",
+		"react-dom": "^19.2.6",
+		"tevm": "npm:tevm@1.0.0-rc.151",
+		"viem": "^2.49.3",
+		"vocs": "1.4.1"
+	},
+	"devDependencies": {
+		"@types/react": "^19.2.14",
+		"@types/react-dom": "^19.2.3",
+		"typescript": "^6.0.3"
+	}
+}

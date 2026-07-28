@@ -56,6 +56,7 @@ node_modules
 /.sass-cache
 /connect.lock
 /coverage
+**/coverage/
 /libpeerconnection.log
 npm-debug.log
 testem.log
@@ -106,3 +107,22 @@ execution-specs/
 g/
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+# Smithers workspace state (PGlite store, backend markers, mirror subscriptions)
+/.smithers/pg/
+/.smithers/backend.json
+/.smithers/migrated.json
+/.smithers/claude-mirror-subscriptions.json
+
+# Scratch verification directories produced by release verification runs
+/.tmp-docs-features/
+/.tmp-docs-verify/
+/.tmp-playground-verify/
+/.tmp-skill-verify/
+/cli/.tmp-cli-verification/
+/cli/coverage/
+/evals/.runs/
+/evals/results/
+/evals/node_modules/
+**/coverage/
+/packages/mcp/scratch-*.mjs
