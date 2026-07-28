@@ -1,5 +1,5 @@
 import { createTevmNode } from '@tevm/node'
-import { numberToHex, parseEther } from '@tevm/utils'
+import { hexToString, numberToHex, parseEther } from '@tevm/utils'
 import { describe, expect, it } from 'vitest'
 import { anvilDumpStateJsonRpcProcedure } from './anvilDumpStateProcedure.js'
 import { anvilSetBalanceJsonRpcProcedure } from './anvilSetBalanceProcedure.js'
@@ -11,14 +11,18 @@ describe('anvilDumpStateJsonRpcProcedure', () => {
 
 		const result = await procedure({
 			method: 'anvil_dumpState',
-			// TODO this is actually a bug we need to provide params
-			params: [{}],
+			params: [],
 			jsonrpc: '2.0',
 		})
 
 		expect(result.jsonrpc).toBe('2.0')
 		expect(result.method).toBe('anvil_dumpState')
-		expect(result.result).toMatchSnapshot()
+		expect(result.result).toMatch(/^0x[0-9a-f]+$/)
+		const decoded = JSON.parse(hexToString(result.result))
+		expect(decoded).toMatchObject({
+			format: 'tevm-anvil-state-v1',
+			state: expect.any(Object),
+		})
 	})
 
 	it('should handle requests with id', async () => {
@@ -27,7 +31,7 @@ describe('anvilDumpStateJsonRpcProcedure', () => {
 
 		const result = await procedure({
 			method: 'anvil_dumpState',
-			params: [{}],
+			params: [],
 			jsonrpc: '2.0',
 			id: 1,
 		})
@@ -51,9 +55,25 @@ describe('anvilDumpStateJsonRpcProcedure', () => {
 			jsonrpc: '2.0',
 			id: 3,
 		})
-		const result = await dump({ method: 'anvil_dumpState', params: [{}], jsonrpc: '2.0' })
-		const keys = Object.keys(result.result.state)
+		const result = await dump({ method: 'anvil_dumpState', params: [], jsonrpc: '2.0' })
+		const keys = Object.keys(JSON.parse(hexToString(result.result)).state)
 		const sorted = [...keys].sort((a, b) => a.localeCompare(b))
 		expect(keys).toEqual(sorted)
+	})
+
+	it('explicitly refuses unsupported historical-state preservation', async () => {
+		const node = createTevmNode()
+		const result = await anvilDumpStateJsonRpcProcedure(node)({
+			method: 'anvil_dumpState',
+			params: [true],
+			jsonrpc: '2.0',
+			id: 4,
+		})
+
+		expect(result.error).toEqual({
+			code: -32602,
+			message:
+				'anvil_dumpState does not support preserving historical states in Tevm. Pass false or omit the parameter.',
+		})
 	})
 })

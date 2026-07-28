@@ -1,5 +1,5 @@
 import { MethodNotSupportedError } from '@tevm/errors'
-import { hexToNumber } from '@tevm/utils'
+import { anvilInvalidParams } from './anvilInvalidParams.js'
 
 /**
  * Request handler for anvil_setChainId JSON-RPC requests.
@@ -8,7 +8,12 @@ import { hexToNumber } from '@tevm/utils'
  */
 export const anvilSetChainIdJsonRpcProcedure = (client) => {
 	return async (request) => {
-		const chainId = hexToNumber(request.params[0])
+		if (!Array.isArray(request.params) || request.params.length !== 1 || typeof request.params[0] !== 'number') {
+			return /** @type {any} */ (
+				anvilInvalidParams(request, 'Invalid parameters for anvil_setChainId. Expected one numeric chain ID.')
+			)
+		}
+		const chainId = request.params[0]
 		if (!Number.isInteger(chainId) || chainId <= 0) {
 			return {
 				...(request.id !== undefined ? { id: request.id } : {}),
@@ -25,10 +30,11 @@ export const anvilSetChainIdJsonRpcProcedure = (client) => {
 		)
 		client.logger.error(err)
 		return /**@type any*/ ({
-			id: /** @type any*/ (request).id,
+			...(request.id !== undefined ? { id: request.id } : {}),
+			method: request.method,
 			jsonrpc: '2.0',
 			error: {
-				code: err._tag,
+				code: err.code,
 				message: err.message,
 			},
 		})

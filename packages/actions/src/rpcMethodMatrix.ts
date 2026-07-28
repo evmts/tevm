@@ -10,7 +10,21 @@ export type RpcMethodMatrixEntry = {
 
 export const intentionallyUnsupportedRuntimeMethods = new Set(['tevm_contract'])
 const blockedMethodPrefixes = ['zevm_voltaire_', 'zevm_guillotineMini_'] as const
-export const typedButMissingMethods = new Set<string>([])
+export const typedButMissingMethods = new Set<string>([
+	'anvil_addCapability',
+	'anvil_dealERC20',
+	'anvil_getBlobByHash',
+	'anvil_getBlobSidecarsByBlockId',
+	'anvil_getBlobsByTransactionHash',
+	'anvil_getGenesisTime',
+	'anvil_impersonateSignature',
+	'anvil_mine_detailed',
+	'anvil_reorg',
+	'anvil_rollback',
+	'anvil_setERC20Allowance',
+	'anvil_setERC20Balance',
+	'anvil_setExecutor',
+])
 
 export const blockedMethodGroups: readonly RpcMethodMatrixEntry[] = [
 	{

@@ -4,10 +4,8 @@ import type { SerializeToJson } from '../utils/SerializeToJson.js'
 import type { AnvilDealParams } from './AnvilParams.js'
 import type {
 	AnvilDropTransactionParams,
-	AnvilDumpStateParams,
 	AnvilGetAutomineParams,
 	AnvilGetIntervalMiningParams,
-	AnvilLoadStateParams,
 	AnvilResetParams,
 } from './index.js'
 
@@ -118,25 +116,20 @@ export type AnvilSetStorageAtJsonRpcRequest = JsonRpcRequest<
 /**
  * JSON-RPC request for `anvil_setChainId` method
  */
-export type AnvilSetChainIdJsonRpcRequest = JsonRpcRequest<'anvil_setChainId', readonly [Hex]>
-// TODO make this the same as our dump state
+export type AnvilSetChainIdJsonRpcRequest = JsonRpcRequest<'anvil_setChainId', readonly [chainId: number]>
 // anvil_dumpState
 /**
  * JSON-RPC request for `anvil_dumpState` method
  */
 export type AnvilDumpStateJsonRpcRequest = JsonRpcRequest<
 	'anvil_dumpState',
-	readonly [SerializeToJson<AnvilDumpStateParams>]
+	readonly [] | readonly [preserveHistoricalStates: boolean]
 >
-// TODO make this the same as our load state
 // anvil_loadState
 /**
  * JSON-RPC request for `anvil_loadState` method
  */
-export type AnvilLoadStateJsonRpcRequest = JsonRpcRequest<
-	'anvil_loadState',
-	readonly [SerializeToJson<AnvilLoadStateParams>]
->
+export type AnvilLoadStateJsonRpcRequest = JsonRpcRequest<'anvil_loadState', readonly [state: Hex]>
 // anvil_deal
 /**
  * JSON-RPC request for `anvil_deal` method

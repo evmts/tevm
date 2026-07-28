@@ -1,4 +1,5 @@
 import { restoreSnapshotState } from '../internal/snapshotMetadata.js'
+import { anvilInvalidParams } from './anvilInvalidParams.js'
 
 /**
  * Request handler for anvil_revert JSON-RPC requests.
@@ -31,6 +32,11 @@ import { restoreSnapshotState } from '../internal/snapshotMetadata.js'
  */
 export const anvilRevertJsonRpcProcedure = (client) => {
 	return async (request) => {
+		if (!Array.isArray(request.params) || request.params.length !== 1) {
+			return /** @type {any} */ (
+				anvilInvalidParams(request, 'Invalid parameters for anvil_revert. Expected one snapshot ID.')
+			)
+		}
 		try {
 			const snapshotId = request.params[0]
 			const snapshot = client.getSnapshot(snapshotId)

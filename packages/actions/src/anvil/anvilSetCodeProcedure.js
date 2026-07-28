@@ -1,4 +1,5 @@
 import { setAccountProcedure } from '../SetAccount/setAccountProcedure.js'
+import { anvilInvalidParams } from './anvilInvalidParams.js'
 
 /**
  * Request handler for anvil_setCode JSON-RPC requests.
@@ -7,6 +8,11 @@ import { setAccountProcedure } from '../SetAccount/setAccountProcedure.js'
  */
 export const anvilSetCodeJsonRpcProcedure = (client) => {
 	return async (request) => {
+		if (!Array.isArray(request.params) || request.params.length !== 2) {
+			return /** @type {any} */ (
+				anvilInvalidParams(request, 'Invalid parameters for anvil_setCode. Expected an address and bytecode.')
+			)
+		}
 		const result = await setAccountProcedure(client)({
 			jsonrpc: request.jsonrpc,
 			method: 'tevm_setAccount',

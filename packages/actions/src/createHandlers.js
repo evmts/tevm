@@ -340,6 +340,7 @@ export const createHandlers = (client) => {
 			}
 		}
 
+	const resetAnvilState = anvilResetJsonRpcProcedure(client)
 	const rawAnvilHandlers = {
 		anvil_addBalance: anvilAddBalanceJsonRpcProcedure(client),
 		anvil_autoImpersonateAccount: anvilAutoImpersonateAccountJsonRpcProcedure(client),
@@ -361,7 +362,49 @@ export const createHandlers = (client) => {
 			return anvilLoadStateJsonRpcProcedure(client)(request)
 		},
 		anvil_metadata: anvilMetadataJsonRpcProcedure(client),
-		anvil_mine: mineProcedure(client),
+		anvil_mine: async (
+			/** @type {any} */
+			request,
+		) => {
+			const params = request.params ?? []
+			if (!Array.isArray(params) || params.length > 2) {
+				return {
+					jsonrpc: '2.0',
+					method: request.method,
+					error: {
+						code: -32602,
+						message: 'Invalid parameters for anvil_mine. Expected optional block count and interval quantities.',
+					},
+					...(request.id !== undefined ? { id: request.id } : {}),
+				}
+			}
+			try {
+				// Anvil allows both quantities to be omitted, defaulting to one block
+				// with no interval, so normalize before delegating to tevm_mine.
+				const response = await mineProcedure(client)({
+					...request,
+					params: [params[0] ?? '0x1', params[1] ?? '0x0'],
+				})
+				return response.error
+					? { ...response, method: request.method }
+					: {
+							jsonrpc: '2.0',
+							method: request.method,
+							result: null,
+							...(request.id !== undefined ? { id: request.id } : {}),
+						}
+			} catch (error) {
+				return {
+					jsonrpc: '2.0',
+					method: request.method,
+					error: {
+						code: -32602,
+						message: `Invalid parameters for anvil_mine: ${error instanceof Error ? error.message : 'invalid quantity'}`,
+					},
+					...(request.id !== undefined ? { id: request.id } : {}),
+				}
+			}
+		},
 		anvil_mineDetailed: anvilMineDetailedJsonRpcProcedure(client),
 		anvil_nodeInfo: anvilNodeInfoJsonRpcProcedure(client),
 		anvil_removeBlockTimestampInterval: anvilRemoveBlockTimestampIntervalJsonRpcProcedure(client),
@@ -371,7 +414,7 @@ export const createHandlers = (client) => {
 			request,
 		) => {
 			clearEngineState(client)
-			return anvilResetJsonRpcProcedure(client)(request)
+			return resetAnvilState(request)
 		},
 		anvil_revert: anvilRevertJsonRpcProcedure(client),
 		anvil_setAutomine: anvilSetAutomineJsonRpcProcedure(client),
@@ -413,9 +456,11 @@ export const createHandlers = (client) => {
 		},
 	}
 	const tevmAnvilHandlers = Object.fromEntries(
-		Object.entries(anvilHandlers).map(([key, value]) => {
-			return [key.replace('anvil', 'tevm'), value]
-		}),
+		Object.entries(anvilHandlers)
+			.filter(([key]) => !(key.replace('anvil', 'tevm') in tevmHandlers))
+			.map(([key, value]) => {
+				return [key.replace('anvil', 'tevm'), value]
+			}),
 	)
 	const ganacheHandlers = Object.fromEntries(
 		Object.entries(anvilHandlers).map(([key, value]) => {

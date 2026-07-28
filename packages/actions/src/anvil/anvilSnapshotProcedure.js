@@ -1,4 +1,5 @@
 import { captureSnapshotMetadata } from '../internal/snapshotMetadata.js'
+import { anvilInvalidParams } from './anvilInvalidParams.js'
 
 /**
  * Request handler for anvil_snapshot JSON-RPC requests.
@@ -24,6 +25,11 @@ import { captureSnapshotMetadata } from '../internal/snapshotMetadata.js'
  */
 export const anvilSnapshotJsonRpcProcedure = (client) => {
 	return async (request) => {
+		if (request.params !== undefined && (!Array.isArray(request.params) || request.params.length !== 0)) {
+			return /** @type {any} */ (
+				anvilInvalidParams(request, 'Invalid parameters for anvil_snapshot. Expected no parameters.')
+			)
+		}
 		try {
 			const vm = await client.getVm()
 			const stateRoot = vm.stateManager._baseState.getCurrentStateRoot()

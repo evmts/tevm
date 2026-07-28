@@ -1,7 +1,6 @@
 // debug_traceTransaction
 
 import type { JsonRpcResponse } from '@tevm/jsonrpc'
-import type { Address } from '@tevm/utils'
 import type { SerializeToJson } from '../utils/SerializeToJson.js'
 import type {
 	AnvilAutoImpersonateAccountResult,
@@ -65,7 +64,7 @@ export type AnvilStopImpersonatingAccountJsonRpcResponse = JsonRpcResponse<
 /**
  * JSON-RPC response for `anvil_setCoinbase` procedure
  */
-export type AnvilSetCoinbaseJsonRpcResponse = JsonRpcResponse<'anvil_setCoinbase', Address, AnvilError>
+export type AnvilSetCoinbaseJsonRpcResponse = JsonRpcResponse<'anvil_setCoinbase', null, AnvilError>
 // anvil_autoImpersonateAccount
 /**
  * JSON-RPC response for `anvil_autoImpersonateAccount` procedure

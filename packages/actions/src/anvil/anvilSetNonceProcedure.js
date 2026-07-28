@@ -1,4 +1,5 @@
 import { setAccountProcedure } from '../SetAccount/setAccountProcedure.js'
+import { anvilInvalidParams } from './anvilInvalidParams.js'
 
 /**
  * Request handler for anvil_setNonce JSON-RPC requests.
@@ -7,6 +8,11 @@ import { setAccountProcedure } from '../SetAccount/setAccountProcedure.js'
  */
 export const anvilSetNonceJsonRpcProcedure = (client) => {
 	return async (request) => {
+		if (!Array.isArray(request.params) || request.params.length !== 2) {
+			return /** @type {any} */ (
+				anvilInvalidParams(request, 'Invalid parameters for anvil_setNonce. Expected an address and a quantity.')
+			)
+		}
 		const balanceResult = await setAccountProcedure(client)({
 			jsonrpc: request.jsonrpc,
 			method: 'tevm_setAccount',

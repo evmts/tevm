@@ -6,7 +6,7 @@ describe('anvilSetChainIdJsonRpcProcedure', () => {
 	it('should attempt to set chain ID (but return not supported error)', async () => {
 		const client = createTevmNode()
 		const procedure = anvilSetChainIdJsonRpcProcedure(client)
-		const chainId = '0x1'
+		const chainId = 1
 
 		const result = await procedure({
 			jsonrpc: '2.0',
@@ -16,6 +16,8 @@ describe('anvilSetChainIdJsonRpcProcedure', () => {
 		})
 
 		expect(result).toHaveProperty('error')
+		expect(typeof result.error?.code).toBe('number')
 		expect(result.error?.message).toContain('not supported')
+		expect(result.method).toBe('anvil_setChainId')
 	})
 })

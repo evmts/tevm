@@ -38,7 +38,7 @@ export const anvilSetCoinbaseJsonRpcProcedure = (client) => {
 		await vm.blockchain.putBlock(newBlock)
 		return {
 			method: request.method,
-			result: coinbase,
+			result: null,
 			jsonrpc: '2.0',
 			...(request.id !== undefined ? { id: request.id } : {}),
 		}

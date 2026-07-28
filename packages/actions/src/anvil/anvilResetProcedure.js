@@ -2,6 +2,7 @@ import { createMapDb } from '@evmts/zevm/receipt-manager'
 import { hexToBigInt } from '@tevm/utils'
 import { resetForkState } from '../internal/resetForkState.js'
 import { captureSnapshotMetadata, clearTxPool, restoreSnapshotState } from '../internal/snapshotMetadata.js'
+import { anvilInvalidParams } from './anvilInvalidParams.js'
 
 /**
  * Request handler for anvil_reset JSON-RPC requests.
@@ -15,12 +16,29 @@ import { captureSnapshotMetadata, clearTxPool, restoreSnapshotState } from '../i
  * console.log(result) // { result: null, method: 'anvil_reset', jsonrpc: '2.0', id: 1 }
  */
 export const anvilResetJsonRpcProcedure = (node) => {
-	const initialSnapshotPromise = node.getVm().then(async (vm) => ({
-		stateRoot: vm.stateManager._baseState.getCurrentStateRoot(),
-		state: await vm.stateManager.dumpCanonicalGenesis(),
-		...(await captureSnapshotMetadata(node, vm)),
-	}))
+	const initialSnapshotPromise = node
+		.ready()
+		.then(() => node.getVm())
+		.then(async (vm) => ({
+			stateRoot: vm.stateManager._baseState.getCurrentStateRoot(),
+			state: await vm.stateManager.dumpCanonicalGenesis(),
+			...(await captureSnapshotMetadata(node, vm)),
+		}))
 	return async (request) => {
+		if (
+			request.params !== undefined &&
+			(!Array.isArray(request.params) ||
+				request.params.length > 1 ||
+				(request.params[0] !== undefined &&
+					(request.params[0] === null || typeof request.params[0] !== 'object' || Array.isArray(request.params[0]))))
+		) {
+			return /** @type {any} */ (
+				anvilInvalidParams(
+					request,
+					'Invalid parameters for anvil_reset. Expected no parameters or one reset options object.',
+				)
+			)
+		}
 		const resetParams = /** @type {any} */ (request.params?.[0])
 		const newForkUrl = resetParams?.forking?.jsonRpcUrl
 		const newForkBlockNumber = resetParams?.forking?.blockNumber
@@ -58,7 +76,9 @@ export const anvilResetJsonRpcProcedure = (node) => {
 		const forkReset = await resetForkState(node, resetBlockTag)
 		const vm = forkReset?.vm ?? (await node.getVm())
 		if (!forkReset) {
-			await restoreSnapshotState(node, await initialSnapshotPromise, vm)
+			const initialSnapshot = await initialSnapshotPromise
+			await restoreSnapshotState(node, initialSnapshot, vm)
+			await vm.stateManager.generateCanonicalGenesis(initialSnapshot.state)
 		} else {
 			await clearTxPool(await node.getTxPool())
 		}

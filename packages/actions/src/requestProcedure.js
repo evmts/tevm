@@ -37,7 +37,7 @@ export const requestProcedure = (client) => {
 			}
 			if (rpcMethodStatusByMethod.get(method) === 'missing') {
 				const err = new MethodNotFoundError(
-					`UnimplementedMethodError: Method ${/** @type any*/ (request).method} is typed but not yet implemented`,
+					`UnimplementedMethodError: Method ${/** @type any*/ (request).method} is recognized but not yet implemented`,
 				)
 				return /** @type {any}*/ ({
 					id: /** @type any*/ (request).id ?? null,

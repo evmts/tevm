@@ -20,7 +20,7 @@ describe('anvilSetCoinbaseJsonRpcProcedure', () => {
 		expect(result).toEqual({
 			jsonrpc: '2.0',
 			method: 'anvil_setCoinbase',
-			result: coinbase.toString(),
+			result: null,
 			id: 1,
 		})
 

@@ -183,23 +183,26 @@ export type AnvilSetChainIdParams = {
 	readonly chainId: number
 }
 
-// TODO make this the same as our dump state
 // anvil_dumpState
 /**
  * Params for `anvil_dumpState` handler
  */
-export type AnvilDumpStateParams = {} | undefined | never
+export type AnvilDumpStateParams = {
+	/**
+	 * Whether to preserve historical states. Tevm currently supports `false` only.
+	 */
+	readonly preserveHistoricalStates?: boolean
+}
 
-// TODO make this the same as our load state
 // anvil_loadState
 /**
  * Params for `anvil_loadState` handler
  */
 export type AnvilLoadStateParams = {
 	/**
-	 * The state to load
+	 * The opaque state blob returned by `anvil_dumpState`.
 	 */
-	readonly state: Record<Hex, Hex>
+	readonly state: Hex
 }
 
 export type AnvilDealParams = {

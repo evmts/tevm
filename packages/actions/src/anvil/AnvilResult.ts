@@ -30,12 +30,10 @@ export type AnvilSetNonceResult = null
 export type AnvilSetStorageAtResult = boolean
 // anvil_setChainId
 export type AnvilSetChainIdResult = null
-// TODO make this the same as our dump state
 // anvil_dumpState
 export type AnvilDumpStateResult = Hex
-// TODO make this the same as our load state
-// anvil_loadState tf
-export type AnvilLoadStateResult = null
+// anvil_loadState
+export type AnvilLoadStateResult = boolean
 // anvil_deal
 export type AnvilDealResult = {
 	errors?: Error[]
