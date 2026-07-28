@@ -2,7 +2,7 @@ import type { Logger } from '@tevm/logger'
 import type { Solc } from '@tevm/solc'
 import { assert, beforeEach, describe, expect, it, vi } from 'vitest'
 import { SolcError } from './errors.js'
-import { getSolc } from './getSolc.js'
+import { clearSolcCache, getSolc } from './getSolc.js'
 
 vi.mock('@tevm/solc', () => ({
 	createSolc: vi.fn(),
@@ -21,6 +21,7 @@ describe('getSolc', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks()
+		clearSolcCache()
 	})
 
 	describe('successful solc loading', () => {
