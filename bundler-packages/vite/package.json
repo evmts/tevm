@@ -46,6 +46,7 @@
 		"//test": "vitest",
 		"//test:run": "vitest run",
 		"//test:ui": "vitest --ui",
+		"test:coverage": "vitest run --coverage",
 		"build": "nx run-many --targets=build:dist,build:types --projects=@tevm/vite-plugin ",
 		"build:dist": "tsup",
 		"build:types": "tsup --dts-only && tsc --emitDeclarationOnly --declaration",
