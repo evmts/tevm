@@ -1,4 +1,71 @@
+# TODO
+
+## Releasing: we publish through this repo's changesets, not by hand
+
+Do not `npm publish` a package directly. This is a 60-package group with linked
+versions; publishing one package by hand desynchronises the rest.
+
+The repo is currently in **changesets prerelease mode on tag `rc`** with 479
+queued changesets. `.changeset/pre.json` is the marker. That means:
+
+- `pnpm release:version` while in pre mode produces the next **rc** across the
+  whole group (`1.0.0-rc.152`), and leaves the npm `latest` tag alone.
+- Getting to a stable `1.0.0` requires `pnpm changeset pre exit` **first**.
+  Without that step you never get stable versions, no matter how many times you
+  re-tag; you just get another rc.
+- `pnpm release:publish` rebuilds all 60 packages (including a Rust release
+  build in `bundler-packages/resolutions-rs`) and then runs `changeset publish`.
+  It is long and it publishes everything.
+
+Publishing needs a valid npm session. As of 2026-07-28 `npm whoami` returns
+`E401 Unauthorized`, so `npm login` has to happen before any release command.
+
+The full ordered promote-to-1.0.0 procedure, with per-package version
+assertions and rollback notes, lives in `~/Tevm-Ops/Areas/EF Grant.md` under
+`## Release checklist`. Follow that rather than improvising.
+
+## Before 1.0.0 goes out
+
+- [ ] `npm login` (blocks everything below)
+- [ ] Get `pnpm test:coverage` green. Last full gate: 4,534 passed, 14 failed.
+      13 are pre-existing expectation drift from the genesis change in
+      `4196792e1` (prefunded balance 1,000 to 10,000 ETH, Multicall3 became a
+      successful predeploy). 1 is a RequireJS contention flake that passes
+      22/22 in isolation.
+- [ ] Publish `1.0.0-rc.152` so the fork-fidelity fixes reach the registry.
+      They are the difference between viem's suite scoring 1,612/3,280 and
+      2,805/3,382 against tevm.
+- [ ] Then cut stable `1.0.0` via the checklist above.
+
+## Known limitations to state in the release notes
+
+- Arbitrum transaction types `0x6a`-`0x6f` are unsupported. They now raise
+  `UnsupportedForkTransactionError` rather than being silently dropped, but the
+  limitation is real.
+- ZKsync transaction type `0x71` is unsupported (surfaced by the viem suite
+  conversion, 103 occurrences).
+- Amsterdam / devnet-7 consensus is not modeled. `packages/common/src/Hardfork.ts`
+  stops at `osaka` and `zevm`'s `hardfork_schedule.zig` stops at `OSAKA`, while
+  upstream revm has moved on. EIP-8037 state gas and block access lists are
+  absent from both EVMs.
+
+## Open defects found by running other people's tests
+
+viem's suite was converted to run on `tevm test` in-process (branch
+`tevm-in-process-test-harness` on `evmts/viem`). Against a local build it scores
+2,805 passed / 497 failed with viem's own assertions untouched. The failures
+classify into: watcher and subscription polling that never fires (53), fork
+filter and log range handling including `-32602 Invalid block tag` on valid
+post-fork blocks (43), ZKsync `0x71` (42), HTTP and WebSocket transports which
+are a topology gap rather than a defect (23), and receipt and nonce lifecycle
+(13). Details and the full table are in `~/Tevm-Ops/Areas/Anvil API.md`.
+
+---
+
 # Zig Idiomatic Refactoring Checklist
+
+Unrelated to the release above and stale as of 2026-07-27. Kept because it has
+not been triaged, not because it is current.
 
 Based on expert advice and Zig language standards, here's the systematic checklist for refactoring all Zig files in `src/evm/**/*.zig`.
 
