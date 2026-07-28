@@ -12,7 +12,8 @@ import { createScript } from './createScript.js'
 describe('createScript', () => {
 	const client = createTevmNode()
 	const validCode = encodeDeployData({ args: ['Name', 'Symbol'], ...TestERC20 })
-	const invalidCode = '0x6969696969' // invalid EVM bytecode
+	// POP with an empty stack deterministically fails during init-code execution.
+	const invalidCode = '0x50'
 	const validDeployedBytecode = TestERC20.deployedBytecode
 
 	it('should create a script with valid deployedBytecode', async () => {

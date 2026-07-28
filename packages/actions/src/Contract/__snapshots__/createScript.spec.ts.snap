@@ -46,9 +46,10 @@ Version: 1.0.0-next.148],
 
 exports[`createScript > should return an error for invalid bytecode 1`] = `
 [
-  [InvalidDeployedBytecodeError: InvalidLength
+  [InvalidBytecodeError: stack underflow
 
-Docs: https://tevm.sh/reference/tevm/errors/classes/invaliddeployedbytecodeerror/
+Docs: https://tevm.sh/reference/tevm/errors/classes/invalidbytecodeerror/
+Details: {"error":"stack underflow","errorType":"EVMError"}
 Version: 1.0.0-next.148],
 ]
 `;
