@@ -126,3 +126,4 @@ g/
 /evals/node_modules/
 **/coverage/
 /packages/mcp/scratch-*.mjs
+**/__rpc_snapshots__/*.snap.json.*.tmp
