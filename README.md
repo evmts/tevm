@@ -38,7 +38,7 @@
 The documentation and examples in this repository target `tevm@1.0.0-rc.151`, published on the npm `rc` dist-tag.
 
 ```bash
-npm install tevm@1.0.0-rc.151
+npm install tevm@1.0.0-rc.151 viem
 ```
 
 This release candidate includes the block, mining, receipt, txpool, JSON-RPC, tracing, and viem-compatible client APIs documented below. Use the pinned version when reproducing these examples; `tevm@rc` currently resolves to the same build.
