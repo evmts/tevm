@@ -14,8 +14,9 @@ export const zSetAccountParams = zBaseParams
 		balance: z.bigint().nonnegative().optional().describe('The balance to give the account'),
 		nonce: z.bigint().nonnegative().optional().describe('The nonce to give the account'),
 		deployedBytecode: zBytecode
+			.or(z.literal('0x'))
 			.optional()
-			.describe('The contract bytecode to set at the account address as a >0 byte hex string'),
+			.describe('The contract bytecode to set at the account address, or 0x to clear it'),
 		storageRoot: zStorageRoot
 			.optional()
 			.describe('The storage root to set at the account address as a 32 byte hex strign'),

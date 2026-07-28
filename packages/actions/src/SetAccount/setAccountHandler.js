@@ -61,18 +61,33 @@ export const setAccountHandler =
 		try {
 			const vm = await client.getVm()
 
-			// check if account exists
-			const account = await getAccountHandler(client)({ ...params, throwOnFail: false })
-			if (account.errors?.length && !(account.errors[0] instanceof AccountNotFoundError)) {
+			const replacesEntireAccount =
+				params.nonce !== undefined &&
+				params.balance !== undefined &&
+				params.deployedBytecode !== undefined &&
+				params.state !== undefined
+
+			// A complete replacement does not need the existing account. This is
+			// especially important for deterministic fork setup, where reading the
+			// remote account before overwriting it adds latency and can rate limit.
+			const account = replacesEntireAccount
+				? undefined
+				: await getAccountHandler(client)({ ...params, throwOnFail: false })
+			if (account?.errors?.length && !(account.errors[0] instanceof AccountNotFoundError)) {
 				client.logger.error({ errors: account.errors }, 'there was an unexpected error getting account')
 				throw account.errors.length > 1 ? new AggregateError(account.errors) : account.errors[0]
 			}
 
 			// Build account data object with proper handling of optional properties
 			/** @type {Parameters<typeof createAccount>[0]} */
-			const accountData = {
-				nonce: params.nonce ?? account?.nonce,
-				balance: params.balance ?? account?.balance,
+			const accountData = {}
+			const nonce = params.nonce ?? account?.nonce
+			const balance = params.balance ?? account?.balance
+			if (nonce !== undefined) {
+				accountData.nonce = nonce
+			}
+			if (balance !== undefined) {
+				accountData.balance = balance
 			}
 
 			const storageRoot =

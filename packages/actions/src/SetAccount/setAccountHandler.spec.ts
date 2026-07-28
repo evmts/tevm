@@ -27,6 +27,34 @@ describe('setAccountHandler', () => {
 		expect(bytesToHex(account.codeHash)).toEqualHex(keccak256(ERC20_BYTECODE))
 	})
 
+	it('should not read existing state for a complete account replacement', async () => {
+		const client = createTevmNode()
+		const vm = await client.getVm()
+		let getVmCalls = 0
+		const completeReplacementClient = {
+			...client,
+			getVm: async () => {
+				getVmCalls++
+				return vm
+			},
+		}
+
+		const res = await setAccountHandler(completeReplacementClient)({
+			address: ERC20_ADDRESS,
+			balance: 420n,
+			deployedBytecode: '0x',
+			nonce: 0n,
+			state: {},
+		})
+
+		expect(res.errors).toBeUndefined()
+		expect(getVmCalls).toBe(1)
+		const account = (await vm.stateManager.getAccount(createAddress(ERC20_ADDRESS))) as EthjsAccount
+		expect(account.balance).toBe(420n)
+		expect(account.nonce).toBe(0n)
+		expect(bytesToHex(await vm.stateManager.getCode(createAddress(ERC20_ADDRESS)))).toBe('0x')
+	})
+
 	it('should validate params', async () => {
 		const client = createTevmNode()
 		const vm = await client.getVm()
