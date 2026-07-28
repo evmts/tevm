@@ -339,7 +339,14 @@ export default function Deploy({ options }: Props) {
 
 		// Inlined executeAction function
 		executeAction: async (client: any, params: DeployParams): Promise<DeployResult> => {
-			return await client.tevmDeploy(params)
+			const result = await client.tevmDeploy(params)
+			if (result.createdAddress && result.rawData && params.createTransaction !== 'never') {
+				await client.tevmSetAccount({
+					address: result.createdAddress,
+					deployedBytecode: result.rawData,
+				})
+			}
+			return result
 		},
 	})
 
