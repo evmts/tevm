@@ -1,0 +1,13 @@
+{
+	"extends": "@tevm/tsconfig/base.json",
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"rootDir": "src",
+		"outDir": "types",
+		"skipLibCheck": true,
+		"types": ["bun-types"]
+	},
+	"include": ["src"],
+	"exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"]
+}
