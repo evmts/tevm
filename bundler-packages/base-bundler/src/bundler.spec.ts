@@ -43,6 +43,11 @@ contract TestContract {}`,
 
 const contractPackage = '@tevm/contract'
 
+// Loaded once at module scope. Tests below call vi.resetModules(), which clears the
+// module registry and would otherwise make beforeEach re-parse solc's multi-megabyte
+// bundle for every test, blowing the hook timeout under full-workspace contention.
+const solcCompiler = require('solc')
+
 describe(bundler.name, () => {
 	it('should fall back to getContractPath when contractPackage is not a string', async () => {
 		// Import the actual bundler function from ./bundler.js
@@ -151,7 +156,7 @@ describe(bundler.name, () => {
 			config as any,
 			logger,
 			fao,
-			require('solc'),
+			solcCompiler,
 			createCache(tmpdir(), fao, tmpdir()),
 			contractPackage,
 		)
