@@ -27,11 +27,12 @@ assertions and rollback notes, lives in `~/Tevm-Ops/Areas/EF Grant.md` under
 ## Before 1.0.0 goes out
 
 - [ ] `npm login` (blocks everything below)
-- [ ] Get `pnpm test:coverage` green. Last full gate: 4,534 passed, 14 failed.
-      13 are pre-existing expectation drift from the genesis change in
-      `4196792e1` (prefunded balance 1,000 to 10,000 ETH, Multicall3 became a
-      successful predeploy). 1 is a RequireJS contention flake that passes
-      22/22 in isolation.
+- [x] Get `pnpm test:coverage` green. The 13 stale genesis expectations were
+      aligned with the intentional 10,000 ETH prefund and Multicall3 predeploy.
+      The RequireJS export test now imports its module once during collection,
+      removing the five-second dynamic-import timeout under parallel load. See
+      `~/Tevm-Ops/Areas/EF Grant.md` under `## Readiness gate` for the exact
+      committed-tree gate and totals.
 - [ ] Publish `1.0.0-rc.152` so the fork-fidelity fixes reach the registry.
       They are the difference between viem's suite scoring 1,612/3,280 and
       2,805/3,382 against tevm.
