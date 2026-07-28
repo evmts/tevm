@@ -27,7 +27,8 @@
 		"build": "node scripts/build -- --minify",
 		"watch": "npm run build -- --watch",
 		"pack": "npm run build && vsce package --pre-release",
-		"release": "npm run build && vsce publish --pre-release"
+		"release": "npm run build && vsce publish --pre-release",
+		"test:coverage": "vitest run --coverage"
 	},
 	"devDependencies": {
 		"@tevm/lsp": "workspace:^",
