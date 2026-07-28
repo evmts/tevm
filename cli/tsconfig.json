@@ -7,5 +7,6 @@
 		"rootDir": "src",
 		"outDir": "dist"
 	},
-	"include": ["src"]
+	"include": ["src"],
+	"exclude": ["src/**/*.spec.ts", "src/**/*.spec.tsx"]
 }

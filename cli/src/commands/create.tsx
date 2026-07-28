@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { Box, Text } from 'ink'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 import { Creating } from '../components/Creating.js'
 import { FancyCreateTitle } from '../components/FancyCreateTitle.js'
@@ -11,7 +11,7 @@ import type { State } from '../state/State.js'
 import { useStore } from '../state/Store.js'
 import { args } from '../utils/create-args.js'
 import { options } from '../utils/create-options.js'
-import { formatJsonSuccess } from '../utils/output.js'
+import { formatJsonFailure, formatJsonSuccess } from '../utils/output.js'
 
 export { args, options }
 
@@ -25,6 +25,8 @@ export const description = 'Create a new TEVM project\nExample: tevm create my-t
 
 export default function Create({ options, args: [defaultName] }: Props) {
 	const createdRef = useRef(false)
+	const [creationError, setCreationError] = useState<Error>()
+	const direct = options.skipPrompts || process.env['TEVM_JSON'] === 'true'
 
 	// Initialize store with default values
 	useEffect(() => {
@@ -38,13 +40,13 @@ export default function Create({ options, args: [defaultName] }: Props) {
 			packageManager: 'npm',
 			noGit: false,
 			noInstall: false,
-			currentPage: options.skipPrompts ? 'creating' : 'interactive',
+			currentPage: direct ? 'creating' : 'interactive',
 			walletConnectProjectId: '',
 		} satisfies State)
-	}, [defaultName, options.skipPrompts, options.template])
+	}, [defaultName, direct, options.template])
 
 	const store = useStore()
-	const currentPage = options.skipPrompts && store.currentPage === 'interactive' ? 'creating' : store.currentPage
+	const currentPage = direct && store.currentPage === 'interactive' ? 'creating' : store.currentPage
 
 	useEffect(() => {
 		if (store.currentPage !== 'creating' || createdRef.current) {
@@ -53,43 +55,47 @@ export default function Create({ options, args: [defaultName] }: Props) {
 
 		createdRef.current = true
 
-		const projectName = store.name || defaultName
-		const packageName = projectName.toLowerCase().replace(/[^a-z0-9._-]+/g, '-')
-		const projectPath = path.resolve(projectName)
-		const srcPath = path.join(projectPath, 'src')
-		const writeIfMissing = (filePath: string, content: string) => {
-			if (!existsSync(filePath)) {
-				writeFileSync(filePath, content)
+		try {
+			const projectName = store.name || defaultName
+			const packageName = path
+				.basename(projectName)
+				.toLowerCase()
+				.replace(/[^a-z0-9._-]+/g, '-')
+			const projectPath = path.resolve(projectName)
+			const srcPath = path.join(projectPath, 'src')
+			const writeIfMissing = (filePath: string, content: string) => {
+				if (!existsSync(filePath)) {
+					writeFileSync(filePath, content)
+				}
 			}
-		}
 
-		mkdirSync(srcPath, { recursive: true })
-		writeIfMissing(
-			path.join(projectPath, 'package.json'),
-			`${JSON.stringify(
-				{
-					name: packageName,
-					type: 'module',
-					scripts: {
-						build: 'tevm generate contract',
+			mkdirSync(srcPath, { recursive: true })
+			writeIfMissing(
+				path.join(projectPath, 'package.json'),
+				`${JSON.stringify(
+					{
+						name: packageName,
+						type: 'module',
+						scripts: {
+							build: 'tevm generate contract',
+						},
+						dependencies: {
+							tevm: 'latest',
+							viem: 'latest',
+						},
+						devDependencies: {
+							'@tevm/ts-plugin': 'latest',
+							typescript: 'latest',
+						},
 					},
-					dependencies: {
-						tevm: 'latest',
-						viem: 'latest',
-					},
-					devDependencies: {
-						'@tevm/ts-plugin': 'latest',
-						typescript: 'latest',
-					},
-				},
-				null,
-				2,
-			)}
+					null,
+					2,
+				)}
 `,
-		)
-		writeIfMissing(
-			path.join(projectPath, 'tsconfig.json'),
-			`{
+			)
+			writeIfMissing(
+				path.join(projectPath, 'tsconfig.json'),
+				`{
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
@@ -100,10 +106,10 @@ export default function Create({ options, args: [defaultName] }: Props) {
   "include": ["src"]
 }
 `,
-		)
-		writeIfMissing(
-			path.join(srcPath, 'Counter.sol'),
-			`// SPDX-License-Identifier: MIT
+			)
+			writeIfMissing(
+				path.join(srcPath, 'Counter.sol'),
+				`// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 contract Counter {
@@ -118,28 +124,41 @@ contract Counter {
     }
 }
 `,
-		)
-		writeIfMissing(
-			path.join(projectPath, 'README.md'),
-			`# ${projectName}
+			)
+			writeIfMissing(
+				path.join(projectPath, 'README.md'),
+				`# ${path.basename(projectName)}
 
 Generated with Tevm.
 `,
-		)
+			)
 
-		if (store.framework === 'foundry') {
-			writeIfMissing(
-				path.join(projectPath, 'foundry.toml'),
-				`[profile.default]
+			if (store.framework === 'foundry') {
+				writeIfMissing(
+					path.join(projectPath, 'foundry.toml'),
+					`[profile.default]
 src = "src"
 out = "out"
 libs = ["lib"]
 `,
-			)
-		}
+				)
+			}
 
-		useStore.setState({ path: projectPath, currentPage: 'complete' })
+			useStore.setState({ path: projectPath, currentPage: 'complete' })
+		} catch (error) {
+			const normalized = error instanceof Error ? error : new Error(String(error))
+			process.exitCode = 1
+			setCreationError(normalized)
+		}
 	}, [defaultName, store.currentPage, store.framework, store.name])
+
+	if (creationError) {
+		return process.env['TEVM_JSON'] === 'true' ? (
+			<RawOutput value={formatJsonFailure('create', creationError)} exitCode={1} />
+		) : (
+			<Text color="red">{creationError.message}</Text>
+		)
+	}
 
 	const pages = {
 		interactive: <InteractivePrompt defaultName={defaultName} store={store} />,

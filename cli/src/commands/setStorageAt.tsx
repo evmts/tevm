@@ -104,6 +104,9 @@ const ensureHex = (value?: string): `0x${string}` => {
 	} catch (_e) {
 		hex = value.startsWith('0x') ? value.slice(2) : value
 	}
+	if (!/^[0-9a-fA-F]+$/.test(hex)) {
+		throw new Error(`Storage word must be hexadecimal or a non-negative decimal integer: ${value}`)
+	}
 	if (hex.length > 64) {
 		throw new Error(`Storage word is longer than 32 bytes: ${value}`)
 	}

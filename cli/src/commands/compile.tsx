@@ -56,84 +56,92 @@ export default function Compile({ options }: Props) {
 
 	useEffect(() => {
 		const compileContracts = async (): Promise<void> => {
-			const cwd = process.cwd()
-			const files = glob.sync('src/**/*.sol', { cwd, nodir: true })
+			try {
+				const cwd = process.cwd()
+				const files = glob.sync('src/**/*.sol', { cwd, nodir: true })
 
-			if (files.length === 0) {
-				setState({ status: 'error', artifacts: [], errors: ['No Solidity files found under src/**/*.sol'] })
-				return
-			}
+				if (files.length === 0) {
+					setState({ status: 'error', artifacts: [], errors: ['No Solidity files found under src/**/*.sol'] })
+					return
+				}
 
-			const sources = Object.fromEntries(
-				files.map((file) => [
-					file,
-					{
-						content: readFileSync(path.join(cwd, file), 'utf8'),
-					},
-				]),
-			)
-			const input = {
-				language: 'Solidity',
-				sources,
-				settings: {
-					optimizer: {
-						enabled: options.optimize,
-						runs: 200,
-					},
-					outputSelection: {
-						'*': {
-							'*': ['abi', 'evm.bytecode', 'evm.deployedBytecode'],
+				const sources = Object.fromEntries(
+					files.map((file) => [
+						file,
+						{
+							content: readFileSync(path.join(cwd, file), 'utf8'),
+						},
+					]),
+				)
+				const input = {
+					language: 'Solidity',
+					sources,
+					settings: {
+						optimizer: {
+							enabled: options.optimize,
+							runs: 200,
+						},
+						outputSelection: {
+							'*': {
+								'*': ['abi', 'evm.bytecode', 'evm.deployedBytecode'],
+							},
 						},
 					},
-				},
-			}
-			const solc = (await import('solc')).default
-			const output = JSON.parse(solc.compile(JSON.stringify(input)))
-			const errors = (output.errors ?? [])
-				.filter((error: { severity?: string }) => error.severity === 'error')
-				.map(
-					(error: { formattedMessage?: string; message?: string }) =>
-						error.formattedMessage ?? error.message ?? String(error),
-				)
-
-			if (errors.length > 0) {
-				setState({ status: 'error', artifacts: [], errors })
-				return
-			}
-
-			const artifactsDir = path.join(cwd, 'artifacts')
-			const artifacts: string[] = []
-			mkdirSync(artifactsDir, { recursive: true })
-
-			for (const [sourceName, contracts] of Object.entries(output.contracts ?? {}) as Array<
-				[string, Record<string, any>]
-			>) {
-				for (const [contractName, contract] of Object.entries(contracts)) {
-					const artifactPath = path.join(artifactsDir, `${contractName}.json`)
-					const bytecode = contract.evm?.bytecode?.object ? `0x${contract.evm.bytecode.object}` : '0x'
-					const deployedBytecode = contract.evm?.deployedBytecode?.object
-						? `0x${contract.evm.deployedBytecode.object}`
-						: '0x'
-					writeFileSync(
-						artifactPath,
-						`${JSON.stringify(
-							{
-								contractName,
-								sourceName,
-								abi: contract.abi ?? [],
-								bytecode,
-								deployedBytecode,
-							},
-							null,
-							2,
-						)}
-`,
-					)
-					artifacts.push(path.relative(cwd, artifactPath))
 				}
-			}
+				const solc = (await import('solc')).default
+				const output = JSON.parse(solc.compile(JSON.stringify(input)))
+				const errors = (output.errors ?? [])
+					.filter((error: { severity?: string }) => error.severity === 'error')
+					.map(
+						(error: { formattedMessage?: string; message?: string }) =>
+							error.formattedMessage ?? error.message ?? String(error),
+					)
 
-			setState({ status: 'done', artifacts, errors: [] })
+				if (errors.length > 0) {
+					setState({ status: 'error', artifacts: [], errors })
+					return
+				}
+
+				const artifactsDir = path.join(cwd, 'artifacts')
+				const artifacts: string[] = []
+				mkdirSync(artifactsDir, { recursive: true })
+
+				for (const [sourceName, contracts] of Object.entries(output.contracts ?? {}) as Array<
+					[string, Record<string, any>]
+				>) {
+					for (const [contractName, contract] of Object.entries(contracts)) {
+						const artifactPath = path.join(artifactsDir, `${contractName}.json`)
+						const bytecode = contract.evm?.bytecode?.object ? `0x${contract.evm.bytecode.object}` : '0x'
+						const deployedBytecode = contract.evm?.deployedBytecode?.object
+							? `0x${contract.evm.deployedBytecode.object}`
+							: '0x'
+						writeFileSync(
+							artifactPath,
+							`${JSON.stringify(
+								{
+									contractName,
+									sourceName,
+									abi: contract.abi ?? [],
+									bytecode,
+									deployedBytecode,
+								},
+								null,
+								2,
+							)}
+`,
+						)
+						artifacts.push(path.relative(cwd, artifactPath))
+					}
+				}
+
+				setState({ status: 'done', artifacts, errors: [] })
+			} catch (error) {
+				setState({
+					status: 'error',
+					artifacts: [],
+					errors: [error instanceof Error ? error.message : String(error)],
+				})
+			}
 		}
 
 		void compileContracts()

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { normalizeGlobalOptions } from './global-options.js'
+import { normalizeGlobalOptions, shouldRunDirectly } from './global-options.js'
 
 const originalJson = process.env['TEVM_JSON']
 const originalSession = process.env['TEVM_SESSION']
@@ -33,5 +33,12 @@ describe('global CLI options', () => {
 
 	it('requires a session name', () => {
 		expect(() => normalizeGlobalOptions(['node', 'tevm', 'call', '--session'])).toThrow('--session requires a name')
+		expect(() => normalizeGlobalOptions(['node', 'tevm', 'call', '--session='])).toThrow('--session requires a name')
+	})
+
+	it('runs JSON actions directly without an editor', () => {
+		expect(shouldRunDirectly({ json: true, run: false })).toBe(true)
+		expect(shouldRunDirectly({ json: false, run: true })).toBe(true)
+		expect(shouldRunDirectly({ json: false, run: false })).toBe(false)
 	})
 })

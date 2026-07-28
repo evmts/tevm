@@ -184,9 +184,19 @@ export function createCallOptions() {
 				}),
 			),
 
+		skipBalance: z
+			.boolean()
+			.default(envVar('skip_balance') !== 'false')
+			.describe(
+				option({
+					description: 'Allow calls from an unfunded impersonated account (env: TEVM_SKIP_BALANCE)',
+					defaultValueDescription: 'true',
+				}),
+			),
+
 		trace: z
 			.boolean()
-			.default(false)
+			.default(envVar('trace') === 'true')
 			.describe(
 				option({
 					description: 'Render a readable call tree with gas per frame (env: TEVM_TRACE)',

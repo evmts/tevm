@@ -32,7 +32,7 @@
 		"lint:check": "biome check . --verbose",
 		"lint:deps": "bunx depcheck",
 		"test": "prettier --check . && xo && ava",
-		"test:coverage": "vitest run --coverage",
+		"test:coverage": "pnpm run build:app && vitest run --coverage",
 		"test:run": "vitest run"
 	},
 	"files": [

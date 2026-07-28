@@ -44,7 +44,11 @@ export function normalizeGlobalOptions(argv: string[]): NormalizedCliArguments {
 			continue
 		}
 		if (value?.startsWith('--session=')) {
-			session = value.slice('--session='.length)
+			const name = value.slice('--session='.length)
+			if (!name) {
+				throw new Error('--session requires a name')
+			}
+			session = name
 			continue
 		}
 		if (value !== undefined) {
@@ -61,4 +65,19 @@ export function normalizeGlobalOptions(argv: string[]): NormalizedCliArguments {
 		json,
 		...(session ? { session } : {}),
 	}
+}
+
+/**
+ * Decide whether an action must bypass the interactive editor.
+ *
+ * JSON output is always direct so scripts and agents never open an editor.
+ *
+ * @example
+ * ```ts
+ * shouldRunDirectly({ json: true })
+ * // true
+ * ```
+ */
+export function shouldRunDirectly(options: Record<string, unknown>): boolean {
+	return options['run'] === true || options['json'] === true
 }

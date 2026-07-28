@@ -10,8 +10,9 @@ import React from 'react'
 
 import { isViemAction, loadViemClient } from '../utils/clients.js'
 import { cleanupProject, createEditorProject, executeTsFile, openEditor, waitForDependencies } from '../utils/editor.js'
+import { shouldRunDirectly } from '../utils/global-options.js'
 import { formatHumanResult, formatJsonFailure, formatJsonSuccess } from '../utils/output.js'
-import { normalizeSessionState, readSession, writeSession } from '../utils/session.js'
+import { normalizeSessionState, readSession, restoreSessionBlockNumber, writeSession } from '../utils/session.js'
 
 // Configure JSON BigInt for handling large numbers
 const JSON_BIG = JSONBig({
@@ -86,6 +87,7 @@ export function useAction<TParams, TResult>({
 
 		return enhancedOptions
 	}, [options, optionDescriptions, defaultValues])
+	const runDirectly = shouldRunDirectly(baseOptions)
 
 	// Use refs to track state that shouldn't trigger re-renders
 	const editorOpenedRef = React.useRef(false)
@@ -146,7 +148,7 @@ export function useAction<TParams, TResult>({
 				throw error
 			}
 		},
-		enabled: options['run'] !== true,
+		enabled: !runDirectly,
 		retry: false,
 	})
 
@@ -161,8 +163,12 @@ export function useAction<TParams, TResult>({
 						? baseOptions['session']
 						: undefined
 				const session = sessionName ? readSession(sessionName) : undefined
+				if (sessionName && !session) {
+					throw new Error(`Session "${sessionName}" does not exist; create it with tevm session ${sessionName} --local`)
+				}
 				const local = baseOptions['local'] === true || (sessionName !== undefined && session?.forkUrl === undefined)
 				const rpcUrl = session?.forkUrl || (local ? undefined : baseOptions['rpc'] || 'http://localhost:8545')
+				let forkBlock = session?.forkBlock
 
 				// Create the appropriate client based on action type
 				if (isViemAction(actionName) && !sessionName) {
@@ -183,8 +189,14 @@ export function useAction<TParams, TResult>({
 							: { loggingLevel: 'fatal' },
 					)
 					await client.tevmReady()
+					if (sessionName && rpcUrl && !forkBlock) {
+						forkBlock = (await client.getBlockNumber()).toString()
+					}
 					if (session?.state) {
 						await client.tevmLoadState(normalizeSessionState(session.state) as any)
+					}
+					if (session) {
+						await restoreSessionBlockNumber(client, session)
 					}
 				}
 
@@ -194,14 +206,13 @@ export function useAction<TParams, TResult>({
 				if (sessionName) {
 					const sessionClient = client as any
 					const state = await sessionClient.tevmDumpState()
-					const forkBlock = rpcUrl
-						? (session?.forkBlock ?? (await sessionClient.getBlockNumber()).toString())
-						: undefined
+					const blockNumber = (await sessionClient.getBlockNumber()).toString()
 					writeSession({
 						version: 1,
 						name: sessionName,
 						...(rpcUrl ? { forkUrl: rpcUrl } : {}),
 						...(forkBlock ? { forkBlock } : {}),
+						blockNumber,
 						updatedAt: new Date().toISOString(),
 						state: state as unknown as Record<string, unknown>,
 					})
@@ -217,7 +228,7 @@ export function useAction<TParams, TResult>({
 				return { error: normalizedError }
 			}
 		},
-		enabled: options['run'] === true,
+		enabled: runDirectly,
 		retry: false,
 	})
 	const result = actionOutcome?.result

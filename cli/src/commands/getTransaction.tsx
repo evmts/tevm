@@ -5,7 +5,7 @@ import { useAction } from '../hooks/useAction.js'
 
 // Add command description for help output
 export const description =
-	'Get a transaction by hash\nExample: tevm get-transaction --hash 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef --rpc https://mainnet.optimism.io --run'
+	'Get a transaction by hash\nExample: tevm get-transaction --hash 0x4d9f610e4fe3d6514c29a51b5782283eb00d756766386956516a9d1f70253e17 --rpc https://mainnet.optimism.io --run'
 
 // Options definitions and descriptions
 const optionDescriptions = {

@@ -159,7 +159,11 @@ export default function GetStorageAt({ options }: Props) {
 			const account = await client.tevmGetAccount({
 				address: params.address,
 				returnStorage: true,
-				...(params.blockTag ? { blockTag: params.blockTag } : {}),
+				...(params.blockNumber !== undefined
+					? { blockTag: params.blockNumber }
+					: params.blockTag
+						? { blockTag: params.blockTag }
+						: {}),
 			})
 			const value = account.storage?.[params.slot]
 			if (typeof value !== 'string' || !value.startsWith('0x')) {

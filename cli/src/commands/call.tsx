@@ -44,6 +44,7 @@ export default function Call({ options }: Props) {
 			gas: 'Gas limit for the transaction',
 			gasPrice: 'Gas price in wei',
 			blockTag: 'Block tag (latest, pending, etc.) or number',
+			skipBalance: 'Allow calls from an unfunded impersonated account',
 		},
 
 		// Convert options to call parameters

@@ -7,8 +7,14 @@ export type CliSession = {
 	name: string
 	forkUrl?: string
 	forkBlock?: string
+	blockNumber?: string
 	updatedAt: string
 	state?: Record<string, unknown>
+}
+
+type SessionClient = {
+	getBlockNumber: () => Promise<bigint>
+	tevmMine: (params: { blockCount: number; interval: number }) => Promise<unknown>
 }
 
 const SESSION_NAME = /^[a-zA-Z0-9._-]+$/
@@ -65,6 +71,52 @@ export function writeSession(session: CliSession, sessionDirectory?: string): st
 	writeFileSync(temporaryPath, `${JSON.stringify(session, null, 2)}\n`, { mode: 0o600 })
 	renameSync(temporaryPath, sessionPath)
 	return sessionPath
+}
+
+/**
+ * Parse and validate a block number stored in session metadata.
+ *
+ * @example
+ * ```ts
+ * parseSessionBlockNumber('123', 'forkBlock')
+ * // 123n
+ * ```
+ */
+export function parseSessionBlockNumber(value: string, field: 'forkBlock' | 'blockNumber'): bigint {
+	if (!/^(0|[1-9][0-9]*)$/.test(value)) {
+		throw new Error(`Invalid ${field} "${value}"; expected a non-negative decimal block number`)
+	}
+	return BigInt(value)
+}
+
+/**
+ * Restore the saved session height by mining empty blocks.
+ *
+ * Account and storage state is restored separately. Replaying empty blocks keeps
+ * later commands at the same height even though transaction history is not saved.
+ *
+ * @example
+ * ```ts
+ * await restoreSessionBlockNumber(client, { version: 1, name: 'local', blockNumber: '3', updatedAt: '' })
+ * ```
+ */
+export async function restoreSessionBlockNumber(client: SessionClient, session: CliSession): Promise<void> {
+	if (!session.blockNumber) {
+		return
+	}
+	const current = await client.getBlockNumber()
+	const target = parseSessionBlockNumber(session.blockNumber, 'blockNumber')
+	if (target < current) {
+		throw new Error(`Session blockNumber ${target} is behind the restored base block ${current}`)
+	}
+	const difference = target - current
+	if (difference === 0n) {
+		return
+	}
+	if (difference > BigInt(Number.MAX_SAFE_INTEGER)) {
+		throw new Error(`Session blockNumber difference ${difference} is too large to restore safely`)
+	}
+	await client.tevmMine({ blockCount: Number(difference), interval: 1 })
 }
 
 /**

@@ -1,10 +1,11 @@
 import { Text } from 'ink'
 import { argument, option } from 'pastel'
 import { useEffect, useState } from 'react'
+import { createPublicClient, http } from 'viem'
 import { z } from 'zod'
 import RawOutput from '../components/RawOutput.js'
 import { formatJsonFailure, formatJsonSuccess } from '../utils/output.js'
-import { type CliSession, readSession, writeSession } from '../utils/session.js'
+import { type CliSession, parseSessionBlockNumber, readSession, writeSession } from '../utils/session.js'
 
 export const description =
 	'Create or inspect a persistent local fork session\nExample: tevm session optimism --fork https://mainnet.optimism.io --json'
@@ -59,30 +60,63 @@ export default function Session({ args: [name], options }: Props) {
 	const [state, setState] = useState<SessionCommandState>({ status: 'loading' })
 
 	useEffect(() => {
-		try {
-			const existing = readSession(name)
-			if (existing) {
-				if (options.fork && existing.forkUrl !== options.fork) {
-					throw new Error(`Session "${name}" already exists with fork ${existing.forkUrl ?? '<none>'}`)
+		let cancelled = false
+		const createOrReadSession = async (): Promise<void> => {
+			try {
+				if (options.fork && options.local) {
+					throw new Error('Choose either --fork or --local, not both')
 				}
-				setState({ status: 'done', session: existing })
-				return
+				if (options.forkBlock && !options.fork) {
+					throw new Error('--fork-block requires --fork')
+				}
+				const requestedForkBlock = options.forkBlock
+					? parseSessionBlockNumber(options.forkBlock, 'forkBlock').toString()
+					: undefined
+				const existing = readSession(name)
+				if (existing) {
+					if (options.fork && existing.forkUrl !== options.fork) {
+						throw new Error(`Session "${name}" already exists with fork ${existing.forkUrl ?? '<none>'}`)
+					}
+					if (options.local && existing.forkUrl) {
+						throw new Error(`Session "${name}" already exists with fork ${existing.forkUrl}`)
+					}
+					if (requestedForkBlock && existing.forkBlock !== requestedForkBlock) {
+						throw new Error(`Session "${name}" already exists at fork block ${existing.forkBlock ?? '<unpinned>'}`)
+					}
+					if (!cancelled) {
+						setState({ status: 'done', session: existing })
+					}
+					return
+				}
+				if (!options.fork && !options.local) {
+					throw new Error(`Session "${name}" does not exist; pass --fork or --local to create it`)
+				}
+				const forkBlock =
+					requestedForkBlock ??
+					(options.fork
+						? (await createPublicClient({ transport: http(options.fork) }).getBlockNumber()).toString()
+						: undefined)
+				const session: CliSession = {
+					version: 1,
+					name,
+					...(options.fork ? { forkUrl: options.fork } : {}),
+					...(forkBlock ? { forkBlock, blockNumber: forkBlock } : { blockNumber: '0' }),
+					updatedAt: new Date().toISOString(),
+				}
+				const sessionPath = writeSession(session)
+				if (!cancelled) {
+					setState({ status: 'done', session, path: sessionPath })
+				}
+			} catch (error) {
+				if (!cancelled) {
+					process.exitCode = 1
+					setState({ status: 'error', error: error instanceof Error ? error : new Error(String(error)) })
+				}
 			}
-			if (!options.fork && !options.local) {
-				throw new Error(`Session "${name}" does not exist; pass --fork or --local to create it`)
-			}
-			const session: CliSession = {
-				version: 1,
-				name,
-				...(options.fork ? { forkUrl: options.fork } : {}),
-				...(options.forkBlock ? { forkBlock: options.forkBlock } : {}),
-				updatedAt: new Date().toISOString(),
-			}
-			const sessionPath = writeSession(session)
-			setState({ status: 'done', session, path: sessionPath })
-		} catch (error) {
-			process.exitCode = 1
-			setState({ status: 'error', error: error instanceof Error ? error : new Error(String(error)) })
+		}
+		void createOrReadSession()
+		return () => {
+			cancelled = true
 		}
 	}, [name, options.fork, options.forkBlock, options.local])
 
