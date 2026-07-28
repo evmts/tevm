@@ -22,16 +22,23 @@
     "trace:3155:compare": "cd .. && pnpm test:conformance:gst:trace:compare"
   },
   "dependencies": {
-    "react": "19.2.5",
-    "react-dom": "19.2.5",
-    "smithers-orchestrator": "^0.20.3",
-    "zod": "4.3.6"
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "smithers-orchestrator": "^0.31.0",
+    "@smithers-orchestrator/cli": "^0.31.0",
+    "zod": "4.4.3",
+    "@milkdown/crepe": "7.21.2",
+    "mermaid": "11.12.1",
+    "yaml": "2.9.0",
+    "@xyflow/react": "12.11.1",
+    "dagre": "0.8.5"
   },
   "devDependencies": {
-    "typescript": "5.9.3",
-    "@types/react": "19.2.14",
+    "typescript": "6.0.3",
+    "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
-    "@types/mdx": "2.0.13",
-    "@types/node": "25.6.0"
+    "@types/mdx": "2.0.14",
+    "@types/node": "26.1.0",
+    "@types/dagre": "0.7.54"
   }
 }
