@@ -32,5 +32,5 @@ export const getAlchemyUrl = (
 		console.warn(`Using default alchemy key. Please override it with the 'TEVM_TEST_ALCHEMY_KEY' environment variable or pass in an explicit key as the second arg to 'getAlchemyUrl'
 Using default alchemy key '${DEFAULT_ALCHEMY_KEY}' and may face throttling`)
 	}
-	return ['https://', ALCHEMY_HOSTS[chainId], 'v2', alchemyKey].join('/')
+	return `https://${ALCHEMY_HOSTS[chainId]}/v2/${alchemyKey}`
 }
