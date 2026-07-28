@@ -22,8 +22,8 @@
     "trace:3155:compare": "cd .. && pnpm test:conformance:gst:trace:compare"
   },
   "dependencies": {
-    "react": "19.2.7",
-    "react-dom": "19.2.7",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "smithers-orchestrator": "^0.31.0",
     "@smithers-orchestrator/cli": "^0.31.0",
     "zod": "4.4.3",
