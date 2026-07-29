@@ -40,7 +40,7 @@ runs:
     # Bump this SHA and regenerate pnpm-lock.yaml in the same commit.
     - name: Checkout Zevm workspace
       env:
-        ZEVM_REF: e891cf630d35c89df97e8a408318c490a9969629
+        ZEVM_REF: 014f3f2b8dba45a983853af303bc52620fcfb111
       run: |
         if [ ! -d ../zevm/npm/zevm ]; then
           git clone --filter=blob:none https://github.com/evmts/zevm.git ../zevm
