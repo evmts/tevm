@@ -6,7 +6,7 @@
 
 # Class: TxPool
 
-Defined in: [tevm-monorepo/packages/txpool/src/TxPool.ts:40](https://github.com/evmts/tevm-monorepo/blob/main/packages/txpool/src/TxPool.ts#L40)
+Defined in: [tevm-monorepo/packages/txpool/src/TxPool.ts:40](https://github.com/evmts/tevm/blob/main/packages/txpool/src/TxPool.ts#L40)
 
 Tevm txpool facade.
 
@@ -23,7 +23,7 @@ fee classification to all fee-market-shaped transactions, including EIP-7702.
 
 > **new TxPool**(...`args`): `TxPool`
 
-Defined in: [tevm-monorepo/packages/txpool/src/TxPool.ts:41](https://github.com/evmts/tevm-monorepo/blob/main/packages/txpool/src/TxPool.ts#L41)
+Defined in: [tevm-monorepo/packages/txpool/src/TxPool.ts:41](https://github.com/evmts/tevm/blob/main/packages/txpool/src/TxPool.ts#L41)
 
 #### Parameters
 
@@ -121,7 +121,7 @@ Defined in: zevm/npm/zevm/dist/txpool.d.ts:66
 
 > **cleanup**(): `void`
 
-Defined in: [tevm-monorepo/packages/txpool/src/TxPool.ts:84](https://github.com/evmts/tevm-monorepo/blob/main/packages/txpool/src/TxPool.ts#L84)
+Defined in: [tevm-monorepo/packages/txpool/src/TxPool.ts:84](https://github.com/evmts/tevm/blob/main/packages/txpool/src/TxPool.ts#L84)
 
 #### Returns
 

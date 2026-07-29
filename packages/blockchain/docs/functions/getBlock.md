@@ -8,7 +8,7 @@
 
 > **getBlock**(`baseChain`): (`blockId`) => `Promise`\<`Block`\>
 
-Defined in: [packages/blockchain/src/actions/getBlock.js:12](https://github.com/evmts/tevm-monorepo/blob/main/packages/blockchain/src/actions/getBlock.js#L12)
+Defined in: [packages/blockchain/src/actions/getBlock.js:12](https://github.com/evmts/tevm/blob/main/packages/blockchain/src/actions/getBlock.js#L12)
 
 A blockchain interface method that accepts a block id number or hash and returns the block
 

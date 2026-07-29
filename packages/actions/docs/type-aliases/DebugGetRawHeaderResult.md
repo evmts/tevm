@@ -8,7 +8,7 @@
 
 > **DebugGetRawHeaderResult** = [`Hex`](Hex.md)
 
-Defined in: [packages/actions/src/debug/DebugResult.ts:315](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugResult.ts#L315)
+Defined in: [packages/actions/src/debug/DebugResult.ts:315](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugResult.ts#L315)
 
 Result from `debug_getRawHeader`
 

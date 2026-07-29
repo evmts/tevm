@@ -8,7 +8,7 @@
 
 > **tevmTransport**(`tevm`, `options?`): `Transport`\<`string`, `Record`\<`string`, `any`\>, `EIP1193RequestFn`\>
 
-Defined in: [extensions/viem/src/tevmTransport.js:8](https://github.com/evmts/tevm-monorepo/blob/main/extensions/viem/src/tevmTransport.js#L8)
+Defined in: [extensions/viem/src/tevmTransport.js:8](https://github.com/evmts/tevm/blob/main/extensions/viem/src/tevmTransport.js#L8)
 
 ## Parameters
 

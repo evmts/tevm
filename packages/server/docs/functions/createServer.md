@@ -8,7 +8,7 @@
 
 > **createServer**(`client`, `serverOptions?`, `handlerOptions?`): `Server`\<*typeof* `IncomingMessage`, *typeof* `ServerResponse`\>
 
-Defined in: [packages/server/src/createServer.js:33](https://github.com/evmts/tevm-monorepo/blob/main/packages/server/src/createServer.js#L33)
+Defined in: [packages/server/src/createServer.js:33](https://github.com/evmts/tevm/blob/main/packages/server/src/createServer.js#L33)
 
 Creates a lightweight http server for handling requests
 

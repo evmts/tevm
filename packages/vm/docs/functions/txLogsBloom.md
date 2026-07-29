@@ -8,7 +8,7 @@
 
 > **txLogsBloom**(`logs`, `common`): `Bloom`
 
-Defined in: [packages/vm/src/actions/txLogsBloom.js:11](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/txLogsBloom.js#L11)
+Defined in: [packages/vm/src/actions/txLogsBloom.js:11](https://github.com/evmts/tevm/blob/main/packages/vm/src/actions/txLogsBloom.js#L11)
 
 **`Internal`**
 

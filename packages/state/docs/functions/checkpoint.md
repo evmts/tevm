@@ -8,7 +8,7 @@
 
 > **checkpoint**(`baseState`, `skipFetchingFromFork?`): () => `Promise`\<`void`\>
 
-Defined in: [tevm-monorepo/packages/state/src/actions/checkpoint.js:6](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/actions/checkpoint.js#L6)
+Defined in: [tevm-monorepo/packages/state/src/actions/checkpoint.js:6](https://github.com/evmts/tevm/blob/main/packages/state/src/actions/checkpoint.js#L6)
 
 Checkpoints the current change-set to the instance since the
 last call to checkpoint.

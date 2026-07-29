@@ -6,8 +6,8 @@
   @tevm/errors
 <p>
 
-[![CI](https://github.com/evmts/tevm-monorepo/actions/workflows/e2e.yml/badge.svg)](https://github.com/evmts/tevm-monorepo/actions/workflows/e2e.yml)
-[![CI](https://github.com/evmts/tevm-monorepo/actions/workflows/unit.yml/badge.svg)](https://github.com/evmts/tevm-monorepo/actions/workflows/unit.yml)
+[![CI](https://github.com/evmts/tevm/actions/workflows/e2e.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/e2e.yml)
+[![CI](https://github.com/evmts/tevm/actions/workflows/unit.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/unit.yml)
 <a href="https://www.npmjs.com/package/@tevm/errors" target="\_parent">
 <img alt="" src="https://img.shields.io/npm/dm/@tevm/errors.svg" />
 </a>
@@ -21,7 +21,7 @@
 
 **This package has no javascript only typescript types.**
 
-The first implementation of this spec is [@tevm/actions](https://github.com/evmts/tevm-monorepo/tree/main/packages/actions), backed by Tevm's ZEVM-based runtime packages.
+The first implementation of this spec is [@tevm/actions](https://github.com/evmts/tevm/tree/main/packages/actions), backed by Tevm's ZEVM-based runtime packages.
 
 ## Installation
 

@@ -8,7 +8,7 @@
 
 > **DebugGetRawTransactionParams** = `object`
 
-Defined in: [packages/actions/src/debug/DebugParams.ts:371](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugParams.ts#L371)
+Defined in: [packages/actions/src/debug/DebugParams.ts:371](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugParams.ts#L371)
 
 Params taken by `debug_getRawTransaction` handler
 
@@ -16,4 +16,4 @@ Params taken by `debug_getRawTransaction` handler
 
 | Property | Modifier | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="hash"></a> `hash` | `readonly` | [`Hex`](Hex.md) | The transaction hash | [packages/actions/src/debug/DebugParams.ts:375](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugParams.ts#L375) |
+| <a id="hash"></a> `hash` | `readonly` | [`Hex`](Hex.md) | The transaction hash | [packages/actions/src/debug/DebugParams.ts:375](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugParams.ts#L375) |

@@ -8,7 +8,7 @@
 
 > **createHttpHandler**(`client`, `options?`): `RequestListener`\<*typeof* `IncomingMessage`, *typeof* `ServerResponse`\>
 
-Defined in: [packages/server/src/createHttpHandler.js:32](https://github.com/evmts/tevm-monorepo/blob/main/packages/server/src/createHttpHandler.js#L32)
+Defined in: [packages/server/src/createHttpHandler.js:32](https://github.com/evmts/tevm/blob/main/packages/server/src/createHttpHandler.js#L32)
 
 Creates a Node.js HTTP handler for handling JSON-RPC requests with a Tevm node.
 Any unimplemented methods will be proxied to the given proxyUrl

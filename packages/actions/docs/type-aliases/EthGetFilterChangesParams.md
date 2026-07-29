@@ -8,7 +8,7 @@
 
 > **EthGetFilterChangesParams** = `object`
 
-Defined in: [packages/actions/src/eth/EthParams.ts:159](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L159)
+Defined in: [packages/actions/src/eth/EthParams.ts:159](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L159)
 
 Based on the JSON-RPC request for `eth_getFilterChanges` procedure
 
@@ -16,4 +16,4 @@ Based on the JSON-RPC request for `eth_getFilterChanges` procedure
 
 | Property | Modifier | Type | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="filterid"></a> `filterId` | `readonly` | [`Hex`](Hex.md) | [packages/actions/src/eth/EthParams.ts:159](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L159) |
+| <a id="filterid"></a> `filterId` | `readonly` | [`Hex`](Hex.md) | [packages/actions/src/eth/EthParams.ts:159](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L159) |

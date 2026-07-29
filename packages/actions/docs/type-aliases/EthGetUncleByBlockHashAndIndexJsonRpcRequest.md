@@ -8,6 +8,6 @@
 
 > **EthGetUncleByBlockHashAndIndexJsonRpcRequest** = `JsonRpcRequest`\<`"eth_getUncleByBlockHashAndIndex"`, readonly \[`Hex`, `Hex`\]\>
 
-Defined in: [packages/actions/src/eth/EthJsonRpcRequest.ts:242](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthJsonRpcRequest.ts#L242)
+Defined in: [packages/actions/src/eth/EthJsonRpcRequest.ts:242](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcRequest.ts#L242)
 
 JSON-RPC request for `eth_getUncleByBlockHashAndIndex` procedure

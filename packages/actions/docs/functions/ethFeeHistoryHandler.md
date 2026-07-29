@@ -8,7 +8,7 @@
 
 > **ethFeeHistoryHandler**(`client`): [`EthFeeHistoryHandler`](../type-aliases/EthFeeHistoryHandler.md)
 
-Defined in: [packages/actions/src/eth/ethFeeHistoryHandler.js:31](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethFeeHistoryHandler.js#L31)
+Defined in: [packages/actions/src/eth/ethFeeHistoryHandler.js:31](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethFeeHistoryHandler.js#L31)
 
 Handler for the `eth_feeHistory` RPC method.
 Returns historical gas information, including base fees and priority fees for a range of blocks.

@@ -8,7 +8,7 @@
 
 > **getStorageAtProcedure**(`client`): [`EthGetStorageAtJsonRpcProcedure`](../type-aliases/EthGetStorageAtJsonRpcProcedure.md)
 
-Defined in: [packages/actions/src/eth/getStorageAtProcedure.js:7](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/getStorageAtProcedure.js#L7)
+Defined in: [packages/actions/src/eth/getStorageAtProcedure.js:7](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/getStorageAtProcedure.js#L7)
 
 ## Parameters
 

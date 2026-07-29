@@ -8,7 +8,7 @@
 
 > **debugGetModifiedAccountsByNumberHandler**(`client`): [`DebugGetModifiedAccountsByNumberHandler`](../type-aliases/DebugGetModifiedAccountsByNumberHandler.md)
 
-Defined in: [packages/actions/src/debug/debugGetModifiedAccountsByNumberHandler.js:23](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/debugGetModifiedAccountsByNumberHandler.js#L23)
+Defined in: [packages/actions/src/debug/debugGetModifiedAccountsByNumberHandler.js:23](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/debugGetModifiedAccountsByNumberHandler.js#L23)
 
 Returns addresses of accounts modified between two block numbers
 

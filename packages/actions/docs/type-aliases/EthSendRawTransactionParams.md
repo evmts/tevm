@@ -8,7 +8,7 @@
 
 > **EthSendRawTransactionParams** = `object`
 
-Defined in: [packages/actions/src/eth/EthParams.ts:261](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L261)
+Defined in: [packages/actions/src/eth/EthParams.ts:261](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L261)
 
 Based on the JSON-RPC request for `eth_sendRawTransaction` procedure
 This type is a placeholder
@@ -17,4 +17,4 @@ This type is a placeholder
 
 | Property | Modifier | Type | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="data"></a> `data` | `readonly` | [`Hex`](Hex.md) | [packages/actions/src/eth/EthParams.ts:261](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L261) |
+| <a id="data"></a> `data` | `readonly` | [`Hex`](Hex.md) | [packages/actions/src/eth/EthParams.ts:261](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L261) |

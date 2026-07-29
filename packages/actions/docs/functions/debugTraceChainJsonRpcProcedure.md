@@ -8,7 +8,7 @@
 
 > **debugTraceChainJsonRpcProcedure**(`client`): `DebugTraceChainProcedure`\<`"callTracer"` \| `"prestateTracer"` \| `"4byteTracer"` \| `"flatCallTracer"` \| `"muxTracer"`, `boolean`\>
 
-Defined in: [packages/actions/src/debug/debugTraceChainProcedure.js:19](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/debugTraceChainProcedure.js#L19)
+Defined in: [packages/actions/src/debug/debugTraceChainProcedure.js:19](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/debugTraceChainProcedure.js#L19)
 
 Creates a JSON-RPC procedure handler for the `debug_traceChain` method
 

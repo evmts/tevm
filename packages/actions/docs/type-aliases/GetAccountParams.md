@@ -8,7 +8,7 @@
 
 > **GetAccountParams**\<`TThrowOnFail`\> = [`BaseParams`](BaseParams.md)\<`TThrowOnFail`\> & `object`
 
-Defined in: [packages/actions/src/GetAccount/GetAccountParams.ts:11](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/GetAccount/GetAccountParams.ts#L11)
+Defined in: [packages/actions/src/GetAccount/GetAccountParams.ts:11](https://github.com/evmts/tevm/blob/main/packages/actions/src/GetAccount/GetAccountParams.ts#L11)
 
 Tevm params to get an account
 

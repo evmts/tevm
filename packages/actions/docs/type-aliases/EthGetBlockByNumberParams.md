@@ -8,7 +8,7 @@
 
 > **EthGetBlockByNumberParams** = `object`
 
-Defined in: [packages/actions/src/eth/EthParams.ts:134](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L134)
+Defined in: [packages/actions/src/eth/EthParams.ts:134](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L134)
 
 Based on the JSON-RPC request for `eth_getBlockByNumber` procedure
 
@@ -16,5 +16,5 @@ Based on the JSON-RPC request for `eth_getBlockByNumber` procedure
 
 | Property | Modifier | Type | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="blocktag"></a> `blockTag?` | `readonly` | [`BlockParam`](BlockParam.md) | [packages/actions/src/eth/EthParams.ts:135](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L135) |
-| <a id="fulltransactionobjects"></a> `fullTransactionObjects` | `readonly` | `boolean` | [packages/actions/src/eth/EthParams.ts:136](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L136) |
+| <a id="blocktag"></a> `blockTag?` | `readonly` | [`BlockParam`](BlockParam.md) | [packages/actions/src/eth/EthParams.ts:135](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L135) |
+| <a id="fulltransactionobjects"></a> `fullTransactionObjects` | `readonly` | `boolean` | [packages/actions/src/eth/EthParams.ts:136](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L136) |

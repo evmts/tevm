@@ -8,7 +8,7 @@
 
 > **createVm**(`opts`): [`Vm`](../type-aliases/Vm.md)
 
-Defined in: [packages/vm/src/createVm.js:11](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/createVm.js#L11)
+Defined in: [packages/vm/src/createVm.js:11](https://github.com/evmts/tevm/blob/main/packages/vm/src/createVm.js#L11)
 
 ## Parameters
 

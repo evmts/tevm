@@ -8,7 +8,7 @@
 
 > **TxStatusSubscriber** = (`status`) => `void`
 
-Defined in: [subscribeTx.ts:21](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/mud/src/subscribeTx.ts#L21)
+Defined in: [subscribeTx.ts:21](https://github.com/evmts/tevm/blob/main/bundler-packages/mud/src/subscribeTx.ts#L21)
 
 ## Parameters
 

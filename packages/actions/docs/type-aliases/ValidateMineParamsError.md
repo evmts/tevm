@@ -8,7 +8,7 @@
 
 > **ValidateMineParamsError** = `InvalidAddressError` \| `InvalidBalanceError` \| `InvalidNonceError` \| `InvalidRequestError`
 
-Defined in: [packages/actions/src/Mine/validateMineParams.js:5](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Mine/validateMineParams.js#L5)
+Defined in: [packages/actions/src/Mine/validateMineParams.js:5](https://github.com/evmts/tevm/blob/main/packages/actions/src/Mine/validateMineParams.js#L5)
 
 ## Type Parameters
 

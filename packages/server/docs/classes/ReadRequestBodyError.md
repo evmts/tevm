@@ -6,7 +6,7 @@
 
 # Class: ReadRequestBodyError
 
-Defined in: [packages/server/src/errors/ReadRequestBodyError.js:29](https://github.com/evmts/tevm-monorepo/blob/main/packages/server/src/errors/ReadRequestBodyError.js#L29)
+Defined in: [packages/server/src/errors/ReadRequestBodyError.js:29](https://github.com/evmts/tevm/blob/main/packages/server/src/errors/ReadRequestBodyError.js#L29)
 
 Represents an error that occurs when reading the request body from an HTTP request fails.
 
@@ -30,7 +30,7 @@ Additional parameters for the ReadRequestBodyError.
 
 > **new ReadRequestBodyError**(`message`, `args?`): `ReadRequestBodyError`
 
-Defined in: [packages/server/src/errors/ReadRequestBodyError.js:36](https://github.com/evmts/tevm-monorepo/blob/main/packages/server/src/errors/ReadRequestBodyError.js#L36)
+Defined in: [packages/server/src/errors/ReadRequestBodyError.js:36](https://github.com/evmts/tevm/blob/main/packages/server/src/errors/ReadRequestBodyError.js#L36)
 
 Constructs a ReadRequestBodyError.
 

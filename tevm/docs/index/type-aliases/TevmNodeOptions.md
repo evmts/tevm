@@ -53,7 +53,7 @@ An ever growing standard library of precompiles is provided at `tevm/precompiles
 
 #### Notice
 
-Not implemented yet [Implementation pr](https://github.com/evmts/tevm-monorepo/pull/728/files)
+Not implemented yet [Implementation pr](https://github.com/evmts/tevm/pull/728/files)
 
 Below example shows how to make a precompile so you can call `fs.writeFile` and `fs.readFile` in your contracts.
 Note: this specific precompile is also provided in the standard library

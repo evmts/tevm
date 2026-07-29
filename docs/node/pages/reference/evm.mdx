@@ -9,7 +9,7 @@ Tevm's low-level EVM facade. Backed by `@evmts/zevm/evm` and wrapped with Tevm-s
 
 Most apps should use `createMemoryClient`, viem actions, or JSON-RPC. Use `@tevm/evm` directly when building Tevm extensions, debuggers, or profilers.
 
-Full API: [packages/evm/docs](https://github.com/evmts/tevm-monorepo/tree/main/packages/evm/docs).
+Full API: [packages/evm/docs](https://github.com/evmts/tevm/tree/main/packages/evm/docs).
 
 ## Installation
 
@@ -19,11 +19,11 @@ npm install @tevm/evm@1.0.0-rc.151 viem
 
 ## API Reference
 
-- [Evm](https://github.com/evmts/tevm-monorepo/tree/main/packages/evm/docs/classes/Evm.md) - EVM facade.
-- [createEvm](https://github.com/evmts/tevm-monorepo/tree/main/packages/evm/docs/functions/createEvm.md) - creates an EVM for a Tevm VM.
-- [CreateEvmOptions](https://github.com/evmts/tevm-monorepo/tree/main/packages/evm/docs/type-aliases/CreateEvmOptions.md)
-- [CustomPrecompile](https://github.com/evmts/tevm-monorepo/tree/main/packages/evm/docs/type-aliases/CustomPrecompile.md)
-- [EVMOpts](https://github.com/evmts/tevm-monorepo/tree/main/packages/evm/docs/type-aliases/EVMOpts.md) - ZEVM EVM options exposed through Tevm.
+- [Evm](https://github.com/evmts/tevm/tree/main/packages/evm/docs/classes/Evm.md) - EVM facade.
+- [createEvm](https://github.com/evmts/tevm/tree/main/packages/evm/docs/functions/createEvm.md) - creates an EVM for a Tevm VM.
+- [CreateEvmOptions](https://github.com/evmts/tevm/tree/main/packages/evm/docs/type-aliases/CreateEvmOptions.md)
+- [CustomPrecompile](https://github.com/evmts/tevm/tree/main/packages/evm/docs/type-aliases/CustomPrecompile.md)
+- [EVMOpts](https://github.com/evmts/tevm/tree/main/packages/evm/docs/type-aliases/EVMOpts.md) - ZEVM EVM options exposed through Tevm.
 - Re-exported ZEVM EVM types: `EvmError`, `EVMError`, `EvmResult`, `EvmRunCallOpts`, `ExecResult`, `InterpreterStep`, `Log`, `EthjsMessage`, `PrecompileInput`.
 
 ## Usage Examples
@@ -89,4 +89,4 @@ const client = createMemoryClient({
 - [EVM Events](../api/evm-events)
 - [Custom Precompiles](../advanced/custom-precompiles)
 - [@tevm/state](https://tevm.sh/reference/tevm/state/)
-- [Full API Reference](https://github.com/evmts/tevm-monorepo/tree/main/packages/evm/docs/globals.md)
+- [Full API Reference](https://github.com/evmts/tevm/tree/main/packages/evm/docs/globals.md)

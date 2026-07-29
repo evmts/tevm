@@ -8,7 +8,7 @@
 
 > **ethGetTransactionReceiptHandler**(`client`): [`EthGetTransactionReceiptHandler`](../type-aliases/EthGetTransactionReceiptHandler.md)
 
-Defined in: [packages/actions/src/eth/ethGetTransactionReceipt.js:26](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethGetTransactionReceipt.js#L26)
+Defined in: [packages/actions/src/eth/ethGetTransactionReceipt.js:26](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethGetTransactionReceipt.js#L26)
 
 ## Parameters
 

@@ -8,7 +8,7 @@
 
 > **validateLoadStateParams**(`action`): `InvalidRequestError`[]
 
-Defined in: [packages/actions/src/LoadState/validateLoadStateParams.js:15](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/LoadState/validateLoadStateParams.js#L15)
+Defined in: [packages/actions/src/LoadState/validateLoadStateParams.js:15](https://github.com/evmts/tevm/blob/main/packages/actions/src/LoadState/validateLoadStateParams.js#L15)
 
 Validates the parameters for loading the state into the VM.
 

@@ -8,7 +8,7 @@
 
 > **ethGetLogsHandler**(`client`): [`EthGetLogsHandler`](../type-aliases/EthGetLogsHandler.md)
 
-Defined in: [packages/actions/src/eth/ethGetLogsHandler.js:14](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethGetLogsHandler.js#L14)
+Defined in: [packages/actions/src/eth/ethGetLogsHandler.js:14](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethGetLogsHandler.js#L14)
 
 ## Parameters
 

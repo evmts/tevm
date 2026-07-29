@@ -8,7 +8,7 @@
 
 > **ethSubscribeJsonRpcProcedure**(`tevmNode`): [`EthSubscribeJsonRpcProcedure`](../type-aliases/EthSubscribeJsonRpcProcedure.md)
 
-Defined in: [packages/actions/src/eth/ethSubscribeProcedure.js:26](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethSubscribeProcedure.js#L26)
+Defined in: [packages/actions/src/eth/ethSubscribeProcedure.js:26](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethSubscribeProcedure.js#L26)
 
 Request handler for eth_subscribe JSON-RPC requests.
 Creates a subscription for various Ethereum events.

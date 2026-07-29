@@ -8,6 +8,6 @@
 
 > **DumpStateJsonRpcRequest** = `JsonRpcRequest`\<`"tevm_dumpState"`, \[\]\>
 
-Defined in: [packages/actions/src/DumpState/DumpStateJsonRpcRequest.ts:6](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/DumpState/DumpStateJsonRpcRequest.ts#L6)
+Defined in: [packages/actions/src/DumpState/DumpStateJsonRpcRequest.ts:6](https://github.com/evmts/tevm/blob/main/packages/actions/src/DumpState/DumpStateJsonRpcRequest.ts#L6)
 
 The JSON-RPC request for the `tevm_dumpState` method

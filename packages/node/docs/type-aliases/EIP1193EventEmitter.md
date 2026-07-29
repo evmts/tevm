@@ -8,7 +8,7 @@
 
 > **EIP1193EventEmitter** = [`EIP1193Events`](EIP1193Events.md) & `object`
 
-Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:55](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L55)
+Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:55](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L55)
 
 A very minimal EventEmitter interface
 

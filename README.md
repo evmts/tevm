@@ -11,8 +11,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/evmts/tevm-monorepo/actions/workflows/ci.yml">
-    <img src="https://github.com/evmts/tevm-monorepo/actions/workflows/ci.yml/badge.svg" alt="CI Status" />
+  <a href="https://github.com/evmts/tevm/actions/workflows/ci.yml">
+    <img src="https://github.com/evmts/tevm/actions/workflows/ci.yml/badge.svg" alt="CI Status" />
   </a>
   <a href="https://www.npmjs.com/package/tevm?activeTab=versions">
     <img src="https://img.shields.io/npm/v/tevm/rc?label=rc" alt="NPM RC Version" />
@@ -26,7 +26,7 @@
   <a href="https://t.me/+ANThR9bHDLAwMjUx">
     <img alt="Telegram" src="https://img.shields.io/badge/chat-telegram-blue.svg">
   </a>
-  <a href="https://deepwiki.com/evmts/tevm-monorepo">
+  <a href="https://deepwiki.com/evmts/tevm">
     <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki">
   </a>
 </p>
@@ -221,12 +221,12 @@ The `tevm` package re-exports the most common runtime APIs. Individual packages 
 - [Ethers Integration](https://node.tevm.sh/getting-started/ethers)
 - [Bundler Quickstart](https://node.tevm.sh/getting-started/bundler)
 - [API Reference](https://node.tevm.sh/api/packages)
-- [Examples](https://github.com/evmts/tevm-monorepo/tree/main/examples)
+- [Examples](https://github.com/evmts/tevm/tree/main/examples)
 
 ## Community
 
 - [Telegram](https://t.me/+ANThR9bHDLAwMjUx)
-- [GitHub Discussions](https://github.com/evmts/tevm-monorepo/discussions)
+- [GitHub Discussions](https://github.com/evmts/tevm/discussions)
 
 ## Contributing
 

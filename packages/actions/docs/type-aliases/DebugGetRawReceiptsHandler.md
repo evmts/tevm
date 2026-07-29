@@ -8,7 +8,7 @@
 
 > **DebugGetRawReceiptsHandler** = (`params`) => `Promise`\<[`DebugGetRawReceiptsResult`](DebugGetRawReceiptsResult.md)\>
 
-Defined in: [packages/actions/src/debug/DebugHandler.ts:46](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugHandler.ts#L46)
+Defined in: [packages/actions/src/debug/DebugHandler.ts:46](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugHandler.ts#L46)
 
 ## Parameters
 

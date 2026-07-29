@@ -8,7 +8,7 @@
 
 > **tevmCall**(`client`, `params`): `Promise`\<`CallResult`\<`TevmCallError`\>\>
 
-Defined in: [packages/memory-client/src/tevmCall.js:26](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/tevmCall.js#L26)
+Defined in: [packages/memory-client/src/tevmCall.js:26](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/tevmCall.js#L26)
 
 Tree-shakeable `tevmCall` action. Low-level EVM call with extra control beyond `eth_call`:
 impersonation, step tracing, skipBalance, plus `addToMempool` / `addToBlockchain` to turn it

@@ -8,7 +8,7 @@
 
 > **dumpStateProcedure**(`client`): [`DumpStateJsonRpcProcedure`](../type-aliases/DumpStateJsonRpcProcedure.md)
 
-Defined in: [packages/actions/src/DumpState/dumpStateProcedure.js:8](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/DumpState/dumpStateProcedure.js#L8)
+Defined in: [packages/actions/src/DumpState/dumpStateProcedure.js:8](https://github.com/evmts/tevm/blob/main/packages/actions/src/DumpState/dumpStateProcedure.js#L8)
 
 Creates a DumpState JSON-RPC Procedure for handling dumpState requests with the Tevm EVM.
 

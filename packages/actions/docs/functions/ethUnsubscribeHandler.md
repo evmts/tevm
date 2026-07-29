@@ -8,7 +8,7 @@
 
 > **ethUnsubscribeHandler**(`tevmNode`): [`EthUnsubscribeHandler`](../type-aliases/EthUnsubscribeHandler.md)
 
-Defined in: [packages/actions/src/eth/ethUnsubscribeHandler.js:24](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethUnsubscribeHandler.js#L24)
+Defined in: [packages/actions/src/eth/ethUnsubscribeHandler.js:24](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethUnsubscribeHandler.js#L24)
 
 Cancels an active subscription.
 This handler removes the subscription and cleans up any associated event listeners.

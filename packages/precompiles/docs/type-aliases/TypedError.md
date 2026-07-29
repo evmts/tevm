@@ -8,7 +8,7 @@
 
 > **TypedError**\<`TName`\> = `object`
 
-Defined in: [TypedError.ts:17](https://github.com/evmts/tevm-monorepo/blob/main/packages/precompiles/src/TypedError.ts#L17)
+Defined in: [TypedError.ts:17](https://github.com/evmts/tevm/blob/main/packages/precompiles/src/TypedError.ts#L17)
 
 Represents a typed error with a tag for identification
 
@@ -36,6 +36,6 @@ const error: MyCustomError = {
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="_tag"></a> `_tag` | `TName` | [TypedError.ts:18](https://github.com/evmts/tevm-monorepo/blob/main/packages/precompiles/src/TypedError.ts#L18) |
-| <a id="message"></a> `message` | `string` | [TypedError.ts:20](https://github.com/evmts/tevm-monorepo/blob/main/packages/precompiles/src/TypedError.ts#L20) |
-| <a id="name"></a> `name` | `TName` | [TypedError.ts:19](https://github.com/evmts/tevm-monorepo/blob/main/packages/precompiles/src/TypedError.ts#L19) |
+| <a id="_tag"></a> `_tag` | `TName` | [TypedError.ts:18](https://github.com/evmts/tevm/blob/main/packages/precompiles/src/TypedError.ts#L18) |
+| <a id="message"></a> `message` | `string` | [TypedError.ts:20](https://github.com/evmts/tevm/blob/main/packages/precompiles/src/TypedError.ts#L20) |
+| <a id="name"></a> `name` | `TName` | [TypedError.ts:19](https://github.com/evmts/tevm/blob/main/packages/precompiles/src/TypedError.ts#L19) |

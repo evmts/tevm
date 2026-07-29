@@ -8,7 +8,7 @@
 
 > **requestBulkProcedure**(`client`): [`TevmJsonRpcBulkRequestHandler`](../type-aliases/TevmJsonRpcBulkRequestHandler.md)
 
-Defined in: [packages/actions/src/requestBulkProcedure.js:7](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/requestBulkProcedure.js#L7)
+Defined in: [packages/actions/src/requestBulkProcedure.js:7](https://github.com/evmts/tevm/blob/main/packages/actions/src/requestBulkProcedure.js#L7)
 
 ## Parameters
 

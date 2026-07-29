@@ -273,7 +273,7 @@ export default defineConfig({
 		},
 	],
 	editLink: {
-		pattern: 'https://github.com/evmts/tevm-monorepo/edit/main/docs/node/docs/pages/:path',
+		pattern: 'https://github.com/evmts/tevm/edit/main/docs/node/docs/pages/:path',
 		text: 'Edit this page on GitHub',
 	},
 	// Enable search with boosting for important pages
@@ -288,7 +288,7 @@ export default defineConfig({
 	socials: [
 		{
 			icon: 'github',
-			link: 'https://github.com/evmts/tevm-monorepo',
+			link: 'https://github.com/evmts/tevm',
 			label: 'Github',
 		},
 		{

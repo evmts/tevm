@@ -8,7 +8,7 @@
 
 > **EIP1193EventMap** = `object`
 
-Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:34](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L34)
+Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:34](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L34)
 
 ## Methods
 
@@ -16,7 +16,7 @@ Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:34](https://github.co
 
 > **accountsChanged**(`accounts`): `void`
 
-Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:35](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L35)
+Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:35](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L35)
 
 #### Parameters
 
@@ -34,7 +34,7 @@ Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:35](https://github.co
 
 > **chainChanged**(`chainId`): `void`
 
-Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:36](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L36)
+Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:36](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L36)
 
 #### Parameters
 
@@ -52,7 +52,7 @@ Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:36](https://github.co
 
 > **connect**(`connectInfo`): `void`
 
-Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:37](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L37)
+Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:37](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L37)
 
 #### Parameters
 
@@ -70,7 +70,7 @@ Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:37](https://github.co
 
 > **disconnect**(`error`): `void`
 
-Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:38](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L38)
+Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:38](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L38)
 
 #### Parameters
 
@@ -88,7 +88,7 @@ Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:38](https://github.co
 
 > **message**(`message`): `void`
 
-Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:39](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L39)
+Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:39](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L39)
 
 #### Parameters
 
@@ -106,7 +106,7 @@ Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:39](https://github.co
 
 > **newBlock**(`block`): `void`
 
-Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:44](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L44)
+Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:44](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L44)
 
 #### Parameters
 
@@ -124,7 +124,7 @@ Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:44](https://github.co
 
 > **newLog**(`log`): `void`
 
-Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:45](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L45)
+Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:45](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L45)
 
 #### Parameters
 
@@ -142,7 +142,7 @@ Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:45](https://github.co
 
 > **newPendingTransaction**(`tx`): `void`
 
-Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:42](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L42)
+Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:42](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L42)
 
 #### Parameters
 
@@ -160,7 +160,7 @@ Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:42](https://github.co
 
 > **newReceipt**(`receipt`): `void`
 
-Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:43](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L43)
+Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:43](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L43)
 
 #### Parameters
 

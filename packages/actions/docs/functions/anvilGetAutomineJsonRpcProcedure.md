@@ -8,7 +8,7 @@
 
 > **anvilGetAutomineJsonRpcProcedure**(`client`): [`AnvilGetAutomineProcedure`](../type-aliases/AnvilGetAutomineProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilGetAutomineProcedure.js:6](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilGetAutomineProcedure.js#L6)
+Defined in: [packages/actions/src/anvil/anvilGetAutomineProcedure.js:6](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilGetAutomineProcedure.js#L6)
 
 Request handler for anvil_getAutomine JSON-RPC requests.
 

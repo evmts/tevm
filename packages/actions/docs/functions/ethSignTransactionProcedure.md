@@ -8,7 +8,7 @@
 
 > **ethSignTransactionProcedure**(`options`): [`EthSignTransactionJsonRpcProcedure`](../type-aliases/EthSignTransactionJsonRpcProcedure.md)
 
-Defined in: [packages/actions/src/eth/ethSignTransactionProcedure.js:8](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethSignTransactionProcedure.js#L8)
+Defined in: [packages/actions/src/eth/ethSignTransactionProcedure.js:8](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethSignTransactionProcedure.js#L8)
 
 ## Parameters
 

@@ -8,7 +8,7 @@
 
 > **RpcSchemaOverride** = `Omit`\<[`RpcSchema`](RpcSchema.md)\[`number`\], `"Method"`\>
 
-Defined in: [eip1193/RpcSchemaOverride.ts:37](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/eip1193/RpcSchemaOverride.ts#L37)
+Defined in: [eip1193/RpcSchemaOverride.ts:37](https://github.com/evmts/tevm/blob/main/packages/decorators/src/eip1193/RpcSchemaOverride.ts#L37)
 
 Type for overriding parameters and return types of existing JSON-RPC methods.
 Used to modify or extend the behavior of standard RPC methods in a type-safe way.

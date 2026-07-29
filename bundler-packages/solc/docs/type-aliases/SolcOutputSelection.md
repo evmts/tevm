@@ -8,7 +8,7 @@
 
 > **SolcOutputSelection** = `object`
 
-Defined in: [solcTypes.ts:126](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/solc/src/solcTypes.ts#L126)
+Defined in: [solcTypes.ts:126](https://github.com/evmts/tevm/blob/main/bundler-packages/solc/src/solcTypes.ts#L126)
 
 ## Index Signature
 

@@ -6,7 +6,7 @@
   TypeScript programming with the full power of the Ethereum Virtual Machine
 <p>
 
-[![CI](https://github.com/evmts/tevm-monorepo/actions/workflows/nx.yml/badge.svg)](https://github.com/evmts/tevm-monorepo/actions/workflows/nx.yml)
+[![CI](https://github.com/evmts/tevm/actions/workflows/nx.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/nx.yml)
 <a href="https://www.npmjs.com/package/tevm">
 <img src="https://img.shields.io/npm/v/tevm?style=flat" alt="Version">
 </a>

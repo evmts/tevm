@@ -8,7 +8,7 @@
 
 > **anvilSetBlockTimestampIntervalJsonRpcProcedure**(`client`): [`AnvilSetBlockTimestampIntervalProcedure`](../type-aliases/AnvilSetBlockTimestampIntervalProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilSetBlockTimestampIntervalProcedure.js:17](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilSetBlockTimestampIntervalProcedure.js#L17)
+Defined in: [packages/actions/src/anvil/anvilSetBlockTimestampIntervalProcedure.js:17](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilSetBlockTimestampIntervalProcedure.js#L17)
 
 JSON-RPC procedure for anvil_setBlockTimestampInterval
 Sets the interval (in seconds) to automatically add to timestamps between blocks

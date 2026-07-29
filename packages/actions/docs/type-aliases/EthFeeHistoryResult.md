@@ -8,7 +8,7 @@
 
 > **EthFeeHistoryResult** = `object`
 
-Defined in: [packages/actions/src/eth/EthResult.ts:66](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthResult.ts#L66)
+Defined in: [packages/actions/src/eth/EthResult.ts:66](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L66)
 
 JSON-RPC response for `eth_feeHistory` procedure
 
@@ -16,7 +16,7 @@ JSON-RPC response for `eth_feeHistory` procedure
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="basefeepergas"></a> `baseFeePerGas` | `bigint`[] | An array of block base fees per gas. This includes the next block after the newest of the returned range, because this value can be derived from the newest block. Zeroes are returned for pre-EIP-1559 blocks. | [packages/actions/src/eth/EthResult.ts:76](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthResult.ts#L76) |
-| <a id="gasusedratio"></a> `gasUsedRatio` | `number`[] | An array of block gas used ratios. These are calculated as the ratio of gasUsed and gasLimit. | [packages/actions/src/eth/EthResult.ts:81](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthResult.ts#L81) |
-| <a id="oldestblock"></a> `oldestBlock` | `bigint` | Lowest number block of the returned range. | [packages/actions/src/eth/EthResult.ts:70](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthResult.ts#L70) |
-| <a id="reward"></a> `reward?` | `bigint`[][] | An array of effective priority fee per gas data points from a single block. All zeroes are returned if the block is empty. | [packages/actions/src/eth/EthResult.ts:86](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthResult.ts#L86) |
+| <a id="basefeepergas"></a> `baseFeePerGas` | `bigint`[] | An array of block base fees per gas. This includes the next block after the newest of the returned range, because this value can be derived from the newest block. Zeroes are returned for pre-EIP-1559 blocks. | [packages/actions/src/eth/EthResult.ts:76](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L76) |
+| <a id="gasusedratio"></a> `gasUsedRatio` | `number`[] | An array of block gas used ratios. These are calculated as the ratio of gasUsed and gasLimit. | [packages/actions/src/eth/EthResult.ts:81](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L81) |
+| <a id="oldestblock"></a> `oldestBlock` | `bigint` | Lowest number block of the returned range. | [packages/actions/src/eth/EthResult.ts:70](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L70) |
+| <a id="reward"></a> `reward?` | `bigint`[][] | An array of effective priority fee per gas data points from a single block. All zeroes are returned if the block is empty. | [packages/actions/src/eth/EthResult.ts:86](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L86) |

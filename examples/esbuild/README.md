@@ -100,10 +100,10 @@ Full TypeChecking will be available soon in one of the next few releases of Tevm
 
 ## ⭐ Github
 
-If you like Tevm give it a ⭐ at the [Tevm monorepo](https://github.com/evmts/tevm-monorepo)
+If you like Tevm give it a ⭐ at the [Tevm monorepo](https://github.com/evmts/tevm)
 
 ## 🔗 See also
 
 - Check out [Next example](https://github.com/orgs/tevm/repositories) for an example of Tevm wagmi and Next
-- Check out [Vite example](https://github.com/evmts/tevm-monorepo/tree/main/examples/vite) for an example of Tevm wagmi and Vite
+- Check out [Vite example](https://github.com/evmts/tevm/tree/main/examples/vite) for an example of Tevm wagmi and Vite
 

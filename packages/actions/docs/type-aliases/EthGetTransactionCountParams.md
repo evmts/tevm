@@ -8,7 +8,7 @@
 
 > **EthGetTransactionCountParams** = `object`
 
-Defined in: [packages/actions/src/eth/EthParams.ts:183](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L183)
+Defined in: [packages/actions/src/eth/EthParams.ts:183](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L183)
 
 Based on the JSON-RPC request for `eth_getTransactionCount` procedure
 
@@ -16,5 +16,5 @@ Based on the JSON-RPC request for `eth_getTransactionCount` procedure
 
 | Property | Modifier | Type | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="address"></a> `address` | `readonly` | [`Address`](Address.md) | [packages/actions/src/eth/EthParams.ts:184](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L184) |
-| <a id="blocktag"></a> `blockTag?` | `readonly` | [`BlockParam`](BlockParam.md) | [packages/actions/src/eth/EthParams.ts:185](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L185) |
+| <a id="address"></a> `address` | `readonly` | [`Address`](Address.md) | [packages/actions/src/eth/EthParams.ts:184](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L184) |
+| <a id="blocktag"></a> `blockTag?` | `readonly` | [`BlockParam`](BlockParam.md) | [packages/actions/src/eth/EthParams.ts:185](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L185) |

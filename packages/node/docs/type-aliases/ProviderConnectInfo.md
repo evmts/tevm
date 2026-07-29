@@ -8,10 +8,10 @@
 
 > **ProviderConnectInfo** = `object`
 
-Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:12](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L12)
+Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:12](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L12)
 
 ## Properties
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="chainid"></a> `chainId` | `string` | [packages/node/src/EIP1193EventEmitterTypes.ts:13](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L13) |
+| <a id="chainid"></a> `chainId` | `string` | [packages/node/src/EIP1193EventEmitterTypes.ts:13](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L13) |

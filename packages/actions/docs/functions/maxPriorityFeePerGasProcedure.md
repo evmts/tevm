@@ -8,7 +8,7 @@
 
 > **maxPriorityFeePerGasProcedure**(`options`): [`EthMaxPriorityFeePerGasJsonRpcProcedure`](../type-aliases/EthMaxPriorityFeePerGasJsonRpcProcedure.md)
 
-Defined in: [packages/actions/src/eth/maxPriorityFeePerGasProcedure.js:10](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/maxPriorityFeePerGasProcedure.js#L10)
+Defined in: [packages/actions/src/eth/maxPriorityFeePerGasProcedure.js:10](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/maxPriorityFeePerGasProcedure.js#L10)
 
 JSON-RPC procedure for `eth_maxPriorityFeePerGas`.
 

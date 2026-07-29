@@ -8,7 +8,7 @@
 
 > **getContractStorage**(`baseState`): (`address`, `key`) => `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [tevm-monorepo/packages/state/src/actions/getContractStorage.js:25](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/actions/getContractStorage.js#L25)
+Defined in: [tevm-monorepo/packages/state/src/actions/getContractStorage.js:25](https://github.com/evmts/tevm/blob/main/packages/state/src/actions/getContractStorage.js#L25)
 
 Gets the storage value associated with the provided `address` and `key`. This method returns
 the shortest representation of the stored value.

@@ -8,7 +8,7 @@
 
 > **dumpStateHandler**(`client`, `options?`): [`DumpStateHandler`](../type-aliases/DumpStateHandler.md)
 
-Defined in: [packages/actions/src/DumpState/dumpStateHandler.js:62](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/DumpState/dumpStateHandler.js#L62)
+Defined in: [packages/actions/src/DumpState/dumpStateHandler.js:62](https://github.com/evmts/tevm/blob/main/packages/actions/src/DumpState/dumpStateHandler.js#L62)
 
 Creates a handler for dumping the TEVM state.
 

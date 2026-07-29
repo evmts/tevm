@@ -8,7 +8,7 @@
 
 > **anvilRemovePoolTransactionsJsonRpcProcedure**(`client`): [`AnvilRemovePoolTransactionsProcedure`](../type-aliases/AnvilRemovePoolTransactionsProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilRemovePoolTransactionsProcedure.js:19](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilRemovePoolTransactionsProcedure.js#L19)
+Defined in: [packages/actions/src/anvil/anvilRemovePoolTransactionsProcedure.js:19](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilRemovePoolTransactionsProcedure.js#L19)
 
 Request handler for anvil_removePoolTransactions JSON-RPC requests.
 Removes all transactions from the pool sent by the given address.

@@ -8,7 +8,7 @@
 
 > **anvilDealErc20JsonRpcProcedure**(`client`): [`AnvilDealErc20Procedure`](../type-aliases/AnvilDealErc20Procedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilDealErc20Procedure.js:23](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilDealErc20Procedure.js#L23)
+Defined in: [packages/actions/src/anvil/anvilDealErc20Procedure.js:23](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilDealErc20Procedure.js#L23)
 
 JSON-RPC procedure for anvil_dealErc20
 Sets ERC20 token balance for an account by overriding the storage of balanceOf(account)

@@ -6,7 +6,7 @@
 
 # Interface: BuilderOpts
 
-Defined in: [packages/vm/src/utils/BuilderOpts.ts:6](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/utils/BuilderOpts.ts#L6)
+Defined in: [packages/vm/src/utils/BuilderOpts.ts:6](https://github.com/evmts/tevm/blob/main/packages/vm/src/utils/BuilderOpts.ts#L6)
 
 Options for the block builder.
 
@@ -49,6 +49,6 @@ Options for the block builder.
 | `common.verifyHash?` | `ChainVerifyHashFn` | Chain-specific signature verification. | - | node\_modules/.pnpm/viem@2.49.3\_bufferutil@4.1.0\_typescript@6.0.3\_utf-8-validate@5.0.10\_zod@4.4.3/node\_modules/viem/\_types/types/chain.d.ts:83 |
 | <a id="executionwitness"></a> `executionWitness?` | `VerkleExecutionWitness` | - | `BlockOptions.executionWitness` | packages/block/types/types.d.ts:64 |
 | <a id="freeze"></a> `freeze?` | `boolean` | A block object by default gets frozen along initialization. This gives you strong additional security guarantees on the consistency of the block parameters. It also enables block hash caching when the `hash()` method is called multiple times. If you need to deactivate the block freeze - e.g. because you want to subclass block and add additional properties - it is strongly encouraged that you do the freeze yourself within your code instead. Default: true | `BlockOptions.freeze` | packages/block/types/types.d.ts:54 |
-| <a id="putblockintoblockchain"></a> `putBlockIntoBlockchain?` | `boolean` | Whether to put the block into the vm's blockchain after building it. This is useful for completing a full cycle when building a block so the only next step is to build again, however it may not be desired if the block is being emulated or may be discarded as to not affect the underlying blockchain. Default: true | - | [packages/vm/src/utils/BuilderOpts.ts:16](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/utils/BuilderOpts.ts#L16) |
+| <a id="putblockintoblockchain"></a> `putBlockIntoBlockchain?` | `boolean` | Whether to put the block into the vm's blockchain after building it. This is useful for completing a full cycle when building a block so the only next step is to build again, however it may not be desired if the block is being emulated or may be discarded as to not affect the underlying blockchain. Default: true | - | [packages/vm/src/utils/BuilderOpts.ts:16](https://github.com/evmts/tevm/blob/main/packages/vm/src/utils/BuilderOpts.ts#L16) |
 | <a id="sethardfork"></a> `setHardfork?` | `boolean` \| `BigIntLike` | Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number for older Hfs. Additionally it is possible to pass in a specific TD value to support live-Merge-HF transitions. Note that this should only be needed in very rare and specific scenarios. Default: `false` (HF is set to whatever default HF is set by the Common instance) | `BlockOptions.setHardfork` | packages/block/types/types.d.ts:33 |
 | <a id="skipconsensusformatvalidation"></a> `skipConsensusFormatValidation?` | `boolean` | Skip consensus format validation checks on header if set. Defaults to false. | `BlockOptions.skipConsensusFormatValidation` | packages/block/types/types.d.ts:63 |

@@ -8,7 +8,7 @@
 
 > **getAccountHandler**(`client`, `options?`): [`GetAccountHandler`](../type-aliases/GetAccountHandler.md)
 
-Defined in: [packages/actions/src/GetAccount/getAccountHandler.js:17](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/GetAccount/getAccountHandler.js#L17)
+Defined in: [packages/actions/src/GetAccount/getAccountHandler.js:17](https://github.com/evmts/tevm/blob/main/packages/actions/src/GetAccount/getAccountHandler.js#L17)
 
 Creates a GetAccountHandler for handling account params with the Tevm VM.
 

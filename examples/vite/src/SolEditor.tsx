@@ -93,7 +93,7 @@ contract AddNumbers {
 			<h3>Tevm compiler</h3>
 			<p>
 				The Tevm compiler will compile the above solidity contract into the following artifacts using{' '}
-				<a href="https://github.com/evmts/tevm-monorepo/blob/main/bundler/solc/docs/modules/solc.md#solccompile">
+				<a href="https://github.com/evmts/tevm/blob/main/bundler/solc/docs/modules/solc.md#solccompile">
 					import("@tevm/solc").solcCompile
 				</a>{' '}
 				which is just a typesafe wrapper around{' '}

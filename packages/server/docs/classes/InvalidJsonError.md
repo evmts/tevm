@@ -6,7 +6,7 @@
 
 # Class: InvalidJsonError
 
-Defined in: [packages/server/src/errors/InvalidJsonError.js:40](https://github.com/evmts/tevm-monorepo/blob/main/packages/server/src/errors/InvalidJsonError.js#L40)
+Defined in: [packages/server/src/errors/InvalidJsonError.js:40](https://github.com/evmts/tevm/blob/main/packages/server/src/errors/InvalidJsonError.js#L40)
 
 Represents an error that occurs when parsing JSON fails.
 
@@ -43,7 +43,7 @@ Additional parameters for the InvalidJsonError.
 
 > **new InvalidJsonError**(`message`, `args?`): `InvalidJsonError`
 
-Defined in: [packages/server/src/errors/InvalidJsonError.js:47](https://github.com/evmts/tevm-monorepo/blob/main/packages/server/src/errors/InvalidJsonError.js#L47)
+Defined in: [packages/server/src/errors/InvalidJsonError.js:47](https://github.com/evmts/tevm/blob/main/packages/server/src/errors/InvalidJsonError.js#L47)
 
 Constructs an InvalidJsonError.
 

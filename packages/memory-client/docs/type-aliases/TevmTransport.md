@@ -13,7 +13,7 @@
 	timeout,
 }`) => `object`
 
-Defined in: [packages/memory-client/src/TevmTransport.ts:18](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/TevmTransport.ts#L18)
+Defined in: [packages/memory-client/src/TevmTransport.ts:18](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/TevmTransport.ts#L18)
 
 A type representing a custom TEVM Transport for viem.
 

@@ -8,7 +8,7 @@
 
 > **ViemTevmOptimisticClient**\<`TChain`, `TAccount`\> = `object`
 
-Defined in: [extensions/viem/src/ViemTevmOptimisticClient.ts:11](https://github.com/evmts/tevm-monorepo/blob/main/extensions/viem/src/ViemTevmOptimisticClient.ts#L11)
+Defined in: [extensions/viem/src/ViemTevmOptimisticClient.ts:11](https://github.com/evmts/tevm/blob/main/extensions/viem/src/ViemTevmOptimisticClient.ts#L11)
 
 **`Experimental`**
 
@@ -29,4 +29,4 @@ The decorated methods added to a viem wallet client by `tevmViemExtensionOptimis
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="tevm"></a> ~~`tevm`~~ | `Omit`\<`TevmClient`, `"request"`\> & `object` | [extensions/viem/src/ViemTevmOptimisticClient.ts:15](https://github.com/evmts/tevm-monorepo/blob/main/extensions/viem/src/ViemTevmOptimisticClient.ts#L15) |
+| <a id="tevm"></a> ~~`tevm`~~ | `Omit`\<`TevmClient`, `"request"`\> & `object` | [extensions/viem/src/ViemTevmOptimisticClient.ts:15](https://github.com/evmts/tevm/blob/main/extensions/viem/src/ViemTevmOptimisticClient.ts#L15) |

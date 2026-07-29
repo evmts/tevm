@@ -8,4 +8,4 @@
 
 > `const` **intentionallyUnsupportedRuntimeMethods**: `Set`\<`string`\>
 
-Defined in: [packages/actions/src/rpcMethodMatrix.ts:11](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/rpcMethodMatrix.ts#L11)
+Defined in: [packages/actions/src/rpcMethodMatrix.ts:11](https://github.com/evmts/tevm/blob/main/packages/actions/src/rpcMethodMatrix.ts#L11)

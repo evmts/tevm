@@ -8,7 +8,7 @@
 
 > **isBlockedMethod**(`method`): `boolean`
 
-Defined in: [packages/actions/src/rpcMethodMatrix.ts:64](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/rpcMethodMatrix.ts#L64)
+Defined in: [packages/actions/src/rpcMethodMatrix.ts:64](https://github.com/evmts/tevm/blob/main/packages/actions/src/rpcMethodMatrix.ts#L64)
 
 ## Parameters
 

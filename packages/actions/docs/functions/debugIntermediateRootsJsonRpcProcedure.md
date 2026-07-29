@@ -8,7 +8,7 @@
 
 > **debugIntermediateRootsJsonRpcProcedure**(`client`): `DebugIntermediateRootsProcedure`
 
-Defined in: [packages/actions/src/debug/debugIntermediateRootsProcedure.js:17](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/debugIntermediateRootsProcedure.js#L17)
+Defined in: [packages/actions/src/debug/debugIntermediateRootsProcedure.js:17](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/debugIntermediateRootsProcedure.js#L17)
 
 Creates a JSON-RPC procedure handler for the `debug_intermediateRoots` method
 

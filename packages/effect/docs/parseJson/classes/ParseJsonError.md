@@ -6,7 +6,7 @@
 
 # Class: ParseJsonError
 
-Defined in: [packages/effect/src/parseJson.js:8](https://github.com/evmts/tevm-monorepo/blob/main/packages/effect/src/parseJson.js#L8)
+Defined in: [packages/effect/src/parseJson.js:8](https://github.com/evmts/tevm/blob/main/packages/effect/src/parseJson.js#L8)
 
 **`Internal`**
 
@@ -22,7 +22,7 @@ Error thrown when the tsconfig.json file is not valid json
 
 > **new ParseJsonError**(`options?`): `ParseJsonError`
 
-Defined in: [packages/effect/src/parseJson.js:17](https://github.com/evmts/tevm-monorepo/blob/main/packages/effect/src/parseJson.js#L17)
+Defined in: [packages/effect/src/parseJson.js:17](https://github.com/evmts/tevm/blob/main/packages/effect/src/parseJson.js#L17)
 
 #### Parameters
 
@@ -43,7 +43,7 @@ Defined in: [packages/effect/src/parseJson.js:17](https://github.com/evmts/tevm-
 
 | Property | Modifier | Type | Default value | Description | Inherited from | Defined in |
 | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
-| <a id="_tag"></a> `_tag` | `public` | `"ParseJsonError"` | `'ParseJsonError'` | - | - | [packages/effect/src/parseJson.js:12](https://github.com/evmts/tevm-monorepo/blob/main/packages/effect/src/parseJson.js#L12) |
+| <a id="_tag"></a> `_tag` | `public` | `"ParseJsonError"` | `'ParseJsonError'` | - | - | [packages/effect/src/parseJson.js:12](https://github.com/evmts/tevm/blob/main/packages/effect/src/parseJson.js#L12) |
 | <a id="cause"></a> `cause?` | `public` | `unknown` | `undefined` | - | `Error.cause` | node\_modules/.pnpm/typescript@6.0.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24 |
 | <a id="message"></a> `message` | `public` | `string` | `undefined` | - | `Error.message` | node\_modules/.pnpm/typescript@6.0.3/node\_modules/typescript/lib/lib.es5.d.ts:1075 |
 | <a id="name"></a> `name` | `public` | `string` | `undefined` | - | `Error.name` | node\_modules/.pnpm/typescript@6.0.3/node\_modules/typescript/lib/lib.es5.d.ts:1074 |

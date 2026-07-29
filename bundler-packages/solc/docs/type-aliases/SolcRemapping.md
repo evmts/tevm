@@ -8,4 +8,4 @@
 
 > **SolcRemapping** = `` `${string}=${string}` ``[]
 
-Defined in: [solcTypes.ts:54](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/solc/src/solcTypes.ts#L54)
+Defined in: [solcTypes.ts:54](https://github.com/evmts/tevm/blob/main/bundler-packages/solc/src/solcTypes.ts#L54)

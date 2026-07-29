@@ -8,7 +8,7 @@
 
 > **tevmContract**\<`TAbi`, `TFunctionName`\>(`client`, `params`): `Promise`\<`ContractResult`\<`TAbi`, `TFunctionName`\>\>
 
-Defined in: [packages/memory-client/src/tevmContract.js:28](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/tevmContract.js#L28)
+Defined in: [packages/memory-client/src/tevmContract.js:28](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/tevmContract.js#L28)
 
 Tree-shakeable `tevmContract` action. Higher-level wrapper around `tevmCall` that handles ABI
 encoding/decoding and decodes revert messages, with full TypeScript inference from the ABI.

@@ -8,7 +8,7 @@
 
 > **ViemTevmClient** = `object`
 
-Defined in: [extensions/viem/src/ViemTevmClient.ts:7](https://github.com/evmts/tevm-monorepo/blob/main/extensions/viem/src/ViemTevmClient.ts#L7)
+Defined in: [extensions/viem/src/ViemTevmClient.ts:7](https://github.com/evmts/tevm/blob/main/extensions/viem/src/ViemTevmClient.ts#L7)
 
 ## Deprecated
 
@@ -19,4 +19,4 @@ The decorated properties added by the `tevmViemExtension`
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="tevm"></a> ~~`tevm`~~ | `TevmClient` | [extensions/viem/src/ViemTevmClient.ts:8](https://github.com/evmts/tevm-monorepo/blob/main/extensions/viem/src/ViemTevmClient.ts#L8) |
+| <a id="tevm"></a> ~~`tevm`~~ | `TevmClient` | [extensions/viem/src/ViemTevmClient.ts:8](https://github.com/evmts/tevm/blob/main/extensions/viem/src/ViemTevmClient.ts#L8) |

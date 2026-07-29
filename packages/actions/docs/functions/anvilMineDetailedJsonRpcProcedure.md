@@ -8,7 +8,7 @@
 
 > **anvilMineDetailedJsonRpcProcedure**(`client`): [`AnvilMineDetailedProcedure`](../type-aliases/AnvilMineDetailedProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilMineDetailedProcedure.js:27](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilMineDetailedProcedure.js#L27)
+Defined in: [packages/actions/src/anvil/anvilMineDetailedProcedure.js:27](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilMineDetailedProcedure.js#L27)
 
 Request handler for anvil_mineDetailed JSON-RPC requests.
 Mines blocks and returns detailed execution results including transaction traces.

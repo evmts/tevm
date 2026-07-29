@@ -8,6 +8,6 @@
 
 > **EthHashrateResult** = [`Hex`](Hex.md)
 
-Defined in: [packages/actions/src/eth/EthResult.ts:48](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthResult.ts#L48)
+Defined in: [packages/actions/src/eth/EthResult.ts:48](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L48)
 
 JSON-RPC response for `eth_hashrate` procedure

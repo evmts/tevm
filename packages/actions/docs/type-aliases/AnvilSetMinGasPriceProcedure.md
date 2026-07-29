@@ -8,7 +8,7 @@
 
 > **AnvilSetMinGasPriceProcedure** = (`request`) => `Promise`\<[`AnvilSetMinGasPriceJsonRpcResponse`](AnvilSetMinGasPriceJsonRpcResponse.md)\>
 
-Defined in: [packages/actions/src/anvil/AnvilProcedure.ts:257](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/AnvilProcedure.ts#L257)
+Defined in: [packages/actions/src/anvil/AnvilProcedure.ts:257](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilProcedure.ts#L257)
 
 JSON-RPC procedure for `anvil_setMinGasPrice`
 

@@ -8,7 +8,7 @@
 
 > **ethSignTransactionHandler**(`options`): [`EthSignTransactionHandler`](../type-aliases/EthSignTransactionHandler.md)
 
-Defined in: [packages/actions/src/eth/ethSignTransactionHandler.js:13](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethSignTransactionHandler.js#L13)
+Defined in: [packages/actions/src/eth/ethSignTransactionHandler.js:13](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethSignTransactionHandler.js#L13)
 
 Creates a handler for the `eth_signTransaction` JSON-RPC method.
 Signs but does not broadcast a transaction. The chain ID is resolved lazily.

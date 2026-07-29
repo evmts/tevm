@@ -8,7 +8,7 @@
 
 > **DebugGetRawHeaderHandler** = (`params`) => `Promise`\<[`DebugGetRawHeaderResult`](DebugGetRawHeaderResult.md)\>
 
-Defined in: [packages/actions/src/debug/DebugHandler.ts:40](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugHandler.ts#L40)
+Defined in: [packages/actions/src/debug/DebugHandler.ts:40](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugHandler.ts#L40)
 
 ## Parameters
 

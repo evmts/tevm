@@ -8,7 +8,7 @@
 
 > **ValidateSetAccountParamsError** = `InvalidAddressError` \| `InvalidBalanceError` \| `InvalidDeployedBytecodeError` \| `InvalidNonceError` \| `InvalidRequestError` \| `InvalidStorageRootError`
 
-Defined in: [packages/actions/src/SetAccount/validateSetAccountParams.js:12](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/SetAccount/validateSetAccountParams.js#L12)
+Defined in: [packages/actions/src/SetAccount/validateSetAccountParams.js:12](https://github.com/evmts/tevm/blob/main/packages/actions/src/SetAccount/validateSetAccountParams.js#L12)
 
 ## Type Parameters
 

@@ -8,7 +8,7 @@
 
 > **NetworkSync** = `object`
 
-Defined in: [eip1193/NetworkSync.ts:43](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/eip1193/NetworkSync.ts#L43)
+Defined in: [eip1193/NetworkSync.ts:43](https://github.com/evmts/tevm/blob/main/packages/decorators/src/eip1193/NetworkSync.ts#L43)
 
 Information about the Ethereum client's sync status.
 Returned by the eth_syncing JSON-RPC method when synchronization is in progress.
@@ -36,6 +36,6 @@ if (syncStatus !== false) {
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="currentblock"></a> `currentBlock` | [`Quantity`](Quantity.md) | The current block number | [eip1193/NetworkSync.ts:45](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/eip1193/NetworkSync.ts#L45) |
-| <a id="highestblock"></a> `highestBlock` | [`Quantity`](Quantity.md) | Number of latest block on the network | [eip1193/NetworkSync.ts:47](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/eip1193/NetworkSync.ts#L47) |
-| <a id="startingblock"></a> `startingBlock` | [`Quantity`](Quantity.md) | Block number at which syncing started | [eip1193/NetworkSync.ts:49](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/eip1193/NetworkSync.ts#L49) |
+| <a id="currentblock"></a> `currentBlock` | [`Quantity`](Quantity.md) | The current block number | [eip1193/NetworkSync.ts:45](https://github.com/evmts/tevm/blob/main/packages/decorators/src/eip1193/NetworkSync.ts#L45) |
+| <a id="highestblock"></a> `highestBlock` | [`Quantity`](Quantity.md) | Number of latest block on the network | [eip1193/NetworkSync.ts:47](https://github.com/evmts/tevm/blob/main/packages/decorators/src/eip1193/NetworkSync.ts#L47) |
+| <a id="startingblock"></a> `startingBlock` | [`Quantity`](Quantity.md) | Block number at which syncing started | [eip1193/NetworkSync.ts:49](https://github.com/evmts/tevm/blob/main/packages/decorators/src/eip1193/NetworkSync.ts#L49) |

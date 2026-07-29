@@ -8,7 +8,7 @@
 
 > **accumulateParentBlockHash**(`vm`): (`currentBlockNumber`, `parentHash`) => `Promise`\<`void`\>
 
-Defined in: [packages/vm/src/actions/accumulateParentBlockHash.ts:12](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/accumulateParentBlockHash.ts#L12)
+Defined in: [packages/vm/src/actions/accumulateParentBlockHash.ts:12](https://github.com/evmts/tevm/blob/main/packages/vm/src/actions/accumulateParentBlockHash.ts#L12)
 
 This method runs the logic of EIP 2935 (save blockhashes to state)
 It will put the `parentHash` of the block to the storage slot of `block.number - 1` of the history storage contract.

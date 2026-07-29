@@ -8,7 +8,7 @@
 
 > **Extension**\<`TExtended`\> = (`client`) => `TExtended`
 
-Defined in: [packages/node/src/Extension.ts:3](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/Extension.ts#L3)
+Defined in: [packages/node/src/Extension.ts:3](https://github.com/evmts/tevm/blob/main/packages/node/src/Extension.ts#L3)
 
 ## Type Parameters
 

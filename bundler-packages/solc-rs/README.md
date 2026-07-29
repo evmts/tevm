@@ -11,8 +11,8 @@
   Typesafe Solidity compiler (solc) wrapper in Rust
 </p>
 
-[![CI](https://github.com/evmts/tevm-monorepo/actions/workflows/e2e.yml/badge.svg)](https://github.com/evmts/tevm-monorepo/actions/workflows/e2e.yml)
-[![CI](https://github.com/evmts/tevm-monorepo/actions/workflows/unit.yml/badge.svg)](https://github.com/evmts/tevm-monorepo/actions/workflows/unit.yml)
+[![CI](https://github.com/evmts/tevm/actions/workflows/e2e.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/e2e.yml)
+[![CI](https://github.com/evmts/tevm/actions/workflows/unit.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/unit.yml)
 
 # @tevm/solc-rs
 

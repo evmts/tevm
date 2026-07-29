@@ -6,7 +6,7 @@
 
 # Interface: StateManager
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:8](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L8)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:8](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L8)
 
 ## Extends
 
@@ -16,14 +16,14 @@ Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:8](https://github.
 
 | Property | Type | Description | Inherited from | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="_basestate"></a> `_baseState` | [`BaseState`](../type-aliases/BaseState.md) | The internal state representation | - | [tevm-monorepo/packages/state/src/StateManager.ts:16](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L16) |
+| <a id="_basestate"></a> `_baseState` | [`BaseState`](../type-aliases/BaseState.md) | The internal state representation | - | [tevm-monorepo/packages/state/src/StateManager.ts:16](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L16) |
 | <a id="checkchunkwitnesspresent"></a> `checkChunkWitnessPresent?` | (`contract`, `programCounter`) => `Promise`\<`boolean`\> | - | `Omit.checkChunkWitnessPresent` | tevm-monorepo/node\_modules/.pnpm/@ethereumjs+common@10.1.1/node\_modules/@ethereumjs/common/dist/esm/interfaces.d.ts:127 |
-| <a id="getaccountaddresses"></a> `getAccountAddresses` | () => `Set`\<`` `0x${string}` ``\> | Returns contract addresses | - | [tevm-monorepo/packages/state/src/StateManager.ts:21](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L21) |
+| <a id="getaccountaddresses"></a> `getAccountAddresses` | () => `Set`\<`` `0x${string}` ``\> | Returns contract addresses | - | [tevm-monorepo/packages/state/src/StateManager.ts:21](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L21) |
 | <a id="getappliedkey"></a> `getAppliedKey?` | (`address`) => `Uint8Array` | - | `Omit.getAppliedKey` | tevm-monorepo/node\_modules/.pnpm/@ethereumjs+common@10.1.1/node\_modules/@ethereumjs/common/dist/esm/interfaces.d.ts:128 |
 | <a id="originalstoragecache"></a> `originalStorageCache` | `object` | - | `Omit.originalStorageCache` | tevm-monorepo/node\_modules/.pnpm/@ethereumjs+common@10.1.1/node\_modules/@ethereumjs/common/dist/esm/interfaces.d.ts:120 |
 | `originalStorageCache.clear` | `void` | - | - | tevm-monorepo/node\_modules/.pnpm/@ethereumjs+common@10.1.1/node\_modules/@ethereumjs/common/dist/esm/interfaces.d.ts:122 |
 | `originalStorageCache.get` | `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\> | - | - | tevm-monorepo/node\_modules/.pnpm/@ethereumjs+common@10.1.1/node\_modules/@ethereumjs/common/dist/esm/interfaces.d.ts:121 |
-| <a id="ready"></a> `ready` | () => `Promise`\<`true`\> | - | - | [tevm-monorepo/packages/state/src/StateManager.ts:17](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L17) |
+| <a id="ready"></a> `ready` | () => `Promise`\<`true`\> | - | - | [tevm-monorepo/packages/state/src/StateManager.ts:17](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L17) |
 | <a id="verifybinarytreepoststate"></a> `verifyBinaryTreePostState?` | (`accessWitness`) => `Promise`\<`boolean`\> | - | `Omit.verifyBinaryTreePostState` | tevm-monorepo/node\_modules/.pnpm/@ethereumjs+common@10.1.1/node\_modules/@ethereumjs/common/dist/esm/interfaces.d.ts:126 |
 
 ## Methods
@@ -48,7 +48,7 @@ Defined in: tevm-monorepo/node\_modules/.pnpm/@ethereumjs+common@10.1.1/node\_mo
 
 > **clearCaches**(): `void`
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:37](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L37)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:37](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L37)
 
 Resets all internal caches
 
@@ -66,7 +66,7 @@ Resets all internal caches
 
 > **clearContractStorage**(`address`): `Promise`\<`void`\>
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:59](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L59)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:59](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L59)
 
 Clears all storage entries for the account
 
@@ -108,7 +108,7 @@ Defined in: tevm-monorepo/node\_modules/.pnpm/@ethereumjs+common@10.1.1/node\_mo
 
 > **commit**(`createNewStateRoot?`): `Promise`\<`void`\>
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:47](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L47)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:47](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L47)
 
 Commits the current state.
 
@@ -132,7 +132,7 @@ Commits the current state.
 
 > **deepCopy**(): `Promise`\<`StateManager`\>
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:28](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L28)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:28](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L28)
 
 Returns a new instance of the ForkStateManager with the same opts and all storage copied over
 
@@ -168,7 +168,7 @@ Defined in: tevm-monorepo/node\_modules/.pnpm/@ethereumjs+common@10.1.1/node\_mo
 
 > **dumpCanonicalGenesis**(): `Promise`\<[`TevmState`](../type-aliases/TevmState.md)\>
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:33](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L33)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:33](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L33)
 
 Dumps the state of the state manager as a [TevmState](../type-aliases/TevmState.md)
 
@@ -182,7 +182,7 @@ Dumps the state of the state manager as a [TevmState](../type-aliases/TevmState.
 
 > **dumpStorage**(`address`): `Promise`\<`StorageDump`\>
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:63](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L63)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:63](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L63)
 
 Dumps storage based on the input
 
@@ -206,7 +206,7 @@ Dumps storage based on the input
 
 > **dumpStorageRange**(`address`, `startKey`, `limit`): `Promise`\<`StorageRange`\>
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:67](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L67)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:67](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L67)
 
 Dumps a range of storage values
 
@@ -232,7 +232,7 @@ Dumps a range of storage values
 
 > **generateCanonicalGenesis**(`state`): `Promise`\<`void`\>
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:75](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L75)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:75](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L75)
 
 Loads a state from a given state root
 
@@ -256,7 +256,7 @@ Loads a state from a given state root
 
 > **getAccount**(`address`): `Promise`\<`Account` \| `undefined`\>
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:22](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L22)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:22](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L22)
 
 #### Parameters
 
@@ -318,7 +318,7 @@ Defined in: tevm-monorepo/node\_modules/.pnpm/@ethereumjs+common@10.1.1/node\_mo
 
 > **getProof**(`address`, `storageSlots?`): `Promise`\<`Proof`\>
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:82](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L82)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:82](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L82)
 
 Get an EIP-1186 proof from the provider
 
@@ -402,7 +402,7 @@ Defined in: tevm-monorepo/node\_modules/.pnpm/@ethereumjs+common@10.1.1/node\_mo
 
 > **modifyAccountFields**(`address`, `accountFields`): `Promise`\<`void`\>
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:24](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L24)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:24](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L24)
 
 #### Parameters
 
@@ -421,7 +421,7 @@ Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:24](https://github
 
 > **putAccount**(`address`, `account?`): `Promise`\<`void`\>
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:23](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L23)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:23](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L23)
 
 #### Parameters
 
@@ -503,7 +503,7 @@ Defined in: tevm-monorepo/node\_modules/.pnpm/@ethereumjs+common@10.1.1/node\_mo
 
 > **saveStateRoot**(`root`, `state`): `void`
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:43](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L43)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:43](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L43)
 
 **`Experimental`**
 
@@ -550,7 +550,7 @@ Defined in: tevm-monorepo/node\_modules/.pnpm/@ethereumjs+common@10.1.1/node\_mo
 
 > **shallowCopy**(): `StateManager`
 
-Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:29](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/StateManager.ts#L29)
+Defined in: [tevm-monorepo/packages/state/src/StateManager.ts:29](https://github.com/evmts/tevm/blob/main/packages/state/src/StateManager.ts#L29)
 
 #### Returns
 

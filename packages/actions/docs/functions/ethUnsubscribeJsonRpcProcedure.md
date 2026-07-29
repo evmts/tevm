@@ -8,7 +8,7 @@
 
 > **ethUnsubscribeJsonRpcProcedure**(`tevmNode`): [`EthUnsubscribeJsonRpcProcedure`](../type-aliases/EthUnsubscribeJsonRpcProcedure.md)
 
-Defined in: [packages/actions/src/eth/ethUnsubscribeProcedure.js:26](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethUnsubscribeProcedure.js#L26)
+Defined in: [packages/actions/src/eth/ethUnsubscribeProcedure.js:26](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethUnsubscribeProcedure.js#L26)
 
 Request handler for eth_unsubscribe JSON-RPC requests.
 Cancels an active subscription.

@@ -8,7 +8,7 @@
 
 > **createTestSnapshotClient**\<`TCommon`, `TAccountOrAddress`, `TRpcSchema`\>(`options`): [`TestSnapshotClient`](../type-aliases/TestSnapshotClient.md)\<`TCommon`, `TAccountOrAddress`\>
 
-Defined in: [extensions/test-node/src/createTestSnapshotClient.ts:34](https://github.com/evmts/tevm-monorepo/blob/main/extensions/test-node/src/createTestSnapshotClient.ts#L34)
+Defined in: [extensions/test-node/src/createTestSnapshotClient.ts:34](https://github.com/evmts/tevm/blob/main/extensions/test-node/src/createTestSnapshotClient.ts#L34)
 
 Creates a test snapshot client that automatically caches RPC responses
 

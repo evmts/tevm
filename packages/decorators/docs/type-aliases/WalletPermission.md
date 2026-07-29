@@ -8,7 +8,7 @@
 
 > **WalletPermission** = `object`
 
-Defined in: [eip1193/WalletPermission.ts:36](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/eip1193/WalletPermission.ts#L36)
+Defined in: [eip1193/WalletPermission.ts:36](https://github.com/evmts/tevm/blob/main/packages/decorators/src/eip1193/WalletPermission.ts#L36)
 
 Permission granted to a website or application by a wallet.
 Defined in EIP-2255 for the wallet permissions management system.
@@ -43,8 +43,8 @@ const accountsPermission: WalletPermission = {
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="caveats"></a> `caveats` | [`WalletPermissionCaveat`](WalletPermissionCaveat.md)[] | [eip1193/WalletPermission.ts:37](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/eip1193/WalletPermission.ts#L37) |
-| <a id="date"></a> `date` | `number` | [eip1193/WalletPermission.ts:38](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/eip1193/WalletPermission.ts#L38) |
-| <a id="id"></a> `id` | `string` | [eip1193/WalletPermission.ts:39](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/eip1193/WalletPermission.ts#L39) |
-| <a id="invoker"></a> `invoker` | `` `http://${string}` `` \| `` `https://${string}` `` | [eip1193/WalletPermission.ts:40](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/eip1193/WalletPermission.ts#L40) |
-| <a id="parentcapability"></a> `parentCapability` | `"eth_accounts"` \| `string` | [eip1193/WalletPermission.ts:41](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/eip1193/WalletPermission.ts#L41) |
+| <a id="caveats"></a> `caveats` | [`WalletPermissionCaveat`](WalletPermissionCaveat.md)[] | [eip1193/WalletPermission.ts:37](https://github.com/evmts/tevm/blob/main/packages/decorators/src/eip1193/WalletPermission.ts#L37) |
+| <a id="date"></a> `date` | `number` | [eip1193/WalletPermission.ts:38](https://github.com/evmts/tevm/blob/main/packages/decorators/src/eip1193/WalletPermission.ts#L38) |
+| <a id="id"></a> `id` | `string` | [eip1193/WalletPermission.ts:39](https://github.com/evmts/tevm/blob/main/packages/decorators/src/eip1193/WalletPermission.ts#L39) |
+| <a id="invoker"></a> `invoker` | `` `http://${string}` `` \| `` `https://${string}` `` | [eip1193/WalletPermission.ts:40](https://github.com/evmts/tevm/blob/main/packages/decorators/src/eip1193/WalletPermission.ts#L40) |
+| <a id="parentcapability"></a> `parentCapability` | `"eth_accounts"` \| `string` | [eip1193/WalletPermission.ts:41](https://github.com/evmts/tevm/blob/main/packages/decorators/src/eip1193/WalletPermission.ts#L41) |

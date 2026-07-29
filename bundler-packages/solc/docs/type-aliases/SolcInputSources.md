@@ -8,7 +8,7 @@
 
 > **SolcInputSources**\<`T`\> = `object`
 
-Defined in: [solcTypes.ts:342](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/solc/src/solcTypes.ts#L342)
+Defined in: [solcTypes.ts:342](https://github.com/evmts/tevm/blob/main/bundler-packages/solc/src/solcTypes.ts#L342)
 
 ## Type Parameters
 

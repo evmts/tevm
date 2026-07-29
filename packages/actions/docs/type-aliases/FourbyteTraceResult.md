@@ -8,7 +8,7 @@
 
 > **FourbyteTraceResult** = `object`
 
-Defined in: [packages/actions/src/common/FourbyteTraceResult.ts:33](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/common/FourbyteTraceResult.ts#L33)
+Defined in: [packages/actions/src/common/FourbyteTraceResult.ts:33](https://github.com/evmts/tevm/blob/main/packages/actions/src/common/FourbyteTraceResult.ts#L33)
 
 Result from `debug_*` with `4byteTracer`
 Returns a mapping of selector-calldata_size keys to their call counts as well as an additional mapping of contract address to selector keys to an array of calldata they were called with.

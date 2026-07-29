@@ -8,7 +8,7 @@
 
 > **anvilEnableTracesJsonRpcProcedure**(`client`): [`AnvilEnableTracesProcedure`](../type-aliases/AnvilEnableTracesProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilEnableTracesProcedure.js:9](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilEnableTracesProcedure.js#L9)
+Defined in: [packages/actions/src/anvil/anvilEnableTracesProcedure.js:9](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilEnableTracesProcedure.js#L9)
 
 Request handler for anvil_enableTraces JSON-RPC requests.
 Enables or disables automatic trace collection for all transactions.

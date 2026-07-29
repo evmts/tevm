@@ -8,7 +8,7 @@
 
 > **validateGetAccountParams**(`action`): `InvalidRequestError`[]
 
-Defined in: [packages/actions/src/GetAccount/validateGetAccountParams.js:12](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/GetAccount/validateGetAccountParams.js#L12)
+Defined in: [packages/actions/src/GetAccount/validateGetAccountParams.js:12](https://github.com/evmts/tevm/blob/main/packages/actions/src/GetAccount/validateGetAccountParams.js#L12)
 
 ## Parameters
 

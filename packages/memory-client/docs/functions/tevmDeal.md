@@ -8,7 +8,7 @@
 
 > **tevmDeal**(`node`): `AnvilDealHandler`
 
-Defined in: [packages/memory-client/src/tevmDeal.ts:34](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/tevmDeal.ts#L34)
+Defined in: [packages/memory-client/src/tevmDeal.ts:34](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/tevmDeal.ts#L34)
 
 Creates a tevmDeal action for the client that lets you deal tokens to an account
 

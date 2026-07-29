@@ -8,4 +8,4 @@
 
 > `const` **zBlockParam**: `ZodUnion`\<readonly \[`ZodLiteral`\<`"latest"`\>, `ZodLiteral`\<`"earliest"`\>, `ZodLiteral`\<`"pending"`\>, `ZodLiteral`\<`"safe"`\>, `ZodLiteral`\<`"finalized"`\>, `ZodBigInt`, `ZodPipe`\<`ZodNumber`, `ZodTransform`\<`bigint`, `number`\>\>, `ZodPipe`\<`ZodString`, `ZodTransform`\<`` `0x${string}` ``, `string`\>\>\]\>
 
-Defined in: [packages/actions/src/internal/zod/zBlockParam.js:4](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/internal/zod/zBlockParam.js#L4)
+Defined in: [packages/actions/src/internal/zod/zBlockParam.js:4](https://github.com/evmts/tevm/blob/main/packages/actions/src/internal/zod/zBlockParam.js#L4)

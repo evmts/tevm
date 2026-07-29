@@ -8,7 +8,7 @@
 
 > **mineHandler**(`client`, `options?`): [`MineHandler`](../type-aliases/MineHandler.md)
 
-Defined in: [packages/actions/src/Mine/mineHandler.js:16](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Mine/mineHandler.js#L16)
+Defined in: [packages/actions/src/Mine/mineHandler.js:16](https://github.com/evmts/tevm/blob/main/packages/actions/src/Mine/mineHandler.js#L16)
 
 ## Parameters
 

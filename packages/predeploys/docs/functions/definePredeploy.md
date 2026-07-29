@@ -8,7 +8,7 @@
 
 > **definePredeploy**\<`TName`, `THumanReadableAbi`\>(`contract`): [`Predeploy`](../type-aliases/Predeploy.md)\<`TName`, `THumanReadableAbi`\>
 
-Defined in: [definePredeploy.js:26](https://github.com/evmts/tevm-monorepo/blob/main/packages/predeploys/src/definePredeploy.js#L26)
+Defined in: [definePredeploy.js:26](https://github.com/evmts/tevm/blob/main/packages/predeploys/src/definePredeploy.js#L26)
 
 Defines a predeploy contract to use in the tevm vm
 

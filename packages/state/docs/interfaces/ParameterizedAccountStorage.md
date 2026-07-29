@@ -6,7 +6,7 @@
 
 # Interface: ParameterizedAccountStorage
 
-Defined in: [tevm-monorepo/packages/state/src/state-types/ParameterizedAccountStorage.ts:20](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/state-types/ParameterizedAccountStorage.ts#L20)
+Defined in: [tevm-monorepo/packages/state/src/state-types/ParameterizedAccountStorage.ts:20](https://github.com/evmts/tevm/blob/main/packages/state/src/state-types/ParameterizedAccountStorage.ts#L20)
 
 Represents an Ethereum account storage with hexadecimal string values.
 Used to serialize account data for storage and RPC responses.
@@ -28,8 +28,8 @@ const value: ParameterizedAccountStorage = {
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="balance"></a> `balance` | `` `0x${string}` `` | [tevm-monorepo/packages/state/src/state-types/ParameterizedAccountStorage.ts:22](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/state-types/ParameterizedAccountStorage.ts#L22) |
-| <a id="codehash"></a> `codeHash` | `` `0x${string}` `` | [tevm-monorepo/packages/state/src/state-types/ParameterizedAccountStorage.ts:24](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/state-types/ParameterizedAccountStorage.ts#L24) |
-| <a id="nonce"></a> `nonce` | `` `0x${string}` `` | [tevm-monorepo/packages/state/src/state-types/ParameterizedAccountStorage.ts:21](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/state-types/ParameterizedAccountStorage.ts#L21) |
-| <a id="storage"></a> `storage?` | `StorageDump` | [tevm-monorepo/packages/state/src/state-types/ParameterizedAccountStorage.ts:25](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/state-types/ParameterizedAccountStorage.ts#L25) |
-| <a id="storageroot"></a> `storageRoot` | `` `0x${string}` `` | [tevm-monorepo/packages/state/src/state-types/ParameterizedAccountStorage.ts:23](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/state-types/ParameterizedAccountStorage.ts#L23) |
+| <a id="balance"></a> `balance` | `` `0x${string}` `` | [tevm-monorepo/packages/state/src/state-types/ParameterizedAccountStorage.ts:22](https://github.com/evmts/tevm/blob/main/packages/state/src/state-types/ParameterizedAccountStorage.ts#L22) |
+| <a id="codehash"></a> `codeHash` | `` `0x${string}` `` | [tevm-monorepo/packages/state/src/state-types/ParameterizedAccountStorage.ts:24](https://github.com/evmts/tevm/blob/main/packages/state/src/state-types/ParameterizedAccountStorage.ts#L24) |
+| <a id="nonce"></a> `nonce` | `` `0x${string}` `` | [tevm-monorepo/packages/state/src/state-types/ParameterizedAccountStorage.ts:21](https://github.com/evmts/tevm/blob/main/packages/state/src/state-types/ParameterizedAccountStorage.ts#L21) |
+| <a id="storage"></a> `storage?` | `StorageDump` | [tevm-monorepo/packages/state/src/state-types/ParameterizedAccountStorage.ts:25](https://github.com/evmts/tevm/blob/main/packages/state/src/state-types/ParameterizedAccountStorage.ts#L25) |
+| <a id="storageroot"></a> `storageRoot` | `` `0x${string}` `` | [tevm-monorepo/packages/state/src/state-types/ParameterizedAccountStorage.ts:23](https://github.com/evmts/tevm/blob/main/packages/state/src/state-types/ParameterizedAccountStorage.ts#L23) |

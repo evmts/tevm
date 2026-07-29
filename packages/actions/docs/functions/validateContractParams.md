@@ -8,7 +8,7 @@
 
 > **validateContractParams**(`action`): [`ValidateContractParamsError`](../type-aliases/ValidateContractParamsError.md)[]
 
-Defined in: [packages/actions/src/Contract/validateContractParams.js:20](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Contract/validateContractParams.js#L20)
+Defined in: [packages/actions/src/Contract/validateContractParams.js:20](https://github.com/evmts/tevm/blob/main/packages/actions/src/Contract/validateContractParams.js#L20)
 
 ## Parameters
 

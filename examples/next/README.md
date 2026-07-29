@@ -118,7 +118,7 @@ The minimal steps to get started are:
 
 1. Clone the repository and navigate to this directory
    ```bash
-   git clone git@github.com:evmts/tevm-monorepo.git && cd tevm-monorepo/examples/next
+   git clone git@github.com:evmts/tevm.git && cd tevm-monorepo/examples/next
    ```
 2. Install the dependencies (preferably with [pnpm](https://pnpm.io))
    ```bash

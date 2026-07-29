@@ -8,4 +8,4 @@
 
 > **AnvilSetErc20AllowanceResult** = \{ `errors?`: `Error`[]; \} \| `null`
 
-Defined in: [packages/actions/src/anvil/AnvilResult.ts:48](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/AnvilResult.ts#L48)
+Defined in: [packages/actions/src/anvil/AnvilResult.ts:48](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilResult.ts#L48)

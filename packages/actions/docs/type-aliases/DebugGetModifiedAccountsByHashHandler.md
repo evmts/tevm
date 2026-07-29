@@ -8,7 +8,7 @@
 
 > **DebugGetModifiedAccountsByHashHandler** = (`params`) => `Promise`\<[`DebugGetModifiedAccountsByHashResult`](DebugGetModifiedAccountsByHashResult.md)\>
 
-Defined in: [packages/actions/src/debug/DebugHandler.ts:54](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugHandler.ts#L54)
+Defined in: [packages/actions/src/debug/DebugHandler.ts:54](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugHandler.ts#L54)
 
 ## Parameters
 

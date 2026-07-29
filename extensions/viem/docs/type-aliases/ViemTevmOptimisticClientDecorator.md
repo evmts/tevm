@@ -8,7 +8,7 @@
 
 > **ViemTevmOptimisticClientDecorator** = \<`TTransport`, `TChain`, `TAccount`\>(`client`) => [`ViemTevmOptimisticClient`](ViemTevmOptimisticClient.md)\<`TChain`, `TAccount`\>
 
-Defined in: [extensions/viem/src/ViemTevmOptimisticClientDecorator.ts:9](https://github.com/evmts/tevm-monorepo/blob/main/extensions/viem/src/ViemTevmOptimisticClientDecorator.ts#L9)
+Defined in: [extensions/viem/src/ViemTevmOptimisticClientDecorator.ts:9](https://github.com/evmts/tevm/blob/main/extensions/viem/src/ViemTevmOptimisticClientDecorator.ts#L9)
 
 **`Experimental`**
 

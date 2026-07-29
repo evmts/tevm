@@ -8,7 +8,7 @@
 
 > **createHttpClient**(`params`): [`HttpClient`](../interfaces/HttpClient.md)
 
-Defined in: [http-client/src/createHttpClient.js:11](https://github.com/evmts/tevm-monorepo/blob/main/packages/http-client/src/createHttpClient.js#L11)
+Defined in: [http-client/src/createHttpClient.js:11](https://github.com/evmts/tevm/blob/main/packages/http-client/src/createHttpClient.js#L11)
 
 ## Parameters
 

@@ -8,4 +8,4 @@
 
 > **CustomPrecompile** = `Exclude`\<`NonNullable`\<`EVMOpts`\[`"customPrecompiles"`\]\>, `undefined`\>\[`number`\]
 
-Defined in: [CustomPrecompile.ts:3](https://github.com/evmts/tevm-monorepo/blob/main/packages/precompiles/src/CustomPrecompile.ts#L3)
+Defined in: [CustomPrecompile.ts:3](https://github.com/evmts/tevm/blob/main/packages/precompiles/src/CustomPrecompile.ts#L3)

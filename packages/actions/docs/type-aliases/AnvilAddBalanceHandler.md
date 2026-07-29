@@ -8,7 +8,7 @@
 
 > **AnvilAddBalanceHandler** = (`params`) => `Promise`\<[`AnvilAddBalanceResult`](AnvilAddBalanceResult.md)\>
 
-Defined in: [packages/actions/src/anvil/AnvilHandler.ts:102](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/AnvilHandler.ts#L102)
+Defined in: [packages/actions/src/anvil/AnvilHandler.ts:102](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilHandler.ts#L102)
 
 ## Parameters
 

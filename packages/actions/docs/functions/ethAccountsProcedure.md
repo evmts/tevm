@@ -8,7 +8,7 @@
 
 > **ethAccountsProcedure**(`accounts`): [`EthAccountsJsonRpcProcedure`](../type-aliases/EthAccountsJsonRpcProcedure.md)
 
-Defined in: [packages/actions/src/eth/ethAccountsProcedure.js:7](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethAccountsProcedure.js#L7)
+Defined in: [packages/actions/src/eth/ethAccountsProcedure.js:7](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethAccountsProcedure.js#L7)
 
 ## Parameters
 

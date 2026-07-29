@@ -8,7 +8,7 @@
 
 > **ethSimulateV1Procedure**(`client`): [`EthSimulateV1JsonRpcProcedure`](../type-aliases/EthSimulateV1JsonRpcProcedure.md)
 
-Defined in: [packages/actions/src/eth/ethSimulateV1Procedure.js:28](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethSimulateV1Procedure.js#L28)
+Defined in: [packages/actions/src/eth/ethSimulateV1Procedure.js:28](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethSimulateV1Procedure.js#L28)
 
 JSON-RPC procedure for `eth_simulateV1`.
 

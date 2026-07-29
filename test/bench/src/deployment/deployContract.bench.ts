@@ -6,7 +6,7 @@ describe('various methods for deploying contracts', async () => {
 		expect(await deployContractWithCall(420n)).toEqual(420n)
 	})
 	// Uncomment once receipts are available
-	// https://github.com/evmts/tevm-monorepo/pulls
+	// https://github.com/evmts/tevm/pulls
 	bench.skip('Using viem deployContract action', async () => {
 		expect(await deployContractWithViem(420n)).toEqual(420n)
 	})

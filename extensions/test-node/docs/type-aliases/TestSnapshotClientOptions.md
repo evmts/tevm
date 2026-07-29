@@ -8,7 +8,7 @@
 
 > **TestSnapshotClientOptions**\<`TCommon`, `TAccountOrAddress`, `TRpcSchema`\> = `MemoryClientOptions`\<`TCommon`, `TAccountOrAddress`, `TRpcSchema`\> & `object`
 
-Defined in: [extensions/test-node/src/types.ts:79](https://github.com/evmts/tevm-monorepo/blob/main/extensions/test-node/src/types.ts#L79)
+Defined in: [extensions/test-node/src/types.ts:79](https://github.com/evmts/tevm/blob/main/extensions/test-node/src/types.ts#L79)
 
 ## Type Declaration
 

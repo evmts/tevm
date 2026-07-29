@@ -8,7 +8,7 @@
 
 > **MuxTracerConfig**\<`TDiffMode`\> = \{ `tracer`: `"callTracer"`; \} \| \{ `config?`: \{ `diffMode?`: `TDiffMode`; \}; `tracer`: `"prestateTracer"`; \} \| \{ `tracer`: `"4byteTracer"`; \} \| \{ `tracer`: `"flatCallTracer"`; \} \| \{ `tracer`: `"default"`; \}
 
-Defined in: [packages/actions/src/common/MuxTraceResult.ts:26](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/common/MuxTraceResult.ts#L26)
+Defined in: [packages/actions/src/common/MuxTraceResult.ts:26](https://github.com/evmts/tevm/blob/main/packages/actions/src/common/MuxTraceResult.ts#L26)
 
 Configuration for a single tracer in muxTracer
 

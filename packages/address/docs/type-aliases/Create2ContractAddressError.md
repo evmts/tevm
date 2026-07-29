@@ -8,7 +8,7 @@
 
 > **Create2ContractAddressError** = `InvalidSaltError` \| `InvalidAddressError`
 
-Defined in: [tevm-monorepo/packages/address/src/create2ContractAddress.js:8](https://github.com/evmts/tevm-monorepo/blob/main/packages/address/src/create2ContractAddress.js#L8)
+Defined in: [tevm-monorepo/packages/address/src/create2ContractAddress.js:8](https://github.com/evmts/tevm/blob/main/packages/address/src/create2ContractAddress.js#L8)
 
 ## Type Parameters
 

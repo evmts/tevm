@@ -8,7 +8,7 @@
 
 > **LoadStateResult**\<`ErrorType`\> = `object`
 
-Defined in: [packages/actions/src/LoadState/LoadStateResult.ts:26](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/LoadState/LoadStateResult.ts#L26)
+Defined in: [packages/actions/src/LoadState/LoadStateResult.ts:26](https://github.com/evmts/tevm/blob/main/packages/actions/src/LoadState/LoadStateResult.ts#L26)
 
 Result of the `tevmLoadState` method.
 
@@ -45,4 +45,4 @@ if (result.errors) {
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="errors"></a> `errors?` | `ErrorType`[] | Description of the exception, if any occurred. | [packages/actions/src/LoadState/LoadStateResult.ts:30](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/LoadState/LoadStateResult.ts#L30) |
+| <a id="errors"></a> `errors?` | `ErrorType`[] | Description of the exception, if any occurred. | [packages/actions/src/LoadState/LoadStateResult.ts:30](https://github.com/evmts/tevm/blob/main/packages/actions/src/LoadState/LoadStateResult.ts#L30) |

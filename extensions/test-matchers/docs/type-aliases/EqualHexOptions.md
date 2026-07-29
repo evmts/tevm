@@ -8,10 +8,10 @@
 
 > **EqualHexOptions** = `object`
 
-Defined in: [extensions/test-matchers/src/matchers/utils/toEqualHex.ts:4](https://github.com/evmts/tevm-monorepo/blob/main/extensions/test-matchers/src/matchers/utils/toEqualHex.ts#L4)
+Defined in: [extensions/test-matchers/src/matchers/utils/toEqualHex.ts:4](https://github.com/evmts/tevm/blob/main/extensions/test-matchers/src/matchers/utils/toEqualHex.ts#L4)
 
 ## Properties
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="exact"></a> `exact?` | `boolean` | Whether to compare hex strings exactly as written or normalize them first. When false (default), leading zeros are trimmed before byte comparison (e.g., "0x00123" equals "0x123"). When true, hex strings must match exactly including leading zeros. **Default** `false` | [extensions/test-matchers/src/matchers/utils/toEqualHex.ts:11](https://github.com/evmts/tevm-monorepo/blob/main/extensions/test-matchers/src/matchers/utils/toEqualHex.ts#L11) |
+| <a id="exact"></a> `exact?` | `boolean` | Whether to compare hex strings exactly as written or normalize them first. When false (default), leading zeros are trimmed before byte comparison (e.g., "0x00123" equals "0x123"). When true, hex strings must match exactly including leading zeros. **Default** `false` | [extensions/test-matchers/src/matchers/utils/toEqualHex.ts:11](https://github.com/evmts/tevm/blob/main/extensions/test-matchers/src/matchers/utils/toEqualHex.ts#L11) |

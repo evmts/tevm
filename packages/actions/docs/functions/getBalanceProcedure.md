@@ -8,7 +8,7 @@
 
 > **getBalanceProcedure**(`baseClient`): [`EthGetBalanceJsonRpcProcedure`](../type-aliases/EthGetBalanceJsonRpcProcedure.md)
 
-Defined in: [packages/actions/src/eth/getBalanceProcedure.js:8](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/getBalanceProcedure.js#L8)
+Defined in: [packages/actions/src/eth/getBalanceProcedure.js:8](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/getBalanceProcedure.js#L8)
 
 ## Parameters
 

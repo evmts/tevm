@@ -8,7 +8,7 @@
 
 > **TevmSendApi** = `object`
 
-Defined in: [request/TevmSendApi.ts:30](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/request/TevmSendApi.ts#L30)
+Defined in: [request/TevmSendApi.ts:30](https://github.com/evmts/tevm/blob/main/packages/decorators/src/request/TevmSendApi.ts#L30)
 
 API interface for sending JSON-RPC requests to Tevm
 Provides methods for both single and bulk requests
@@ -41,5 +41,5 @@ await client.sendBulk([
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="send"></a> `send` | `TevmJsonRpcRequestHandler` | [request/TevmSendApi.ts:31](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/request/TevmSendApi.ts#L31) |
-| <a id="sendbulk"></a> `sendBulk` | `TevmJsonRpcBulkRequestHandler` | [request/TevmSendApi.ts:32](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/request/TevmSendApi.ts#L32) |
+| <a id="send"></a> `send` | `TevmJsonRpcRequestHandler` | [request/TevmSendApi.ts:31](https://github.com/evmts/tevm/blob/main/packages/decorators/src/request/TevmSendApi.ts#L31) |
+| <a id="sendbulk"></a> `sendBulk` | `TevmJsonRpcBulkRequestHandler` | [request/TevmSendApi.ts:32](https://github.com/evmts/tevm/blob/main/packages/decorators/src/request/TevmSendApi.ts#L32) |

@@ -8,7 +8,7 @@
 
 > **tevmGetAccount**(`client`, `params`): `Promise`\<`GetAccountResult`\<`TevmGetAccountError`\>\>
 
-Defined in: [packages/memory-client/src/tevmGetAccount.js:29](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/tevmGetAccount.js#L29)
+Defined in: [packages/memory-client/src/tevmGetAccount.js:29](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/tevmGetAccount.js#L29)
 
 Tree-shakeable `tevmGetAccount` action. Returns balance, nonce, code, and optionally storage.
 

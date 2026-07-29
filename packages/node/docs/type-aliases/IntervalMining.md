@@ -8,7 +8,7 @@
 
 > **IntervalMining** = `object`
 
-Defined in: [packages/node/src/MiningConfig.ts:53](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/MiningConfig.ts#L53)
+Defined in: [packages/node/src/MiningConfig.ts:53](https://github.com/evmts/tevm/blob/main/packages/node/src/MiningConfig.ts#L53)
 
 Mining configuration that automatically mines blocks at a specified interval.
 When the interval is 0, blocks are only mined via manual calls to anvil_mine.
@@ -34,5 +34,5 @@ const manualValue: IntervalMining = {
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="blocktime"></a> `blockTime` | `number` | The block time in seconds. When set to 0, blocks are only mined manually via anvil_mine. | [packages/node/src/MiningConfig.ts:58](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/MiningConfig.ts#L58) |
-| <a id="type"></a> `type` | `"interval"` | - | [packages/node/src/MiningConfig.ts:54](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/MiningConfig.ts#L54) |
+| <a id="blocktime"></a> `blockTime` | `number` | The block time in seconds. When set to 0, blocks are only mined manually via anvil_mine. | [packages/node/src/MiningConfig.ts:58](https://github.com/evmts/tevm/blob/main/packages/node/src/MiningConfig.ts#L58) |
+| <a id="type"></a> `type` | `"interval"` | - | [packages/node/src/MiningConfig.ts:54](https://github.com/evmts/tevm/blob/main/packages/node/src/MiningConfig.ts#L54) |

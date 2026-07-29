@@ -8,6 +8,6 @@
 
 > **EthEstimateGasJsonRpcRequest** = `JsonRpcRequest`\<`"eth_estimateGas"`, readonly \[[`JsonRpcTransaction`](JsonRpcTransaction.md), `BlockTag` \| `Hex`, `SerializeToJson`\<[`BaseCallParams`](BaseCallParams.md)\[`"stateOverrideSet"`\]\>, `SerializeToJson`\<[`BaseCallParams`](BaseCallParams.md)\[`"blockOverrideSet"`\]\>\]\>
 
-Defined in: [packages/actions/src/eth/EthJsonRpcRequest.ts:83](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthJsonRpcRequest.ts#L83)
+Defined in: [packages/actions/src/eth/EthJsonRpcRequest.ts:83](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcRequest.ts#L83)
 
 JSON-RPC request for `eth_estimateGas` procedure

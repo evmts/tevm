@@ -8,7 +8,7 @@
 
 > **tevmDumpState**(`client`): `Promise`\<`DumpStateResult`\<`TevmDumpStateError`\>\>
 
-Defined in: [packages/memory-client/src/tevmDumpState.js:24](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/tevmDumpState.js#L24)
+Defined in: [packages/memory-client/src/tevmDumpState.js:24](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/tevmDumpState.js#L24)
 
 Tree-shakeable `tevmDumpState` action. Exports the full TEVM blockchain state as a serializable object.
 

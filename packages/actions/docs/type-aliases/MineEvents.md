@@ -8,7 +8,7 @@
 
 > **MineEvents** = `object`
 
-Defined in: [packages/actions/src/Mine/MineEvents.ts:23](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Mine/MineEvents.ts#L23)
+Defined in: [packages/actions/src/Mine/MineEvents.ts:23](https://github.com/evmts/tevm/blob/main/packages/actions/src/Mine/MineEvents.ts#L23)
 
 Event handlers for mining operations
 
@@ -33,6 +33,6 @@ const result = await mine(client, {
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="onblock"></a> `onBlock?` | (`block`, `next?`) => `void` | Handler called for each new block mined | [packages/actions/src/Mine/MineEvents.ts:29](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Mine/MineEvents.ts#L29) |
-| <a id="onlog"></a> `onLog?` | (`log`, `receipt`, `next?`) => `void` | Handler called for each transaction log generated during mining | [packages/actions/src/Mine/MineEvents.ts:45](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Mine/MineEvents.ts#L45) |
-| <a id="onreceipt"></a> `onReceipt?` | (`receipt`, `blockHash`, `next?`) => `void` | Handler called for each transaction receipt generated during mining | [packages/actions/src/Mine/MineEvents.ts:37](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Mine/MineEvents.ts#L37) |
+| <a id="onblock"></a> `onBlock?` | (`block`, `next?`) => `void` | Handler called for each new block mined | [packages/actions/src/Mine/MineEvents.ts:29](https://github.com/evmts/tevm/blob/main/packages/actions/src/Mine/MineEvents.ts#L29) |
+| <a id="onlog"></a> `onLog?` | (`log`, `receipt`, `next?`) => `void` | Handler called for each transaction log generated during mining | [packages/actions/src/Mine/MineEvents.ts:45](https://github.com/evmts/tevm/blob/main/packages/actions/src/Mine/MineEvents.ts#L45) |
+| <a id="onreceipt"></a> `onReceipt?` | (`receipt`, `blockHash`, `next?`) => `void` | Handler called for each transaction receipt generated during mining | [packages/actions/src/Mine/MineEvents.ts:37](https://github.com/evmts/tevm/blob/main/packages/actions/src/Mine/MineEvents.ts#L37) |

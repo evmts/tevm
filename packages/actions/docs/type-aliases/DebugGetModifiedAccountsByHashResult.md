@@ -8,6 +8,6 @@
 
 > **DebugGetModifiedAccountsByHashResult** = [`Hex`](Hex.md)[]
 
-Defined in: [packages/actions/src/debug/DebugResult.ts:217](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugResult.ts#L217)
+Defined in: [packages/actions/src/debug/DebugResult.ts:217](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugResult.ts#L217)
 
 Result from `debug_getModifiedAccountsByHash`

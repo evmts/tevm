@@ -8,7 +8,7 @@
 
 > **ethGetBlockReceiptsJsonRpcProcedure**(`client`): [`EthGetBlockReceiptsJsonRpcProcedure`](../type-aliases/EthGetBlockReceiptsJsonRpcProcedure.md)
 
-Defined in: [packages/actions/src/eth/ethGetBlockReceiptsProcedure.js:11](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethGetBlockReceiptsProcedure.js#L11)
+Defined in: [packages/actions/src/eth/ethGetBlockReceiptsProcedure.js:11](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethGetBlockReceiptsProcedure.js#L11)
 
 Procedure for handling eth_getBlockReceipts JSON-RPC requests.
 Accepts either a block hash, hex block number, or block tag.

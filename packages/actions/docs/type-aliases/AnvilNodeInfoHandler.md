@@ -8,7 +8,7 @@
 
 > **AnvilNodeInfoHandler** = (`params`) => `Promise`\<[`AnvilNodeInfoResult`](AnvilNodeInfoResult.md)\>
 
-Defined in: [packages/actions/src/anvil/AnvilHandler.ts:92](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/AnvilHandler.ts#L92)
+Defined in: [packages/actions/src/anvil/AnvilHandler.ts:92](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilHandler.ts#L92)
 
 ## Parameters
 

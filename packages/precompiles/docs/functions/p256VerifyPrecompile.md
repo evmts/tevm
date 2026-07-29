@@ -8,7 +8,7 @@
 
 > **p256VerifyPrecompile**(): `object`
 
-Defined in: [p256verify.precompile.ts:30](https://github.com/evmts/tevm-monorepo/blob/main/packages/precompiles/src/p256verify.precompile.ts#L30)
+Defined in: [p256verify.precompile.ts:30](https://github.com/evmts/tevm/blob/main/packages/precompiles/src/p256verify.precompile.ts#L30)
 
 Creates the p256verify precompile as specified in RIP-7212
 Verifies ECDSA signatures on the secp256r1 (P-256) curve

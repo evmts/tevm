@@ -8,7 +8,7 @@
 
 > **execHardfork**(`hardfork`, `preMergeHf`): `string`
 
-Defined in: [packages/vm/src/actions/execHardfork.js:14](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/execHardfork.js#L14)
+Defined in: [packages/vm/src/actions/execHardfork.js:14](https://github.com/evmts/tevm/blob/main/packages/vm/src/actions/execHardfork.js#L14)
 
 Returns the hardfork excluding the merge hf which has
 no effect on the vm execution capabilities.

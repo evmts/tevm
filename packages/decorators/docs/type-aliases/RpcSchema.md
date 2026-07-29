@@ -8,7 +8,7 @@
 
 > **RpcSchema** = readonly `object`[]
 
-Defined in: [eip1193/RpcSchema.ts:12](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/eip1193/RpcSchema.ts#L12)
+Defined in: [eip1193/RpcSchema.ts:12](https://github.com/evmts/tevm/blob/main/packages/decorators/src/eip1193/RpcSchema.ts#L12)
 
 **`Internal`**
 

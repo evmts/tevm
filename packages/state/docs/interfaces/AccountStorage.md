@@ -6,7 +6,7 @@
 
 # Interface: AccountStorage
 
-Defined in: [tevm-monorepo/packages/state/src/state-types/AccountStorage.ts:19](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/state-types/AccountStorage.ts#L19)
+Defined in: [tevm-monorepo/packages/state/src/state-types/AccountStorage.ts:19](https://github.com/evmts/tevm/blob/main/packages/state/src/state-types/AccountStorage.ts#L19)
 
 Represents an Ethereum account storage with native bigint values.
 Used for internal state management and account manipulation.
@@ -28,9 +28,9 @@ const value: AccountStorage = {
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="balance"></a> `balance` | `bigint` | [tevm-monorepo/packages/state/src/state-types/AccountStorage.ts:21](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/state-types/AccountStorage.ts#L21) |
-| <a id="codehash"></a> `codeHash` | `` `0x${string}` `` | [tevm-monorepo/packages/state/src/state-types/AccountStorage.ts:23](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/state-types/AccountStorage.ts#L23) |
-| <a id="deployedbytecode"></a> `deployedBytecode?` | `` `0x${string}` `` | [tevm-monorepo/packages/state/src/state-types/AccountStorage.ts:24](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/state-types/AccountStorage.ts#L24) |
-| <a id="nonce"></a> `nonce` | `bigint` | [tevm-monorepo/packages/state/src/state-types/AccountStorage.ts:20](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/state-types/AccountStorage.ts#L20) |
-| <a id="storage"></a> `storage?` | `StorageDump` | [tevm-monorepo/packages/state/src/state-types/AccountStorage.ts:25](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/state-types/AccountStorage.ts#L25) |
-| <a id="storageroot"></a> `storageRoot` | `` `0x${string}` `` | [tevm-monorepo/packages/state/src/state-types/AccountStorage.ts:22](https://github.com/evmts/tevm-monorepo/blob/main/packages/state/src/state-types/AccountStorage.ts#L22) |
+| <a id="balance"></a> `balance` | `bigint` | [tevm-monorepo/packages/state/src/state-types/AccountStorage.ts:21](https://github.com/evmts/tevm/blob/main/packages/state/src/state-types/AccountStorage.ts#L21) |
+| <a id="codehash"></a> `codeHash` | `` `0x${string}` `` | [tevm-monorepo/packages/state/src/state-types/AccountStorage.ts:23](https://github.com/evmts/tevm/blob/main/packages/state/src/state-types/AccountStorage.ts#L23) |
+| <a id="deployedbytecode"></a> `deployedBytecode?` | `` `0x${string}` `` | [tevm-monorepo/packages/state/src/state-types/AccountStorage.ts:24](https://github.com/evmts/tevm/blob/main/packages/state/src/state-types/AccountStorage.ts#L24) |
+| <a id="nonce"></a> `nonce` | `bigint` | [tevm-monorepo/packages/state/src/state-types/AccountStorage.ts:20](https://github.com/evmts/tevm/blob/main/packages/state/src/state-types/AccountStorage.ts#L20) |
+| <a id="storage"></a> `storage?` | `StorageDump` | [tevm-monorepo/packages/state/src/state-types/AccountStorage.ts:25](https://github.com/evmts/tevm/blob/main/packages/state/src/state-types/AccountStorage.ts#L25) |
+| <a id="storageroot"></a> `storageRoot` | `` `0x${string}` `` | [tevm-monorepo/packages/state/src/state-types/AccountStorage.ts:22](https://github.com/evmts/tevm/blob/main/packages/state/src/state-types/AccountStorage.ts#L22) |

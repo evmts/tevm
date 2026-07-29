@@ -8,6 +8,6 @@
 
 > **AnvilGetIntervalMiningParams** = \{ \} \| `undefined` \| `never`
 
-Defined in: [packages/actions/src/anvil/AnvilParams.ts:72](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/AnvilParams.ts#L72)
+Defined in: [packages/actions/src/anvil/AnvilParams.ts:72](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L72)
 
 Params for `anvil_getIntervalMining` handler

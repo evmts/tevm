@@ -6,7 +6,7 @@
 
 # Interface: VerkleStateDiff
 
-Defined in: [packages/block/src/types.ts:136](https://github.com/evmts/tevm-monorepo/blob/main/packages/block/src/types.ts#L136)
+Defined in: [packages/block/src/types.ts:136](https://github.com/evmts/tevm/blob/main/packages/block/src/types.ts#L136)
 
 Represents the state differences payload shape for a Verkle tree.
 
@@ -46,5 +46,5 @@ function applyStateDiff(currentState: Map<string, Hex>, diff: VerkleStateDiff): 
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="stem"></a> `stem` | `` `0x${string}` `` | [packages/block/src/types.ts:137](https://github.com/evmts/tevm-monorepo/blob/main/packages/block/src/types.ts#L137) |
-| <a id="suffixdiffs"></a> `suffixDiffs` | `object`[] | [packages/block/src/types.ts:138](https://github.com/evmts/tevm-monorepo/blob/main/packages/block/src/types.ts#L138) |
+| <a id="stem"></a> `stem` | `` `0x${string}` `` | [packages/block/src/types.ts:137](https://github.com/evmts/tevm/blob/main/packages/block/src/types.ts#L137) |
+| <a id="suffixdiffs"></a> `suffixDiffs` | `object`[] | [packages/block/src/types.ts:138](https://github.com/evmts/tevm/blob/main/packages/block/src/types.ts#L138) |

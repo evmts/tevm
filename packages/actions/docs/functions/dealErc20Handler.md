@@ -8,7 +8,7 @@
 
 > **dealErc20Handler**(`node`): [`AnvilDealErc20Handler`](../type-aliases/AnvilDealErc20Handler.md)
 
-Defined in: [packages/actions/src/anvil/anvilDealErc20Handler.js:32](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilDealErc20Handler.js#L32)
+Defined in: [packages/actions/src/anvil/anvilDealErc20Handler.js:32](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilDealErc20Handler.js#L32)
 
 Sets ERC20 token balance for an account by overriding the storage of balanceOf(account)
 This is a specialized version of anvil_deal for ERC20 tokens only

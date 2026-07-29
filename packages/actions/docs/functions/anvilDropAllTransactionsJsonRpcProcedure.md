@@ -8,7 +8,7 @@
 
 > **anvilDropAllTransactionsJsonRpcProcedure**(`client`): [`AnvilDropAllTransactionsProcedure`](../type-aliases/AnvilDropAllTransactionsProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilDropAllTransactionsProcedure.js:17](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilDropAllTransactionsProcedure.js#L17)
+Defined in: [packages/actions/src/anvil/anvilDropAllTransactionsProcedure.js:17](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilDropAllTransactionsProcedure.js#L17)
 
 Request handler for anvil_dropAllTransactions JSON-RPC requests.
 Removes all transactions from the transaction pool.

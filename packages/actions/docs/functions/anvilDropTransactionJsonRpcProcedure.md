@@ -8,7 +8,7 @@
 
 > **anvilDropTransactionJsonRpcProcedure**(`client`): [`AnvilDropTransactionProcedure`](../type-aliases/AnvilDropTransactionProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilDropTransactionProcedure.js:8](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilDropTransactionProcedure.js#L8)
+Defined in: [packages/actions/src/anvil/anvilDropTransactionProcedure.js:8](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilDropTransactionProcedure.js#L8)
 
 Request handler for anvil_dropTransaction JSON-RPC requests.
 

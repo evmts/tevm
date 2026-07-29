@@ -8,7 +8,7 @@
 
 > **Address** = `_Address`
 
-Defined in: [packages/actions/src/common/Address.ts:7](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/common/Address.ts#L7)
+Defined in: [packages/actions/src/common/Address.ts:7](https://github.com/evmts/tevm/blob/main/packages/actions/src/common/Address.ts#L7)
 
 An ethereum address represented as a hex string
 

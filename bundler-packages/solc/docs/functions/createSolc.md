@@ -8,7 +8,7 @@
 
 > **createSolc**(`release`): `Promise`\<[`Solc`](../interfaces/Solc.md)\>
 
-Defined in: [solc.js:142](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/solc/src/solc.js#L142)
+Defined in: [solc.js:142](https://github.com/evmts/tevm/blob/main/bundler-packages/solc/src/solc.js#L142)
 
 ## Parameters
 

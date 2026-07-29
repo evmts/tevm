@@ -8,7 +8,7 @@
 
 > **RunTx** = (`opts`) => `Promise`\<[`RunTxResult`](../interfaces/RunTxResult.md)\>
 
-Defined in: [packages/vm/src/actions/runTx.ts:58](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/runTx.ts#L58)
+Defined in: [packages/vm/src/actions/runTx.ts:58](https://github.com/evmts/tevm/blob/main/packages/vm/src/actions/runTx.ts#L58)
 
 ## Parameters
 

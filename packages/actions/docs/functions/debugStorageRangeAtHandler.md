@@ -8,7 +8,7 @@
 
 > **debugStorageRangeAtHandler**(`client`): [`DebugStorageRangeAtHandler`](../type-aliases/DebugStorageRangeAtHandler.md)
 
-Defined in: [packages/actions/src/debug/debugStorageRangeAtHandler.js:30](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/debugStorageRangeAtHandler.js#L30)
+Defined in: [packages/actions/src/debug/debugStorageRangeAtHandler.js:30](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/debugStorageRangeAtHandler.js#L30)
 
 Returns a range of storage slots for an account at a specific block
 

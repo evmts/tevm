@@ -8,7 +8,7 @@
 
 > **AnvilSetIntervalMiningParams** = `object`
 
-Defined in: [packages/actions/src/anvil/AnvilParams.ts:61](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/AnvilParams.ts#L61)
+Defined in: [packages/actions/src/anvil/AnvilParams.ts:61](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L61)
 
 Params for `anvil_setIntervalMining` handler
 
@@ -16,4 +16,4 @@ Params for `anvil_setIntervalMining` handler
 
 | Property | Modifier | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="interval"></a> `interval` | `readonly` | `number` | The mining interval in seconds. Set to 0 to disable interval mining. | [packages/actions/src/anvil/AnvilParams.ts:65](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/AnvilParams.ts#L65) |
+| <a id="interval"></a> `interval` | `readonly` | `number` | The mining interval in seconds. Set to 0 to disable interval mining. | [packages/actions/src/anvil/AnvilParams.ts:65](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L65) |

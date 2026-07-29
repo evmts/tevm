@@ -8,7 +8,7 @@
 
 > **TestRpcSchema**\<`TMode`\> = \[`object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`, `object`\]
 
-Defined in: [eip1193/JsonRpcSchemaTest.ts:10](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/eip1193/JsonRpcSchemaTest.ts#L10)
+Defined in: [eip1193/JsonRpcSchemaTest.ts:10](https://github.com/evmts/tevm/blob/main/packages/decorators/src/eip1193/JsonRpcSchemaTest.ts#L10)
 
 ## Type Parameters
 

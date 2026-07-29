@@ -8,7 +8,7 @@
 
 > **LogOptions** = `object`
 
-Defined in: [LogOptions.ts:32](https://github.com/evmts/tevm-monorepo/blob/main/packages/logger/src/LogOptions.ts#L32)
+Defined in: [LogOptions.ts:32](https://github.com/evmts/tevm/blob/main/packages/logger/src/LogOptions.ts#L32)
 
 Options for logger
 
@@ -16,5 +16,5 @@ Options for logger
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="level"></a> `level` | `Level` | The minimum level to log. Typically, debug and trace logs are only valid for development, and not needed in production. | [LogOptions.ts:41](https://github.com/evmts/tevm-monorepo/blob/main/packages/logger/src/LogOptions.ts#L41) |
-| <a id="name"></a> `name` | `string` | The name of the logger. Adds a name field to every JSON line logged. | [LogOptions.ts:36](https://github.com/evmts/tevm-monorepo/blob/main/packages/logger/src/LogOptions.ts#L36) |
+| <a id="level"></a> `level` | `Level` | The minimum level to log. Typically, debug and trace logs are only valid for development, and not needed in production. | [LogOptions.ts:41](https://github.com/evmts/tevm/blob/main/packages/logger/src/LogOptions.ts#L41) |
+| <a id="name"></a> `name` | `string` | The name of the logger. Adds a name field to every JSON line logged. | [LogOptions.ts:36](https://github.com/evmts/tevm/blob/main/packages/logger/src/LogOptions.ts#L36) |

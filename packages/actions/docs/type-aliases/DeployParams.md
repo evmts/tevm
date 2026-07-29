@@ -8,7 +8,7 @@
 
 > **DeployParams**\<`TThrowOnFail`, `TAbi`, `THasConstructor`, `TAllArgs`\> = `Omit`\<[`BaseCallParams`](BaseCallParams.md)\<`TThrowOnFail`\>, `"to"`\> & `object` & `EncodeDeployDataParameters`\<`TAbi`, `THasConstructor`, `TAllArgs`\>
 
-Defined in: [packages/actions/src/Deploy/DeployParams.ts:47](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Deploy/DeployParams.ts#L47)
+Defined in: [packages/actions/src/Deploy/DeployParams.ts:47](https://github.com/evmts/tevm/blob/main/packages/actions/src/Deploy/DeployParams.ts#L47)
 
 Defines the parameters used for deploying a contract on TEVM.
 This type extends the base call parameters used for typical TEVM calls,

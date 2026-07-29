@@ -8,7 +8,7 @@
 
 > **EvmErrorConstructor** = *typeof* `evmErrors`\[`number`\]
 
-Defined in: [packages/actions/src/Call/handleEvmError.js:84](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Call/handleEvmError.js#L84)
+Defined in: [packages/actions/src/Call/handleEvmError.js:84](https://github.com/evmts/tevm/blob/main/packages/actions/src/Call/handleEvmError.js#L84)
 
 ## Type Parameters
 

@@ -8,7 +8,7 @@
 
 > **ViemTevmClientDecorator** = (`client`) => [`ViemTevmClient`](ViemTevmClient.md)
 
-Defined in: [extensions/viem/src/ViemTevmClientDecorator.ts:7](https://github.com/evmts/tevm-monorepo/blob/main/extensions/viem/src/ViemTevmClientDecorator.ts#L7)
+Defined in: [extensions/viem/src/ViemTevmClientDecorator.ts:7](https://github.com/evmts/tevm/blob/main/extensions/viem/src/ViemTevmClientDecorator.ts#L7)
 
 ## Parameters
 

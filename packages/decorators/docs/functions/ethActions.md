@@ -8,7 +8,7 @@
 
 > **ethActions**(): `Extension`\<[`EthActionsApi`](../type-aliases/EthActionsApi.md)\>
 
-Defined in: [actions/ethActions.js:14](https://github.com/evmts/tevm-monorepo/blob/main/packages/decorators/src/actions/ethActions.js#L14)
+Defined in: [actions/ethActions.js:14](https://github.com/evmts/tevm/blob/main/packages/decorators/src/actions/ethActions.js#L14)
 
 ## Returns
 

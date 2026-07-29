@@ -8,7 +8,7 @@
 
 > **anvilAddBalanceHandler**(`node`): [`AnvilAddBalanceHandler`](../type-aliases/AnvilAddBalanceHandler.md)
 
-Defined in: [packages/actions/src/anvil/anvilAddBalanceHandler.js:27](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilAddBalanceHandler.js#L27)
+Defined in: [packages/actions/src/anvil/anvilAddBalanceHandler.js:27](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilAddBalanceHandler.js#L27)
 
 Handler for anvil_addBalance - adds to an account's ETH balance
 This is a convenience method that reads the current balance, adds the amount,

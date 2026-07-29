@@ -6,7 +6,7 @@
 
 # Class: ProviderRpcError
 
-Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:21](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L21)
+Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:21](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L21)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:21](https://github.co
 
 > **new ProviderRpcError**(`code`, `message`, `data?`): `ProviderRpcError`
 
-Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:26](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L26)
+Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:26](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L26)
 
 #### Parameters
 
@@ -41,9 +41,9 @@ Defined in: [packages/node/src/EIP1193EventEmitterTypes.ts:26](https://github.co
 | Property | Modifier | Type | Description | Inherited from | Defined in |
 | ------ | ------ | ------ | ------ | ------ | ------ |
 | <a id="cause"></a> `cause?` | `public` | `unknown` | The cause of the error. | `Error.cause` | node\_modules/.pnpm/typescript@6.0.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24 |
-| <a id="code"></a> `code` | `public` | `number` | - | - | [packages/node/src/EIP1193EventEmitterTypes.ts:22](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L22) |
-| <a id="data"></a> `data` | `public` | `unknown` | - | - | [packages/node/src/EIP1193EventEmitterTypes.ts:24](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L24) |
-| <a id="details"></a> `details` | `public` | `string` | - | - | [packages/node/src/EIP1193EventEmitterTypes.ts:23](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L23) |
+| <a id="code"></a> `code` | `public` | `number` | - | - | [packages/node/src/EIP1193EventEmitterTypes.ts:22](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L22) |
+| <a id="data"></a> `data` | `public` | `unknown` | - | - | [packages/node/src/EIP1193EventEmitterTypes.ts:24](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L24) |
+| <a id="details"></a> `details` | `public` | `string` | - | - | [packages/node/src/EIP1193EventEmitterTypes.ts:23](https://github.com/evmts/tevm/blob/main/packages/node/src/EIP1193EventEmitterTypes.ts#L23) |
 | <a id="message"></a> `message` | `public` | `string` | - | `Error.message` | node\_modules/.pnpm/typescript@6.0.3/node\_modules/typescript/lib/lib.es5.d.ts:1075 |
 | <a id="name"></a> `name` | `public` | `string` | - | `Error.name` | node\_modules/.pnpm/typescript@6.0.3/node\_modules/typescript/lib/lib.es5.d.ts:1074 |
 | <a id="stack"></a> `stack?` | `public` | `string` | - | `Error.stack` | node\_modules/.pnpm/typescript@6.0.3/node\_modules/typescript/lib/lib.es5.d.ts:1076 |

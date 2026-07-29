@@ -8,7 +8,7 @@
 
 > **DumpStateResult**\<`ErrorType`\> = `object`
 
-Defined in: [packages/actions/src/DumpState/DumpStateResult.ts:10](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/DumpState/DumpStateResult.ts#L10)
+Defined in: [packages/actions/src/DumpState/DumpStateResult.ts:10](https://github.com/evmts/tevm/blob/main/packages/actions/src/DumpState/DumpStateResult.ts#L10)
 
 Result of the dumpState method.
 
@@ -25,5 +25,5 @@ It includes the serialized TEVM state and any errors that may have occurred.
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="errors"></a> `errors?` | `ErrorType`[] | Description of the exception, if any occurred. This property contains an array of errors that may have occurred during the execution of the `dumpState` method. Each error provides detailed information about what went wrong. | [packages/actions/src/DumpState/DumpStateResult.ts:24](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/DumpState/DumpStateResult.ts#L24) |
-| <a id="state"></a> `state` | `SerializableTevmState` | The serialized TEVM state. This property contains the entire state of the TEVM, serialized into a JSON-compatible format. This state can be used for debugging, analysis, or state persistence. | [packages/actions/src/DumpState/DumpStateResult.ts:17](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/DumpState/DumpStateResult.ts#L17) |
+| <a id="errors"></a> `errors?` | `ErrorType`[] | Description of the exception, if any occurred. This property contains an array of errors that may have occurred during the execution of the `dumpState` method. Each error provides detailed information about what went wrong. | [packages/actions/src/DumpState/DumpStateResult.ts:24](https://github.com/evmts/tevm/blob/main/packages/actions/src/DumpState/DumpStateResult.ts#L24) |
+| <a id="state"></a> `state` | `SerializableTevmState` | The serialized TEVM state. This property contains the entire state of the TEVM, serialized into a JSON-compatible format. This state can be used for debugging, analysis, or state persistence. | [packages/actions/src/DumpState/DumpStateResult.ts:17](https://github.com/evmts/tevm/blob/main/packages/actions/src/DumpState/DumpStateResult.ts#L17) |

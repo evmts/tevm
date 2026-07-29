@@ -8,7 +8,7 @@
 
 > **anvilRevertJsonRpcProcedure**(`client`): [`AnvilRevertProcedure`](../type-aliases/AnvilRevertProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilRevertProcedure.js:32](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilRevertProcedure.js#L32)
+Defined in: [packages/actions/src/anvil/anvilRevertProcedure.js:32](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilRevertProcedure.js#L32)
 
 Request handler for anvil_revert JSON-RPC requests.
 Reverts the state to a previous snapshot.

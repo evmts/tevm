@@ -8,7 +8,7 @@
 
 > **getAccountProcedure**(`client`): [`GetAccountJsonRpcProcedure`](../type-aliases/GetAccountJsonRpcProcedure.md)
 
-Defined in: [packages/actions/src/GetAccount/getAccountProcedure.js:9](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/GetAccount/getAccountProcedure.js#L9)
+Defined in: [packages/actions/src/GetAccount/getAccountProcedure.js:9](https://github.com/evmts/tevm/blob/main/packages/actions/src/GetAccount/getAccountProcedure.js#L9)
 
 Creates a GetAccount JSON-RPC Procedure for handling account requests with the Tevm VM.
 

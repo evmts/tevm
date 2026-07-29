@@ -8,7 +8,7 @@
 
 > **ExecuteCallResult** = `object`
 
-Defined in: [packages/actions/src/Call/executeCall.js:17](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Call/executeCall.js#L17)
+Defined in: [packages/actions/src/Call/executeCall.js:17](https://github.com/evmts/tevm/blob/main/packages/actions/src/Call/executeCall.js#L17)
 
 ## Type Parameters
 

@@ -8,7 +8,7 @@
 
 > **EthGetFilterLogsParams** = `object`
 
-Defined in: [packages/actions/src/eth/EthParams.ts:164](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L164)
+Defined in: [packages/actions/src/eth/EthParams.ts:164](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L164)
 
 Based on the JSON-RPC request for `eth_getFilterLogs` procedure
 
@@ -16,4 +16,4 @@ Based on the JSON-RPC request for `eth_getFilterLogs` procedure
 
 | Property | Modifier | Type | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="filterid"></a> `filterId` | `readonly` | [`Hex`](Hex.md) | [packages/actions/src/eth/EthParams.ts:164](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L164) |
+| <a id="filterid"></a> `filterId` | `readonly` | [`Hex`](Hex.md) | [packages/actions/src/eth/EthParams.ts:164](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L164) |

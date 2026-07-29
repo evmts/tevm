@@ -8,7 +8,7 @@
 
 > **tevmDeploy**(`client`, `params`): `Promise`\<`DeployResult`\>
 
-Defined in: [packages/memory-client/src/tevmDeploy.js:33](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/tevmDeploy.js#L33)
+Defined in: [packages/memory-client/src/tevmDeploy.js:33](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/tevmDeploy.js#L33)
 
 Tree-shakeable `tevmDeploy` action. Deploys a contract to the in-memory blockchain.
 

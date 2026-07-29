@@ -8,7 +8,7 @@
 
 > **createRequireEffect**(`url`): `Effect`\<(`id`) => `Effect`\<`any`, [`RequireError`](../classes/RequireError.md), `never`\>, [`CreateRequireError`](../classes/CreateRequireError.md), `never`\>
 
-Defined in: [packages/effect/src/createRequireEffect.js:49](https://github.com/evmts/tevm-monorepo/blob/main/packages/effect/src/createRequireEffect.js#L49)
+Defined in: [packages/effect/src/createRequireEffect.js:49](https://github.com/evmts/tevm/blob/main/packages/effect/src/createRequireEffect.js#L49)
 
 **`Internal`**
 

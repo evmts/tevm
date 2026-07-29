@@ -8,6 +8,6 @@
 
 > `const` **zAbi**: `ZodReadonly`\<`any`\>
 
-Defined in: [packages/actions/src/internal/zod/zAbi.js:6](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/internal/zod/zAbi.js#L6)
+Defined in: [packages/actions/src/internal/zod/zAbi.js:6](https://github.com/evmts/tevm/blob/main/packages/actions/src/internal/zod/zAbi.js#L6)
 
 Zod validator for a valid ABI

@@ -8,7 +8,7 @@
 
 > **EthChainIdHandler** = (`request?`) => `Promise`\<[`EthChainIdResult`](EthChainIdResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:105](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthHandler.ts#L105)
+Defined in: [packages/actions/src/eth/EthHandler.ts:105](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L105)
 
 ## Parameters
 

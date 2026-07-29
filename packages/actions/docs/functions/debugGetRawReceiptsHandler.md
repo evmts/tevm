@@ -8,7 +8,7 @@
 
 > **debugGetRawReceiptsHandler**(`client`): [`DebugGetRawReceiptsHandler`](../type-aliases/DebugGetRawReceiptsHandler.md)
 
-Defined in: [packages/actions/src/debug/debugGetRawReceiptsHandler.js:10](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/debugGetRawReceiptsHandler.js#L10)
+Defined in: [packages/actions/src/debug/debugGetRawReceiptsHandler.js:10](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/debugGetRawReceiptsHandler.js#L10)
 
 Returns the consensus-encoded (RLP) receipts from a block by block number or tag
 

@@ -130,7 +130,7 @@ export const createDocsConfig = ({ siteId, description, sidebar, topNav }: Creat
 		],
 		sidebar,
 		editLink: {
-			pattern: `https://github.com/evmts/tevm-monorepo/edit/main/${site.repoPath}/pages/:path`,
+			pattern: `https://github.com/evmts/tevm/edit/main/${site.repoPath}/pages/:path`,
 			text: 'Edit this page on GitHub',
 		},
 		search: {
@@ -142,7 +142,7 @@ export const createDocsConfig = ({ siteId, description, sidebar, topNav }: Creat
 		socials: [
 			{
 				icon: 'github',
-				link: 'https://github.com/evmts/tevm-monorepo',
+				link: 'https://github.com/evmts/tevm',
 				label: 'GitHub',
 			},
 			{

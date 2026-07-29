@@ -8,7 +8,7 @@
 
 > **handleAutomining**(`client`, `txHash?`, `_reserved?`, `mineAllTx?`): `Promise`\<\{ `blockHashes?`: `undefined`; `errors?`: [`TevmMineError`](../type-aliases/TevmMineError.md)[]; \} \| `undefined`\>
 
-Defined in: [packages/actions/src/Call/handleAutomining.js:13](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Call/handleAutomining.js#L13)
+Defined in: [packages/actions/src/Call/handleAutomining.js:13](https://github.com/evmts/tevm/blob/main/packages/actions/src/Call/handleAutomining.js#L13)
 
 **`Internal`**
 

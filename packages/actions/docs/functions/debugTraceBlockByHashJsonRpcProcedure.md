@@ -8,7 +8,7 @@
 
 > **debugTraceBlockByHashJsonRpcProcedure**(`client`): `DebugTraceBlockByHashProcedure`\<`"callTracer"` \| `"prestateTracer"` \| `"4byteTracer"` \| `"flatCallTracer"` \| `"muxTracer"`, `boolean`\>
 
-Defined in: [packages/actions/src/debug/debugTraceBlockByHashProcedure.js:14](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/debugTraceBlockByHashProcedure.js#L14)
+Defined in: [packages/actions/src/debug/debugTraceBlockByHashProcedure.js:14](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/debugTraceBlockByHashProcedure.js#L14)
 
 Creates a JSON-RPC procedure handler for the `debug_traceBlockByHash` method
 

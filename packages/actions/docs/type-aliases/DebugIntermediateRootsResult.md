@@ -8,7 +8,7 @@
 
 > **DebugIntermediateRootsResult** = [`Hex`](Hex.md)[]
 
-Defined in: [packages/actions/src/debug/DebugResult.ts:252](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugResult.ts#L252)
+Defined in: [packages/actions/src/debug/DebugResult.ts:252](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugResult.ts#L252)
 
 Result from `debug_intermediateRoots`
 

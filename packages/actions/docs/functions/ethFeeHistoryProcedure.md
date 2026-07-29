@@ -8,7 +8,7 @@
 
 > **ethFeeHistoryProcedure**(`client`): [`EthFeeHistoryJsonRpcProcedure`](../type-aliases/EthFeeHistoryJsonRpcProcedure.md)
 
-Defined in: [packages/actions/src/eth/ethFeeHistoryProcedure.js:9](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethFeeHistoryProcedure.js#L9)
+Defined in: [packages/actions/src/eth/ethFeeHistoryProcedure.js:9](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethFeeHistoryProcedure.js#L9)
 
 JSON-RPC procedure for `eth_feeHistory`.
 

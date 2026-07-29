@@ -8,6 +8,6 @@
 
 > **EthSignTransactionJsonRpcResponse** = `JsonRpcResponse`\<`"eth_signTransaction"`, `Hex`, `string` \| `number`\>
 
-Defined in: [packages/actions/src/eth/EthJsonRpcResponse.ts:315](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthJsonRpcResponse.ts#L315)
+Defined in: [packages/actions/src/eth/EthJsonRpcResponse.ts:315](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcResponse.ts#L315)
 
 JSON-RPC response for `eth_signTransaction` procedure

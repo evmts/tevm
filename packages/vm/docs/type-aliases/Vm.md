@@ -8,7 +8,7 @@
 
 > **Vm** = `BaseVm` & `object`
 
-Defined in: [packages/vm/src/Vm.ts:6](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/Vm.ts#L6)
+Defined in: [packages/vm/src/Vm.ts:6](https://github.com/evmts/tevm/blob/main/packages/vm/src/Vm.ts#L6)
 
 ## Type Declaration
 

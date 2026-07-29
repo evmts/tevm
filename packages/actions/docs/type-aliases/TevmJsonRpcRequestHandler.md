@@ -8,7 +8,7 @@
 
 > **TevmJsonRpcRequestHandler** = \<`TRequest`\>(`request`) => `Promise`\<[`JsonRpcReturnTypeFromMethod`](JsonRpcReturnTypeFromMethod.md)\<`TRequest`\[`"method"`\]\>\>
 
-Defined in: [packages/actions/src/tevm-request-handler/TevmJsonRpcRequestHandler.ts:102](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/tevm-request-handler/TevmJsonRpcRequestHandler.ts#L102)
+Defined in: [packages/actions/src/tevm-request-handler/TevmJsonRpcRequestHandler.ts:102](https://github.com/evmts/tevm/blob/main/packages/actions/src/tevm-request-handler/TevmJsonRpcRequestHandler.ts#L102)
 
 Typesafe request handler for JSON-RPC requests. Most users will want to use the higher level
 and more feature-rich `actions` api

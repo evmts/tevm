@@ -8,7 +8,7 @@
 
 > **VMProfilerOpts** = `object`
 
-Defined in: [packages/vm/src/utils/VMProfileOpts.ts:14](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/utils/VMProfileOpts.ts#L14)
+Defined in: [packages/vm/src/utils/VMProfileOpts.ts:14](https://github.com/evmts/tevm/blob/main/packages/vm/src/utils/VMProfileOpts.ts#L14)
 
 Configuration options for VM profiling and performance reporting.
 Controls when and how profiling data is reported during VM execution.
@@ -28,5 +28,5 @@ const value: VMProfilerOpts = {
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="reportafterblock"></a> `reportAfterBlock?` | `boolean` | [packages/vm/src/utils/VMProfileOpts.ts:17](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/utils/VMProfileOpts.ts#L17) |
-| <a id="reportaftertx"></a> `reportAfterTx?` | `boolean` | [packages/vm/src/utils/VMProfileOpts.ts:16](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/utils/VMProfileOpts.ts#L16) |
+| <a id="reportafterblock"></a> `reportAfterBlock?` | `boolean` | [packages/vm/src/utils/VMProfileOpts.ts:17](https://github.com/evmts/tevm/blob/main/packages/vm/src/utils/VMProfileOpts.ts#L17) |
+| <a id="reportaftertx"></a> `reportAfterTx?` | `boolean` | [packages/vm/src/utils/VMProfileOpts.ts:16](https://github.com/evmts/tevm/blob/main/packages/vm/src/utils/VMProfileOpts.ts#L16) |

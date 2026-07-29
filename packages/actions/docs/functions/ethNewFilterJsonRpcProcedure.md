@@ -8,7 +8,7 @@
 
 > **ethNewFilterJsonRpcProcedure**(`tevmNode`): [`EthNewFilterJsonRpcProcedure`](../type-aliases/EthNewFilterJsonRpcProcedure.md)
 
-Defined in: [packages/actions/src/eth/ethNewFilterProcedure.js:8](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethNewFilterProcedure.js#L8)
+Defined in: [packages/actions/src/eth/ethNewFilterProcedure.js:8](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethNewFilterProcedure.js#L8)
 
 Request handler for eth_newFilter JSON-RPC requests.
 

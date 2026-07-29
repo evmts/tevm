@@ -8,7 +8,7 @@
 
 > **SyncStoragePersister** = `object`
 
-Defined in: [SyncStoragePersister.ts:6](https://github.com/evmts/tevm-monorepo/blob/main/packages/sync-storage-persister/src/SyncStoragePersister.ts#L6)
+Defined in: [SyncStoragePersister.ts:6](https://github.com/evmts/tevm/blob/main/packages/sync-storage-persister/src/SyncStoragePersister.ts#L6)
 
 Storage persister for client state
 
@@ -16,6 +16,6 @@ Storage persister for client state
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="persisttevmstate"></a> `persistTevmState` | (`state`, `onError?`) => `Error` \| `undefined` | Persist serializable tevm state | [SyncStoragePersister.ts:13](https://github.com/evmts/tevm-monorepo/blob/main/packages/sync-storage-persister/src/SyncStoragePersister.ts#L13) |
-| <a id="removepersistedstate"></a> `removePersistedState` | () => `Error` \| `undefined` | Removes persisted state | [SyncStoragePersister.ts:26](https://github.com/evmts/tevm-monorepo/blob/main/packages/sync-storage-persister/src/SyncStoragePersister.ts#L26) |
-| <a id="restorestate"></a> `restoreState` | () => `SerializableTevmState` \| `undefined` | Restores persisted state | [SyncStoragePersister.ts:21](https://github.com/evmts/tevm-monorepo/blob/main/packages/sync-storage-persister/src/SyncStoragePersister.ts#L21) |
+| <a id="persisttevmstate"></a> `persistTevmState` | (`state`, `onError?`) => `Error` \| `undefined` | Persist serializable tevm state | [SyncStoragePersister.ts:13](https://github.com/evmts/tevm/blob/main/packages/sync-storage-persister/src/SyncStoragePersister.ts#L13) |
+| <a id="removepersistedstate"></a> `removePersistedState` | () => `Error` \| `undefined` | Removes persisted state | [SyncStoragePersister.ts:26](https://github.com/evmts/tevm/blob/main/packages/sync-storage-persister/src/SyncStoragePersister.ts#L26) |
+| <a id="restorestate"></a> `restoreState` | () => `SerializableTevmState` \| `undefined` | Restores persisted state | [SyncStoragePersister.ts:21](https://github.com/evmts/tevm/blob/main/packages/sync-storage-persister/src/SyncStoragePersister.ts#L21) |

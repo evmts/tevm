@@ -8,7 +8,7 @@
 
 > **createIntervalMiner**(`client`): `IntervalMiner`
 
-Defined in: [packages/node/src/createIntervalMiner.js:34](https://github.com/evmts/tevm-monorepo/blob/main/packages/node/src/createIntervalMiner.js#L34)
+Defined in: [packages/node/src/createIntervalMiner.js:34](https://github.com/evmts/tevm/blob/main/packages/node/src/createIntervalMiner.js#L34)
 
 Creates an interval mining system that uses setTimeout to prevent race conditions
 

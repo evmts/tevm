@@ -8,7 +8,7 @@
 
 > **CreateMemoryClientFn** = \{\<`TAccountOrAddress`, `TRpcSchema`\>(`options`): `object`; \<`TCommon`, `TAccountOrAddress`, `TRpcSchema`\>(`options?`): `object`; \}
 
-Defined in: [packages/memory-client/src/CreateMemoryClientFn.ts:27](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/CreateMemoryClientFn.ts#L27)
+Defined in: [packages/memory-client/src/CreateMemoryClientFn.ts:27](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/CreateMemoryClientFn.ts#L27)
 
 Type of [createMemoryClient](../variables/createMemoryClient.md). When `fork` is supplied without `common`, the chain is inferred
 from the fork and `TChain` is `undefined`.

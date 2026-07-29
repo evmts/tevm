@@ -8,7 +8,7 @@
 
 > **anvilSetIntervalMiningJsonRpcProcedure**(`client`): [`AnvilSetIntervalMiningProcedure`](../type-aliases/AnvilSetIntervalMiningProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilSetIntervalMiningProcedure.js:7](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilSetIntervalMiningProcedure.js#L7)
+Defined in: [packages/actions/src/anvil/anvilSetIntervalMiningProcedure.js:7](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilSetIntervalMiningProcedure.js#L7)
 
 Request handler for anvil_setIntervalMining JSON-RPC requests.
 

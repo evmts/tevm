@@ -5,7 +5,7 @@ edition = '2021'
 description = 'A typesafe Rust wrapper for the Solidity compiler (solc)'
 authors = ["TEVM Contributors"]
 license = "MIT"
-repository = "https://github.com/evmts/tevm-monorepo"
+repository = "https://github.com/evmts/tevm"
 readme = "README.md"
 keywords = ["solidity", "compiler", "ethereum", "solc", "tevm"]
 

@@ -8,7 +8,7 @@
 
 > **SerializedParams** = `object`
 
-Defined in: [packages/actions/src/LoadState/LoadStateJsonRpcRequest.ts:8](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/LoadState/LoadStateJsonRpcRequest.ts#L8)
+Defined in: [packages/actions/src/LoadState/LoadStateJsonRpcRequest.ts:8](https://github.com/evmts/tevm/blob/main/packages/actions/src/LoadState/LoadStateJsonRpcRequest.ts#L8)
 
 The parameters for the `tevm_loadState` method
 
@@ -16,4 +16,4 @@ The parameters for the `tevm_loadState` method
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="state"></a> `state` | `SerializeToJson`\<`ParameterizedTevmState`\> | [packages/actions/src/LoadState/LoadStateJsonRpcRequest.ts:9](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/LoadState/LoadStateJsonRpcRequest.ts#L9) |
+| <a id="state"></a> `state` | `SerializeToJson`\<`ParameterizedTevmState`\> | [packages/actions/src/LoadState/LoadStateJsonRpcRequest.ts:9](https://github.com/evmts/tevm/blob/main/packages/actions/src/LoadState/LoadStateJsonRpcRequest.ts#L9) |

@@ -8,7 +8,7 @@
 
 > **TxStatus** = `object` & \{ `status`: `"simulating"` \| `"optimistic"`; \} \| \{ `hash`: `Hex`; `status`: `"optimistic"` \| `"confirmed"` \| `"reverted"`; \}
 
-Defined in: [subscribeTx.ts:3](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/mud/src/subscribeTx.ts#L3)
+Defined in: [subscribeTx.ts:3](https://github.com/evmts/tevm/blob/main/bundler-packages/mud/src/subscribeTx.ts#L3)
 
 ## Type Declaration
 

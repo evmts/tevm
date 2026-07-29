@@ -8,7 +8,7 @@
 
 > **AnvilSetAutomineParams** = `object`
 
-Defined in: [packages/actions/src/anvil/AnvilParams.ts:50](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/AnvilParams.ts#L50)
+Defined in: [packages/actions/src/anvil/AnvilParams.ts:50](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L50)
 
 Params for `anvil_setAutomine` handler
 
@@ -16,4 +16,4 @@ Params for `anvil_setAutomine` handler
 
 | Property | Modifier | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="enabled"></a> `enabled` | `readonly` | `boolean` | Whether to enable or disable automine | [packages/actions/src/anvil/AnvilParams.ts:54](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/AnvilParams.ts#L54) |
+| <a id="enabled"></a> `enabled` | `readonly` | `boolean` | Whether to enable or disable automine | [packages/actions/src/anvil/AnvilParams.ts:54](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L54) |

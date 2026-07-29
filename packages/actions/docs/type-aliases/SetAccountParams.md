@@ -8,7 +8,7 @@
 
 > **SetAccountParams**\<`TThrowOnFail`\> = [`BaseParams`](BaseParams.md)\<`TThrowOnFail`\> & `object`
 
-Defined in: [packages/actions/src/SetAccount/SetAccountParams.ts:16](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/SetAccount/SetAccountParams.ts#L16)
+Defined in: [packages/actions/src/SetAccount/SetAccountParams.ts:16](https://github.com/evmts/tevm/blob/main/packages/actions/src/SetAccount/SetAccountParams.ts#L16)
 
 Tevm params to set an account in the vm state
 all fields are optional except address

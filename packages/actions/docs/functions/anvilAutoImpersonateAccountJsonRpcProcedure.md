@@ -8,7 +8,7 @@
 
 > **anvilAutoImpersonateAccountJsonRpcProcedure**(`client`): [`AnvilAutoImpersonateAccountProcedure`](../type-aliases/AnvilAutoImpersonateAccountProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilAutoImpersonateAccountProcedure.js:7](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilAutoImpersonateAccountProcedure.js#L7)
+Defined in: [packages/actions/src/anvil/anvilAutoImpersonateAccountProcedure.js:7](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilAutoImpersonateAccountProcedure.js#L7)
 
 Request handler for anvil_autoImpersonateAccount JSON-RPC requests.
 Enables or disables automatic impersonation of all transaction senders.

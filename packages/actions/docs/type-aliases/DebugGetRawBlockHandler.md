@@ -8,7 +8,7 @@
 
 > **DebugGetRawBlockHandler** = (`params`) => `Promise`\<[`DebugGetRawBlockResult`](DebugGetRawBlockResult.md)\>
 
-Defined in: [packages/actions/src/debug/DebugHandler.ts:38](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugHandler.ts#L38)
+Defined in: [packages/actions/src/debug/DebugHandler.ts:38](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugHandler.ts#L38)
 
 ## Parameters
 

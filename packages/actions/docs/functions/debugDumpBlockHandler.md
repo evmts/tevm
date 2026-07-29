@@ -8,7 +8,7 @@
 
 > **debugDumpBlockHandler**(`client`): [`DebugDumpBlockHandler`](../type-aliases/DebugDumpBlockHandler.md)
 
-Defined in: [packages/actions/src/debug/debugDumpBlockHandler.js:21](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/debugDumpBlockHandler.js#L21)
+Defined in: [packages/actions/src/debug/debugDumpBlockHandler.js:21](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/debugDumpBlockHandler.js#L21)
 
 Returns the complete state at a specific block
 

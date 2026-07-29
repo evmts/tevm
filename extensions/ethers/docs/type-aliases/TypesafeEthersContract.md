@@ -8,7 +8,7 @@
 
 > **TypesafeEthersContract**\<`TAbi`\> = `BaseContract` & \{ \[TFunctionName in ExtractAbiFunctionNames\<TAbi, "pure" \| "view"\>\]: BaseContractMethod\<AbiParametersToPrimitiveTypes\<ExtractAbiFunction\<TAbi, TFunctionName\>\["inputs"\]\> & any\[\], EthersFunctionOutput\<TAbi, TFunctionName\>, EthersFunctionOutput\<TAbi, TFunctionName\>\> \} & \{ \[TFunctionName in ExtractAbiFunctionNames\<TAbi, "nonpayable" \| "payable"\>\]: BaseContractMethod\<AbiParametersToPrimitiveTypes\<ExtractAbiFunction\<TAbi, TFunctionName\>\["inputs"\]\> & any\[\], EthersFunctionOutput\<TAbi, TFunctionName\>, ContractTransactionResponse\> \} & `object`
 
-Defined in: [extensions/ethers/src/contract/TypesafeEthersContract.ts:62](https://github.com/evmts/tevm-monorepo/blob/main/extensions/ethers/src/contract/TypesafeEthersContract.ts#L62)
+Defined in: [extensions/ethers/src/contract/TypesafeEthersContract.ts:62](https://github.com/evmts/tevm/blob/main/extensions/ethers/src/contract/TypesafeEthersContract.ts#L62)
 
 ## Type Declaration
 

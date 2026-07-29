@@ -8,7 +8,7 @@
 
 > **AnvilDropAllTransactionsProcedure** = (`request`) => `Promise`\<[`AnvilDropAllTransactionsJsonRpcResponse`](AnvilDropAllTransactionsJsonRpcResponse.md)\>
 
-Defined in: [packages/actions/src/anvil/AnvilProcedure.ts:219](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/AnvilProcedure.ts#L219)
+Defined in: [packages/actions/src/anvil/AnvilProcedure.ts:219](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilProcedure.ts#L219)
 
 JSON-RPC procedure for `anvil_dropAllTransactions`
 

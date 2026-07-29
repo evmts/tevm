@@ -8,7 +8,7 @@
 
 > **EthSimulateV2CallResult** = [`EthSimulateV1CallResult`](EthSimulateV1CallResult.md) & `object`
 
-Defined in: [packages/actions/src/eth/EthResult.ts:551](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthResult.ts#L551)
+Defined in: [packages/actions/src/eth/EthResult.ts:551](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L551)
 
 Result of a single simulated call (V2)
 Extends V1 with additional debugging information

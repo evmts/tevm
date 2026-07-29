@@ -8,7 +8,7 @@
 
 > **ethSubscribeHandler**(`tevmNode`): [`EthSubscribeHandler`](../type-aliases/EthSubscribeHandler.md)
 
-Defined in: [packages/actions/src/eth/ethSubscribeHandler.js:41](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethSubscribeHandler.js#L41)
+Defined in: [packages/actions/src/eth/ethSubscribeHandler.js:41](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethSubscribeHandler.js#L41)
 
 Creates a subscription for various Ethereum events.
 Subscriptions work similar to filters but are typically used with WebSocket transports.

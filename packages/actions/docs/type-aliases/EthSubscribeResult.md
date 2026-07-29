@@ -8,7 +8,7 @@
 
 > **EthSubscribeResult** = [`Hex`](Hex.md)
 
-Defined in: [packages/actions/src/eth/EthResult.ts:300](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthResult.ts#L300)
+Defined in: [packages/actions/src/eth/EthResult.ts:300](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L300)
 
 JSON-RPC response for `eth_subscribe` procedure
 Returns a subscription ID

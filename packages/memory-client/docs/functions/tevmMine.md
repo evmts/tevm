@@ -8,7 +8,7 @@
 
 > **tevmMine**(`client`, `params?`): `Promise`\<`MineResult`\>
 
-Defined in: [packages/memory-client/src/tevmMine.js:26](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/tevmMine.js#L26)
+Defined in: [packages/memory-client/src/tevmMine.js:26](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/tevmMine.js#L26)
 
 Tree-shakeable `tevmMine` action. Mines pending transactions into new blocks, advancing canonical state.
 

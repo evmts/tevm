@@ -8,7 +8,7 @@
 
 > **AnvilSetRpcUrlHandler** = (`params`) => `Promise`\<[`AnvilSetRpcUrlResult`](AnvilSetRpcUrlResult.md)\>
 
-Defined in: [packages/actions/src/anvil/AnvilHandler.ts:96](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/AnvilHandler.ts#L96)
+Defined in: [packages/actions/src/anvil/AnvilHandler.ts:96](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilHandler.ts#L96)
 
 ## Parameters
 

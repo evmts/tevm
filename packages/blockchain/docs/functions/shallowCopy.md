@@ -8,7 +8,7 @@
 
 > **shallowCopy**(`baseChain`): () => `BaseChain`
 
-Defined in: [packages/blockchain/src/actions/shallowCopy.js:5](https://github.com/evmts/tevm-monorepo/blob/main/packages/blockchain/src/actions/shallowCopy.js#L5)
+Defined in: [packages/blockchain/src/actions/shallowCopy.js:5](https://github.com/evmts/tevm/blob/main/packages/blockchain/src/actions/shallowCopy.js#L5)
 
 ## Parameters
 

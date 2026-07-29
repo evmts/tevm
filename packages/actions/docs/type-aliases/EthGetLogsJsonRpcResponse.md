@@ -8,6 +8,6 @@
 
 > **EthGetLogsJsonRpcResponse** = `JsonRpcResponse`\<`"eth_getLogs"`, `SerializeToJson`\<`SerializeToJson`\<[`FilterLog`](FilterLog.md)\>\>[], `string` \| `number`\>
 
-Defined in: [packages/actions/src/eth/EthJsonRpcResponse.ts:173](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthJsonRpcResponse.ts#L173)
+Defined in: [packages/actions/src/eth/EthJsonRpcResponse.ts:173](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcResponse.ts#L173)
 
 JSON-RPC response for `eth_getLogs` procedure

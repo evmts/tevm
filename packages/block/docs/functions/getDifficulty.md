@@ -8,7 +8,7 @@
 
 > **getDifficulty**(`headerData`): `bigint` \| `null`
 
-Defined in: [packages/block/src/helpers.ts:109](https://github.com/evmts/tevm-monorepo/blob/main/packages/block/src/helpers.ts#L109)
+Defined in: [packages/block/src/helpers.ts:109](https://github.com/evmts/tevm/blob/main/packages/block/src/helpers.ts#L109)
 
 Extracts the difficulty value from block header data
 

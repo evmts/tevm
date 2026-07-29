@@ -8,7 +8,7 @@
 
 > **ethSendTransactionHandler**(`client`): [`EthSendTransactionHandler`](../type-aliases/EthSendTransactionHandler.md)
 
-Defined in: [packages/actions/src/eth/ethSendTransactionHandler.js:13](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethSendTransactionHandler.js#L13)
+Defined in: [packages/actions/src/eth/ethSendTransactionHandler.js:13](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethSendTransactionHandler.js#L13)
 
 ## Parameters
 

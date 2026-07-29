@@ -8,4 +8,4 @@
 
 > `const` **typedButMissingMethods**: `Set`\<`string`\>
 
-Defined in: [packages/actions/src/rpcMethodMatrix.ts:13](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/rpcMethodMatrix.ts#L13)
+Defined in: [packages/actions/src/rpcMethodMatrix.ts:13](https://github.com/evmts/tevm/blob/main/packages/actions/src/rpcMethodMatrix.ts#L13)

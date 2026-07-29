@@ -6,7 +6,7 @@
 
 # Class: Address
 
-Defined in: [tevm-monorepo/packages/address/src/Address.js:44](https://github.com/evmts/tevm-monorepo/blob/main/packages/address/src/Address.js#L44)
+Defined in: [tevm-monorepo/packages/address/src/Address.js:44](https://github.com/evmts/tevm/blob/main/packages/address/src/Address.js#L44)
 
 A specialized Ethereum address class that extends EthjsAddress with TEVM-specific
 functionality. This class provides EIP-55 compliant checksummed address formatting
@@ -158,7 +158,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:170
 
 > **toString**(): `` `0x${string}` ``
 
-Defined in: [tevm-monorepo/packages/address/src/Address.js:63](https://github.com/evmts/tevm-monorepo/blob/main/packages/address/src/Address.js#L63)
+Defined in: [tevm-monorepo/packages/address/src/Address.js:63](https://github.com/evmts/tevm/blob/main/packages/address/src/Address.js#L63)
 
 Returns the checksummed EIP-55 compliant address string.
 

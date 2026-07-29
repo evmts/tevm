@@ -8,7 +8,7 @@
 
 > **ethGetBlockReceiptsHandler**(`client`): [`EthGetBlockReceiptsHandler`](../type-aliases/EthGetBlockReceiptsHandler.md)
 
-Defined in: [packages/actions/src/eth/ethGetBlockReceiptsHandler.js:29](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/ethGetBlockReceiptsHandler.js#L29)
+Defined in: [packages/actions/src/eth/ethGetBlockReceiptsHandler.js:29](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/ethGetBlockReceiptsHandler.js#L29)
 
 Retrieves all transaction receipts for a given block by number, tag, or hash.
 

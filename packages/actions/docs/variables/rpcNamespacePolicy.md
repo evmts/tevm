@@ -8,7 +8,7 @@
 
 > `const` **rpcNamespacePolicy**: `object`
 
-Defined in: [packages/actions/src/rpcNamespacePolicy.ts:7](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/rpcNamespacePolicy.ts#L7)
+Defined in: [packages/actions/src/rpcNamespacePolicy.ts:7](https://github.com/evmts/tevm/blob/main/packages/actions/src/rpcNamespacePolicy.ts#L7)
 
 Tevm RPC extension namespace policy:
 - `tevm_*` is canonical for Tevm-specific behavior.

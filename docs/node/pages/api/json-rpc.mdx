@@ -374,7 +374,7 @@ const provider = new BrowserProvider(client)
 
 ## Error Handling
 
-JSON-RPC errors follow the [standard format](https://www.jsonrpc.org/specification#error_object) and are fully typed. See [JsonRpcError type](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases/JsonRpcError.md):
+JSON-RPC errors follow the [standard format](https://www.jsonrpc.org/specification#error_object) and are fully typed. See [JsonRpcError type](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/JsonRpcError.md):
 
 ```ts
 interface JsonRpcError {
@@ -384,38 +384,38 @@ interface JsonRpcError {
 }
 ```
 
-Common codes (see [ErrorCodes](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/variables/ErrorCodes.md)):
-- `-32700`: Parse error ([`ParseError`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases/ParseError.md))
-- `-32600`: Invalid request ([`InvalidRequest`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases/InvalidRequest.md))
-- `-32601`: Method not found ([`MethodNotFound`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases/MethodNotFound.md))
-- `-32602`: Invalid params ([`InvalidParams`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases/InvalidParams.md))
-- `-32603`: Internal error ([`InternalError`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases/InternalError.md))
-- `-32000` to `-32099`: Server error ([`ServerError`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases/ServerError.md))
+Common codes (see [ErrorCodes](https://github.com/evmts/tevm/blob/main/packages/actions/docs/variables/ErrorCodes.md)):
+- `-32700`: Parse error ([`ParseError`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/ParseError.md))
+- `-32600`: Invalid request ([`InvalidRequest`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/InvalidRequest.md))
+- `-32601`: Method not found ([`MethodNotFound`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/MethodNotFound.md))
+- `-32602`: Invalid params ([`InvalidParams`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/InvalidParams.md))
+- `-32603`: Internal error ([`InternalError`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/InternalError.md))
+- `-32000` to `-32099`: Server error ([`ServerError`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/ServerError.md))
 
-See [Error Handling Guide](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/variables/ErrorHandling.md).
+See [Error Handling Guide](https://github.com/evmts/tevm/blob/main/packages/actions/docs/variables/ErrorHandling.md).
 
 ## Best Practices
 
-Wrap RPC calls in try-catch. Estimate gas before sending ([ErrorCodes](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/variables/ErrorCodes.md)):
+Wrap RPC calls in try-catch. Estimate gas before sending ([ErrorCodes](https://github.com/evmts/tevm/blob/main/packages/actions/docs/variables/ErrorCodes.md)):
 
 ```ts
 const gasEstimate = await node.request({ method: 'eth_estimateGas', params: [tx] })
 ```
 
-Wait for receipts ([ethGetTransactionReceipt](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/functions/ethGetTransactionReceipt.md)):
+Wait for receipts ([ethGetTransactionReceipt](https://github.com/evmts/tevm/blob/main/packages/actions/docs/functions/ethGetTransactionReceipt.md)):
 
 ```ts
 const txHash = await node.request({ method: 'eth_sendTransaction', params: [tx] })
 const receipt = await node.request({ method: 'eth_getTransactionReceipt', params: [txHash] })
 ```
 
-Filter efficiently: set block ranges, use specific [topics](https://docs.soliditylang.org/en/latest/abi-spec.html#events), clean up with [`eth_uninstallFilter`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/functions/ethUninstallFilterProcedure.md).
+Filter efficiently: set block ranges, use specific [topics](https://docs.soliditylang.org/en/latest/abi-spec.html#events), clean up with [`eth_uninstallFilter`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/functions/ethUninstallFilterProcedure.md).
 
 See:
-- [Actions Documentation](https://github.com/evmts/tevm-monorepo/tree/main/packages/actions/docs)
-- [Type Definitions](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases)
-- [Function Reference](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/functions)
-- [Variables and Constants](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/variables)
+- [Actions Documentation](https://github.com/evmts/tevm/tree/main/packages/actions/docs)
+- [Type Definitions](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases)
+- [Function Reference](https://github.com/evmts/tevm/blob/main/packages/actions/docs/functions)
+- [Variables and Constants](https://github.com/evmts/tevm/blob/main/packages/actions/docs/variables)
 
 ## Related Topics
 - [Using with Viem](../examples/viem)
@@ -424,7 +424,7 @@ See:
 - [Receipts & Logs](../advanced/receipts-and-logs)
 - [Ethereum JSON-RPC Specification](https://ethereum.org/en/developers/docs/apis/json-rpc/)
 - [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193)
-- [Tevm API Documentation](https://github.com/evmts/tevm-monorepo/tree/main/packages/actions/docs)
+- [Tevm API Documentation](https://github.com/evmts/tevm/tree/main/packages/actions/docs)
 
 ## Using Tevm Actions
 
@@ -463,10 +463,10 @@ await tevmSetAccount(client, {
 ```
 
 Type references:
-- [`CallParams`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases/CallParams.md)
-- [`MineParams`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases/MineParams.md)
-- [`GetAccountParams`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases/GetAccountParams.md)
-- [`SetAccountParams`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases/SetAccountParams.md)
-- [`AnvilDealParams`](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/docs/type-aliases/AnvilDealParams.md)
+- [`CallParams`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/CallParams.md)
+- [`MineParams`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/MineParams.md)
+- [`GetAccountParams`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/GetAccountParams.md)
+- [`SetAccountParams`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/SetAccountParams.md)
+- [`AnvilDealParams`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/AnvilDealParams.md)
 
 Tevm calls are simulations unless they create a transaction. Use `addToMempool: true` and mine for a receipt, or configure `{ miningConfig: { type: 'auto' } }`.

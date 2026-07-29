@@ -35,6 +35,6 @@ export const METADATA_BASE: Metadata = {
  */
 export const METADATA_EXTRA = {
   links: {
-    github: 'https://github.com/evmts/tevm-monorepo/tree/main/examples/next',
+    github: 'https://github.com/evmts/tevm/tree/main/examples/next',
   },
 };

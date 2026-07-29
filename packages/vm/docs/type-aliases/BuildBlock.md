@@ -8,7 +8,7 @@
 
 > **BuildBlock** = (`opts`) => `Promise`\<[`BlockBuilder`](../classes/BlockBuilder.md)\>
 
-Defined in: [packages/vm/src/actions/buildBlock.ts:5](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/buildBlock.ts#L5)
+Defined in: [packages/vm/src/actions/buildBlock.ts:5](https://github.com/evmts/tevm/blob/main/packages/vm/src/actions/buildBlock.ts#L5)
 
 ## Parameters
 

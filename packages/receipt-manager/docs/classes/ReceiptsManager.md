@@ -6,7 +6,7 @@
 
 # Class: ReceiptsManager
 
-Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:212](https://github.com/evmts/tevm-monorepo/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L212)
+Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:212](https://github.com/evmts/tevm/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L212)
 
 Manages transaction receipts within the Ethereum virtual machine
 Provides methods for storing, retrieving, and searching transaction receipts and logs
@@ -17,7 +17,7 @@ Provides methods for storing, retrieving, and searching transaction receipts and
 
 > **new ReceiptsManager**(`mapDb`, `chain`): `ReceiptsManager`
 
-Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:218](https://github.com/evmts/tevm-monorepo/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L218)
+Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:218](https://github.com/evmts/tevm/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L218)
 
 Creates a new ReceiptsManager instance
 
@@ -36,11 +36,11 @@ Creates a new ReceiptsManager instance
 
 | Property | Modifier | Type | Default value | Description | Defined in |
 | ------ | ------ | ------ | ------ | ------ | ------ |
-| <a id="chain"></a> `chain` | `readonly` | `Chain` | `undefined` | The blockchain instance for retrieving blocks | [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:220](https://github.com/evmts/tevm-monorepo/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L220) |
-| <a id="get_logs_block_range_limit"></a> `GET_LOGS_BLOCK_RANGE_LIMIT` | `public` | `number` | `2500` | Maximum block range that can be queried in a single getLogs call This prevents excessive computational load from large queries | [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:239](https://github.com/evmts/tevm-monorepo/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L239) |
-| <a id="get_logs_limit"></a> `GET_LOGS_LIMIT` | `public` | `number` | `10000` | Maximum number of logs to return in getLogs This prevents excessive memory usage and response size | [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:227](https://github.com/evmts/tevm-monorepo/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L227) |
-| <a id="get_logs_limit_megabytes"></a> `GET_LOGS_LIMIT_MEGABYTES` | `public` | `number` | `150` | Maximum size of getLogs response in megabytes This prevents excessive memory usage and response size | [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:233](https://github.com/evmts/tevm-monorepo/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L233) |
-| <a id="mapdb"></a> `mapDb` | `readonly` | [`MapDb`](../type-aliases/MapDb.md) | `undefined` | The database instance for storing receipts and indexes | [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:219](https://github.com/evmts/tevm-monorepo/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L219) |
+| <a id="chain"></a> `chain` | `readonly` | `Chain` | `undefined` | The blockchain instance for retrieving blocks | [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:220](https://github.com/evmts/tevm/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L220) |
+| <a id="get_logs_block_range_limit"></a> `GET_LOGS_BLOCK_RANGE_LIMIT` | `public` | `number` | `2500` | Maximum block range that can be queried in a single getLogs call This prevents excessive computational load from large queries | [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:239](https://github.com/evmts/tevm/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L239) |
+| <a id="get_logs_limit"></a> `GET_LOGS_LIMIT` | `public` | `number` | `10000` | Maximum number of logs to return in getLogs This prevents excessive memory usage and response size | [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:227](https://github.com/evmts/tevm/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L227) |
+| <a id="get_logs_limit_megabytes"></a> `GET_LOGS_LIMIT_MEGABYTES` | `public` | `number` | `150` | Maximum size of getLogs response in megabytes This prevents excessive memory usage and response size | [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:233](https://github.com/evmts/tevm/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L233) |
+| <a id="mapdb"></a> `mapDb` | `readonly` | [`MapDb`](../type-aliases/MapDb.md) | `undefined` | The database instance for storing receipts and indexes | [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:219](https://github.com/evmts/tevm/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L219) |
 
 ## Methods
 
@@ -48,7 +48,7 @@ Creates a new ReceiptsManager instance
 
 > **deepCopy**(`chain`): `ReceiptsManager`
 
-Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:248](https://github.com/evmts/tevm-monorepo/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L248)
+Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:248](https://github.com/evmts/tevm/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L248)
 
 Creates a deep copy of this ReceiptsManager with a new chain reference
 Useful for creating a snapshot of the current state
@@ -71,7 +71,7 @@ A new ReceiptsManager instance with copied state
 
 > **deleteReceipts**(`block`): `Promise`\<`void`\>
 
-Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:281](https://github.com/evmts/tevm-monorepo/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L281)
+Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:281](https://github.com/evmts/tevm/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L281)
 
 Deletes transaction receipts and their indexes for a given block
 Used when removing or replacing block data
@@ -101,7 +101,7 @@ await receiptManager.deleteReceipts(block)
 
 > **getLogs**(`from`, `to`, `addresses?`, `topics?`): `Promise`\<`GetLogsReturn`\>
 
-Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:384](https://github.com/evmts/tevm-monorepo/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L384)
+Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:384](https://github.com/evmts/tevm/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L384)
 
 Retrieves logs matching the specified criteria within a block range
 Implements the core functionality of eth_getLogs JSON-RPC method
@@ -141,7 +141,7 @@ const logs = await receiptManager.getLogs(block100, block200, undefined, [eventT
 
 > **getReceiptByTxHash**(`txHash`): `Promise`\<`GetReceiptByTxHashReturn` \| `null`\>
 
-Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:345](https://github.com/evmts/tevm-monorepo/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L345)
+Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:345](https://github.com/evmts/tevm/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L345)
 
 Retrieves a transaction receipt by transaction hash
 Also returns additional metadata needed for JSON-RPC responses
@@ -176,7 +176,7 @@ if (receiptData) {
 
 > **getReceipts**(`blockHash`, `calcBloom?`, `includeTxType?`): `Promise`\<[`TxReceiptWithType`](../type-aliases/TxReceiptWithType.md)[]\>
 
-Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:302](https://github.com/evmts/tevm-monorepo/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L302)
+Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:302](https://github.com/evmts/tevm/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L302)
 
 Retrieves transaction receipts for a given block hash
 Can optionally calculate bloom filters and include transaction types
@@ -209,7 +209,7 @@ const receiptsWithDetails = await receiptManager.getReceipts(blockHash, true, tr
 
 > **getReceipts**(`blockHash`, `calcBloom?`, `includeTxType?`): `Promise`\<[`TxReceipt`](../type-aliases/TxReceipt.md)[]\>
 
-Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:303](https://github.com/evmts/tevm-monorepo/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L303)
+Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:303](https://github.com/evmts/tevm/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L303)
 
 Retrieves transaction receipts for a given block hash
 Can optionally calculate bloom filters and include transaction types
@@ -244,7 +244,7 @@ const receiptsWithDetails = await receiptManager.getReceipts(blockHash, true, tr
 
 > **saveReceipts**(`block`, `receipts`): `Promise`\<`void`\>
 
-Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:264](https://github.com/evmts/tevm-monorepo/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L264)
+Defined in: [tevm-monorepo/packages/receipt-manager/src/ReceiptManager.ts:264](https://github.com/evmts/tevm/blob/main/packages/receipt-manager/src/ReceiptManager.ts#L264)
 
 Saves transaction receipts to the database for a given block
 Also builds and saves transaction hash indexes for efficient lookups

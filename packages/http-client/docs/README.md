@@ -15,8 +15,8 @@
   Execute solidity scripts in browser
 <p>
 
-[![CI](https://github.com/evmts/tevm-monorepo/actions/workflows/e2e.yml/badge.svg)](https://github.com/evmts/tevm-monorepo/actions/workflows/e2e.yml)
-[![CI](https://github.com/evmts/tevm-monorepo/actions/workflows/unit.yml/badge.svg)](https://github.com/evmts/tevm-monorepo/actions/workflows/unit.yml)
+[![CI](https://github.com/evmts/tevm/actions/workflows/e2e.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/e2e.yml)
+[![CI](https://github.com/evmts/tevm/actions/workflows/unit.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/unit.yml)
 <a href="https://www.npmjs.com/package/@tevm/remote-tevm" target="\_parent">
 <img alt="" src="https://img.shields.io/npm/dm/@tevm/remote-tevm.svg" />
 </a>

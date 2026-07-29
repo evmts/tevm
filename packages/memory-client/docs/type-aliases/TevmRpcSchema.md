@@ -8,7 +8,7 @@
 
 > **TevmRpcSchema** = \[`...PublicRpcSchema`, ...TestRpcSchema\<"anvil" \| "ganache" \| "hardhat"\>, \{ `Method`: `"testing_buildBlockV1"`; `Parameters`: \[`` `0x${string}` ``, `Record`\<`string`, `unknown`\>, `` `0x${string}` ``[] \| `null`, `` `0x${string}` ``\]; `ReturnType`: `Record`\<`string`, `unknown`\>; \}, `JsonRpcSchemaTevm`\[`"tevm_call"`\], `JsonRpcSchemaTevm`\[`"tevm_dumpState"`\], `JsonRpcSchemaTevm`\[`"tevm_loadState"`\], `JsonRpcSchemaTevm`\[`"tevm_getAccount"`\], `JsonRpcSchemaTevm`\[`"tevm_setAccount"`\], `JsonRpcSchemaTevm`\[`"tevm_mine"`\]\]
 
-Defined in: [packages/memory-client/src/TevmRpcSchema.ts:36](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/TevmRpcSchema.ts#L36)
+Defined in: [packages/memory-client/src/TevmRpcSchema.ts:36](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/TevmRpcSchema.ts#L36)
 
 The JSON-RPC schema for TEVM.
 This type represents the JSON-RPC requests that the EIP-1193 client can handle when using TEVM.

@@ -8,7 +8,7 @@
 
 > **MineHandler** = (`params?`) => `Promise`\<[`MineResult`](MineResult.md)\>
 
-Defined in: [packages/actions/src/Mine/MineHandlerType.ts:19](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Mine/MineHandlerType.ts#L19)
+Defined in: [packages/actions/src/Mine/MineHandlerType.ts:19](https://github.com/evmts/tevm/blob/main/packages/actions/src/Mine/MineHandlerType.ts#L19)
 
 Mines a block including all transactions in the mempool.
 

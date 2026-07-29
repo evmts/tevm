@@ -8,7 +8,7 @@
 
 > **ContractMethodArgs**\<`A`\> = \[`...A`, `Overrides`\] \| `A`
 
-Defined in: [extensions/ethers/src/contract/ContractMethodArgs.ts:3](https://github.com/evmts/tevm-monorepo/blob/main/extensions/ethers/src/contract/ContractMethodArgs.ts#L3)
+Defined in: [extensions/ethers/src/contract/ContractMethodArgs.ts:3](https://github.com/evmts/tevm/blob/main/extensions/ethers/src/contract/ContractMethodArgs.ts#L3)
 
 ## Type Parameters
 

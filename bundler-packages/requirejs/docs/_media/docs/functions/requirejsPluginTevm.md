@@ -8,7 +8,7 @@
 
 > **requirejsPluginTevm**(`options?`): `Object`
 
-Defined in: [requirejsPluginTevm.js:109](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/requirejs/src/requirejsPluginTevm.js#L109)
+Defined in: [requirejsPluginTevm.js:109](https://github.com/evmts/tevm/blob/main/bundler-packages/requirejs/src/requirejsPluginTevm.js#L109)
 
 RequireJS loader plugin for Tevm that enables direct Solidity imports in JavaScript and TypeScript.
 

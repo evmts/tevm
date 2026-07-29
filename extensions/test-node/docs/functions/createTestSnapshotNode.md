@@ -8,7 +8,7 @@
 
 > **createTestSnapshotNode**(`options`): [`TestSnapshotNode`](../type-aliases/TestSnapshotNode.md)
 
-Defined in: [extensions/test-node/src/createTestSnapshotNode.ts:34](https://github.com/evmts/tevm-monorepo/blob/main/extensions/test-node/src/createTestSnapshotNode.ts#L34)
+Defined in: [extensions/test-node/src/createTestSnapshotNode.ts:34](https://github.com/evmts/tevm/blob/main/extensions/test-node/src/createTestSnapshotNode.ts#L34)
 
 Creates a test snapshot node that automatically caches RPC responses
 

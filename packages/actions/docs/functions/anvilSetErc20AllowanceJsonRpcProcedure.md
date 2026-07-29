@@ -8,7 +8,7 @@
 
 > **anvilSetErc20AllowanceJsonRpcProcedure**(`client`): [`AnvilSetErc20AllowanceProcedure`](../type-aliases/AnvilSetErc20AllowanceProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilSetErc20AllowanceProcedure.js:24](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilSetErc20AllowanceProcedure.js#L24)
+Defined in: [packages/actions/src/anvil/anvilSetErc20AllowanceProcedure.js:24](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilSetErc20AllowanceProcedure.js#L24)
 
 JSON-RPC procedure for anvil_setErc20Allowance
 Sets ERC20 allowance for a spender by overriding the storage of allowance(owner, spender)

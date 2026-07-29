@@ -8,7 +8,7 @@
 
 > **MineResult** = \{ `blockHashes`: `Hex`[]; `errors?`: `undefined`; \} \| \{ `blockHashes?`: `undefined`; `errors`: [`TevmMineError`](TevmMineError.md)[]; \}
 
-Defined in: [packages/actions/src/Mine/MineResult.ts:7](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Mine/MineResult.ts#L7)
+Defined in: [packages/actions/src/Mine/MineResult.ts:7](https://github.com/evmts/tevm/blob/main/packages/actions/src/Mine/MineResult.ts#L7)
 
 Result of Mine Method
 

@@ -8,7 +8,7 @@
 
 > `const` **requirejsFileAccessObject**: `FileAccessObject`
 
-Defined in: [requirejsFileAccessObject.js:38](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/requirejs/src/requirejsFileAccessObject.js#L38)
+Defined in: [requirejsFileAccessObject.js:38](https://github.com/evmts/tevm/blob/main/bundler-packages/requirejs/src/requirejsFileAccessObject.js#L38)
 
 An adapter around the Node.js fs API that implements the FileAccessObject interface
 required by @tevm/base-bundler.

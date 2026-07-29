@@ -8,7 +8,7 @@
 
 > **EthGetBlockReceiptsHandler** = (`request`) => `Promise`\<[`EthGetBlockReceiptsResult`](EthGetBlockReceiptsResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:173](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthHandler.ts#L173)
+Defined in: [packages/actions/src/eth/EthHandler.ts:173](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L173)
 
 ## Parameters
 

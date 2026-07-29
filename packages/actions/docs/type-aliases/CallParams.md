@@ -8,7 +8,7 @@
 
 > **CallParams**\<`TThrowOnFail`\> = [`BaseCallParams`](BaseCallParams.md)\<`TThrowOnFail`\> & `object`
 
-Defined in: [packages/actions/src/Call/CallParams.ts:31](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Call/CallParams.ts#L31)
+Defined in: [packages/actions/src/Call/CallParams.ts:31](https://github.com/evmts/tevm/blob/main/packages/actions/src/Call/CallParams.ts#L31)
 
 TEVM parameters to execute a call on the VM.
 `Call` is the lowest level method to interact with the VM, and other methods such as `contract` and `script` use `call` under the hood.

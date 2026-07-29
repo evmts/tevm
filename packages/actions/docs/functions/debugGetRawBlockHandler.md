@@ -8,7 +8,7 @@
 
 > **debugGetRawBlockHandler**(`client`): [`DebugGetRawBlockHandler`](../type-aliases/DebugGetRawBlockHandler.md)
 
-Defined in: [packages/actions/src/debug/debugGetRawBlockHandler.js:9](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/debugGetRawBlockHandler.js#L9)
+Defined in: [packages/actions/src/debug/debugGetRawBlockHandler.js:9](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/debugGetRawBlockHandler.js#L9)
 
 Returns the RLP-encoded block by block number or tag
 

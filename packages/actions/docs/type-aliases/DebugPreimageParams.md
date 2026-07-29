@@ -8,7 +8,7 @@
 
 > **DebugPreimageParams** = `object`
 
-Defined in: [packages/actions/src/debug/DebugParams.ts:300](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugParams.ts#L300)
+Defined in: [packages/actions/src/debug/DebugParams.ts:300](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugParams.ts#L300)
 
 Params taken by `debug_preimage` handler
 
@@ -16,4 +16,4 @@ Params taken by `debug_preimage` handler
 
 | Property | Modifier | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="hash"></a> `hash` | `readonly` | [`Hex`](Hex.md) | The SHA3 hash to get the preimage for | [packages/actions/src/debug/DebugParams.ts:304](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugParams.ts#L304) |
+| <a id="hash"></a> `hash` | `readonly` | [`Hex`](Hex.md) | The SHA3 hash to get the preimage for | [packages/actions/src/debug/DebugParams.ts:304](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugParams.ts#L304) |

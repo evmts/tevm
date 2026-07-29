@@ -8,7 +8,7 @@
 
 > **validateMineEvents**(`events`): `object`
 
-Defined in: [packages/actions/src/Mine/validateMineEvents.js:6](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Mine/validateMineEvents.js#L6)
+Defined in: [packages/actions/src/Mine/validateMineEvents.js:6](https://github.com/evmts/tevm/blob/main/packages/actions/src/Mine/validateMineEvents.js#L6)
 
 Validates mining event handlers (internal — not part of the JSON-RPC interface).
 

@@ -8,7 +8,7 @@
 
 > **DebugTraceChainParams**\<`TTracer`, `TDiffMode`\> = `object`
 
-Defined in: [packages/actions/src/debug/DebugParams.ts:310](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugParams.ts#L310)
+Defined in: [packages/actions/src/debug/DebugParams.ts:310](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugParams.ts#L310)
 
 Params taken by `debug_traceChain` handler
 
@@ -23,6 +23,6 @@ Params taken by `debug_traceChain` handler
 
 | Property | Modifier | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="endblock"></a> `endBlock` | `readonly` | [`Hex`](Hex.md) \| `Uint8Array` \| `number` \| `bigint` \| [`BlockTag`](BlockTag.md) | Ending block number, hash, or tag | [packages/actions/src/debug/DebugParams.ts:327](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugParams.ts#L327) |
-| <a id="startblock"></a> `startBlock` | `readonly` | [`Hex`](Hex.md) \| `Uint8Array` \| `number` \| `bigint` \| [`BlockTag`](BlockTag.md) | Starting block number, hash, or tag | [packages/actions/src/debug/DebugParams.ts:323](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugParams.ts#L323) |
-| <a id="traceconfig"></a> `traceConfig?` | `readonly` | [`TraceParams`](TraceParams.md)\<`TTracer`, `TDiffMode`\> | Trace configuration options | [packages/actions/src/debug/DebugParams.ts:331](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugParams.ts#L331) |
+| <a id="endblock"></a> `endBlock` | `readonly` | [`Hex`](Hex.md) \| `Uint8Array` \| `number` \| `bigint` \| [`BlockTag`](BlockTag.md) | Ending block number, hash, or tag | [packages/actions/src/debug/DebugParams.ts:327](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugParams.ts#L327) |
+| <a id="startblock"></a> `startBlock` | `readonly` | [`Hex`](Hex.md) \| `Uint8Array` \| `number` \| `bigint` \| [`BlockTag`](BlockTag.md) | Starting block number, hash, or tag | [packages/actions/src/debug/DebugParams.ts:323](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugParams.ts#L323) |
+| <a id="traceconfig"></a> `traceConfig?` | `readonly` | [`TraceParams`](TraceParams.md)\<`TTracer`, `TDiffMode`\> | Trace configuration options | [packages/actions/src/debug/DebugParams.ts:331](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugParams.ts#L331) |

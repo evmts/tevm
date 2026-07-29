@@ -11,8 +11,8 @@
   Execute solidity scripts in browser
 </p>
 
-[![CI](https://github.com/evmts/tevm-monorepo/actions/workflows/e2e.yml/badge.svg)](https://github.com/evmts/tevm-monorepo/actions/workflows/e2e.yml)
-[![CI](https://github.com/evmts/tevm-monorepo/actions/workflows/unit.yml/badge.svg)](https://github.com/evmts/tevm-monorepo/actions/workflows/unit.yml)
+[![CI](https://github.com/evmts/tevm/actions/workflows/e2e.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/e2e.yml)
+[![CI](https://github.com/evmts/tevm/actions/workflows/unit.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/unit.yml)
 <a href="https://www.npmjs.com/package/@tevm/contract" target="\_parent">
 <img alt="" src="https://img.shields.io/npm/dm/@tevm/contract.svg" />
 </a>
@@ -26,11 +26,11 @@
 
 Used in following packages
 
-- [@tevm/esbuild](https://github.com/evmts/tevm-monorepo/tree/main/bundlers/esbuild)
-- [@tevm/rollup](https://github.com/evmts/tevm-monorepo/tree/main/bundlers/rollup)
-- [@tevm/rspack](https://github.com/evmts/tevm-monorepo/tree/main/bundlers/rspack)
-- [@tevm/vite](https://github.com/evmts/tevm-monorepo/tree/main/bundlers/vite)
-- [@tevm/webpack](https://github.com/evmts/tevm-monorepo/tree/main/bundlers/webpack)
+- [@tevm/esbuild](https://github.com/evmts/tevm/tree/main/bundlers/esbuild)
+- [@tevm/rollup](https://github.com/evmts/tevm/tree/main/bundlers/rollup)
+- [@tevm/rspack](https://github.com/evmts/tevm/tree/main/bundlers/rspack)
+- [@tevm/vite](https://github.com/evmts/tevm/tree/main/bundlers/vite)
+- [@tevm/webpack](https://github.com/evmts/tevm/tree/main/bundlers/webpack)
 
 ## License 📄
 

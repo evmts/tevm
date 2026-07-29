@@ -6,10 +6,10 @@
 
 The internal node implementation for Tevm. It composes the ZEVM-backed Tevm runtime packages and exposes the base node API used by MemoryClient and JSON-RPC transports.
 
-- [@tevm/vm](https://github.com/evmts/tevm-monorepo/tree/main/packages/vm)
-- [@tevm/evm](https://github.com/evmts/tevm-monorepo/tree/main/packages/evm)
-- [@tevm/blockchain](https://github.com/evmts/tevm-monorepo/tree/main/packages/blockchain)
-- [@tevm/state](https://github.com/evmts/tevm-monorepo/tree/main/packages/state)
+- [@tevm/vm](https://github.com/evmts/tevm/tree/main/packages/vm)
+- [@tevm/evm](https://github.com/evmts/tevm/tree/main/packages/evm)
+- [@tevm/blockchain](https://github.com/evmts/tevm/tree/main/packages/blockchain)
+- [@tevm/state](https://github.com/evmts/tevm/tree/main/packages/state)
 
 ## License 📄
 

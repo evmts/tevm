@@ -8,7 +8,7 @@
 
 > **SolcInputSource**\<`T`\> = `object` & \{ `ast`: `T` *extends* `"SolidityAST"` ? [`SolcAst`](SolcAst.md) : `never`; \} \| \{ `urls`: `string`[]; \} \| \{ `content`: `T` *extends* `"SolidityAST"` ? `never` : `string`; \}
 
-Defined in: [solcTypes.ts:15](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/solc/src/solcTypes.ts#L15)
+Defined in: [solcTypes.ts:15](https://github.com/evmts/tevm/blob/main/bundler-packages/solc/src/solcTypes.ts#L15)
 
 ## Type Declaration
 

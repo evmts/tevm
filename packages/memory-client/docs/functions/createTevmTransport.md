@@ -8,7 +8,7 @@
 
 > **createTevmTransport**(`options?`): [`TevmTransport`](../type-aliases/TevmTransport.md)\<`string`\>
 
-Defined in: [packages/memory-client/src/createTevmTransport.js:34](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/createTevmTransport.js#L34)
+Defined in: [packages/memory-client/src/createTevmTransport.js:34](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/createTevmTransport.js#L34)
 
 Creates a custom TEVM Transport for viem clients, backed by an in-memory EVM.
 

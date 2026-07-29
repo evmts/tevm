@@ -8,4 +8,4 @@
 
 > **TestSnapshotNode** = `TevmNode`\<`"fork"`\> & `TestSnapshotBaseClient`
 
-Defined in: [extensions/test-node/src/types.ts:96](https://github.com/evmts/tevm-monorepo/blob/main/extensions/test-node/src/types.ts#L96)
+Defined in: [extensions/test-node/src/types.ts:96](https://github.com/evmts/tevm/blob/main/extensions/test-node/src/types.ts#L96)

@@ -8,7 +8,7 @@
 
 > **tevmReady**(`client`): `Promise`\<`true`\>
 
-Defined in: [packages/memory-client/src/tevmReady.js:25](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/tevmReady.js#L25)
+Defined in: [packages/memory-client/src/tevmReady.js:25](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/tevmReady.js#L25)
 
 Tree-shakeable `tevmReady` action. Resolves when the TEVM client (and any fork) is initialized.
 

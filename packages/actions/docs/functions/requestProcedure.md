@@ -8,7 +8,7 @@
 
 > **requestProcedure**(`client`): [`TevmJsonRpcRequestHandler`](../type-aliases/TevmJsonRpcRequestHandler.md)
 
-Defined in: [packages/actions/src/requestProcedure.js:12](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/requestProcedure.js#L12)
+Defined in: [packages/actions/src/requestProcedure.js:12](https://github.com/evmts/tevm/blob/main/packages/actions/src/requestProcedure.js#L12)
 
 Request handler for JSON-RPC requests to Tevm. Dispatches via the Tevm VM.
 

@@ -8,7 +8,7 @@
 
 > **DumpStateJsonRpcProcedure** = (`request`) => `Promise`\<[`DumpStateJsonRpcResponse`](DumpStateJsonRpcResponse.md)\>
 
-Defined in: [packages/actions/src/DumpState/DumpStateJsonRpcProcedure.ts:16](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/DumpState/DumpStateJsonRpcProcedure.ts#L16)
+Defined in: [packages/actions/src/DumpState/DumpStateJsonRpcProcedure.ts:16](https://github.com/evmts/tevm/blob/main/packages/actions/src/DumpState/DumpStateJsonRpcProcedure.ts#L16)
 
 Procedure for handling tevm_dumpState JSON-RPC requests
 

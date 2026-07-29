@@ -8,7 +8,7 @@
 
 > **Hex** = `` `0x${string}` ``
 
-Defined in: [packages/actions/src/common/Hex.ts:6](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/common/Hex.ts#L6)
+Defined in: [packages/actions/src/common/Hex.ts:6](https://github.com/evmts/tevm/blob/main/packages/actions/src/common/Hex.ts#L6)
 
 A hex string
 

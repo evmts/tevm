@@ -8,7 +8,7 @@
 
 > **tevmSetAccount**(`client`, `params`): `Promise`\<`SetAccountResult`\<`TevmSetAccountError`\>\>
 
-Defined in: [packages/memory-client/src/tevmSetAccount.js:30](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/tevmSetAccount.js#L30)
+Defined in: [packages/memory-client/src/tevmSetAccount.js:30](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/tevmSetAccount.js#L30)
 
 Tree-shakeable `tevmSetAccount` action. Directly sets account balance, nonce, bytecode, and/or
 storage without a transaction — useful for test fixtures and edge-case setups.

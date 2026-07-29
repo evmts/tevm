@@ -8,7 +8,7 @@
 
 > **tevmViemActions**(): (`client`) => [`TevmViemActionsApi`](../type-aliases/TevmViemActionsApi.md)
 
-Defined in: [packages/memory-client/src/tevmViemActions.js:22](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/tevmViemActions.js#L22)
+Defined in: [packages/memory-client/src/tevmViemActions.js:22](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/tevmViemActions.js#L22)
 
 Viem extension that attaches the full set of TEVM actions to a viem client built with
 [createTevmTransport](createTevmTransport.md). Prefer the tree-shakeable actions directly in frontend bundles.

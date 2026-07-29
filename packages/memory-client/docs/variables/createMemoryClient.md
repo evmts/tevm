@@ -8,7 +8,7 @@
 
 > `const` **createMemoryClient**: [`CreateMemoryClientFn`](../type-aliases/CreateMemoryClientFn.md)
 
-Defined in: [packages/memory-client/src/createMemoryClient.js:36](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/createMemoryClient.js#L36)
+Defined in: [packages/memory-client/src/createMemoryClient.js:36](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/createMemoryClient.js#L36)
 
 Creates a [MemoryClient](../type-aliases/MemoryClient.md) - a fully-featured Ethereum development and testing environment.
 

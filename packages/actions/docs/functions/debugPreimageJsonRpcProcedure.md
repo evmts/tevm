@@ -8,7 +8,7 @@
 
 > **debugPreimageJsonRpcProcedure**(`client`): `DebugPreimageProcedure`
 
-Defined in: [packages/actions/src/debug/debugPreimageProcedure.js:18](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/debugPreimageProcedure.js#L18)
+Defined in: [packages/actions/src/debug/debugPreimageProcedure.js:18](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/debugPreimageProcedure.js#L18)
 
 Creates a JSON-RPC procedure handler for the `debug_preimage` method
 

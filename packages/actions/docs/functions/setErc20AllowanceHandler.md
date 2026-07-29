@@ -8,7 +8,7 @@
 
 > **setErc20AllowanceHandler**(`node`): [`AnvilSetErc20AllowanceHandler`](../type-aliases/AnvilSetErc20AllowanceHandler.md)
 
-Defined in: [packages/actions/src/anvil/anvilSetErc20AllowanceHandler.js:32](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/anvilSetErc20AllowanceHandler.js#L32)
+Defined in: [packages/actions/src/anvil/anvilSetErc20AllowanceHandler.js:32](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilSetErc20AllowanceHandler.js#L32)
 
 Sets ERC20 allowance for a spender by overriding the storage of allowance(owner, spender)
 

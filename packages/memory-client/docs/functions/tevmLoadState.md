@@ -8,7 +8,7 @@
 
 > **tevmLoadState**(`client`, `params`): `Promise`\<`LoadStateResult`\<`InternalError`\>\>
 
-Defined in: [packages/memory-client/src/tevmLoadState.js:25](https://github.com/evmts/tevm-monorepo/blob/main/packages/memory-client/src/tevmLoadState.js#L25)
+Defined in: [packages/memory-client/src/tevmLoadState.js:25](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/tevmLoadState.js#L25)
 
 Tree-shakeable `tevmLoadState` action. Replaces TEVM state with a previously dumped snapshot.
 

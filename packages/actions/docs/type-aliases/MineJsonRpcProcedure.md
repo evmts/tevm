@@ -8,7 +8,7 @@
 
 > **MineJsonRpcProcedure** = (`request`) => `Promise`\<[`MineJsonRpcResponse`](MineJsonRpcResponse.md)\>
 
-Defined in: [packages/actions/src/Mine/MineJsonRpcProcedure.ts:7](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Mine/MineJsonRpcProcedure.ts#L7)
+Defined in: [packages/actions/src/Mine/MineJsonRpcProcedure.ts:7](https://github.com/evmts/tevm/blob/main/packages/actions/src/Mine/MineJsonRpcProcedure.ts#L7)
 
 Mine JSON-RPC tevm procedure mines 1 or more blocks
 

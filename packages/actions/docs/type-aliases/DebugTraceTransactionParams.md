@@ -8,7 +8,7 @@
 
 > **DebugTraceTransactionParams**\<`TTracer`, `TDiffMode`, `TTTThrowOnError`\> = [`BaseParams`](BaseParams.md)\<`TTTThrowOnError`\> & [`TraceParams`](TraceParams.md)\<`TTracer`, `TDiffMode`\> & `object`
 
-Defined in: [packages/actions/src/debug/DebugParams.ts:64](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugParams.ts#L64)
+Defined in: [packages/actions/src/debug/DebugParams.ts:64](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugParams.ts#L64)
 
 Params taken by `debug_traceTransaction` handler
 

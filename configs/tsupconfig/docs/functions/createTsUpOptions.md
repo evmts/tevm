@@ -8,7 +8,7 @@
 
 > **createTsUpOptions**(`options`): `Options`
 
-Defined in: [createTsupOptions.js:14](https://github.com/evmts/tevm-monorepo/blob/main/configs/tsupconfig/src/createTsupOptions.js#L14)
+Defined in: [createTsupOptions.js:14](https://github.com/evmts/tevm/blob/main/configs/tsupconfig/src/createTsupOptions.js#L14)
 
 Creates tsup options from params
 

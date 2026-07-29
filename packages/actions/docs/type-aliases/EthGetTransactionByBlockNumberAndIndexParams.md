@@ -8,7 +8,7 @@
 
 > **EthGetTransactionByBlockNumberAndIndexParams** = `object`
 
-Defined in: [packages/actions/src/eth/EthParams.ts:214](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L214)
+Defined in: [packages/actions/src/eth/EthParams.ts:214](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L214)
 
 Based on the JSON-RPC request for `eth_getTransactionByBlockNumberAndIndex` procedure
 
@@ -16,5 +16,5 @@ Based on the JSON-RPC request for `eth_getTransactionByBlockNumberAndIndex` proc
 
 | Property | Modifier | Type | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="blocktag"></a> `blockTag?` | `readonly` | [`BlockParam`](BlockParam.md) | [packages/actions/src/eth/EthParams.ts:215](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L215) |
-| <a id="index"></a> `index` | `readonly` | [`Hex`](Hex.md) | [packages/actions/src/eth/EthParams.ts:216](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthParams.ts#L216) |
+| <a id="blocktag"></a> `blockTag?` | `readonly` | [`BlockParam`](BlockParam.md) | [packages/actions/src/eth/EthParams.ts:215](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L215) |
+| <a id="index"></a> `index` | `readonly` | [`Hex`](Hex.md) | [packages/actions/src/eth/EthParams.ts:216](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthParams.ts#L216) |

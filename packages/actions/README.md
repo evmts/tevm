@@ -9,7 +9,7 @@
 
 # @tevm/actions
 
-Actions add functionality to the [base client](https://github.com/evmts/tevm-monorepo/tree/main/packages/node)
+Actions add functionality to the [base client](https://github.com/evmts/tevm/tree/main/packages/node)
 
 ## Installation
 

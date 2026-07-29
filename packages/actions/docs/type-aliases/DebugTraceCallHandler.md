@@ -8,7 +8,7 @@
 
 > **DebugTraceCallHandler** = \<`TTracer`, `TDiffMode`\>(`params`) => `Promise`\<[`DebugTraceCallResult`](DebugTraceCallResult.md)\<`TTracer`, `TDiffMode`\>\>
 
-Defined in: [packages/actions/src/debug/DebugHandler.ts:26](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/debug/DebugHandler.ts#L26)
+Defined in: [packages/actions/src/debug/DebugHandler.ts:26](https://github.com/evmts/tevm/blob/main/packages/actions/src/debug/DebugHandler.ts#L26)
 
 ## Type Parameters
 

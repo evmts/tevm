@@ -8,7 +8,7 @@
 
 > **resolveContractUri**(`contractUri`, `config`): `Promise`\<\{ `abi`: `Abi`; `address`: `` `0x${string}` ``; `deployedBytecode`: `` `0x${string}` ``; \} \| `undefined`\>
 
-Defined in: [bundler-packages/whatsabi/src/resolveContractUri.js:34](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/whatsabi/src/resolveContractUri.js#L34)
+Defined in: [bundler-packages/whatsabi/src/resolveContractUri.js:34](https://github.com/evmts/tevm/blob/main/bundler-packages/whatsabi/src/resolveContractUri.js#L34)
 
 ## Parameters
 

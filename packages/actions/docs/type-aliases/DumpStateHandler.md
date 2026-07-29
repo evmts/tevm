@@ -8,7 +8,7 @@
 
 > **DumpStateHandler** = (`params?`) => `Promise`\<[`DumpStateResult`](DumpStateResult.md)\>
 
-Defined in: [packages/actions/src/DumpState/DumpStateHandlerType.ts:29](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/DumpState/DumpStateHandlerType.ts#L29)
+Defined in: [packages/actions/src/DumpState/DumpStateHandlerType.ts:29](https://github.com/evmts/tevm/blob/main/packages/actions/src/DumpState/DumpStateHandlerType.ts#L29)
 
 Dumps the current state of the VM into a JSON-serializable object.
 

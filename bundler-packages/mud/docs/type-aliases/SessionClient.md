@@ -8,7 +8,7 @@
 
 > **SessionClient** = `BundlerClient`\<`Transport`, `Chain`, `SmartAccount`, `Client`\> & `object`
 
-Defined in: [types.ts:4](https://github.com/evmts/tevm-monorepo/blob/main/bundler-packages/mud/src/types.ts#L4)
+Defined in: [types.ts:4](https://github.com/evmts/tevm/blob/main/bundler-packages/mud/src/types.ts#L4)
 
 ## Type Declaration
 

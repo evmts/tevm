@@ -8,7 +8,7 @@
 
 > `const` **DAOConfig**: `object`
 
-Defined in: [packages/vm/src/actions/DAOConfig.ts:1](https://github.com/evmts/tevm-monorepo/blob/main/packages/vm/src/actions/DAOConfig.ts#L1)
+Defined in: [packages/vm/src/actions/DAOConfig.ts:1](https://github.com/evmts/tevm/blob/main/packages/vm/src/actions/DAOConfig.ts#L1)
 
 ## Type Declaration
 

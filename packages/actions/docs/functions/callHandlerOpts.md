@@ -8,7 +8,7 @@
 
 > **callHandlerOpts**(`client`, `params`): `Promise`\<\{ `data`: `EVMRunCallOpts`; `errors?`: `undefined`; \} \| \{ `data?`: `undefined`; `errors`: [`CallHandlerOptsError`](../type-aliases/CallHandlerOptsError.md)[]; \}\>
 
-Defined in: [packages/actions/src/Call/callHandlerOpts.js:18](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/Call/callHandlerOpts.js#L18)
+Defined in: [packages/actions/src/Call/callHandlerOpts.js:18](https://github.com/evmts/tevm/blob/main/packages/actions/src/Call/callHandlerOpts.js#L18)
 
 **`Internal`**
 

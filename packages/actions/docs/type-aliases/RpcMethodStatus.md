@@ -8,4 +8,4 @@
 
 > **RpcMethodStatus** = `"supported"` \| `"missing"` \| `"intentionally_unsupported"` \| `"blocked"`
 
-Defined in: [packages/actions/src/rpcMethodMatrix.ts:1](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/rpcMethodMatrix.ts#L1)
+Defined in: [packages/actions/src/rpcMethodMatrix.ts:1](https://github.com/evmts/tevm/blob/main/packages/actions/src/rpcMethodMatrix.ts#L1)

@@ -8,7 +8,7 @@
 
 > **AnvilDealErc20Procedure** = (`request`) => `Promise`\<[`AnvilDealErc20JsonRpcResponse`](AnvilDealErc20JsonRpcResponse.md)\>
 
-Defined in: [packages/actions/src/anvil/AnvilProcedure.ts:207](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/anvil/AnvilProcedure.ts#L207)
+Defined in: [packages/actions/src/anvil/AnvilProcedure.ts:207](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilProcedure.ts#L207)
 
 JSON-RPC procedure for `anvil_dealErc20`
 

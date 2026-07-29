@@ -8,7 +8,7 @@
 
 > **EthGetTransactionByHashHandler** = (`request`) => `Promise`\<[`EthGetTransactionByHashResult`](EthGetTransactionByHashResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:157](https://github.com/evmts/tevm-monorepo/blob/main/packages/actions/src/eth/EthHandler.ts#L157)
+Defined in: [packages/actions/src/eth/EthHandler.ts:157](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L157)
 
 ## Parameters
 
