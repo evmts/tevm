@@ -422,6 +422,40 @@ describe(mineHandler.name, () => {
 		expect(block1.header.timestamp).toBe(base + 114n)
 	})
 
+	it('should apply blockTimestampInterval to every mined block including the first', async () => {
+		const client = createTevmNode()
+		const vm = await client.getVm()
+		const parent = await vm.blockchain.getCanonicalHeadBlock()
+		const base = parent.header.timestamp
+
+		client.setBlockTimestampInterval(7n)
+		await mineHandler(client)({ blockCount: 3 })
+
+		const block3 = await vm.blockchain.getCanonicalHeadBlock()
+		const block2 = await vm.blockchain.getBlock(block3.header.parentHash)
+		const block1 = await vm.blockchain.getBlock(block2.header.parentHash)
+
+		expect(block1.header.timestamp).toBe(base + 7n)
+		expect(block2.header.timestamp).toBe(base + 14n)
+		expect(block3.header.timestamp).toBe(base + 21n)
+	})
+
+	it('should restore wall-clock timestamps after blockTimestampInterval is removed', async () => {
+		const client = createTevmNode()
+		const vm = await client.getVm()
+
+		client.setBlockTimestampInterval(1_000_000n)
+		client.setBlockTimestampInterval(undefined)
+
+		const before = Math.floor(Date.now() / 1000)
+		await mineHandler(client)({})
+		const after = Math.floor(Date.now() / 1000)
+
+		const block = await vm.blockchain.getCanonicalHeadBlock()
+		expect(Number(block.header.timestamp)).toBeGreaterThanOrEqual(before)
+		expect(Number(block.header.timestamp)).toBeLessThanOrEqual(after + 1)
+	})
+
 	it('should consume next block prevRandao only once', async () => {
 		const client = createTevmNode()
 		const vm = await client.getVm()
