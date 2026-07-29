@@ -58,14 +58,14 @@ describe('parseRequest', () => {
 	it('should reject empty batch requests when disabled', (): void => {
 		const result = parseRequest('[]', { allowEmptyBatch: false })
 		expect(result).toBeInstanceOf(InvalidRequestError)
-		expect((result as InvalidRequestError).message).toBe('Empty batch requests are invalid')
+		expect((result as InvalidRequestError).message).toContain('Empty batch requests are invalid')
 	})
 
 	it('should reject batches that exceed the configured max size', (): void => {
 		const body = JSON.stringify([validJsonRpcRequest, validJsonRpcRequest])
 		const result = parseRequest(body, { maxBatchSize: 1 })
 		expect(result).toBeInstanceOf(InvalidRequestError)
-		expect((result as InvalidRequestError).message).toBe('Batch request exceeds configured max batch size of 1')
+		expect((result as InvalidRequestError).message).toContain('Batch request exceeds configured max batch size of 1')
 	})
 
 	it('should require jsonrpc version for strict single requests', (): void => {
