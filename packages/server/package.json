@@ -81,7 +81,8 @@
 		"@tevm/tsupconfig": "workspace:^",
 		"@types/express": "^5.0.6",
 		"express": "^5.2.1",
-		"next": "^16.2.6"
+		"next": "^16.2.6",
+		"viem": "^2.49.3"
 	},
 	"publishConfig": {
 		"access": "public"
