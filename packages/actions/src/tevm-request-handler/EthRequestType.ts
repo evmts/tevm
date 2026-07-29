@@ -33,6 +33,7 @@ import type {
 	EthProtocolVersionJsonRpcRequest,
 	EthSendRawTransactionJsonRpcRequest,
 	EthSendTransactionJsonRpcRequest,
+	EthSendUnsignedTransactionJsonRpcRequest,
 	EthSignJsonRpcRequest,
 	EthSignTransactionJsonRpcRequest,
 	EthSyncingJsonRpcRequest,
@@ -64,6 +65,7 @@ export type EthRequestType = {
 	eth_getBlockByHash: EthGetBlockByHashJsonRpcRequest
 	eth_protocolVersion: EthProtocolVersionJsonRpcRequest
 	eth_sendTransaction: EthSendTransactionJsonRpcRequest
+	eth_sendUnsignedTransaction: EthSendUnsignedTransactionJsonRpcRequest
 	eth_signTransaction: EthSignTransactionJsonRpcRequest
 	eth_uninstallFilter: EthUninstallFilterJsonRpcRequest
 	eth_getBlockByNumber: EthGetBlockByNumberJsonRpcRequest

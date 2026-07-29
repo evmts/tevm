@@ -38,6 +38,7 @@ import type {
 	EthNewPendingTransactionFilterJsonRpcRequest,
 	EthProtocolVersionJsonRpcRequest,
 	EthSendRawTransactionJsonRpcRequest,
+	EthSendUnsignedTransactionJsonRpcRequest,
 	EthSendTransactionJsonRpcRequest,
 	EthSignJsonRpcRequest,
 	EthSignTransactionJsonRpcRequest,
@@ -88,6 +89,7 @@ import type {
 	EthNewPendingTransactionFilterJsonRpcResponse,
 	EthProtocolVersionJsonRpcResponse,
 	EthSendRawTransactionJsonRpcResponse,
+	EthSendUnsignedTransactionJsonRpcResponse,
 	EthSendTransactionJsonRpcResponse,
 	EthSignJsonRpcResponse,
 	EthSignTransactionJsonRpcResponse,
@@ -221,6 +223,10 @@ export type EthSendRawTransactionJsonRpcProcedure = (
 export type EthSendTransactionJsonRpcProcedure = (
 	request: EthSendTransactionJsonRpcRequest,
 ) => Promise<EthSendTransactionJsonRpcResponse>
+// eth_sendUnsignedTransaction
+export type EthSendUnsignedTransactionJsonRpcProcedure = (
+	request: EthSendUnsignedTransactionJsonRpcRequest,
+) => Promise<EthSendUnsignedTransactionJsonRpcResponse>
 // eth_sign
 export type EthSignJsonRpcProcedure = (request: EthSignJsonRpcRequest) => Promise<EthSignJsonRpcResponse>
 // eth_signTransaction

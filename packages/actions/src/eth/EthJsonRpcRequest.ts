@@ -271,6 +271,17 @@ export type EthSendRawTransactionJsonRpcRequest = JsonRpcRequest<'eth_sendRawTra
  * JSON-RPC request for `eth_sendTransaction` procedure
  */
 export type EthSendTransactionJsonRpcRequest = JsonRpcRequest<'eth_sendTransaction', readonly [tx: JsonRpcTransaction]>
+// eth_sendUnsignedTransaction
+/**
+ * JSON-RPC request for `eth_sendUnsignedTransaction` procedure
+ *
+ * Submits a transaction on behalf of an arbitrary `from` address without requiring a signature.
+ * This mirrors anvil's `eth_sendUnsignedTransaction`.
+ */
+export type EthSendUnsignedTransactionJsonRpcRequest = JsonRpcRequest<
+	'eth_sendUnsignedTransaction',
+	readonly [tx: JsonRpcTransaction]
+>
 // eth_sign
 /**
  * JSON-RPC request for `eth_sign` procedure
@@ -491,6 +502,7 @@ export type EthJsonRpcRequest =
 	| EthProtocolVersionJsonRpcRequest
 	| EthSendRawTransactionJsonRpcRequest
 	| EthSendTransactionJsonRpcRequest
+	| EthSendUnsignedTransactionJsonRpcRequest
 	| EthSignJsonRpcRequest
 	| EthSignTransactionJsonRpcRequest
 	| EthSyncingJsonRpcRequest

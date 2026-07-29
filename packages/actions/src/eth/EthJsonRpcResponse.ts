@@ -302,6 +302,16 @@ export type EthSendRawTransactionJsonRpcResponse = JsonRpcResponse<'eth_sendRawT
  */
 export type EthSendTransactionJsonRpcResponse = JsonRpcResponse<'eth_sendTransaction', Hex, string | number>
 
+// eth_sendUnsignedTransaction
+/**
+ * JSON-RPC response for `eth_sendUnsignedTransaction` procedure
+ */
+export type EthSendUnsignedTransactionJsonRpcResponse = JsonRpcResponse<
+	'eth_sendUnsignedTransaction',
+	Hex,
+	string | number
+>
+
 // eth_sign
 /**
  * JSON-RPC response for `eth_sign` procedure

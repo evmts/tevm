@@ -266,6 +266,15 @@ export type EthSendRawTransactionParams = { readonly data: Hex }
  * @experimental
  */
 export type EthSendTransactionParams = CallParams
+// eth_sendUnsignedTransaction
+/**
+ * Based on the JSON-RPC request for `eth_sendUnsignedTransaction` procedure.
+ * Unlike {@link EthSendTransactionParams} the `from` address is required and is
+ * always used as the sender regardless of whether it is impersonated.
+ * @experimental
+ */
+export type EthSendUnsignedTransactionParams = CallParams & { readonly from: Address }
+
 // eth_sign
 /**
  * Based on the JSON-RPC request for `eth_sign` procedure
@@ -590,6 +599,7 @@ export type EthParams =
 	| EthProtocolVersionParams
 	| EthSendRawTransactionParams
 	| EthSendTransactionParams
+	| EthSendUnsignedTransactionParams
 	| EthSignParams
 	| EthSignTransactionParams
 	| EthSyncingParams
