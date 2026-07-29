@@ -3,6 +3,7 @@ import { createAddress } from '@tevm/address'
 import { prefundedAccounts } from '@tevm/node'
 import { bytesToHex, EthjsAddress } from '@tevm/utils'
 import { callHandler } from '../Call/callHandler.js'
+import { assertSignerAvailable } from '../internal/assertSignerAvailable.js'
 
 // TODO we should be properly checking signatures
 
@@ -11,6 +12,8 @@ import { callHandler } from '../Call/callHandler.js'
  * @returns {import('./EthHandler.js').EthSendTransactionHandler}
  */
 export const ethSendTransactionHandler = (client) => async (params) => {
+	// In strict impersonation mode tevm emulates anvil and refuses to sign for unknown senders
+	assertSignerAvailable(client, params.from)
 	let tx = TransactionFactory(
 		{
 			...params,

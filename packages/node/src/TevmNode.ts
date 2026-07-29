@@ -24,6 +24,7 @@ export type SnapshotMetadata = {
 	minGasPrice?: bigint
 	impersonatedAccount?: Address
 	autoImpersonate?: boolean
+	strictImpersonation?: boolean
 	txHashes?: readonly Hex[]
 	txPoolTransactions?: readonly unknown[]
 	receiptEntries?: readonly (readonly [unknown, unknown])[]
@@ -141,6 +142,19 @@ export type TevmNode<TMode extends 'fork' | 'normal' = 'fork' | 'normal', TExten
 	 * When enabled, all transactions will have their sender automatically impersonated.
 	 */
 	readonly setAutoImpersonate: (enabled: boolean) => void
+	/**
+	 * Gets whether strict impersonation is enabled.
+	 * When enabled, tevm emulates anvil: sending a transaction from an address that is
+	 * neither a prefunded dev account nor actively impersonated throws a
+	 * `NoSignerAvailableError`. Defaults to false, which keeps tevm's permissive
+	 * auto-impersonation behavior.
+	 */
+	readonly getStrictImpersonation: () => boolean
+	/**
+	 * Sets whether to enforce strict impersonation.
+	 * @see {@link getStrictImpersonation}
+	 */
+	readonly setStrictImpersonation: (enabled: boolean) => void
 	/**
 	 * Gets whether automatic tracing is enabled.
 	 * When enabled, all transactions include traces in their responses.

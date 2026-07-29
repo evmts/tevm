@@ -9,6 +9,7 @@ export * from './debug/index.js'
 export * from './eth/index.js'
 export * from './GetAccount/index.js'
 // need this in procedures types atm and avoiding wasting time refactoring to ship faster
+export * from './internal/assertSignerAvailable.js'
 export * from './internal/forkAndCacheBlock.js'
 export * from './internal/zod/index.js'
 export * from './LoadState/index.js'

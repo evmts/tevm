@@ -92,6 +92,7 @@ export { MethodNotSupportedError, type MethodNotSupportedErrorParameters } from 
 export { NonceAlreadyUsedError, type NonceAlreadyUsedErrorParameters } from './NonceAlreadyUsedError.js'
 export { NonceTooHighError, type NonceTooHighErrorParameters } from './NonceTooHighError.js'
 export { NonceTooLowError, type NonceTooLowErrorParameters } from './NonceTooLowError.js'
+export { NoSignerAvailableError, type NoSignerAvailableErrorParameters } from './NoSignerAvailableError.js'
 export { ParseError, type ParseErrorParameters } from './ParseErrorError.js'
 export {
 	PendingTransactionTimeoutError,

@@ -22,6 +22,12 @@ EIP-3155 flags: `--input=<tevm-trace.json> --out=artifacts/eip3155/trace.jsonl` 
 - `zevm_lightSyncStatus` is kept as a narrow compatibility alias.
 - `zevm_voltaire_*` and `zevm_guillotineMini_*` are intentionally blocked — outside Tevm's scope.
 
+## Impersonation
+
+- Tevm auto-impersonates every sender by default, so `eth_sendTransaction` never produces anvil's `No Signer available` error. This is why viem's `impersonateAccount` / `stopImpersonatingAccount` negative assertions cannot hold against a default Tevm node.
+- `createTevmNode({ strictImpersonation: true })` (or `node.setStrictImpersonation(true)`) opts into anvil's semantics: only prefunded dev accounts, the actively impersonated account, and auto-impersonation grant a signer; anything else throws `NoSignerAvailableError`.
+- `anvil_stopImpersonatingAccount` is meaningful under strict mode — it revokes access that `anvil_impersonateAccount` granted.
+
 ## Snapshot / reset / state blobs
 
 - `anvil_snapshot` / `evm_snapshot` capture state root + state, chain indexes, pending txpool, receipts/logs, mining config, block env overrides, impersonation, and time controls.

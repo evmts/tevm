@@ -96,6 +96,8 @@ export {
 	type NonceTooHighErrorParameters,
 	NonceTooLowError,
 	type NonceTooLowErrorParameters,
+	NoSignerAvailableError,
+	type NoSignerAvailableErrorParameters,
 	OutOfGasError,
 	type OutOfGasErrorParameters,
 	OutOfRangeError,

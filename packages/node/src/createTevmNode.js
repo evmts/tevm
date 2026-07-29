@@ -92,6 +92,25 @@ export const createTevmNode = (options = {}) => {
 	}
 
 	/**
+	 * When true the node refuses to send transactions from addresses it has no signer for,
+	 * emulating anvil's `No Signer available` error. Defaults to false (permissive).
+	 * @type {boolean}
+	 */
+	let strictImpersonation = options.strictImpersonation ?? false
+	/**
+	 * Gets whether strict impersonation is enabled
+	 * @returns {boolean}
+	 */
+	const getStrictImpersonation = () => strictImpersonation
+	/**
+	 * Sets whether to enforce strict impersonation
+	 * @param {boolean} enabled
+	 */
+	const setStrictImpersonation = (enabled) => {
+		strictImpersonation = enabled
+	}
+
+	/**
 	 * @type {boolean}
 	 */
 	let tracesEnabled = false
@@ -630,6 +649,18 @@ export const createTevmNode = (options = {}) => {
 			copiedAutoImpersonate = enabled
 		}
 		/**
+		 * Strict impersonation state copied from parent
+		 * @type {boolean}
+		 */
+		let copiedStrictImpersonation = baseClient.getStrictImpersonation()
+		const getCopiedStrictImpersonation = () => copiedStrictImpersonation
+		/**
+		 * @param {boolean} enabled
+		 */
+		const setCopiedStrictImpersonation = (enabled) => {
+			copiedStrictImpersonation = enabled
+		}
+		/**
 		 * Traces enabled state copied from parent
 		 * @type {boolean}
 		 */
@@ -787,6 +818,8 @@ export const createTevmNode = (options = {}) => {
 			setImpersonatedAccount,
 			getAutoImpersonate: getCopiedAutoImpersonate,
 			setAutoImpersonate: setCopiedAutoImpersonate,
+			getStrictImpersonation: getCopiedStrictImpersonation,
+			setStrictImpersonation: setCopiedStrictImpersonation,
 			getTracesEnabled: getCopiedTracesEnabled,
 			setTracesEnabled: setCopiedTracesEnabled,
 			getNextBlockTimestamp: () => copiedNextBlockTimestamp,
@@ -1052,6 +1085,8 @@ export const createTevmNode = (options = {}) => {
 		setImpersonatedAccount,
 		getAutoImpersonate,
 		setAutoImpersonate,
+		getStrictImpersonation,
+		setStrictImpersonation,
 		getTracesEnabled,
 		setTracesEnabled,
 		getNextBlockTimestamp,
