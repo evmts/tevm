@@ -33,10 +33,18 @@ runs:
         npm i pnpm@10.33.4 --global && pnpm --version
       shell: bash
 
+    # Pinned deliberately: ../zevm/npm/zevm is a pnpm-workspace member of this repo, so its
+    # package.json specifiers are recorded in our pnpm-lock.yaml. Cloning zevm at HEAD meant any
+    # dependency bump landing in evmts/zevm instantly broke `pnpm install --frozen-lockfile` here
+    # with ERR_PNPM_OUTDATED_LOCKFILE, failing CI on every PR for reasons unrelated to that PR.
+    # Bump this SHA and regenerate pnpm-lock.yaml in the same commit.
     - name: Checkout Zevm workspace
+      env:
+        ZEVM_REF: e891cf630d35c89df97e8a408318c490a9969629
       run: |
         if [ ! -d ../zevm/npm/zevm ]; then
-          git clone --depth 1 https://github.com/evmts/zevm.git ../zevm
+          git clone --filter=blob:none https://github.com/evmts/zevm.git ../zevm
+          git -C ../zevm checkout --detach "$ZEVM_REF"
         fi
       shell: bash
 
