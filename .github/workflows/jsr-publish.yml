@@ -16,7 +16,7 @@ jobs:
   publish-jsr:
     name: Publish to JSR
     if: |
-      github.repository == 'evmts/tevm-monorepo' &&
+      github.repository == 'evmts/tevm' &&
       (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     steps:
