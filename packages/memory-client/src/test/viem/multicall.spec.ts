@@ -32,12 +32,9 @@ describe('multicall', () => {
 			contracts: [c.simpleContract.read.get(), c.simpleContract.read.get(), c.simpleContract.read.get()],
 		})
 		expect(result.map(({ result, status }) => ({ result, status }))).toEqual([
-			{ result: undefined, status: 'failure' },
-			{ result: undefined, status: 'failure' },
-			{ result: undefined, status: 'failure' },
+			{ result: 420n, status: 'success' },
+			{ result: 420n, status: 'success' },
+			{ result: 420n, status: 'success' },
 		])
-		for (const item of result) {
-			expect(item.error?.message).toContain('aggregate3')
-		}
 	})
 })
