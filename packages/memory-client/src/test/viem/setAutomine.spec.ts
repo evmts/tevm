@@ -1,21 +1,12 @@
 import { SimpleContract } from '@tevm/contract'
 import { type Address, encodeFunctionData } from '@tevm/utils'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { parseEther } from 'viem'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createMemoryClient } from '../../createMemoryClient.js'
 import type { MemoryClient } from '../../MemoryClient.js'
 
 /**
- * Tests for TEVM mining behavior and automine functionality
- *
- * Note: These tests focus on the mining aspects that are actually implemented
- * in the current version of TEVM. While the viem test actions interface
- * declares support for setAutomine, the actual implementation of
- * anvil_setAutomine is not available in the current version.
- *
- * These tests verify:
- * 1. The ability to query automine status via anvil_getAutomine
- * 2. The behavior of transactions when manually mining blocks
- * 3. Multiple transactions being included in a single mined block
+ * Tests for TEVM mining behavior and automine functionality.
  */
 
 let mc: MemoryClient
@@ -41,7 +32,47 @@ beforeEach(async () => {
 	expect(initialValue.data).toBe(420n)
 })
 
+afterEach(() => {
+	mc.transport.tevm.close()
+})
+
 describe('automine', () => {
+	it('should disable and re-enable immediate mining through the viem test action', async () => {
+		const sender = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+		const secondSender = '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC'
+		const recipient = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+		await mc.tevmSetAccount({
+			address: sender,
+			balance: parseEther('100'),
+		})
+		await mc.tevmSetAccount({
+			address: secondSender,
+			balance: parseEther('100'),
+		})
+
+		await mc.setAutomine(false)
+		expect(await mc.getAutomine()).toBe(false)
+
+		const blockNumber = await mc.getBlockNumber()
+		await mc.sendTransaction({
+			account: sender,
+			to: recipient,
+			value: parseEther('1'),
+		})
+		expect(await mc.getBlockNumber()).toBe(blockNumber)
+
+		await mc.setAutomine(true)
+		expect(await mc.getAutomine()).toBe(true)
+
+		const secondHash = await mc.sendTransaction({
+			account: secondSender,
+			to: recipient,
+			value: parseEther('1'),
+		})
+		expect(await mc.getBlockNumber()).toBe(blockNumber + 1n)
+		expect((await mc.getTransactionReceipt({ hash: secondHash })).blockNumber).toBe(blockNumber + 1n)
+	})
+
 	it('should get the automine status', async () => {
 		// Get the current automine status through direct request
 		const result = await mc.request({

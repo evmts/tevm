@@ -33,7 +33,7 @@
  */
 export const createIntervalMiner = (client) => {
 	/**
-	 * @type {NodeJS.Timeout | undefined}
+	 * @type {ReturnType<typeof setTimeout> | undefined}
 	 */
 	let timeoutId
 
@@ -41,6 +41,13 @@ export const createIntervalMiner = (client) => {
 	 * @type {boolean}
 	 */
 	let isRunning = false
+
+	/**
+	 * Identifies the active timer generation so a mining cycle that was stopped
+	 * while awaiting its callback cannot schedule a stale follow-up timer.
+	 * @type {number}
+	 */
+	let generation = 0
 
 	/**
 	 * Callback function for mining - will be set by the client
@@ -59,24 +66,20 @@ export const createIntervalMiner = (client) => {
 
 	/**
 	 * Executes mining cycle if callback is available
+	 * @param {number} activeGeneration - Timer generation that started this cycle
 	 * @returns {Promise<void>}
 	 */
-	const mineBlock = async () => {
-		if (!isRunning) {
+	const mineBlock = async (activeGeneration) => {
+		if (!isRunning || activeGeneration !== generation) {
 			return
 		}
 
 		try {
 			client.logger.debug('Interval mining: Starting block mining cycle')
 
-			// Read mempool state synchronously at the beginning to prevent race conditions
-			const txPool = await client.getTxPool()
-			const txsInPool = txPool.txsInPool
-
-			client.logger.debug({ txsInPool }, 'Interval mining: Mempool state captured')
-
-			// Only mine if there are transactions in the pool and we have a mining callback
-			if (txsInPool > 0 && miningCallback) {
+			// Anvil fixed-block-time mining creates a block on every wall-clock tick,
+			// including when the transaction pool is empty.
+			if (miningCallback) {
 				try {
 					await miningCallback()
 					client.logger.debug('Interval mining: Block mined successfully')
@@ -85,23 +88,22 @@ export const createIntervalMiner = (client) => {
 				}
 			} else if (!miningCallback) {
 				client.logger.debug('Interval mining: No mining callback set, skipping mining cycle')
-			} else {
-				client.logger.debug('Interval mining: No transactions in mempool, skipping mining cycle')
 			}
 		} catch (error) {
 			client.logger.error(error, 'Interval mining: Unexpected error during mining')
 		} finally {
-			// Schedule the next mining cycle if still running
-			scheduleNext()
+			// Schedule only if this cycle still owns the active generation.
+			scheduleNext(activeGeneration)
 		}
 	}
 
 	/**
 	 * Schedules the next mining cycle using setTimeout
+	 * @param {number} activeGeneration - Timer generation that owns this schedule
 	 * @returns {void}
 	 */
-	const scheduleNext = () => {
-		if (!isRunning || client.miningConfig.type !== 'interval') {
+	const scheduleNext = (activeGeneration) => {
+		if (!isRunning || activeGeneration !== generation || client.miningConfig.type !== 'interval') {
 			return
 		}
 
@@ -114,10 +116,13 @@ export const createIntervalMiner = (client) => {
 		}
 
 		timeoutId = setTimeout(() => {
-			if (isRunning) {
-				mineBlock()
+			if (isRunning && activeGeneration === generation) {
+				void mineBlock(activeGeneration)
 			}
 		}, blockTime)
+		if (typeof timeoutId === 'object' && timeoutId !== null && 'unref' in timeoutId) {
+			timeoutId.unref()
+		}
 
 		client.logger.debug({ blockTime }, 'Interval mining: Next mining cycle scheduled')
 	}
@@ -138,8 +143,9 @@ export const createIntervalMiner = (client) => {
 		}
 
 		isRunning = true
+		generation += 1
 		client.logger.debug('Interval mining: Starting')
-		scheduleNext()
+		scheduleNext(generation)
 	}
 
 	/**
@@ -152,6 +158,7 @@ export const createIntervalMiner = (client) => {
 		}
 
 		isRunning = false
+		generation += 1
 
 		if (timeoutId) {
 			clearTimeout(timeoutId)

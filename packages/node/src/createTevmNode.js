@@ -890,12 +890,13 @@ export const createTevmNode = (options = {}) => {
 	}
 
 	/**
-	 * Mines all currently pending transactions using the same state, receipt, and
-	 * txpool updates as manual mining.
+	 * Mines one interval block using the same state, receipt, and txpool updates
+	 * as manual mining. Fixed-block-time mining includes empty blocks.
 	 * @param {import('./TevmNode.js').TevmNode} client
 	 * @returns {Promise<void>}
+	 * @throws {Error} If block construction fails or the mined state root is unavailable
 	 */
-	const minePendingTransactions = async (client) => {
+	const mineIntervalBlock = async (client) => {
 		const pool = await client.getTxPool()
 		const originalVm = await client.getVm()
 		const vm = await originalVm.deepCopy()
@@ -904,10 +905,6 @@ export const createTevmNode = (options = {}) => {
 		const overrideBaseFee = client.getNextBlockBaseFeePerGas()
 		const baseFeePerGas = overrideBaseFee ?? parentBlock.header.calcNextBaseFee()
 		const orderedTxs = await pool.txsByPriceAndNonce({ baseFee: baseFeePerGas })
-		if (orderedTxs.length === 0) {
-			client.logger.debug('Interval mining: No transactions to mine')
-			return
-		}
 		if (overrideBaseFee !== undefined) {
 			client.setNextBlockBaseFeePerGas(undefined)
 		}
@@ -1028,7 +1025,7 @@ export const createTevmNode = (options = {}) => {
 					// Set up the mining callback
 					intervalMiner.setMiningCallback(async () => {
 						try {
-							await minePendingTransactions(baseClient)
+							await mineIntervalBlock(baseClient)
 						} catch (error) {
 							baseClient.logger.error(error, 'Failed to mine block in setMiningConfig')
 						}
@@ -1129,7 +1126,7 @@ export const createTevmNode = (options = {}) => {
 			// Set up the mining callback to handle block creation
 			intervalMiner.setMiningCallback(async () => {
 				try {
-					await minePendingTransactions(baseClient)
+					await mineIntervalBlock(baseClient)
 				} catch (error) {
 					baseClient.logger.error(error, 'Failed to mine block in interval mining')
 				}
