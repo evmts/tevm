@@ -1,5 +1,5 @@
 import { createAddress } from '@tevm/address'
-import { hexToBytes } from 'viem'
+import { hexToBytes, setLengthLeft } from '@tevm/utils'
 
 /**
  * Prefetches storage for all storage slots in the access list
@@ -26,9 +26,11 @@ export const prefetchStorageFromAccessList = async (client, accessList) => {
 		const addressObj = createAddress(address.startsWith('0x') ? address : `0x${address}`)
 
 		for (const storageKey of storageKeys) {
-			// Convert storage key to bytes with proper padding to 32 bytes
+			// Convert storage key to bytes with proper LEFT padding to 32 bytes.
+			// NOTE: viem's hexToBytes(hex, { size: 32 }) pads on the RIGHT which
+			// would resolve the wrong slot, diverging from anvil/geth.
 			const hexKey = /** @type {`0x${string}`} */ (storageKey.startsWith('0x') ? storageKey : `0x${storageKey}`)
-			const keyBytes = hexToBytes(hexKey, { size: 32 })
+			const keyBytes = setLengthLeft(hexToBytes(hexKey), 32)
 
 			// Queue up storage fetch
 			prefetchPromises.push(

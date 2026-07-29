@@ -9,7 +9,9 @@ import { getStorageAtProcedure } from './getStorageAtProcedure.js'
 
 let client: TevmNode
 let contractAddress: Address
-const storageValue = '0x01a4000000000000000000000000000000000000000000000000000000000000'
+// 420n (0x01a4) stored in slot 0 must come back as a canonical 32-byte LEFT-padded
+// storage word, matching anvil/geth (the previous right-padded expectation encoded the bug)
+const storageValue = `0x${'0'.repeat(60)}01a4`
 
 beforeEach(async () => {
 	client = createTevmNode()

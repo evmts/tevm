@@ -29,6 +29,65 @@ describe('getStorageAtHandler', () => {
 		expect(result).toBe(TEST_VALUE)
 	})
 
+	it('should return storage word as canonical 32-byte left-padded hex', async () => {
+		const client = createTevmNode()
+
+		await setAccountHandler(client)({
+			address: TEST_ADDRESS,
+			state: {
+				[`0x${'0'.repeat(63)}1`]: '0x01',
+			},
+		})
+
+		const result = await getStorageAtHandler(client)({
+			address: TEST_ADDRESS,
+			position: `0x${'0'.repeat(63)}1`,
+			blockTag: 'latest',
+		})
+
+		// must match anvil/geth: value 0x01 left-padded to 32 bytes, not right-padded
+		expect(result).toBe(`0x${'0'.repeat(63)}1`)
+	})
+
+	it('should resolve short position hex to the canonical left-padded slot', async () => {
+		const client = createTevmNode()
+
+		await setAccountHandler(client)({
+			address: TEST_ADDRESS,
+			state: {
+				[`0x${'0'.repeat(63)}1`]: TEST_VALUE,
+			},
+		})
+
+		// '0x1' must be read as slot 0x00...01 (like anvil/geth), not right-padded 0x0100...00
+		const result = await getStorageAtHandler(client)({
+			address: TEST_ADDRESS,
+			position: '0x1',
+			blockTag: 'latest',
+		})
+
+		expect(result).toBe(TEST_VALUE)
+	})
+
+	it('should left-pad a multi-byte storage value to exactly 32 bytes', async () => {
+		const client = createTevmNode()
+
+		await setAccountHandler(client)({
+			address: TEST_ADDRESS,
+			state: {
+				[`0x${'0'.repeat(63)}2`]: '0xdeadbeef',
+			},
+		})
+
+		const result = await getStorageAtHandler(client)({
+			address: TEST_ADDRESS,
+			position: '0x2',
+			blockTag: 'latest',
+		})
+
+		expect(result).toBe(`0x${'0'.repeat(56)}deadbeef`)
+	})
+
 	it('should handle pending block tag', async () => {
 		const client = createTevmNode()
 
