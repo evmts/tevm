@@ -3246,7 +3246,7 @@ exports[`traceCallHandler > should execute a contract call with default tracer 1
 exports[`traceCallHandler > should execute a contract call with prestateTracer and diffMode false 1`] = `
 {
   "0x0000000000000000000000000000000000000000": {
-    "balance": "0x3635c9adc5dea00000",
+    "balance": "0x21e19e0c9bab2400000",
     "code": "0x",
     "nonce": 0,
     "storage": {},
@@ -3260,7 +3260,7 @@ exports[`traceCallHandler > should execute a contract call with prestateTracer a
     },
   },
   "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266": {
-    "balance": "0x3635c9adc5de07e506",
+    "balance": "0x21e19e0c9bab1a7e506",
     "code": "0x",
     "nonce": 1,
     "storage": {},
@@ -3277,13 +3277,13 @@ exports[`traceCallHandler > should execute a contract call with prestateTracer a
       },
     },
     "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266": {
-      "balance": "0x3635c9adc5de04eadf",
+      "balance": "0x21e19e0c9bab1a4eadf",
       "nonce": 2,
     },
   },
   "pre": {
     "0x0000000000000000000000000000000000000000": {
-      "balance": "0x3635c9adc5dea00000",
+      "balance": "0x21e19e0c9bab2400000",
       "code": "0x",
       "nonce": 0,
       "storage": {},
@@ -3297,7 +3297,7 @@ exports[`traceCallHandler > should execute a contract call with prestateTracer a
       },
     },
     "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266": {
-      "balance": "0x3635c9adc5de07e506",
+      "balance": "0x21e19e0c9bab1a7e506",
       "code": "0x",
       "nonce": 1,
       "storage": {},

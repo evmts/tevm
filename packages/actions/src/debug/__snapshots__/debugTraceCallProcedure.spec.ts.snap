@@ -2968,7 +2968,7 @@ exports[`debugTraceCallJsonRpcProcedure > should trace a transaction and return 
   "method": "debug_traceCall",
   "result": {
     "0x0000000000000000000000000000000000000000": {
-      "balance": "0x3635c9adc5dea00000",
+      "balance": "0x21e19e0c9bab2400000",
       "code": "0x",
       "nonce": 0,
       "storage": {},
@@ -2993,7 +2993,7 @@ exports[`debugTraceCallJsonRpcProcedure > should trace a transaction and return 
   "result": {
     "post": {
       "0x0000000000000000000000000000000000000000": {
-        "balance": "0x3635c9adc5de9d0848",
+        "balance": "0x21e19e0c9bab23d0848",
         "nonce": 1,
       },
       "0x5fbdb2315678afecb367f032d93f642f64180aa3": {
@@ -3004,7 +3004,7 @@ exports[`debugTraceCallJsonRpcProcedure > should trace a transaction and return 
     },
     "pre": {
       "0x0000000000000000000000000000000000000000": {
-        "balance": "0x3635c9adc5dea00000",
+        "balance": "0x21e19e0c9bab2400000",
         "code": "0x",
         "nonce": 0,
         "storage": {},
