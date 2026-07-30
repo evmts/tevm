@@ -1805,6 +1805,9 @@ importers:
       '@tevm/utils':
         specifier: workspace:^
         version: link:../utils
+      eventemitter3:
+        specifier: ^5.0.4
+        version: 5.0.4
       viem:
         specifier: ^2.49.3
         version: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)

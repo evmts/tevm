@@ -2,7 +2,7 @@ import type { Chain } from '@tevm/blockchain'
 import type { Common } from '@tevm/common'
 import type { EvmType } from '@tevm/evm'
 import type { StateManager } from '@tevm/state'
-import type { AsyncEventEmitter } from '@tevm/utils'
+import type { EventEmitter } from 'eventemitter3'
 import type { VMEvents } from './utils/index.js'
 
 export type BaseVm = {
@@ -10,7 +10,7 @@ export type BaseVm = {
 	stateManager: StateManager
 	blockchain: Chain
 	evm: EvmType
-	events: AsyncEventEmitter<VMEvents>
+	events: EventEmitter<VMEvents>
 	/**
 	 * This is copied from ethereumjs and we want to match the interface
 	 * Cached emit() function, not for public usage

@@ -26,7 +26,7 @@ Blockchain
 
 ### events?
 
-> `optional` **events?**: [`AsyncEventEmitter`](../../utils/type-aliases/AsyncEventEmitter.md)\<`BlockchainEvent`\>
+> `optional` **events?**: `EventEmitter`\<`BlockchainEvent`\>
 
 Optional events emitter
 

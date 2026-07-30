@@ -1,6 +1,7 @@
 import type { Block, BlockHeader } from '@tevm/block'
 import type { ConsensusAlgorithm } from '@tevm/common'
-import type { AsyncEventEmitter, BlockTag, Hex } from '@tevm/utils'
+import type { BlockTag, Hex } from '@tevm/utils'
+import type { EventEmitter } from 'eventemitter3'
 import type { BaseChain } from './BaseChain.js'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
@@ -116,5 +117,5 @@ export type Chain = {} & BaseChain & {
 		/**
 		 * Optional events emitter
 		 */
-		events?: AsyncEventEmitter<BlockchainEvent>
+		events?: EventEmitter<BlockchainEvent>
 	}

@@ -27,7 +27,6 @@
 - [Account](type-aliases/Account.md)
 - [Address](type-aliases/Address.md)
 - [AddressLike](type-aliases/AddressLike.md)
-- [AsyncEventEmitter](type-aliases/AsyncEventEmitter.md)
 - [BatchDbOp](type-aliases/BatchDbOp.md)
 - [BigIntLike](type-aliases/BigIntLike.md)
 - [BigIntToHex](type-aliases/BigIntToHex.md)
@@ -52,7 +51,6 @@
 - [ExtractAbiFunctionNames](type-aliases/ExtractAbiFunctionNames.md)
 - [Filter](type-aliases/Filter.md)
 - [FormatAbi](type-aliases/FormatAbi.md)
-- [GenesisState](type-aliases/GenesisState.md)
 - [GetEventArgs](type-aliases/GetEventArgs.md)
 - [HDAccount](type-aliases/HDAccount.md)
 - [Hex](type-aliases/Hex.md)
@@ -162,9 +160,3 @@
 - [toRlp](functions/toRlp.md)
 - [toType](functions/toType.md)
 - [verifyMessage](functions/verifyMessage.md)
-
-## References
-
-### bytesToBigint
-
-Renames and re-exports [bytesToBigInt](functions/bytesToBigInt.md)

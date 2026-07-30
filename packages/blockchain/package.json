@@ -68,7 +68,8 @@
 		"@tevm/errors": "workspace:^",
 		"@tevm/jsonrpc": "workspace:^",
 		"@tevm/logger": "workspace:^",
-		"@tevm/utils": "workspace:^"
+		"@tevm/utils": "workspace:^",
+		"eventemitter3": "^5.0.4"
 	},
 	"devDependencies": {
 		"@tevm/tsconfig": "workspace:^",

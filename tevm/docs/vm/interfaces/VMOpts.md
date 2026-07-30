@@ -42,7 +42,7 @@ Options for instantiating a VM.
 | `common.testnet?` | `boolean` | Flag for test networks |
 | `common.verifyHash?` | `ChainVerifyHashFn` | Chain-specific signature verification. |
 | <a id="evm"></a> `evm?` | [`Evm`](../../evm/classes/Evm.md) | Use a custom EVM to run Messages on. If this is not present, use the default EVM. |
-| <a id="genesisstate"></a> `genesisState?` | [`GenesisState`](../../utils/type-aliases/GenesisState.md) | A genesisState to generate canonical genesis for the "in-house" created stateManager if external stateManager not provided for the VM, defaults to an empty state |
+| <a id="genesisstate"></a> `genesisState?` | `GenesisState` | A genesisState to generate canonical genesis for the "in-house" created stateManager if external stateManager not provided for the VM, defaults to an empty state |
 | <a id="profileropts"></a> `profilerOpts?` | [`VMProfilerOpts`](../type-aliases/VMProfilerOpts.md) | - |
 | <a id="sethardfork"></a> `setHardfork?` | `boolean` \| [`BigIntLike`](../../utils/type-aliases/BigIntLike.md) | Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number for older Hfs. Additionally it is possible to pass in a specific TD value to support live-Merge-HF transitions. Note that this should only be needed in very rare and specific scenarios. Default: `false` (HF is set to whatever default HF is set by the [Common](../../common/type-aliases/Common.md) instance) |
 | <a id="statemanager"></a> `stateManager?` | [`StateManager`](../../state/interfaces/StateManager.md) | A [StateManager](../../state/interfaces/StateManager.md) instance to use as the state store |

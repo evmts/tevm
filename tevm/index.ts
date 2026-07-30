@@ -125,7 +125,6 @@ export {
     boolToBytes,
     bytesToBool,
     hexToString,
-    bytesToBigint,
     bytesToBigInt,
     bytesToNumber,
     parseEther,

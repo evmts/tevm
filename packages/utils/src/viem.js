@@ -5,7 +5,6 @@ export {
 	boolToBytes,
 	boolToHex,
 	bytesToBigInt,
-	bytesToBigint,
 	bytesToBool,
 	bytesToHex,
 	bytesToNumber,

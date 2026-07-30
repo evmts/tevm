@@ -119,7 +119,7 @@
 
 - [boolToBytes](functions/boolToBytes.md)
 - [boolToHex](functions/boolToHex.md)
-- [bytesToBigint](functions/bytesToBigint.md)
+- [bytesToBigInt](functions/bytesToBigInt.md)
 - [bytesToBool](functions/bytesToBool.md)
 - [bytesToHex](functions/bytesToHex.md)
 - [bytesToNumber](functions/bytesToNumber.md)
@@ -182,12 +182,6 @@
 - [webSocket](functions/webSocket.md)
 
 ## References
-
-### bytesToBigInt
-
-Renames and re-exports [bytesToBigint](functions/bytesToBigint.md)
-
-***
 
 ### CallParams
 

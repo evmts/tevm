@@ -2,11 +2,11 @@
 
 ***
 
-[tevm](../../modules.md) / [index](../README.md) / bytesToBigint
+[tevm](../../modules.md) / [index](../README.md) / bytesToBigInt
 
-# Function: bytesToBigint()
+# Function: bytesToBigInt()
 
-> **bytesToBigint**(`bytes`, `opts?`): `bigint`
+> **bytesToBigInt**(`bytes`, `opts?`): `bigint`
 
 Decodes a byte array into a bigint.
 
