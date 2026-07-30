@@ -74,6 +74,14 @@ export const EMPTY_STATE_ROOT = new Proxy(immutableStateRoot, {
 		return Reflect.deleteProperty(target, property)
 	},
 	get(target, property) {
+		// Non-configurable, non-writable data properties (the mutator overrides
+		// installed above via Object.defineProperties) must be returned as-is:
+		// returning a bound copy would violate the proxy invariant and throw a
+		// TypeError before the intended immutable/copy implementations can run.
+		const descriptor = Reflect.getOwnPropertyDescriptor(target, property)
+		if (descriptor !== undefined && 'value' in descriptor && descriptor.configurable === false) {
+			return descriptor.value
+		}
 		const value = Reflect.get(target, property, target)
 		return typeof value === 'function' ? value.bind(target) : value
 	},
