@@ -1,9 +1,0 @@
-[**tevm**](../../README.md)
-
-***
-
-[tevm](../../modules.md) / [utils](../README.md) / GenesisState
-
-# Type Alias: GenesisState
-
-> **GenesisState** = `Record`\<`string`, `string` \| `Record`\<`string`, `any`\>\>

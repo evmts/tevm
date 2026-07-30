@@ -21,7 +21,6 @@
 ## Type Aliases
 
 - [AddressLike](type-aliases/AddressLike.md)
-- [AsyncEventEmitter](type-aliases/AsyncEventEmitter.md)
 - [BatchDbOp](type-aliases/BatchDbOp.md)
 - [BigIntLike](type-aliases/BigIntLike.md)
 - [BigIntToHex](type-aliases/BigIntToHex.md)
@@ -32,7 +31,6 @@
 - [EncodeEventTopicsParameters](type-aliases/EncodeEventTopicsParameters.md)
 - [EncodingOpts](type-aliases/EncodingOpts.md)
 - [EthjsLog](type-aliases/EthjsLog.md)
-- [GenesisState](type-aliases/GenesisState.md)
 - [JsonSerializable](type-aliases/JsonSerializable.md)
 - [JsonSerializableArray](type-aliases/JsonSerializableArray.md)
 - [JsonSerializableObject](type-aliases/JsonSerializableObject.md)
@@ -167,15 +165,9 @@ Re-exports [boolToHex](../index/functions/boolToHex.md)
 
 ***
 
-### bytesToBigint
-
-Re-exports [bytesToBigint](../index/functions/bytesToBigint.md)
-
-***
-
 ### bytesToBigInt
 
-Renames and re-exports [bytesToBigint](../index/functions/bytesToBigint.md)
+Re-exports [bytesToBigInt](../index/functions/bytesToBigInt.md)
 
 ***
 

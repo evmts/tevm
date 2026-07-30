@@ -97,7 +97,6 @@ export {
 	boolToBytes,
 	boolToHex,
 	bytesToBigInt,
-	bytesToBigint,
 	bytesToBool,
 	bytesToHex,
 	bytesToNumber,
@@ -141,19 +140,6 @@ export {
 	toHex,
 	toRlp,
 } from './viem.js'
-// GenesisState moved to the common package, but we need the account-based GenesisState
-// which seems to have been removed. Let's define it here for backward compatibility.
-export type GenesisState = Record<string, string | Record<string, any>>
-
-// AsyncEventEmitter is kept here for backward compatibility with older callers.
-// Define a compatible type for backward compatibility
-export type AsyncEventEmitter<T extends Record<string, any> = {}> = {
-	on<K extends keyof T>(event: K, listener: T[K]): void
-	once<K extends keyof T>(event: K, listener: T[K]): void
-	off<K extends keyof T>(event: K, listener: T[K]): void
-	emit<K extends keyof T>(event: K, ...args: Parameters<T[K]>): boolean
-	removeAllListeners<K extends keyof T>(event?: K): void
-}
 export type { EncodeEventTopicsParameters } from 'viem/utils'
 export * from './invariant.js'
 export type {

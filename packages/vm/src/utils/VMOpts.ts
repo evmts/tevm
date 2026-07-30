@@ -1,8 +1,9 @@
+import type { GenesisState } from '@evmts/zevm/common'
 import type { Chain } from '@tevm/blockchain'
 import type { Common } from '@tevm/common'
 import type { Evm } from '@tevm/evm'
 import type { StateManager } from '@tevm/state'
-import type { BigIntLike, GenesisState } from '@tevm/utils'
+import type { BigIntLike } from '@tevm/utils'
 import type { VMProfilerOpts } from './VMProfileOpts.js'
 
 /**

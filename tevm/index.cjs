@@ -49,10 +49,6 @@ Object.defineProperty(exports, "bytesToBigInt", {
   enumerable: true,
   get: function () { return utils.bytesToBigInt; }
 });
-Object.defineProperty(exports, "bytesToBigint", {
-  enumerable: true,
-  get: function () { return utils.bytesToBigint; }
-});
 Object.defineProperty(exports, "bytesToBool", {
   enumerable: true,
   get: function () { return utils.bytesToBool; }
