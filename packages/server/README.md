@@ -25,6 +25,7 @@
 Creates a JSON-RPC server for serving Tevm requests from a Tevm node.
 
 - [`createHttpHandler`](./src/createHttpHandler.js) Creates a generic http handler
+- [`createIpcServer`](./src/createIpcServer.js) Creates a Unix domain socket server with JSON-RPC subscriptions
 - [`createServer`](./src/createServer.js) Creates a simple vanilla node.js server to serve TEVM json-rpc api
 - [`createExpressMiddleware`](./src/adapters/createExpressMiddleware.js) Creates an express middleware to serve TEVM json-rpc api
 - [`createNextApiHandler`](./src/adapters/createNextApiHandler.js.js) Creates a next.js handler for tevm.
@@ -51,6 +52,27 @@ import { mainnet } from "viem/chains";
 const publicClient = createPublicClient({
   chain: mainnet,
   transport: http("https://localhost:8545"),
+});
+
+console.log(await publicClient.getChainId());
+```
+
+For Node.js clients, Tevm can also serve newline-delimited JSON-RPC over a Unix domain socket. The IPC server supports `eth_subscribe` notifications on the same connection.
+
+```typescript
+import { createMemoryClient } from "tevm";
+import { createIpcServer } from "tevm/server";
+import { createPublicClient } from "viem";
+import { ipc } from "viem/node";
+
+const socketPath = "/tmp/tevm.ipc";
+const tevm = createMemoryClient();
+const server = createIpcServer(tevm);
+
+server.listen(socketPath);
+
+const publicClient = createPublicClient({
+  transport: ipc(socketPath),
 });
 
 console.log(await publicClient.getChainId());

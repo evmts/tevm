@@ -6,6 +6,10 @@ describe('index exports', () => {
 		expect(indexExports.createHttpHandler).toBeDefined()
 	})
 
+	it('should export createIpcServer', () => {
+		expect(indexExports.createIpcServer).toBeDefined()
+	})
+
 	it('should export createServer', () => {
 		expect(indexExports.createServer).toBeDefined()
 	})
