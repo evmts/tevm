@@ -107,14 +107,16 @@ export const anvilMineDetailedJsonRpcProcedure = (client) => {
 				const overrideTimestamp = count === 0 ? client.getNextBlockTimestamp() : undefined
 				// Get the automatic interval if set
 				const automaticInterval = client.getBlockTimestampInterval()
-				const intervalToUse = automaticInterval !== undefined ? Number(automaticInterval) : interval
 				let timestamp
 				if (overrideTimestamp !== undefined) {
 					timestamp = Number(overrideTimestamp)
+				} else if (automaticInterval !== undefined) {
+					// anvil_setBlockTimestampInterval applies to every mined block including the first
+					timestamp = Number(parentBlock.header.timestamp) + Number(automaticInterval)
 				} else if (count === 0) {
 					timestamp = Math.max(Math.floor(Date.now() / 1000), Number(parentBlock.header.timestamp))
 				} else {
-					timestamp = Number(parentBlock.header.timestamp) + intervalToUse
+					timestamp = Number(parentBlock.header.timestamp) + interval
 				}
 				// Keep block timestamps monotonic.
 				timestamp = Math.max(timestamp, Number(parentBlock.header.timestamp) + 1)
