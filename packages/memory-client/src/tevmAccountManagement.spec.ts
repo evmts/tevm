@@ -68,7 +68,7 @@ describe('Tevm Account Management', () => {
 		// Storage key and value
 		const storageKey = '0x0000000000000000000000000000000000000000000000000000000000000001'
 		const storageValue = '0x000000000000000000000000000000000000000000000000000000000000002a' // hex for 42
-		const expectedValue = padHex('0x2a', { dir: 'right', size: 32 })
+		const expectedValue = padHex('0x2a', { dir: 'left', size: 32 })
 
 		// Set account with storage
 		await tevmSetAccount(client, {
@@ -225,7 +225,7 @@ describe('Tevm Account Management', () => {
 			const key = `0x${keyPadding}` as `0x${string}`
 
 			const expectedValue = padHex(`0x${i.toString(16).padStart(2, '0')}` as `0x${string}`, {
-				dir: 'right',
+				dir: 'left',
 				size: 32,
 			})
 

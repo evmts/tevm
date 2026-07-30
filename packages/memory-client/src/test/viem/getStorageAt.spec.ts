@@ -30,7 +30,7 @@ beforeEach(async () => {
 describe('getStorageAt', () => {
 	it('should work', async () => {
 		expect(await mc.getStorageAt({ address: c.simpleContract.address, slot: numberToHex(0) })).toBe(
-			padHex(numberToHex(420, { size: 2 }), { dir: 'right', size: 32 }),
+			padHex(numberToHex(420, { size: 2 }), { dir: 'left', size: 32 }),
 		)
 	})
 })

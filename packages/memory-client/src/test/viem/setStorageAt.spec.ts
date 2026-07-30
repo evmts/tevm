@@ -21,6 +21,6 @@ describe('setStorageAt', () => {
 				address: `0x${'0'.repeat(40)}`,
 				slot: numberToHex(1),
 			}),
-		).toEqual(padHex(numberToHex(1, { size: 1 }), { dir: 'right', size: 32 }))
+		).toEqual(padHex(numberToHex(1, { size: 1 }), { dir: 'left', size: 32 }))
 	})
 })
