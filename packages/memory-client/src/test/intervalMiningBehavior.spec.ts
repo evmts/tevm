@@ -152,28 +152,21 @@ describe('Interval Mining Behavior', () => {
 			vi.useFakeTimers()
 		})
 
-		it('should not mine empty blocks when no transactions are available', async () => {
+		it('should mine empty blocks at the configured wall-clock interval', async () => {
 			vi.useRealTimers()
 
-			await client.request({
-				method: 'anvil_setIntervalMining',
-				params: [0.1],
-			})
+			await client.setIntervalMining({ interval: 0.1 })
 
 			const initialBlockNumber = await client.getBlockNumber()
 
-			// Wait for multiple intervals without adding transactions
-			await new Promise((resolve) => setTimeout(resolve, 250))
+			const minedBlockNumber = await waitForBlockNumberGreaterThan(client, initialBlockNumber)
 
-			// Block number should remain the same (no transactions, no mining)
-			const currentBlockNumber = await client.getBlockNumber()
-			expect(currentBlockNumber).toBe(initialBlockNumber)
+			expect(minedBlockNumber).toBeGreaterThan(initialBlockNumber)
 
-			// Disable interval mining
-			await client.request({
-				method: 'anvil_setIntervalMining',
-				params: [0],
-			})
+			await client.setIntervalMining({ interval: 0 })
+			const stoppedBlockNumber = await client.getBlockNumber()
+			await new Promise((resolve) => setTimeout(resolve, 200))
+			expect(await client.getBlockNumber()).toBe(stoppedBlockNumber)
 
 			vi.useFakeTimers()
 		})

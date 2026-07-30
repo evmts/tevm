@@ -458,6 +458,7 @@ export const createHandlers = (client) => {
 
 	const evmHandlers = {
 		evm_mine: mineProcedure(client),
+		evm_setAutomine: anvilSetAutomineJsonRpcProcedure(client),
 		/**
 		 * @param {any} request
 		 */

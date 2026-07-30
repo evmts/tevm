@@ -251,7 +251,7 @@ describe('TevmNode interval mining integration', () => {
 			const txPool = await client.getTxPool()
 			await txPool.add(buildSignedTx('0x00'), true)
 
-			await vi.advanceTimersByTimeAsync(10)
+			await vi.advanceTimersToNextTimerAsync()
 
 			const finalBlock = await vm.blockchain.getCanonicalHeadBlock()
 			expect(finalBlock.header.number).toBe(initialBlock.header.number + 1n)
