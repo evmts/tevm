@@ -72,6 +72,7 @@
 		"@tevm/memory-client": "workspace:^",
 		"@tevm/utils": "workspace:^",
 		"commander": "^14.0.3",
+		"ws": "^8.20.1",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
@@ -80,6 +81,7 @@
 		"@tevm/tsconfig": "workspace:^",
 		"@tevm/tsupconfig": "workspace:^",
 		"@types/express": "^5.0.6",
+		"@types/ws": "^8.5.14",
 		"express": "^5.2.1",
 		"next": "^16.2.6",
 		"viem": "^2.49.3"
