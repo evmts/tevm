@@ -130,6 +130,27 @@ node.setImpersonatedAccount(undefined)
 Impersonation primarily affects the JSON-RPC layer, enabling `eth_sendRawTransaction` to execute as the impersonated account. Works best in fork mode.
 :::
 
+#### Strict impersonation (anvil parity)
+
+By default Tevm auto-impersonates every sender, so `eth_sendTransaction` succeeds from any address. Anvil instead rejects unknown senders with `No Signer available`. Opt into anvil's behavior with `strictImpersonation`:
+
+```ts
+import { createTevmNode } from '@tevm/node'
+
+const node = createTevmNode({ strictImpersonation: true })
+
+// throws NoSignerAvailableError: No Signer available for 0xd8dA...
+await node.request({
+  method: 'eth_sendTransaction',
+  params: [{ from: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045', to: '0x0000000000000000000000000000000000000001', value: '0x0' }],
+})
+
+// anvil_impersonateAccount grants access, anvil_stopImpersonatingAccount revokes it again
+node.setImpersonatedAccount('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')
+```
+
+Prefunded dev accounts always have a signer, and `anvil_autoImpersonateAccount` still bypasses the check while enabled. The mode can also be toggled at runtime with `node.setStrictImpersonation(true)` and is preserved across `deepCopy` and snapshot/revert. It defaults to `false`, so existing behavior is unchanged.
+
 ### Event Filtering
 
 ```ts

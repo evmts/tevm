@@ -732,6 +732,16 @@ Docs: https://tevm.sh/errors/test-error
 Version: 1.0.0-next.148]
 `;
 
+exports[`Error Classes > should have all error classes available with expected shape > NoSignerAvailableError 1`] = `
+[NoSignerAvailable: Test error message
+
+Meta message 1
+Meta message 2
+
+Docs: https://tevm.sh/reference/tevm/errors/classes/nosigneravailableerror/
+Version: 1.0.0-next.148]
+`;
+
 exports[`Error Classes > should have all error classes available with expected shape > NonceAlreadyUsedError 1`] = `
 [NonceAlreadyUsed: Test error message
 

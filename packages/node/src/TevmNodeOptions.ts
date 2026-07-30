@@ -109,6 +109,39 @@ export type TevmNodeOptions<TCommon extends Common = Common> = StateOptions & {
 	 */
 	readonly customPredeploys?: ReadonlyArray<Predeploy<any, any>>
 	/**
+	 * Makes tevm emulate anvil's signer semantics. Defaults to `false`.
+	 *
+	 * By default tevm auto-impersonates every sender, so a transaction from any address
+	 * succeeds. That is convenient but it means suites that assert anvil's failure path
+	 * (viem's `impersonateAccount` / `stopImpersonatingAccount` tests, for example) cannot
+	 * hold against tevm.
+	 *
+	 * When set to `true`, sending a transaction from an address that is neither one of the
+	 * prefunded dev accounts nor actively impersonated throws a `NoSignerAvailableError`
+	 * (`No Signer available`), exactly like anvil. `anvil_impersonateAccount` then grants
+	 * access and `anvil_stopImpersonatingAccount` revokes it again. `anvil_autoImpersonateAccount`
+	 * still bypasses the check while enabled.
+	 *
+	 * This can also be toggled at runtime with `node.setStrictImpersonation(enabled)`.
+	 *
+	 * @example
+	 * ```typescript
+	 * import { createTevmNode } from '@tevm/node'
+	 * import { ethSendTransactionHandler } from '@tevm/actions'
+	 *
+	 * const node = createTevmNode({ strictImpersonation: true })
+	 * const vitalik = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+	 *
+	 * // throws NoSignerAvailableError: No Signer available for 0xd8dA...
+	 * await ethSendTransactionHandler(node)({ from: vitalik, to: vitalik, value: 0n })
+	 *
+	 * node.setImpersonatedAccount(vitalik)
+	 * // now succeeds
+	 * await ethSendTransactionHandler(node)({ from: vitalik, to: vitalik, value: 0n })
+	 * ```
+	 */
+	readonly strictImpersonation?: boolean
+	/**
 	 * Enable/disable unlimited contract size. Defaults to false.
 	 * If set to true you may still run up against block limits
 	 */
