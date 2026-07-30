@@ -47,6 +47,7 @@ describe('Error Classes', () => {
 			'ExecutionError',
 			'NonceTooLowError',
 			'NonceTooHighError',
+			'NoSignerAvailableError',
 			'UnknownBlockError',
 			'AccountLockedError',
 			'InvalidOpcodeError',
