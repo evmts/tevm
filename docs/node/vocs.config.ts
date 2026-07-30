@@ -1,10 +1,11 @@
-import { defineConfig } from 'vocs'
+import { defineConfig } from 'vocs/config'
 
 export default defineConfig({
 	title: 'Tevm Node',
 	titleTemplate: '%s · Tevm',
 	baseUrl: process.env.VERCEL_ENV === 'production' ? 'https://node.tevm.sh' : process.env.VERCEL_URL,
 	rootDir: '.',
+	srcDir: '.',
 	description: 'A lightweight, unopinionated, powerful EVM node that runs in the browser',
 	// Updated logo configuration
 	logoUrl: {
@@ -14,15 +15,9 @@ export default defineConfig({
 	iconUrl: '/tevm-logo.webp',
 	// Configuring OG Image
 	ogImageUrl: 'https://vocs.dev/api/og?logo=%logo&title=%title&description=%description',
-	// Set default font
-	font: {
-		google: 'Inter',
-	},
 	// Enhance theme with accent color
-	theme: {
-		accentColor: '#0085FF',
-		colorScheme: 'system',
-	},
+	accentColor: '#0085FF',
+	colorScheme: 'light dark',
 	// Banner for important updates or announcements
 	banner: {
 		content: '🚀 Tevm Node is in Beta! Join our [Telegram community](https://t.me/+ANThR9bHDLAwMjUx)',
@@ -219,7 +214,7 @@ export default defineConfig({
 		},
 	],
 	editLink: {
-		pattern: 'https://github.com/evmts/tevm-monorepo/edit/main/docs/node/docs/pages/:path',
+		link: 'https://github.com/evmts/tevm/edit/main/docs/node/pages/:path',
 		text: 'Edit this page on GitHub',
 	},
 	// Enable search with boosting for important pages
@@ -249,12 +244,10 @@ export default defineConfig({
 		},
 	],
 	// Configure code highlighting
-	markdown: {
-		code: {
-			themes: {
-				light: 'github-light',
-				dark: 'github-dark',
-			},
+	codeHighlight: {
+		themes: {
+			light: 'github-light',
+			dark: 'github-dark',
 		},
 	},
 })

@@ -2,8 +2,7 @@
 layout: landing
 ---
 
-import { Button, HomePage } from "vocs/components";
-import { Card } from "../components";
+import { HomePage } from "vocs";
 import "../styles/index.css";
 
 <HomePage.Root>
@@ -17,7 +16,7 @@ import "../styles/index.css";
     An Ethereum Node built to run in Browser, Bun, Deno, and Node.js
   </HomePage.Description>
 
-  <div className="code-snippet" style={{ maxWidth: '800px', margin: '1.5rem 0', backgroundColor: 'var(--vocs-color_background2)', borderRadius: 'var(--vocs-borderRadius_4)', padding: '1rem', overflow: 'auto', textAlign: 'left' }}>
+  <div className="code-snippet" style={{ maxWidth: '800px', margin: '1.5rem 0', backgroundColor: 'var(--vocs-background-color-code-block)', borderRadius: '0.5rem', padding: '1rem', overflow: 'auto', textAlign: 'left' }}>
     ```ts
     // @noErrors
     // Runs in browsers, Node.js, Deno, Bun and beyond. Zero native dependencies
@@ -78,7 +77,7 @@ import "../styles/index.css";
       The Tevm Bundler imports Solidity contracts directly into your JS/TS. No ABI copying, no artifact management — just import .sol files with full type safety and auto-completion.
     </p>
 
-    <div className="code-snippet" style={{ maxWidth: '800px', margin: '1.5rem auto', backgroundColor: 'var(--vocs-color_background2)', borderRadius: 'var(--vocs-borderRadius_4)', padding: '1.2rem', overflow: 'auto', textAlign: 'left' }}>
+    <div className="code-snippet" style={{ maxWidth: '800px', margin: '1.5rem auto', backgroundColor: 'var(--vocs-background-color-code-block)', borderRadius: '0.5rem', padding: '1.2rem', overflow: 'auto', textAlign: 'left' }}>
       ```ts
       // @noErrors
       // Import Solidity contracts directly
@@ -116,15 +115,15 @@ import "../styles/index.css";
     </div>
 
     <div className="button-group flex gap-4 justify-center flex-wrap mt-8">
-      <Button href="/getting-started/bundler" variant="accent">Bundler Quickstart</Button>
-      <Button href="/reference/bundler">Bundler Reference</Button>
+      <HomePage.Button href="/getting-started/bundler" variant="accent">Bundler Quickstart</HomePage.Button>
+      <HomePage.Button href="/reference/bundler">Bundler Reference</HomePage.Button>
     </div>
   </div>
 
   <div className="max-w-[600px] mx-auto my-16 text-center">
-    <Button href="/getting-started/overview" variant="accent" className="text-lg px-8 py-4" style={{ fontSize: "1.25rem", padding: "1rem 3rem" }}>
+    <HomePage.Button href="/getting-started/overview" variant="accent" className="text-lg px-8 py-4">
       Ready to get started?
-    </Button>
+    </HomePage.Button>
   </div>
 
   <div className="mt-12 text-sm opacity-80">
