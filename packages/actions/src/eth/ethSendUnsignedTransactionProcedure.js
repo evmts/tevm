@@ -28,7 +28,7 @@ export const ethSendUnsignedTransactionJsonRpcProcedure = (client) => {
 	return async (request) => {
 		const tx = request.params[0]
 		const txHash = await ethSendUnsignedTransactionHandler(client)({
-			from: tx.from,
+			from: /** @type {import('@tevm/utils').Address} */ (tx.from),
 			...(tx.data ? { data: tx.data } : {}),
 			...(tx.to ? { to: tx.to } : {}),
 			...(tx.gas ? { gas: hexToBigInt(tx.gas) } : {}),
