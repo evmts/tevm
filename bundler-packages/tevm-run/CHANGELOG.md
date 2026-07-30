@@ -1,5 +1,12 @@
 # tevm-run
 
+## 1.0.0-rc.153
+
+### Patch Changes
+
+- Updated dependencies [c8d1952]
+  - tevm@1.0.0-rc.153
+
 ## 1.0.0-rc.151
 
 ### Patch Changes

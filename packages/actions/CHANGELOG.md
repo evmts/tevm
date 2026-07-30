@@ -1,5 +1,19 @@
 # @tevm/contract
 
+## 1.0.0-rc.153
+
+### Minor Changes
+
+- 865526e: Implement anvil_setAutomine and anvil_setIntervalMining to match anvil mining semantics.
+- 9831004: Implement eth_sendUnsignedTransaction, allowing a transaction to be submitted from an arbitrary sender without a signature.
+
+### Patch Changes
+
+- 09a99ac: Return canonical 32-byte left-padded storage words from eth_getStorageAt, matching anvil and geth.
+- 282e686: Apply anvil_setBlockTimestampInterval to every mined block instead of only recording it.
+- Updated dependencies [c1ad08e]
+  - @tevm/node@1.0.0-rc.153
+
 ## 1.0.0-rc.151
 
 ### Patch Changes

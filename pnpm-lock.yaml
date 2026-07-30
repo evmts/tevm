@@ -2763,12 +2763,12 @@ importers:
       '@tevm/bundler-cache':
         specifier: workspace:^
         version: link:../bundler-packages/bundler-cache
-      '@tevm/client-types':
-        specifier: workspace:^
-        version: link:../packages/client-types
       '@tevm/cli':
         specifier: workspace:^
         version: link:../cli
+      '@tevm/client-types':
+        specifier: workspace:^
+        version: link:../packages/client-types
       '@tevm/common':
         specifier: workspace:^
         version: link:../packages/common
@@ -9634,7 +9634,7 @@ packages:
     resolution: {integrity: sha512-9z8TZaGM1pfswYeXrUpzPrkx8UnWYdhJclsiYMm6x/w5+nN+8Tf/LnAgfLGQCm59qAOxU8WwHEq2vNwF6i4j+Q==}
 
   clarinet@https://codeload.github.com/latticexyz/clarinet/tar.gz/9c30657e6000e0354c8c5b6e1efa3a434a0c0213:
-    resolution: {tarball: https://codeload.github.com/latticexyz/clarinet/tar.gz/9c30657e6000e0354c8c5b6e1efa3a434a0c0213}
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/latticexyz/clarinet/tar.gz/9c30657e6000e0354c8c5b6e1efa3a434a0c0213}
     version: 0.12.5
     engines: {chrome: '>=16.0.912', firefox: '>=0.8.0', node: '>=0.3.6'}
 
@@ -10651,7 +10651,7 @@ packages:
         optional: true
 
   ds-test@https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0:
-    resolution: {tarball: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0}
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0}
     version: 1.0.0
 
   dset@3.1.4:
@@ -11464,7 +11464,7 @@ packages:
     hasBin: true
 
   forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/7e403a0723847e71b326a05e1bff9cabd4e75ccc:
-    resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/7e403a0723847e71b326a05e1bff9cabd4e75ccc}
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/7e403a0723847e71b326a05e1bff9cabd4e75ccc}
     version: 1.16.1
 
   form-data@4.0.5:
