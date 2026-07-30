@@ -13,7 +13,7 @@
 	"homepage": "https://tevm.sh",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/evmts/tevm-monorepo.git",
+		"url": "git+https://github.com/evmts/tevm.git",
 		"directory": "bundler-packages/base-bundler"
 	},
 	"license": "MIT",

@@ -11,7 +11,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/evmts/tevm-monorepo.git",
+		"url": "git+https://github.com/evmts/tevm.git",
 		"directory": "packages/blockchain"
 	},
 	"license": "MIT",
