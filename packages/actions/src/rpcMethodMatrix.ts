@@ -8,7 +8,7 @@ export type RpcMethodMatrixEntry = {
 	followUpTicket?: string
 }
 
-export const intentionallyUnsupportedRuntimeMethods = new Set(['tevm_contract', 'eth_sendUnsignedTransaction'])
+export const intentionallyUnsupportedRuntimeMethods = new Set(['tevm_contract'])
 const blockedMethodPrefixes = ['zevm_voltaire_', 'zevm_guillotineMini_'] as const
 export const typedButMissingMethods = new Set<string>([])
 

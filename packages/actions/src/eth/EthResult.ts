@@ -230,6 +230,12 @@ export type EthSendRawTransactionResult = Hex
  */
 export type EthSendTransactionResult = Hex
 
+// eth_sendUnsignedTransaction
+/**
+ * JSON-RPC response for `eth_sendUnsignedTransaction` procedure. The transaction hash.
+ */
+export type EthSendUnsignedTransactionResult = Hex
+
 // eth_sign
 /**
  * JSON-RPC response for `eth_sign` procedure

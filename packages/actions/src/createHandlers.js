@@ -115,6 +115,7 @@ import { ethNewPendingTransactionFilterProcedure } from './eth/ethNewPendingTran
 import { ethProtocolVersionJsonRpcProcedure } from './eth/ethProtocolVersionProcedure.js'
 import { ethSendRawTransactionJsonRpcProcedure } from './eth/ethSendRawTransactionProcedure.js'
 import { ethSendTransactionJsonRpcProcedure } from './eth/ethSendTransactionProcedure.js'
+import { ethSendUnsignedTransactionJsonRpcProcedure } from './eth/ethSendUnsignedTransactionProcedure.js'
 import { ethSignProcedure } from './eth/ethSignProcedure.js'
 import { ethSignTransactionProcedure } from './eth/ethSignTransactionProcedure.js'
 import { ethSimulateV1Procedure } from './eth/ethSimulateV1Procedure.js'
@@ -260,15 +261,7 @@ export const createHandlers = (client) => {
 		eth_hashrate: ethHashrateJsonRpcProcedure(),
 		eth_submitHashrate: ethSubmitHashrateJsonRpcProcedure(),
 		eth_submitWork: ethSubmitWorkJsonRpcProcedure(),
-		/**
-		 * @param {any} request
-		 */
-		eth_sendUnsignedTransaction: (request) => ({
-			method: request.method,
-			error: { code: -32004, message: 'Unsupported method: eth_sendUnsignedTransaction is not implemented in Tevm.' },
-			jsonrpc: '2.0',
-			...(request.id !== undefined ? { id: request.id } : {}),
-		}),
+		eth_sendUnsignedTransaction: ethSendUnsignedTransactionJsonRpcProcedure(client),
 	}
 
 	/**

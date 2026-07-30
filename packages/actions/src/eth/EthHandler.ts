@@ -37,6 +37,7 @@ import type {
 	EthProtocolVersionParams,
 	EthSendRawTransactionParams,
 	EthSendTransactionParams,
+	EthSendUnsignedTransactionParams,
 	EthSignParams,
 	EthSignTransactionParams,
 	EthSimulateV1Params,
@@ -85,6 +86,7 @@ import type {
 	EthProtocolVersionResult,
 	EthSendRawTransactionResult,
 	EthSendTransactionResult,
+	EthSendUnsignedTransactionResult,
 	EthSignResult,
 	EthSignTransactionResult,
 	EthSimulateV1Result,
@@ -187,6 +189,10 @@ export type EthProtocolVersionHandler = (request: EthProtocolVersionParams) => P
 export type EthSendRawTransactionHandler = (
 	request: EthSendRawTransactionParams,
 ) => Promise<EthSendRawTransactionResult>
+// eth_sendUnsignedTransaction
+export type EthSendUnsignedTransactionHandler = (
+	request: EthSendUnsignedTransactionParams,
+) => Promise<EthSendUnsignedTransactionResult>
 // eth_sendTransaction
 export type EthSendTransactionHandler = (request: EthSendTransactionParams) => Promise<EthSendTransactionResult>
 // eth_sign

@@ -39,6 +39,7 @@ import type {
 	EthProtocolVersionJsonRpcResponse,
 	EthSendRawTransactionJsonRpcResponse,
 	EthSendTransactionJsonRpcResponse,
+	EthSendUnsignedTransactionJsonRpcResponse,
 	EthSignJsonRpcResponse,
 	EthSignTransactionJsonRpcResponse,
 	EthSimulateV1JsonRpcResponse,
@@ -77,6 +78,7 @@ export type EthReturnType = {
 	eth_getBlockByHash: EthGetBlockByHashJsonRpcResponse
 	eth_protocolVersion: EthProtocolVersionJsonRpcResponse
 	eth_sendTransaction: EthSendTransactionJsonRpcResponse
+	eth_sendUnsignedTransaction: EthSendUnsignedTransactionJsonRpcResponse
 	eth_signTransaction: EthSignTransactionJsonRpcResponse
 	eth_uninstallFilter: EthUninstallFilterJsonRpcResponse
 	eth_getBlockByNumber: EthGetBlockByNumberJsonRpcResponse
