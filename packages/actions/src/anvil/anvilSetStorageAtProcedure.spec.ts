@@ -48,7 +48,7 @@ describe('anvilSetStorageAtJsonRpcProcedure', () => {
 				{
 					address: '0x1234567890123456789012345678901234567890',
 					stateDiff: {
-						'0x01': '0xabcdef',
+						[`0x${'0'.repeat(63)}1`]: '0xabcdef',
 					},
 				},
 			],
@@ -92,7 +92,7 @@ describe('anvilSetStorageAtJsonRpcProcedure', () => {
 				{
 					address: '0x1234567890123456789012345678901234567890',
 					stateDiff: {
-						'0x01': '0xabcdef',
+						[`0x${'0'.repeat(63)}1`]: '0xabcdef',
 					},
 				},
 			],

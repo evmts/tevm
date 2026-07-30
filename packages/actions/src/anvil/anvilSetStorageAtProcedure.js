@@ -1,4 +1,4 @@
-import { bytesToHex, hexToBytes, setLengthLeft } from '@tevm/utils'
+import { bytesToHex, hexToBytes, isHex, setLengthLeft } from '@tevm/utils'
 import { setAccountProcedure } from '../SetAccount/setAccountProcedure.js'
 
 /**
@@ -17,7 +17,9 @@ export const anvilSetStorageAtJsonRpcProcedure = (client) => {
 				{
 					address: request.params[0],
 					stateDiff: {
-						[bytesToHex(setLengthLeft(hexToBytes(request.params[1]), 32))]: request.params[2],
+						[isHex(request.params[1])
+							? bytesToHex(setLengthLeft(hexToBytes(request.params[1]), 32))
+							: request.params[1]]: request.params[2],
 					},
 				},
 			],
