@@ -1,5 +1,25 @@
 # @tevm/contract
 
+## 1.0.0-rc.153
+
+### Minor Changes
+
+- c8d1952: Added a Unix domain socket JSON-RPC server with newline-delimited framing and subscription notifications.
+
+### Patch Changes
+
+- Updated dependencies [c8d1952]
+- Updated dependencies [c1ad08e]
+- Updated dependencies [c8d1952]
+- Updated dependencies [865526e]
+- Updated dependencies [9831004]
+- Updated dependencies [09a99ac]
+- Updated dependencies [282e686]
+- Updated dependencies [cc57c9f]
+  - @tevm/server@1.0.0-rc.153
+  - @tevm/node@1.0.0-rc.153
+  - @tevm/actions@1.0.0-rc.153
+
 ## 1.0.0-rc.151
 
 ### Patch Changes

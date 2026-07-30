@@ -1,5 +1,13 @@
 # @tevm/server
 
+## 1.0.0-rc.153
+
+### Minor Changes
+
+- c8d1952: Added a Unix domain socket JSON-RPC server with newline-delimited framing and subscription notifications.
+- c8d1952: Add an IPC (unix domain socket) JSON-RPC transport so viem's ipc() transport can connect to a tevm node.
+- cc57c9f: Add a WebSocket JSON-RPC transport served on the same port as HTTP, with eth_subscribe and eth_unsubscribe wired so newHeads, logs and pending-transaction subscriptions push notifications to connected clients.
+
 ## 1.0.0-rc.151
 
 ### Patch Changes
