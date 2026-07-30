@@ -35,13 +35,13 @@ export class CouldNotResolveImportError extends Error {
  * @type {ResolveSafe}
  * @example
  * ```ts
- * import {tap} from 'effect/Effect'
- * import {resolveSync} from '@tevm/effect'
- * resolveSync('react').pipe(
- *    tap(console.log)
+ * import { tap } from 'effect/Effect'
+ * import { resolveSync } from '@tevm/effect'
+ *
+ * resolveSync('react', { basedir: process.cwd() }).pipe(
+ *   tap(console.log)
  * )
- * ````
- * `
+ * ```
  */
 export const resolveSync = (importPath, options) => {
 	return trySync({
@@ -52,16 +52,17 @@ export const resolveSync = (importPath, options) => {
 }
 
 /**
- * Effect wrpper around import('node:resolve')
+ * Effect wrapper around import('node:resolve')
  * @type {ResolveSafe}
  * @example
  * ```ts
- * import {tap} from 'effect/Effect'
- * import {resolveAsync} from '@tevm/effect'
- * resolveAsync('react').pipe(
- *    tap(console.log)
+ * import { tap } from 'effect/Effect'
+ * import { resolveAsync } from '@tevm/effect'
+ *
+ * resolveAsync('react', { basedir: process.cwd() }).pipe(
+ *   tap(console.log)
  * )
- * ````
+ * ```
  */
 export const resolveAsync = (importPath, options) => {
 	return effectAsync((resume) => {

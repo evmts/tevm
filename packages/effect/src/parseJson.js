@@ -23,11 +23,15 @@ export class ParseJsonError extends Error {
  * Parses a json string
  * @param {string} jsonStr
  * @returns {import("effect/Effect").Effect<unknown, ParseJsonError, never>}
- * @throws {ParseJsonError} when the tevm.json file is not valid json
+ * @throws {ParseJsonError} when the json string is not valid json
  * @example
  * ```ts
+ * import { runPromise } from 'effect/Effect'
+ * import { parseJson } from '@tevm/effect'
+ *
  * const jsonEffect = parseJson('{ "compilerOptions": { "plugins": [{ "name": "@tevm/ts-plugin" }] } }')
- * ````
+ * const json = await runPromise(jsonEffect)
+ * ```
  * @internal
  */
 export const parseJson = (jsonStr) => {

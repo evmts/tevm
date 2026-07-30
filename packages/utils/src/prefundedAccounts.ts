@@ -1,5 +1,19 @@
 import { type PrivateKeyAccount, privateKeyToAccount } from 'viem/accounts'
 
+/**
+ * The 10 well-known prefunded private keys used by anvil, hardhat, and tevm test nodes.
+ * Derived from the test mnemonic `test test test test test test test test test test test junk`.
+ *
+ * WARNING: Never use these keys on a live network. They are publicly known and
+ * any funds sent to them will be stolen.
+ * @example
+ * ```typescript
+ * import { PREFUNDED_PRIVATE_KEYS } from '@tevm/utils'
+ *
+ * const firstPrivateKey = PREFUNDED_PRIVATE_KEYS[0]
+ * // '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
+ * ```
+ */
 export const PREFUNDED_PRIVATE_KEYS = [
 	'0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80', // 0
 	'0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d', // 1
@@ -13,6 +27,17 @@ export const PREFUNDED_PRIVATE_KEYS = [
 	'0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6', // 9
 ] as const
 
+/**
+ * The 10 addresses corresponding to {@link PREFUNDED_PRIVATE_KEYS}.
+ * These accounts are prefunded with 10,000 ETH in tevm test nodes.
+ * @example
+ * ```typescript
+ * import { PREFUNDED_PUBLIC_KEYS } from '@tevm/utils'
+ *
+ * const firstAddress = PREFUNDED_PUBLIC_KEYS[0]
+ * // '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+ * ```
+ */
 export const PREFUNDED_PUBLIC_KEYS = [
 	'0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', // 0
 	'0x70997970C51812dc3A010C7d01b50e0d17dc79C8', // 1
@@ -26,6 +51,17 @@ export const PREFUNDED_PUBLIC_KEYS = [
 	'0xa0Ee7A142d267C1f36714E4a8F75612F20a79720', // 9
 ] as const
 
+/**
+ * The 10 prefunded accounts as viem {@link PrivateKeyAccount} objects,
+ * derived from {@link PREFUNDED_PRIVATE_KEYS}.
+ * @example
+ * ```typescript
+ * import { PREFUNDED_ACCOUNTS } from '@tevm/utils'
+ *
+ * const account = PREFUNDED_ACCOUNTS[0]
+ * console.log(account.address) // '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+ * ```
+ */
 export const PREFUNDED_ACCOUNTS: [
 	PrivateKeyAccount,
 	PrivateKeyAccount,
@@ -50,6 +86,20 @@ export const PREFUNDED_ACCOUNTS: [
 	privateKeyToAccount(PREFUNDED_PRIVATE_KEYS[9]),
 ] as const
 
+/**
+ * The seed used to derive the prefunded accounts: the well-known test mnemonic
+ * shared with anvil and hardhat, and its derivation path.
+ * @example
+ * ```typescript
+ * import { mnemonicToAccount } from '@tevm/utils'
+ * import { PREFUNDED_SEED } from '@tevm/utils'
+ *
+ * const account = mnemonicToAccount(PREFUNDED_SEED.mnemonic, {
+ *   addressIndex: 0,
+ * })
+ * console.log(account.address) // '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+ * ```
+ */
 export const PREFUNDED_SEED = Object.freeze({
 	mnemonic: 'test test test test test test test test test test test junk',
 	derivationPath: "m/44'/60'/0'/0/",

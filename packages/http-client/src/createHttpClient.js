@@ -7,6 +7,16 @@ import { createPublicClient, http } from 'viem'
  * @param {import('./HttpClientOptions.js').HttpClientOptions} params
  * @returns {import('./HttpClient.js').HttpClient}
  * @example
+ * ```typescript
+ * import { createHttpClient } from '@tevm/http-client'
+ *
+ * const client = createHttpClient({
+ *   url: 'https://mainnet.optimism.io',
+ * })
+ *
+ * const blockNumber = await client.eth.blockNumber()
+ * console.log(blockNumber)
+ * ```
  */
 export const createHttpClient = ({ url, name = `TevmClient:${url}` }) => {
 	// This is a shortcut. We are simply reusing viem to create this client so we can

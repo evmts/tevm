@@ -22,22 +22,22 @@ const normalizeHardfork = (hardfork) =>
  * @example
  * ```typescript
  * import { createCommon } from 'tevm/common'
+ * import { mainnet } from 'viem/chains'
  *
  * const common = createCommon({
- *  customCrypto: {},
- *  loggingLevel: 'debug',
- *  hardfork: 'london',
- *  eips: [420],
- *  id: 69,
- *  name: 'MyChain',
- *  ...
+ *   ...mainnet,
+ *   customCrypto: {},
+ *   loggingLevel: 'debug',
+ *   hardfork: 'london',
+ *   eips: [420],
  * })
  * ```
  * Since common are stateful consider copying it before using it
  * @example
  * ```typescript
- * import { createCommon } from 'tevm/common'
- * const common = createCommon({ ... })
+ * import { createCommon, mainnet } from 'tevm/common'
+ *
+ * const common = createCommon({ ...mainnet, hardfork: 'prague', loggingLevel: 'warn' })
  *
  * const commonCopy = common.copy()
  * ```
@@ -45,7 +45,9 @@ const normalizeHardfork = (hardfork) =>
  * To access the underlying Common instance, use the ethjsCommon property.
  * @example
  * ```typescript
- * const common = createCommon({ ... })
+ * import { createCommon, mainnet } from 'tevm/common'
+ *
+ * const common = createCommon({ ...mainnet, hardfork: 'prague', loggingLevel: 'warn' })
  * const ethjsCommon = common.ethjsCommon
  * ```
  * @see [Tevm client docs](https://tevm.sh/learn/clients/)

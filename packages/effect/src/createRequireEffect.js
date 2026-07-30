@@ -39,9 +39,11 @@ export class RequireError extends Error {
  * @returns {import("effect/Effect").Effect<(id: string) => import("effect/Effect").Effect<ReturnType<NodeRequire>, RequireError, never>, CreateRequireError, never>} require function
  * @example
  * ```typescript
- * import { createRequireEffect } from '@eth-optimism/config'
- * const requireEffect = createRequireEffect(import.meta.url)
- * const solcEffect = requireEffect('solc')
+ * import { runPromise } from 'effect/Effect'
+ * import { createRequireEffect } from '@tevm/effect'
+ *
+ * const requireAsEffect = await runPromise(createRequireEffect(import.meta.url))
+ * const solc = await runPromise(requireAsEffect('solc'))
  * ```
  * @see https://nodejs.org/api/modules.html#modules_module_createrequire_filename
  * @internal

@@ -5,7 +5,7 @@ import { bytesToHex } from 'viem'
  * Returns a mock kzg object that always trusts never verifies
  * The real kzg commitmenet is over 500kb added to bundle size
  * so this is useful explicit opt-in alternative for smaller bundles
- * @returns {import("./MockKzg.js").MockKzg}
+ * @returns {import("./MockKzg.js").MockKzg} A mock KZG implementation where every verification method returns `true`
  * @throws {never}
  * @example
  * ```typescript
