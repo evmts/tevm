@@ -7,11 +7,17 @@ import { all, logError } from 'effect/Effect'
  * @internal
  * @example
  * ```typescript
- * import { logAllErrors } from '@eth-optimism/config'
+ * import { fail, runPromise, tapError } from 'effect/Effect'
+ * import { logAllErrors } from '@tevm/effect'
  *
- * someEffect.pipe(
- *   tapError(logAllErrors)
- * )
+ * const someEffect = fail(new Error('Something went wrong'))
+ *
+ * await runPromise(
+ *   someEffect.pipe(
+ *     tapError(logAllErrors)
+ *   )
+ * ).catch(() => console.log('error was logged'))
+ * ```
  */
 export const logAllErrors = (e) => {
 	const errors = [e]

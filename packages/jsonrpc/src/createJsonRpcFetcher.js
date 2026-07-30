@@ -4,16 +4,25 @@
  * Returns the entire JSON-RPC response rather than throwing and only returning result
  * Used currently as an adapter to avoid refactoring existing code
  * @see https://ethereum.org/en/developers/docs/apis/json-rpc/
- * @param {{request: import('viem').EIP1193RequestFn}} client
- * @returns {import("./JsonRpcClient.js").JsonRpcClient} the `result` field from the JSON-RPC response
+ * @param {{request: import('viem').EIP1193RequestFn}} client - An EIP-1193 compatible client such as a viem client
+ * @returns {import("./JsonRpcClient.js").JsonRpcClient} A JSON-RPC client whose `request` method resolves with the full JSON-RPC response (including `result` or `error`)
  * @example
  * ```typescript
- * const url = 'https://mainnet.optimism.io'
- * const params = {
+ * import { createJsonRpcFetcher } from '@tevm/jsonrpc'
+ * import { createPublicClient, http } from 'viem'
+ * import { optimism } from 'viem/chains'
+ *
+ * const client = createPublicClient({
+ *   chain: optimism,
+ *   transport: http('https://mainnet.optimism.io'),
+ * })
+ * const fetcher = createJsonRpcFetcher(client)
+ *
+ * const { result: block } = await fetcher.request({
  *   method: 'eth_getBlockByNumber',
  *   params: ['latest', false],
- * }
- * const {result: block} = await fetchJsonRpc(url, params)
+ * })
+ * console.log(block.number)
  * ```
  */
 export const createJsonRpcFetcher = (client) => {

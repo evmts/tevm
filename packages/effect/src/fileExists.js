@@ -8,8 +8,11 @@ import { flatMap, logDebug, promise, tap } from 'effect/Effect'
  * @returns {import("effect/Effect").Effect<boolean, never, never>} true if the file exists, false otherwise
  * @example
  * ```typescript
- * import { fileExists } from '@eth-optimism/config'
- * await fileExists('./someFile.txt')
+ * import { runPromise } from 'effect/Effect'
+ * import { fileExists } from '@tevm/effect'
+ *
+ * const exists = await runPromise(fileExists('./someFile.txt'))
+ * console.log(exists) // true or false
  * ```
  * @internal
  */

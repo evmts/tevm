@@ -1,9 +1,42 @@
 import { throttle } from './throttle.js'
 
 /**
- * Creates a syncronous storage persister to be used in tevm clients
- * @param {import('./CreateSyncStoragePersisterOptions.js').CreateSyncStoragePersisterOptions} options
- * @returns {import('./SyncStoragePersister.js').SyncStoragePersister}
+ * Creates a synchronous storage persister to be used in tevm clients
+ * Persists tevm state to a synchronous storage backend such as `window.localStorage`
+ * so state can be restored between sessions. Saving is throttled to avoid
+ * spamming the storage backend.
+ * @param {import('./CreateSyncStoragePersisterOptions.js').CreateSyncStoragePersisterOptions} options - The persister options including the `storage` backend
+ * @returns {import('./SyncStoragePersister.js').SyncStoragePersister} A persister that can persist, restore, and remove tevm state
+ * @throws {never} Errors during persisting are returned rather than thrown
+ * @example
+ * ```typescript
+ * import { createSyncStoragePersister } from '@tevm/sync-storage-persister'
+ *
+ * const persister = createSyncStoragePersister({
+ *   storage: window.localStorage,
+ *   key: 'TEVM_CACHE',
+ *   throttleTime: 1000,
+ * })
+ *
+ * // Persist state (throttled)
+ * persister.persistTevmState({
+ *   '0x420': {
+ *     balance: '0x69',
+ *     codeHash: '0xdeadbeef',
+ *     nonce: '0x0',
+ *     storageRoot: '0xdeadbeef',
+ *     storage: {
+ *       '0x420420': '0x42069',
+ *     },
+ *   },
+ * })
+ *
+ * // Restore the persisted state later
+ * const restoredState = persister.restoreState()
+ *
+ * // Remove the persisted state
+ * persister.removePersistedState()
+ * ```
  */
 export const createSyncStoragePersister = ({
 	storage,

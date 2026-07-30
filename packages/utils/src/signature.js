@@ -126,11 +126,12 @@ export function hashMessage(message) {
  * const address = recoverMessageAddress({
  *   message: 'Hello world',
  *   signature: {
- *     r: 0x...,
- *     s: 0x...,
+ *     r: 0x157098a1d96fad0945d44978e3c8f2d1d2410f8ed742652cbf13b6b031391e87n,
+ *     s: 0x28521ff547f3c3242084d0d26f560a6ff1c91988d70d3284ff96f32caa373d78n,
  *     v: 27
  *   }
  * })
+ * console.log(address) // '0xED54a7C1d8634BB589f24Bb7F05a5554b36F9618'
  * ```
  */
 export function recoverMessageAddress({ message, signature }) {
@@ -150,14 +151,15 @@ export function recoverMessageAddress({ message, signature }) {
  * import { verifyMessage } from '@tevm/utils'
  *
  * const isValid = verifyMessage({
- *   address: '0xa6fb229e9b0a4e4ef52ea6991adcfc59207c7711',
+ *   address: '0xED54a7C1d8634BB589f24Bb7F05a5554b36F9618',
  *   message: 'Hello world',
  *   signature: {
- *     r: 0x...,
- *     s: 0x...,
+ *     r: 0x157098a1d96fad0945d44978e3c8f2d1d2410f8ed742652cbf13b6b031391e87n,
+ *     s: 0x28521ff547f3c3242084d0d26f560a6ff1c91988d70d3284ff96f32caa373d78n,
  *     v: 27
  *   }
  * })
+ * console.log(isValid) // true
  * ```
  */
 export function verifyMessage({ address, message, signature }) {
