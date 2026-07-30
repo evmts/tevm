@@ -40,7 +40,6 @@ describe('EMPTY_STATE_ROOT', () => {
 			EMPTY_STATE_ROOT[31] = 7
 		}).toThrow('EMPTY_STATE_ROOT is immutable')
 		expect(() => {
-			// @ts-expect-error - operand of delete must be optional, testing runtime immutability
 			delete EMPTY_STATE_ROOT[0]
 		}).toThrow('EMPTY_STATE_ROOT is immutable')
 		expect(() => {
@@ -88,7 +87,7 @@ describe('EMPTY_STATE_ROOT', () => {
 
 describe('genesisStateRoot', () => {
 	it('computes a deterministic non-empty root that differs from EMPTY_STATE_ROOT', async () => {
-		const state = { '0x0000000000000000000000000000000000000001': '0xde0b6b3a7640000' }
+		const state = { '0x0000000000000000000000000000000000000001': '0xde0b6b3a7640000' } as const
 		const root1 = await genesisStateRoot(state)
 		const root2 = await genesisStateRoot(state)
 		expect(bytesToHex(root1)).toBe(bytesToHex(root2))
