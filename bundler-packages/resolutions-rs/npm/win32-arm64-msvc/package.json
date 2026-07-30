@@ -3,7 +3,7 @@
 	"version": "1.0.0-rc.151",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/evmts/tevm-monorepo.git",
+		"url": "git+https://github.com/evmts/tevm.git",
 		"directory": "bundler-packages/resolutions-rs/npm/win32-arm64-msvc"
 	},
 	"cpu": [

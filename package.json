@@ -4,7 +4,7 @@
 	"private": true,
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/evmts/tevm-monorepo.git"
+		"url": "https://github.com/evmts/tevm.git"
 	},
 	"license": "MIT",
 	"contributors": [
