@@ -42,6 +42,15 @@ jobs:
         if: success()
         run: pnpm build:types
 
+      - name: Lint
+        id: lint
+        if: always() && steps.setup.conclusion == 'success' && steps.build-dist.conclusion == 'success'
+        run: pnpm lint:check
+
+      # Lint MUST run before Tests. 22 vitest configs use coverage
+      # `thresholds: { autoUpdate: true }`, so `pnpm test:coverage` rewrites those tracked
+      # config files in place with formatting biome then rejects — making lint fail on the
+      # pipeline's own mutations rather than on anything the PR changed.
       - name: Tests
         id: tests
         if: always() && steps.setup.conclusion == 'success' && steps.build-dist.conclusion == 'success'
@@ -61,11 +70,6 @@ jobs:
         id: typecheck
         if: always() && steps.setup.conclusion == 'success' && steps.build-dist.conclusion == 'success'
         run: pnpm -r typecheck
-
-      - name: Lint
-        id: lint
-        if: always() && steps.setup.conclusion == 'success' && steps.build-dist.conclusion == 'success'
-        run: pnpm lint:check
 
       - name: Lint deps
         id: lint-deps
