@@ -11,7 +11,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
   release:
     name: Version 🔖
-    if: github.repository == 'evmts/tevm-monorepo'
+    if: github.repository == 'evmts/tevm'
     runs-on: ubuntu-latest
     permissions:
       contents: write

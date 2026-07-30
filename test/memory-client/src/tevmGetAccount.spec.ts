@@ -23,7 +23,7 @@ describe('tevmGetAccount', () => {
 	it('should get the account information for a prefunded address', async () => {
 		const account = await tevmGetAccount(client, { address: prefundedAddress })
 		expect(account).toBeDefined()
-		expect(account.balance).toBe(parseEther('1000'))
+		expect(account.balance).toBe(parseEther('10000'))
 		expect(account.nonce).toBe(0n)
 		expect(account).toMatchSnapshot()
 	})

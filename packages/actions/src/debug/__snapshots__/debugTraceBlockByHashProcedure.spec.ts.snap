@@ -5958,7 +5958,7 @@ exports[`debugTraceBlockByHashJsonRpcProcedure > should trace transactions with 
     {
       "result": {
         "0x0000000000000000000000000000000000000000": {
-          "balance": "0x3635c9adc5dea00000",
+          "balance": "0x21e19e0c9bab2400000",
           "code": "0x",
           "nonce": 0,
           "storage": {},
@@ -5972,7 +5972,7 @@ exports[`debugTraceBlockByHashJsonRpcProcedure > should trace transactions with 
           },
         },
         "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266": {
-          "balance": "0x3635c9adc5de8ef253",
+          "balance": "0x21e19e0c9bab22ef253",
           "code": "0x",
           "nonce": 1,
           "storage": {},
@@ -6000,13 +6000,13 @@ exports[`debugTraceBlockByHashJsonRpcProcedure > should trace transactions with 
             },
           },
           "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266": {
-            "balance": "0x3635c9adc5de8bfa9b",
+            "balance": "0x21e19e0c9bab22bfa9b",
             "nonce": 2,
           },
         },
         "pre": {
           "0x0000000000000000000000000000000000000000": {
-            "balance": "0x3635c9adc5dea00000",
+            "balance": "0x21e19e0c9bab2400000",
             "code": "0x",
             "nonce": 0,
             "storage": {},
@@ -6020,7 +6020,7 @@ exports[`debugTraceBlockByHashJsonRpcProcedure > should trace transactions with 
             },
           },
           "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266": {
-            "balance": "0x3635c9adc5de8ef253",
+            "balance": "0x21e19e0c9bab22ef253",
             "code": "0x",
             "nonce": 1,
             "storage": {},

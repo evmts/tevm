@@ -151,11 +151,11 @@ importers:
         specifier: ^4.1.13
         version: 4.1.13
       '@types/node':
-        specifier: ^22.15.0
-        version: 22.19.19
+        specifier: ^25.9.1
+        version: 25.9.1
       typescript:
-        specifier: ^5.9.0
-        version: 5.9.3
+        specifier: ^6.0.3
+        version: 6.0.3
     optionalDependencies:
       '@evmts/zevm-darwin-arm64':
         specifier: 0.0.0
