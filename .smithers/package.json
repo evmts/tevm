@@ -24,7 +24,7 @@
   "dependencies": {
     "react": "19.2.5",
     "react-dom": "19.2.5",
-    "smithers-orchestrator": "^0.20.3",
+    "smthrs": "^0.33.0",
     "zod": "4.3.6"
   },
   "devDependencies": {

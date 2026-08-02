@@ -1,6 +1,6 @@
 // smithers-source: seeded
-/** @jsxImportSource smithers-orchestrator */
-import { Parallel, Sequence, Task, type AgentLike } from "smithers-orchestrator";
+/** @jsxImportSource smthrs */
+import { Parallel, Sequence, Task, type AgentLike } from "smthrs";
 import { z } from "zod/v4";
 import FeatureTaskPrompt from "~/prompts/feature-task.mdx";
 

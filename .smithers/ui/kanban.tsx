@@ -7,7 +7,7 @@ import {
   useGatewayNodeOutput,
   useGatewayRunEvents,
   useGatewayRuns,
-} from "smithers-orchestrator/gateway-react";
+} from "smthrs/gateway-react";
 
 const WORKFLOW_KEY = "kanban";
 

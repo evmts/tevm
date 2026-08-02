@@ -2,7 +2,7 @@
 // Account providers (camelCase labels) come from ~/.smithers/accounts.json — managed via `smithers agent add|list|remove`.
 import { homedir } from "node:os";
 import path from "node:path";
-import { type AgentLike, PiAgent as SmithersPiAgent, KimiAgent as SmithersKimiAgent, AmpAgent as SmithersAmpAgent, ClaudeCodeAgent as SmithersClaudeCodeAgent } from "smithers-orchestrator";
+import { type AgentLike, PiAgent as SmithersPiAgent, KimiAgent as SmithersKimiAgent, AmpAgent as SmithersAmpAgent, ClaudeCodeAgent as SmithersClaudeCodeAgent } from "smthrs";
 import { ClaudeCodeAgent } from "./agents/claude-code";
 import { CodexAgent } from "./agents/codex";
 import { GeminiAgent } from "./agents/gemini";

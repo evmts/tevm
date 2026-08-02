@@ -1,8 +1,8 @@
 // smithers-source: seeded
 // smithers-display-name: Write a PRD
-/** @jsxImportSource smithers-orchestrator */
+/** @jsxImportSource smthrs */
 // Inspired by Matt Pocock's write-a-prd skill (https://github.com/mattpocock/skills)
-import { createSmithers } from "smithers-orchestrator";
+import { createSmithers } from "smthrs";
 import { z } from "zod/v4";
 import { agents } from "../agents";
 import { GrillMe, grillOutputSchema } from "../components/GrillMe";

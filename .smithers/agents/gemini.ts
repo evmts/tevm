@@ -1,4 +1,4 @@
-import { GeminiAgent as SmithersGeminiAgent } from "smithers-orchestrator";
+import { GeminiAgent as SmithersGeminiAgent } from "smthrs";
 
 // Built-in Gemini CLI agent (cliEngine: "gemini").
 // Tweak `model`, `cwd`, or uncomment extra options below to match your setup.

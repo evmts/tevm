@@ -1,6 +1,6 @@
 // smithers-source: seeded
-/** @jsxImportSource smithers-orchestrator */
-import { Sequence, Task, type AgentLike } from "smithers-orchestrator";
+/** @jsxImportSource smthrs */
+import { Sequence, Task, type AgentLike } from "smthrs";
 import { z } from "zod/v4";
 import FeatureEnumScanPrompt from "../prompts/feature-enum-scan.mdx";
 import FeatureEnumRefinePrompt from "../prompts/feature-enum-refine.mdx";

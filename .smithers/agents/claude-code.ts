@@ -1,4 +1,4 @@
-import { ClaudeCodeAgent as SmithersClaudeCodeAgent } from "smithers-orchestrator";
+import { ClaudeCodeAgent as SmithersClaudeCodeAgent } from "smthrs";
 
 // Built-in Claude Code CLI agent (cliEngine: "claude-code").
 // Tweak `model`, `cwd`, or uncomment extra options below to match your setup.

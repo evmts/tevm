@@ -1,6 +1,6 @@
 // smithers-source: seeded
-/** @jsxImportSource smithers-orchestrator */
-import { Task } from "smithers-orchestrator";
+/** @jsxImportSource smthrs */
+import { Task } from "smthrs";
 import { z } from "zod/v4";
 
 export const commandProbeOutputSchema = z.looseObject({
