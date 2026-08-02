@@ -1,7 +1,7 @@
 // smithers-source: seeded
 // smithers-display-name: Grill Me
-/** @jsxImportSource smithers-orchestrator */
-import { createSmithers } from "smithers-orchestrator";
+/** @jsxImportSource smthrs */
+import { createSmithers } from "smthrs";
 import { z } from "zod/v4";
 import { agents } from "../agents";
 import { GrillMe, grillOutputSchema } from "../components/GrillMe";

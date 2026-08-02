@@ -1,4 +1,4 @@
-import { CodexAgent as SmithersCodexAgent } from "smithers-orchestrator";
+import { CodexAgent as SmithersCodexAgent } from "smthrs";
 
 // Built-in Codex CLI agent (cliEngine: "codex").
 // Tweak `model`, `cwd`, or uncomment extra options below to match your setup.

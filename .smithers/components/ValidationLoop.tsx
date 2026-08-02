@@ -1,6 +1,6 @@
 // smithers-source: seeded
-/** @jsxImportSource smithers-orchestrator */
-import { Sequence, Loop, Task, type AgentLike } from "smithers-orchestrator";
+/** @jsxImportSource smthrs */
+import { Sequence, Loop, Task, type AgentLike } from "smthrs";
 import { z } from "zod/v4";
 import { Review } from "~/components/Review";
 import ImplementPrompt from "~/prompts/implement.mdx";

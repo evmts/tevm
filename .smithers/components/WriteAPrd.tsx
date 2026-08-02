@@ -1,7 +1,7 @@
 // smithers-source: seeded
 // Inspired by Matt Pocock's write-a-prd skill (https://github.com/mattpocock/skills)
-/** @jsxImportSource smithers-orchestrator */
-import { Sequence, Task, type AgentLike } from "smithers-orchestrator";
+/** @jsxImportSource smthrs */
+import { Sequence, Task, type AgentLike } from "smthrs";
 import { z } from "zod/v4";
 import WriteAPrdPrompt from "../prompts/write-a-prd.mdx";
 

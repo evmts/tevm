@@ -1,5 +1,5 @@
-/** @jsxImportSource smithers-orchestrator */
-import { Loop, Sequence, Task, type AgentLike, type OutputTarget } from "smithers-orchestrator";
+/** @jsxImportSource smthrs */
+import { Loop, Sequence, Task, type AgentLike, type OutputTarget } from "smthrs";
 import { z } from "zod/v4";
 import GrillMeSkill from "../prompts/grill-me.mdx";
 import AskUserInstructions from "../prompts/ask-user-instructions.mdx";
