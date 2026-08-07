@@ -4,6 +4,7 @@ export type {
 	AbiEvent,
 	AbiFunction,
 	AbiItemType,
+	AbiParameter,
 	AbiParametersToPrimitiveTypes,
 	Address,
 	ExtractAbiEvent,

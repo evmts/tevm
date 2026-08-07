@@ -1,7 +1,7 @@
 import { createAddress } from '@tevm/address'
 import { createCommon, mainnet } from '@tevm/common'
 import { createLightClientConsensusService } from '@tevm/consensus'
-import { P256_VERIFY_ADDRESS } from '@tevm/precompiles'
+import { CONSOLE_LOG_ADDRESS, P256_VERIFY_ADDRESS } from '@tevm/precompiles'
 import { definePredeploy } from '@tevm/predeploys'
 import { CacheType, ContractCache, StorageCache } from '@tevm/state'
 import { createSyncStoragePersister } from '@tevm/sync-storage-persister'
@@ -427,6 +427,30 @@ describe('createTevmNode', () => {
 			// Verify the mock precompile was used instead of the default
 			expect(result.execResult.returnValue).toEqual(new Uint8Array(32).fill(0xff))
 			expect(result.execResult.executionGasUsed).toBe(9999n)
+		})
+	})
+
+	describe('console log precompile integration', () => {
+		it('allows a custom precompile at the console address to override the built-in', async () => {
+			const onLog = vi.fn()
+			const customFunction = vi.fn((_input: unknown) => ({
+				returnValue: new Uint8Array([0x42]),
+				executionGasUsed: 1n,
+			}))
+			const client = createTevmNode({
+				consoleLog: { onLog },
+				customPrecompiles: [{ address: CONSOLE_LOG_ADDRESS, function: customFunction }],
+			})
+			const vm = await client.getVm()
+
+			const result = await vm.evm.runCall({
+				to: CONSOLE_LOG_ADDRESS,
+				data: hexToBytes(`0x32458eed${'0'.repeat(63)}1`),
+			})
+
+			expect(result.execResult.returnValue).toEqual(new Uint8Array([0x42]))
+			expect(customFunction).toHaveBeenCalledOnce()
+			expect(onLog).not.toHaveBeenCalled()
 		})
 	})
 })

@@ -2102,6 +2102,9 @@ importers:
       '@evmts/zevm':
         specifier: workspace:*
         version: link:../../../zevm/npm/zevm
+      '@tevm/precompiles':
+        specifier: workspace:^
+        version: link:../precompiles
       '@tevm/test-utils':
         specifier: workspace:^
         version: link:../../test/test-utils

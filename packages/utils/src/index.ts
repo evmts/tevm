@@ -16,6 +16,7 @@ export type {
 	AbiEvent,
 	AbiFunction,
 	AbiItemType,
+	AbiParameter,
 	AbiParametersToPrimitiveTypes,
 	Account,
 	Address,
@@ -138,6 +139,8 @@ export {
 	serializeTransaction,
 	stringToHex,
 	toBytes,
+	toFunctionSelector,
+	toFunctionSignature,
 	toHex,
 	toRlp,
 } from './viem.js'
