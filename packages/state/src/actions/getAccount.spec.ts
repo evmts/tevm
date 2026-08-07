@@ -37,6 +37,7 @@ const mockProof = {
 }
 const emptyCodeHash = '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
 const emptyStorageRoot = '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
+const zeroHash = `0x${'00'.repeat(32)}`
 const createMockForkTransport = () => ({
 	request: vi.fn(async ({ method }: { method: string }) => {
 		if (method === 'eth_getBlockByNumber') {
@@ -179,7 +180,10 @@ describe(`${getAccount.name} forking`, () => {
 		expect(baseState.caches.accounts.get(emptyAddress)?.accountRLP).toBeUndefined()
 	})
 
-	it('Should handle empty accounts from remote provider', async () => {
+	it.each([
+		['all-zero hashes', zeroHash, zeroHash],
+		['canonical empty hashes', emptyCodeHash, emptyStorageRoot],
+	])('Should handle empty accounts from remote provider with %s', async (_encoding, codeHash, storageRoot): Promise<void> => {
 		// Create an address for testing
 		const testAddress = createAddress('0x1234567890123456789012345678901234567890')
 
@@ -187,8 +191,8 @@ describe(`${getAccount.name} forking`, () => {
 		const mockEmptyAccount = createAccount({
 			balance: 0n,
 			nonce: 0n,
-			codeHash: hexToBytes(emptyCodeHash),
-			storageRoot: hexToBytes(emptyStorageRoot),
+			codeHash: hexToBytes(codeHash),
+			storageRoot: hexToBytes(storageRoot),
 		})
 
 		const mockGetAccountFromProvider = vi.spyOn(getAccountFromProviderModule, 'getAccountFromProvider')
