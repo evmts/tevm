@@ -52,9 +52,9 @@ export const getAccountFromProvider = (baseState) => async (address) => {
 	const client = getForkClient(baseState)
 	const blockTag = getForkBlockTag(baseState)
 	const addressHex = /** @type {import('@tevm/utils').Address}*/ (address.toString())
-	const transport = /** @type {object} */ (baseState.options.fork?.transport)
+	const transport = /** @type {object | undefined} */ (baseState.options.fork?.transport)
 
-	if (!proofUnsupportedTransports.has(transport)) {
+	if (transport === undefined || !proofUnsupportedTransports.has(transport)) {
 		try {
 			const accountData = await client.getProof({
 				address: addressHex,
@@ -69,7 +69,7 @@ export const getAccountFromProvider = (baseState) => async (address) => {
 			})
 		} catch (err) {
 			if (!isMethodUnavailableError(err)) throw err
-			proofUnsupportedTransports.set(transport, true)
+			if (transport !== undefined) proofUnsupportedTransports.set(transport, true)
 			baseState.logger.warn(
 				{ address: addressHex, error: /** @type {Error} */ (err).message },
 				'eth_getProof is not served by the fork provider; permanently falling back to eth_getBalance/eth_getTransactionCount/eth_getCode for account hydration on this transport',
@@ -95,7 +95,6 @@ export const getAccountFromProvider = (baseState) => async (address) => {
 		balance,
 		nonce: BigInt(nonce),
 		codeHash: keccak256(codeBytes, 'bytes'),
-		// storageRoot omitted: createAccount defaults it to the canonical empty
-		// trie root, which getAccount's nonexistent-account predicate requires
+		// storageRoot omitted: createAccount defaults it to the canonical empty trie root
 	})
 }

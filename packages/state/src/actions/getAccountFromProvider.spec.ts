@@ -74,6 +74,7 @@ const EMPTY_STORAGE_ROOT = '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001
 const SCALAR_METHODS = ['eth_getBalance', 'eth_getTransactionCount', 'eth_getCode']
 
 type RecordedCall = { method: string; params: unknown[] }
+type RecordingTransport = { calls: RecordedCall[]; request: ReturnType<typeof vi.fn> }
 
 // The capability WeakMap is keyed by transport identity — each test needs a fresh transport
 const createRecordingTransport = ({
@@ -86,7 +87,7 @@ const createRecordingTransport = ({
 	balance?: string
 	transactionCount?: string
 	code?: string
-} = {}) => {
+} = {}): RecordingTransport => {
 	const calls: RecordedCall[] = []
 	return {
 		calls,
@@ -105,12 +106,12 @@ const createRecordingTransport = ({
 	}
 }
 
-const methodCount = (calls: RecordedCall[], method: string) => calls.filter((c) => c.method === method).length
+const methodCount = (calls: RecordedCall[], method: string): number => calls.filter((c) => c.method === method).length
 
 describe(`${getAccountFromProvider.name} eth_getProof scalar fallback`, () => {
 	const address = createAddress('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')
 
-	it('uses eth_getProof alone when the provider serves it', async () => {
+	it('uses eth_getProof alone when the provider serves it', async (): Promise<void> => {
 		const transport = createRecordingTransport()
 		const state = createBaseState({ fork: { transport, blockTag: 1n } })
 
@@ -126,7 +127,7 @@ describe(`${getAccountFromProvider.name} eth_getProof scalar fallback`, () => {
 		}
 	})
 
-	it('falls back to scalar methods on -32601 Method not found', async () => {
+	it('falls back to scalar methods on -32601 Method not found', async (): Promise<void> => {
 		const transport = createRecordingTransport({
 			getProofError: { code: -32601, message: 'Method not found' },
 		})
@@ -144,7 +145,7 @@ describe(`${getAccountFromProvider.name} eth_getProof scalar fallback`, () => {
 		}
 	})
 
-	it('falls back to scalar methods on -32004 Method not supported', async () => {
+	it('falls back to scalar methods on -32004 Method not supported', async (): Promise<void> => {
 		const transport = createRecordingTransport({
 			getProofError: { code: -32004, message: 'Method not supported' },
 		})
@@ -159,7 +160,7 @@ describe(`${getAccountFromProvider.name} eth_getProof scalar fallback`, () => {
 		}
 	})
 
-	it('falls back on -32600 whose message says the method is not available (Monad shape)', async () => {
+	it('falls back on -32600 whose message says the method is not available (Monad shape)', async (): Promise<void> => {
 		const transport = createRecordingTransport({
 			getProofError: { code: -32600, message: 'eth_getProof is not available on the MONAD_MAINNET' },
 		})
@@ -173,7 +174,7 @@ describe(`${getAccountFromProvider.name} eth_getProof scalar fallback`, () => {
 		}
 	})
 
-	it('falls back on -32600 whose message says the method is unavailable', async () => {
+	it('falls back on -32600 whose message says the method is unavailable', async (): Promise<void> => {
 		const transport = createRecordingTransport({
 			getProofError: { code: -32600, message: 'Method unavailable' },
 		})
@@ -187,7 +188,7 @@ describe(`${getAccountFromProvider.name} eth_getProof scalar fallback`, () => {
 		}
 	})
 
-	it('does NOT fall back on a generic -32600 invalid request', async () => {
+	it('does NOT fall back on a generic -32600 invalid request', async (): Promise<void> => {
 		const transport = createRecordingTransport({
 			getProofError: { code: -32600, message: 'invalid request' },
 		})
@@ -201,7 +202,7 @@ describe(`${getAccountFromProvider.name} eth_getProof scalar fallback`, () => {
 		}
 	})
 
-	it('does NOT fall back or stick on -32005 rate limiting', async () => {
+	it('does NOT fall back or stick on -32005 rate limiting', async (): Promise<void> => {
 		const transport = createRecordingTransport({
 			getProofError: { code: -32005, message: 'rate limited' },
 		})
@@ -222,7 +223,7 @@ describe(`${getAccountFromProvider.name} eth_getProof scalar fallback`, () => {
 		}
 	}, 30_000)
 
-	it('does NOT fall back or stick on plain network errors', async () => {
+	it('does NOT fall back or stick on plain network errors', async (): Promise<void> => {
 		const transport = createRecordingTransport({
 			getProofError: new Error('ECONNRESET'),
 		})
@@ -242,7 +243,7 @@ describe(`${getAccountFromProvider.name} eth_getProof scalar fallback`, () => {
 		}
 	}, 30_000)
 
-	it('downgrades the transport permanently: second address skips eth_getProof entirely', async () => {
+	it('downgrades the transport permanently: second address skips eth_getProof entirely', async (): Promise<void> => {
 		const transport = createRecordingTransport({
 			getProofError: { code: -32601, message: 'Method not found' },
 		})
@@ -258,7 +259,7 @@ describe(`${getAccountFromProvider.name} eth_getProof scalar fallback`, () => {
 		}
 	})
 
-	it('pins every scalar request to the fork block', async () => {
+	it('pins every scalar request to the fork block', async (): Promise<void> => {
 		const transport = createRecordingTransport({
 			getProofError: { code: -32601, message: 'Method not found' },
 		})
@@ -273,7 +274,7 @@ describe(`${getAccountFromProvider.name} eth_getProof scalar fallback`, () => {
 		}
 	})
 
-	it('primes the contract code cache so getContractCode makes no extra eth_getCode call', async () => {
+	it('primes the contract code cache so getContractCode makes no extra eth_getCode call', async (): Promise<void> => {
 		const transport = createRecordingTransport({
 			getProofError: { code: -32601, message: 'Method not found' },
 		})
@@ -288,7 +289,7 @@ describe(`${getAccountFromProvider.name} eth_getProof scalar fallback`, () => {
 		expect(methodCount(transport.calls, 'eth_getCode')).toBe(1)
 	})
 
-	it('resolves a nonexistent account to undefined through the real getAccount action', async () => {
+	it('resolves a nonexistent account to undefined through the real getAccount action', async (): Promise<void> => {
 		const transport = createRecordingTransport({
 			getProofError: { code: -32601, message: 'Method not found' },
 			balance: '0x0',

@@ -1,10 +1,10 @@
-import { bytesToHex } from '@tevm/utils'
+import { equalsBytes, KECCAK256_RLP, keccak256 } from '@tevm/utils'
 import { fromRlpSerializedAccount } from '../utils/accountHelpers.js'
 import { getAccountFromProvider } from './getAccountFromProvider.js'
 import { resolveForkBlockTag } from './resolveForkBlockTag.js'
 
-const EMPTY_CODE_HASH = '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
-const EMPTY_STORAGE_ROOT = '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
+const ZERO_HASH = new Uint8Array(32)
+const EMPTY_CODE_HASH = keccak256(new Uint8Array(), 'bytes')
 
 /**
  * Gets the account corresponding to the provided `address`.
@@ -69,8 +69,8 @@ export const getAccount =
 		if (
 			account.nonce === 0n &&
 			account.balance === 0n &&
-			bytesToHex(account.codeHash) === EMPTY_CODE_HASH &&
-			bytesToHex(account.storageRoot) === EMPTY_STORAGE_ROOT
+			(equalsBytes(account.codeHash, ZERO_HASH) || equalsBytes(account.codeHash, EMPTY_CODE_HASH)) &&
+			(equalsBytes(account.storageRoot, ZERO_HASH) || equalsBytes(account.storageRoot, KECCAK256_RLP))
 		) {
 			// Store empty account in both caches
 			accounts.put(address, undefined)
