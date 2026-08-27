@@ -1,0 +1,186 @@
+/// <reference path="../smithers.d.ts" />
+/** biome-ignore-all lint/suspicious/noTemplateCurlyInString: GitHub Actions expressions are literal `${{ }}` text. */
+import { Smithers as S } from '@smthrs/targets'
+import { Package as root } from '../PACKAGE.js'
+import { Package as test } from '../test/PACKAGE.js'
+import { Package as tevm } from '../tevm/PACKAGE.js'
+
+// The workflow files are emitted from the graph, not hand-written: each
+// Workflow maps triggers to targets and the renderer writes the actions
+// boilerplate (rust toolchain, cbindgen, node from .nvmrc, bun, pnpm, the
+// zevm sibling clone, foundry, the native apt packages) from the WORKSPACE.ts
+// layers, replacing .github/actions/setup. Secrets a target declares become
+// the job's env. Check mode fails on drift; --write regenerates.
+const setup = S.Github.Setup({
+	cacheUrl: S.Secret('SMITHERS_CACHE_URL'),
+	cacheToken: S.Secret('SMITHERS_CACHE_TOKEN'),
+})
+
+// ci.yml as one affected pipeline over //:ci. Its twelve sequential steps
+// exist upstream because nx run-many is one process; here an unaffected
+// target is a cache hit and the steps become graph structure.
+const ci = S.Github.Workflow({
+	name: 'ci',
+	on: {
+		push: { branches: ['main'] },
+		pullRequest: true,
+		workflowDispatch: true,
+	},
+	concurrency: { group: 'ci-${{ github.ref }}', cancelInProgress: 'pull_request' },
+	setup,
+	affected: true,
+	run: [root.ci],
+})
+
+// release.yml: the changesets release train on the v1 branch. changesets/action
+// opens the Version Packages PR when changesets are pending and publishes when
+// the PR has merged; //:version and //:publish are those two halves. The
+// `.changeset/pre.json` existence guard is the same condition //:prerelease
+// keys on.
+const release = S.Github.Workflow({
+	name: 'release',
+	on: {
+		push: { branches: ['v1'] },
+		workflowDispatch: true,
+	},
+	concurrency: { group: 'release-${{ github.ref }}' },
+	permissions: { contents: 'write', pullRequests: 'write', idToken: 'write' },
+	setup,
+	run: [root.version, root.publish],
+})
+
+// prerelease.yml: every push to main publishes under the `next` tag with
+// trusted publishing (id-token, no NPM_TOKEN).
+const prerelease = S.Github.Workflow({
+	name: 'prerelease',
+	on: { push: { branches: ['main'] } },
+	concurrency: { group: 'prerelease-${{ github.ref }}' },
+	permissions: { contents: 'write', pullRequests: 'write', idToken: 'write' },
+	setup,
+	run: [root.prereleaseEnter, root.prerelease],
+})
+
+// prerelease-exit.yml: dispatch with a branch input; the Diff removes
+// pre.json and the workflow commits it back to that branch.
+const prereleaseExit = S.Github.Workflow({
+	name: 'prerelease-exit',
+	on: {
+		workflowDispatch: {
+			inputs: { branch: S.Input.String('Exit prerelease mode on release branch', { default: 'main' }) },
+		},
+	},
+	permissions: { contents: 'write' },
+	setup,
+	run: [root.prereleaseExit],
+	commit: { message: 'Exit prerelease mode', branch: '${{ github.event.inputs.branch }}' },
+})
+
+// snapshot.yml: dispatch-only snapshot publish.
+const snapshot = S.Github.Workflow({
+	name: 'snapshot',
+	on: { workflowDispatch: true },
+	concurrency: { group: 'snapshot-${{ github.ref }}' },
+	setup,
+	run: [root.snapshot],
+})
+
+// jsr-publish.yml: dispatch with a dry-run switch. //tevm:publishJsr carries
+// the OIDC auth; the dry-run input maps to its `dryRun` flag.
+const jsrPublish = S.Github.Workflow({
+	name: 'jsr-publish',
+	on: {
+		workflowDispatch: {
+			inputs: { dry_run: S.Input.Boolean('Run in dry-run mode without publishing', { default: false }) },
+		},
+	},
+	permissions: { contents: 'read', idToken: 'write' },
+	setup,
+	run: [tevm.publishJsr],
+})
+
+// wasm-size-check.yml: the byte budget on the napi/wasm artifacts. The yml
+// today measures nothing (its Zig build was removed) and stores placeholder
+// baselines in .wasm-sizes.json; the graph's S.Size.Gate targets are the
+// real check, so the workflow reduces to running them.
+const wasmSize = S.Github.Workflow({
+	name: 'wasm-size-check',
+	on: {
+		push: { branches: ['main'] },
+		pullRequest: true,
+		workflowDispatch: true,
+	},
+	setup,
+	run: [S.Query({ pattern: '//bundler-packages/**:wasmSize' })],
+})
+
+// parity-suites.yml: the three parity jobs (RPC fast subset, full
+// conformance, hive smoke) on every PR. Each job uploads artifacts/parity;
+// the targets declare those as outDirs, so the renderer attaches them.
+const paritySuites = S.Github.Workflow({
+	name: 'parity-suites',
+	on: { pullRequest: true, workflowDispatch: true },
+	setup,
+	run: [test.parityFast, test.conformanceAll, test.hiveSmoke],
+	artifacts: [
+		'artifacts/parity',
+		'artifacts/general-state-tests',
+		'artifacts/execution-spec-tests',
+		'test/hive/artifacts',
+	],
+})
+
+// The //:nightlyConformance schedule as a GitHub workflow.
+const nightly = S.Github.Workflow({
+	name: 'nightly-conformance',
+	on: { schedule: ['0 3 * * *'], workflowDispatch: true },
+	setup,
+	run: [test.conformanceAll],
+	artifacts: ['artifacts/general-state-tests', 'artifacts/execution-spec-tests'],
+})
+
+// claude-code-review.yml's checklist runs as //:prReview on every PR.
+const review = S.Github.Workflow({
+	name: 'review',
+	on: { pullRequest: true },
+	concurrency: { group: 'review-${{ github.ref }}', cancelInProgress: true },
+	setup,
+	run: [root.prReview],
+})
+
+// The drift-checked renderer. Hand-written workflows without target
+// equivalents are preserved: claude.yml (the @claude mention bot, driven by
+// GitHub issue and review events, not tree checks), claude-auto-update.yml
+// (the daily Claude Code maintenance job; its work is the agent lanes under
+// workflows/ once those run on a schedule), and claude-code-review.yml, which
+// //:prReview reads as its prompt.
+const github = S.Github.CiGen({
+	workflows: [ci, release, prerelease, prereleaseExit, snapshot, jsrPublish, wasmSize, paritySuites, nightly, review],
+	preserve: ['workflows/claude.yml', 'workflows/claude-auto-update.yml', 'workflows/claude-code-review.yml'],
+	changes: ['workflows/**', 'actions/setup/**'],
+})
+
+// Opening a PR is outward. The gate is the same pre-push suite the git hook
+// runs.
+const pr = S.Github.Pr({
+	gates: [root.prePush],
+	secrets: [S.Secret('GITHUB_TOKEN')],
+	sandbox: { network: true },
+	approval: 'required',
+})
+
+export const Package = S.Package({
+	targets: {
+		ci,
+		github,
+		jsrPublish,
+		nightly,
+		paritySuites,
+		pr,
+		prerelease,
+		prereleaseExit,
+		release,
+		review,
+		snapshot,
+		wasmSize,
+	},
+})

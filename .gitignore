@@ -127,3 +127,6 @@ g/
 **/coverage/
 /packages/mcp/scratch-*.mjs
 **/__rpc_snapshots__/*.snap.json.*.tmp
+
+# Smithers target-graph cache (WORKSPACE.ts S.Cache)
+.flows/
