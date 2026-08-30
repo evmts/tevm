@@ -26,7 +26,10 @@ type, the result type, the handler, the JSON-RPC procedure, the spec).
    through the node's logger where a Logger is available.
 5. Register the procedure in the request-handler dispatch table and, if the
    input named a client method, add the action to `packages/memory-client`
-   and the decorator in `packages/decorators`.
+   and the decorator in `packages/decorators`. Update every request, response,
+   params, result, handler, procedure, request-handler, and method-matrix union
+   that represents neighboring methods; do not leave a method reachable through
+   only one dispatch path.
 6. Barrels. Re-export every new symbol by name through each `index.js` up
    to `packages/actions/src/index.js`, then `tevm/actions/index.ts` and, for
    client methods, `tevm/memory-client/index.ts`.
@@ -36,7 +39,15 @@ type, the result type, the handler, the JSON-RPC procedure, the spec).
    `docs/node/pages` with one example.
 9. Changeset. `minor` for the packages touched, one sentence naming the
    method.
-10. Run the actions test suite. Every test in the package passes, not only
+10. Add a wire-contract test through the public JSON-RPC procedure or transport.
+    Assert the exact encoded response and prove `JSON.stringify(response)`
+    succeeds. No `Promise`, `bigint`, typed array, `Error`, or `undefined` may
+    cross the boundary. Quantities are minimal hex, byte data is even-length,
+    fixed words are left-padded, and spec-nullable fields use `null`.
+11. Cover the method's negative or alternate form and assert its stable error
+    class and numeric JSON-RPC code. When parity with Anvil/geth/viem is claimed,
+    name the reference fixture in the test.
+12. Run the actions test suite. Every test in the package passes, not only
     the new one.
 
 PR title: `✨ feat(actions): add <method>`. Body: what the method does, the
