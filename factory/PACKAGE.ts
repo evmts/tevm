@@ -62,6 +62,12 @@ const issueIntakeTest = S.Shell.Test({
 	data: [policy, scripts],
 })
 
+const changesetCandidateTest = S.Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['--test', 'scripts/factory/changeset-candidate.test.mjs'],
+	data: [scripts],
+})
+
 const labelsTest = S.Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['scripts/factory/labels.mjs'],
@@ -134,6 +140,7 @@ const check = S.Suite({
 		policyLint,
 		queueLint,
 		issueIntakeTest,
+		changesetCandidateTest,
 		labelsTest,
 		declarationsTypecheck,
 		shellScopeLint,
@@ -154,6 +161,7 @@ export const Package = S.Package({
 		declarationsTypecheck,
 		issueForms,
 		issueIntakeTest,
+		changesetCandidateTest,
 		labelsTest,
 		policy,
 		policyLint,
