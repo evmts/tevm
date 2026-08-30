@@ -54,7 +54,7 @@ const syncPublicSurface = S.Agent.Diff({
 		'sites/core/pages/**',
 		'.changeset/**',
 	],
-	gates: [root.allTypes, root.allDocs, root.allPackageLints, root.changesetCheck],
+	gates: [root.allTypes, root.allDocs, root.allPackageLints, root.changesetCandidateCheck],
 	maxRounds: 3,
 })
 

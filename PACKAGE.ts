@@ -288,13 +288,21 @@ const cargoCheck = S.Shell.Test({
 // origin/main is the same check release:check runs.
 // `changeset status` validates every pending changeset and that each
 // internal dependency names the current version, so the manifests are key
-// material beside the changesets. It runs without --since: that flag only
-// narrows which changeset files count, and an Agent.Diff candidate tree
-// carries no origin/main ref to narrow against.
+// material beside the changesets. It always diffs against a git base, so
+// there are two forms: the branch form diffs against origin/main (the ci
+// job checks out full history for it; a developer host has the ref), and
+// the candidate form diffs against HEAD, which is what an Agent.Diff
+// candidate tree can answer and exactly the changesets the agent added.
 const changesetCheck = S.Shell.Test({
 	bin: S.NodeModule.Bin('@changesets/cli', 'changeset'),
-	args: ['status', '--verbose'],
-	data: [changesets, changesetConfig, tree],
+	args: ['status', '--verbose', '--since=origin/main'],
+	data: [changesets, changesetConfig, tree, S.gitDiff()],
+})
+
+const changesetCandidateCheck = S.Shell.Test({
+	bin: S.NodeModule.Bin('@changesets/cli', 'changeset'),
+	args: ['status', '--verbose', '--since=HEAD'],
+	data: [changesets, changesetConfig, tree, S.gitDiff()],
 })
 
 // Agentic lints over the diff. Each enforces a CLAUDE.md rule that prose
@@ -641,6 +649,7 @@ export const Package = S.Package({
 		cargoBuilds,
 		cargoCheck,
 		cargoTests,
+		changesetCandidateCheck,
 		changesetCheck,
 		changesetLint,
 		ci,
