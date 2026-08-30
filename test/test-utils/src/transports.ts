@@ -1,9 +1,16 @@
 import { loadBalance, rateLimit } from '@ponder/utils'
 import { http } from 'viem'
 import { mainnet as viemMainnet, optimism as viemOptimism } from 'viem/chains'
+import { normalizeRpcUrl } from './getAlchemyUrl.js'
 
-const mainnetRpcUrls = process.env['TEVM_RPC_URLS_MAINNET']?.split(',') ?? []
-const optimismRpcUrls = process.env['TEVM_RPC_URLS_OPTIMISM']?.split(',') ?? []
+const readRpcUrls = (name: string): string[] =>
+	(process.env[name]?.split(',') ?? [])
+		.map((url) => url.trim())
+		.filter(Boolean)
+		.map(normalizeRpcUrl)
+
+const mainnetRpcUrls = readRpcUrls('TEVM_RPC_URLS_MAINNET')
+const optimismRpcUrls = readRpcUrls('TEVM_RPC_URLS_OPTIMISM')
 
 if (mainnetRpcUrls.length === 0) {
 	console.warn('TEVM_RPC_URLS_MAINNET is not set')

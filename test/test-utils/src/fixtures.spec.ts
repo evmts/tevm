@@ -5,6 +5,7 @@ import {
 	BlockReader,
 	ErrorContract,
 	getAlchemyUrl,
+	normalizeRpcUrl,
 	SimpleContract,
 	TestERC20,
 	TestERC721,
@@ -51,5 +52,14 @@ describe('@tevm/test-utils fixtures', () => {
 
 	it('builds an Alchemy URL with an explicit key', () => {
 		expect(getAlchemyUrl('optimism', 'test-key')).toBe('https://opt-mainnet.g.alchemy.com/v2/test-key')
+		expect(getAlchemyUrl('mainnet', 'test-key')).toBe('https://eth-mainnet.g.alchemy.com/v2/test-key')
+	})
+
+	it('rewrites the retired alchemyapi.io host and leaves every other RPC URL alone', () => {
+		expect(normalizeRpcUrl('https://eth-mainnet.alchemyapi.io/v2/key')).toBe('https://eth-mainnet.g.alchemy.com/v2/key')
+		expect(normalizeRpcUrl('https://opt-mainnet.alchemyapi.io/v2/key')).toBe('https://opt-mainnet.g.alchemy.com/v2/key')
+		expect(normalizeRpcUrl('https://eth-mainnet.g.alchemy.com/v2/key')).toBe('https://eth-mainnet.g.alchemy.com/v2/key')
+		expect(normalizeRpcUrl('https://mainnet.optimism.io')).toBe('https://mainnet.optimism.io')
+		expect(normalizeRpcUrl('https://not-alchemyapi.io.example.com/v2')).toBe('https://not-alchemyapi.io.example.com/v2')
 	})
 })

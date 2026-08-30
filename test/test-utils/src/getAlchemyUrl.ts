@@ -4,7 +4,7 @@
 const DEFAULT_ALCHEMY_KEY = '_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC'
 
 const ALCHEMY_HOSTS = Object.freeze({
-	mainnet: 'eth-mainnet.alchemyapi.io',
+	mainnet: 'eth-mainnet.g.alchemy.com',
 	goerli: 'eth-goerli.g.alchemy.com',
 	sepolia: 'eth-sepolia.g.alchemy.com',
 	arbitrum: 'arb-mainnet.g.alchemy.com',
@@ -34,3 +34,21 @@ Using default alchemy key '${DEFAULT_ALCHEMY_KEY}' and may face throttling`)
 	}
 	return `https://${ALCHEMY_HOSTS[chainId]}/v2/${alchemyKey}`
 }
+
+/**
+ * Rewrites an RPC URL on Alchemy's retired `*.alchemyapi.io` host to the
+ * `*.g.alchemy.com` host that serves today. The retired host no longer
+ * answers, and an operator's `TEVM_RPC_URLS_*` value can still carry it.
+ *
+ * @example
+ * ```ts
+ * import { normalizeRpcUrl } from '@tevm/test-utils'
+ *
+ * normalizeRpcUrl('https://eth-mainnet.alchemyapi.io/v2/key')
+ * // 'https://eth-mainnet.g.alchemy.com/v2/key'
+ * normalizeRpcUrl('https://mainnet.optimism.io')
+ * // 'https://mainnet.optimism.io'
+ * ```
+ */
+export const normalizeRpcUrl = (url: string): string =>
+	url.replace(/^(https?:\/\/[a-z0-9-]+)\.alchemyapi\.io(?=\/|$)/i, '$1.g.alchemy.com')
