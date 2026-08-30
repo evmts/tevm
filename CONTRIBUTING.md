@@ -2,13 +2,17 @@
 
 ## Quick start
 
-1. Install pnpm 9.x.x for installing node_modules
+1. Install the Node and pnpm versions pinned by the repository
 
 ```bash
-npm i pnpm@9 --global && pnpm --version
+corepack enable
+corepack prepare pnpm@10.33.4 --activate
+pnpm --version
 ```
 
-2. Install bun
+Use Node `24.12.0` from `.nvmrc` (for example with `nvm use`).
+
+2. Install Bun `1.2.13`
 
 ```bash
 npm i bun --global && bun --version
@@ -26,31 +30,45 @@ bun upgrade
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-4. Update submodules
+4. Bootstrap the local coding-factory dependencies
+
+The factory uses the unpublished Flows source from the exact sibling path `../flows/flows`, plus the Zevm sibling workspace. It must not resolve Smithers packages from npm.
+
+```bash
+node scripts/factory/bootstrap.mjs --install
+pnpm factory:preflight
+```
+
+The bootstrapper never rewrites an existing checkout. If a sibling is already present at a different revision, reconcile it manually.
+
+5. Update submodules
 
 ```bash
 git submodule update --init --recursive
 ```
 
-4. Set environment variables
+6. Set environment variables
 
 In your path must be the following environment variables for the tests
 
 ```bash
+export TEVM_TEST_ALCHEMY_KEY=
 export TEVM_RPC_URLS_MAINNET=
 export TEVM_RPC_URLS_OPTIMISM=
 ```
 
-These rpc urls are a comma seperated list of at least one RPC provider such `https://mainnet.optimism.io`. The tests will rate limit and load balance across all urls
+The RPC values are comma-separated lists of at least one provider URL. Tests
+rate-limit and load-balance across the list. Full factory preflight requires all
+three variables but reports only whether each is set, never its value.
 
-5. Run everything
+7. Run everything
 
-`bun allz` will run everything
+`pnpm allz` will run everything
 
-`bun all` will run a smaller subset of everything
+`pnpm all` will run a smaller subset of everything
 
 ```bash
-bun allz
+pnpm allz
 ```
 
 This includes
@@ -66,11 +84,56 @@ This includes
 - running all tests
 - running all dev fixtures
 
-3. Understand the repo in [monorepo section](#monorepo) and [packages](#packages) sections
+8. Read [AGENTS.md](./AGENTS.md), the [monorepo section](#monorepo), and the [packages section](#packages).
+
+## Coding factory
+
+The factory turns common repository work into typed, bounded targets. Start with read-only discovery and an inert plan:
+
+```bash
+pnpm factory:check
+pnpm factory:query
+pnpm exec smthrs target //packages/address:typecheck --plan
+```
+
+Issue intake is deterministic and copies no issue body into its result:
+
+```bash
+node scripts/factory/issue-intake.mjs --issue 123 --format markdown
+```
+
+Maintainers may use `factory:ready` to authorize a candidate after intake. That label does not authorize a commit, push, pull request, merge, release, deployment, fork, or use of secrets. Those remain separately gated. See [factory/README.md](./factory/README.md) for the full lifecycle and operator setup.
+
+The Smithers contributor portal links each supported issue form, the explicit
+GitHub fork flow, bootstrap instructions, safe no-input desktop targets, and
+copyable parameterized agent lanes:
+
+```bash
+pnpm factory:ui-check
+pnpm factory:ui
+```
+
+Its checked-in facts are generated from policy, issue forms, and
+`.smithers/UI.json`; run `pnpm factory:contributor-data-write` after changing
+one of those sources.
+
+Before pushing, run the two deterministic trust boundaries independently:
+
+```bash
+pnpm exec smthrs target //:mechanicalPrePush --no-cache
+pnpm exec smthrs target //:externalIntegrationTests --no-cache
+```
+
+The first runs daemonless, cloud-disabled Nx checks with loopback-only network
+access and no RPC secrets. The second is the explicit maintainer integration
+lane for compiler downloads and live RPC tests. `//:prePush` adds the
+PR-history-derived agent lints to both.
 
 ## Secrets
 
-Many of the tests use alchemy. They do not require an alchemy key but not providing one can cause throttling. To provide an alchemy key set `TEVM_TEST_ALCHEMY_KEY` environment variable in your shell.
+Many tests use Alchemy or another configured RPC provider. Keep
+`TEVM_TEST_ALCHEMY_KEY` and the RPC failover lists in your shell; Flows passes
+them only to targets that declare them.
 
 ## Nx can get slow
 
@@ -83,6 +146,7 @@ Tevm is a monorepo using
 - [nx](https://nx.dev/concepts/mental-model) for caching and task management
 - [bun](https://bun.sh/docs) for script runner and workspace node_module management
 - [changesets](./.changeset/) for package versioning
+- the local [Flows coding factory](./factory/README.md) for governed target execution and issue processing
 
 For a list of all packages, see the `workspaces` key in the root level [package.json](./package.json)
 
