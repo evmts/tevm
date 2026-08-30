@@ -5,11 +5,8 @@ import { executeTool } from './executeTool.js'
 describe('Tevm MCP public RPC fork', () => {
 	it('forks real Ethereum mainnet and reads live contract storage', async () => {
 		const sessions = createSessionManager()
-		const fork: any = await executeTool(
-			'evm_fork_chain',
-			{ url: 'https://ethereum-rpc.publicnode.com', chain: 'mainnet' },
-			sessions,
-		)
+		const forkUrl = process.env.TEVM_RPC_URLS_MAINNET?.split(',')[0] ?? 'https://ethereum-rpc.publicnode.com'
+		const fork: any = await executeTool('evm_fork_chain', { url: forkUrl, chain: 'mainnet' }, sessions)
 		expect(fork.chainId).toBe(1)
 		expect(BigInt(fork.blockNumber)).toBeGreaterThan(20_000_000n)
 
