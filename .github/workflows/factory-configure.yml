@@ -1,0 +1,27 @@
+name: Configure coding factory
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  labels:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: factory-admin
+    steps:
+      - name: Check out factory configuration without persisted credentials
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Validate label configuration
+        run: node scripts/factory/labels.mjs
+
+      - name: Apply approved labels without deleting unrelated labels
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/factory/labels.mjs --apply

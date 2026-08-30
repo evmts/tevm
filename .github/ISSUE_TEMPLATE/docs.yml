@@ -1,0 +1,34 @@
+name: Documentation issue
+description: Fix incorrect, missing, or confusing TEVM documentation.
+title: "[Docs]: "
+labels:
+  - type:docs
+  - needs:triage
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What is incorrect, missing, or difficult to understand?
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Documentation location
+      description: Link the page or provide a repository path.
+      placeholder: https://tevm.sh/... or sites/core/pages/...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: State how a contributor can verify the documentation fix.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Include working examples or related source where useful. Do not include secrets.

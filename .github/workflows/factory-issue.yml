@@ -1,0 +1,275 @@
+name: Factory approved issue
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Open issue number carrying factory:ready
+        required: true
+        type: string
+      type:
+        description: Normalized issue type
+        required: true
+        type: choice
+        options: [bug, feature, docs, conformance, maintenance]
+
+concurrency:
+  group: factory-issue-${{ github.event.issue.number || inputs.issue }}
+  cancel-in-progress: false
+
+jobs:
+  candidate:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'factory:ready'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: factory-candidate
+    permissions:
+      contents: read
+      issues: read
+    outputs:
+      issue: ${{ steps.context.outputs.issue }}
+      type: ${{ steps.context.outputs.type }}
+      route: ${{ steps.intake.outputs.route }}
+    steps:
+      - name: Check out a tokenless clean base
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve trusted event fields
+        id: context
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_PATH: ${{ github.event_path }}
+          DISPATCH_ISSUE: ${{ inputs.issue }}
+          DISPATCH_TYPE: ${{ inputs.type }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            issue="$DISPATCH_ISSUE"
+            type="$DISPATCH_TYPE"
+          else
+            issue="$(jq -r '.issue.number' "$EVENT_PATH")"
+            type="$(jq -r '[.issue.labels[].name | select(startswith("type:"))][0] // "" | sub("^type:"; "")' "$EVENT_PATH")"
+          fi
+          [[ "$issue" =~ ^[1-9][0-9]*$ ]]
+          case "$type" in
+            bug|feature|docs|conformance|maintenance) ;;
+            *) echo "Unsupported or missing issue type: $type" >&2; exit 1 ;;
+          esac
+          printf 'issue=%s\n' "$issue" >> "$GITHUB_OUTPUT"
+          printf 'type=%s\n' "$type" >> "$GITHUB_OUTPUT"
+
+      - name: Install pinned sibling source checkouts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ../flows
+          git clone --filter=blob:none https://github.com/smithersai/flows-proto.git ../flows/flows
+          git -C ../flows/flows checkout --detach 4464c7e2ab98fcc9e5f570dd15a2b2931e602702
+          git clone --filter=blob:none https://github.com/evmts/zevm.git ../zevm
+          git -C ../zevm checkout --detach e891cf630d35c89df97e8a408318c490a9969629
+
+      - name: Install the TEVM toolchain
+        uses: ./.github/actions/setup
+
+      - name: Prove the local Flows runtime without model spend
+        shell: bash
+        run: pnpm factory:runtime-check
+
+      - name: Install and authenticate the pinned Codex CLI
+        shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$OPENAI_API_KEY"
+          npm install --global @openai/codex@0.150.1
+          codex_home="$RUNNER_TEMP/codex-home"
+          mkdir -p "$codex_home"
+          chmod 700 "$codex_home"
+          printf 'CODEX_HOME=%s\n' "$codex_home" >> "$GITHUB_ENV"
+          printenv OPENAI_API_KEY | CODEX_HOME="$codex_home" codex login --with-api-key
+
+      - name: Verify live approval and issue contract
+        id: intake
+        shell: bash
+        env:
+          ISSUE: ${{ steps.context.outputs.issue }}
+          ISSUE_TYPE: ${{ steps.context.outputs.type }}
+        run: |
+          set -euo pipefail
+          node scripts/factory/issue-intake.mjs --issue "$ISSUE" --public --format json --strict > "$RUNNER_TEMP/intake.json"
+          actual_type="$(jq -r '.type' "$RUNNER_TEMP/intake.json")"
+          [[ "$actual_type" == "$ISSUE_TYPE" ]]
+          route="$(jq -r '.route' "$RUNNER_TEMP/intake.json")"
+          case "$route" in
+            issue-to-pr|issue-to-plan|conformance-triage) ;;
+            *) echo "Unsupported automatic route: $route" >&2; exit 1 ;;
+          esac
+          printf 'route=%s\n' "$route" >> "$GITHUB_OUTPUT"
+
+      - name: Produce and gate the routed candidate with local Flows
+        shell: bash
+        env:
+          ISSUE: ${{ steps.context.outputs.issue }}
+          ISSUE_TYPE: ${{ steps.context.outputs.type }}
+          ROUTE: ${{ steps.intake.outputs.route }}
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+          case "$ROUTE" in
+            issue-to-pr)
+              pnpm exec smthrs target //workflows/issue-to-pr:implementIssue \
+                --input "issue=$ISSUE" \
+                --input "type=$ISSUE_TYPE" \
+                --input approval=factory:ready \
+                --no-cache
+              pnpm exec smthrs target //:agentLints --no-cache
+              ;;
+            issue-to-plan|conformance-triage)
+              pnpm exec smthrs target //workflows/issue-triage:triageIssue \
+                --input "issue=$ISSUE" \
+                --input "type=$ISSUE_TYPE" \
+                --no-cache
+              pnpm exec smthrs target //factory:queueLint --no-cache
+              ;;
+          esac
+          git diff --check
+
+      - name: Package the candidate without repository credentials
+        id: patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add --intent-to-add --all
+          git diff --binary --no-ext-diff > "$RUNNER_TEMP/candidate.patch"
+          test -s "$RUNNER_TEMP/candidate.patch"
+          (cd "$RUNNER_TEMP" && sha256sum candidate.patch > candidate.patch.sha256)
+          cp "$RUNNER_TEMP/intake.json" "$RUNNER_TEMP/factory-intake.json"
+
+      - name: Upload the candidate for independently approved settlement
+        uses: actions/upload-artifact@v4
+        with:
+          name: factory-candidate-${{ steps.context.outputs.issue }}-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/candidate.patch
+            ${{ runner.temp }}/candidate.patch.sha256
+            ${{ runner.temp }}/factory-intake.json
+          retention-days: 3
+          if-no-files-found: error
+
+  settle:
+    needs: candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: factory-approval
+    permissions:
+      contents: write
+      issues: read
+      pull-requests: write
+    steps:
+      - name: Check out the approved base
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download candidate artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: factory-candidate-${{ needs.candidate.outputs.issue }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/factory-candidate
+
+      - name: Validate and apply the exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/factory-candidate"
+          sha256sum --check candidate.patch.sha256
+          cd "$GITHUB_WORKSPACE"
+          git apply --check "$RUNNER_TEMP/factory-candidate/candidate.patch"
+          git apply "$RUNNER_TEMP/factory-candidate/candidate.patch"
+          git diff --check
+
+      - name: Install pinned sibling source checkouts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ../flows
+          git clone --filter=blob:none https://github.com/smithersai/flows-proto.git ../flows/flows
+          git -C ../flows/flows checkout --detach 4464c7e2ab98fcc9e5f570dd15a2b2931e602702
+          git clone --filter=blob:none https://github.com/evmts/zevm.git ../zevm
+          git -C ../zevm checkout --detach e891cf630d35c89df97e8a408318c490a9969629
+
+      - name: Install the TEVM toolchain
+        uses: ./.github/actions/setup
+
+      - name: Rerun deterministic settlement gates
+        shell: bash
+        env:
+          ROUTE: ${{ needs.candidate.outputs.route }}
+        run: |
+          set -euo pipefail
+          pnpm exec smthrs target //factory:check --no-cache
+          if [[ "$ROUTE" == "issue-to-pr" ]]; then
+            pnpm exec smthrs target //:mechanicalPrePush --no-cache
+          else
+            pnpm exec smthrs target //factory:queueLint --no-cache
+          fi
+          git diff --check
+
+      - name: Open the approved pull request
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ needs.candidate.outputs.issue }}
+          ISSUE_TYPE: ${{ needs.candidate.outputs.type }}
+          ROUTE: ${{ needs.candidate.outputs.route }}
+        run: |
+          set -euo pipefail
+          metadata="$RUNNER_TEMP/factory-candidate/factory-intake.json"
+          [[ "$(jq -r '.ready' "$metadata")" == "true" ]]
+          [[ "$(jq -r '.issue.number' "$metadata")" == "$ISSUE" ]]
+          [[ "$(jq -r '.type' "$metadata")" == "$ISSUE_TYPE" ]]
+          [[ "$(jq -r '.route' "$metadata")" == "$ROUTE" ]]
+          title="$(jq -r '.issue.title | gsub("[\\r\\n]+"; " ")' "$metadata")"
+          if [[ "$ROUTE" == "issue-to-pr" ]]; then
+            candidate_kind="implementation"
+            relation="Resolves #${ISSUE}."
+            pr_title="$title"
+            commit_subject="${ISSUE_TYPE}: resolve #${ISSUE}"
+          else
+            candidate_kind="planning"
+            relation="Planning record for #${ISSUE}."
+            pr_title="plan: #${ISSUE} ${title}"
+            commit_subject="plan: triage #${ISSUE}"
+          fi
+          branch="factory/issue-${ISSUE}-${GITHUB_RUN_ID}"
+          body="$RUNNER_TEMP/factory-pr-body.md"
+          cat > "$body" <<EOF
+          ## Factory candidate
+
+          ${relation}
+
+          - Issue type: \`${ISSUE_TYPE}\`
+          - Route: \`${ROUTE}\`
+          - Candidate kind: \`${candidate_kind}\`
+          - Candidate run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          - Intake body digest: \`$(jq -r '.bodyDigest' "$metadata")\`
+          - Approval: \`factory:ready\` label plus the protected \`factory-approval\` environment
+
+          The candidate passed its declared mechanical and agentic checks before settlement, then the deterministic settlement gates were rerun against the exact uploaded patch.
+          EOF
+          git config user.name tevm-factory[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git switch -c "$branch"
+          git add --all
+          git commit -m "🤖 ${commit_subject}"
+          git push origin "HEAD:refs/heads/$branch"
+          gh pr create --base main --head "$branch" --title "$pr_title" --body-file "$body"

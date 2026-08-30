@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/evmts/tevm/security/advisories/new
+    about: Report vulnerabilities privately. Never paste secrets or exploit details into a public issue.
+  - name: Usage question or design discussion
+    url: https://github.com/evmts/tevm/discussions
+    about: Ask questions and discuss ideas that are not yet actionable issues.

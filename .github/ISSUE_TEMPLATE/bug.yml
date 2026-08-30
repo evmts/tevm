@@ -1,0 +1,74 @@
+name: Bug report
+description: Report a reproducible defect in TEVM.
+title: "[Bug]: "
+labels:
+  - type:bug
+  - needs:triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve TEVM. Issue text is treated as untrusted input by the coding factory.
+        Do not include private keys, API keys, tokens, private RPC URLs, or embargoed security details.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What is broken, and who is affected?
+      placeholder: A concise description of the observed defect.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide the smallest fixture, code sample, or exact command that reproduces the bug.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: State the observable result TEVM should produce.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List objective conditions that prove the issue is fixed.
+      placeholder: |
+        - [ ] A focused regression test fails before the fix and passes after it.
+        - [ ] Existing coverage thresholds remain green.
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Affected surface
+      options:
+        - EVM or state
+        - JSON-RPC or actions
+        - Bundler or Solidity imports
+        - Client or server
+        - Types or public API
+        - Documentation or examples
+        - Rust or NAPI
+        - Unknown
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: TEVM version or revision
+      placeholder: 1.0.0-rc.151 or git SHA
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed secrets and private RPC URLs from this report.
+          required: true

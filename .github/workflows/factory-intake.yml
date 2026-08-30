@@ -1,0 +1,57 @@
+name: Factory issue intake
+
+on:
+  issues:
+    types: [opened, edited, reopened, labeled, unlabeled]
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Existing issue number to inspect
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: read
+
+concurrency:
+  group: factory-intake-${{ github.event.issue.number || inputs.issue }}
+  cancel-in-progress: true
+
+jobs:
+  intake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out policy and intake code
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Use the pinned Node version
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Normalize issue without exposing a token
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_PATH: ${{ github.event_path }}
+          DISPATCH_ISSUE: ${{ inputs.issue }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            node scripts/factory/issue-intake.mjs --issue "$DISPATCH_ISSUE" --public --format markdown | tee factory-intake.md
+          else
+            node scripts/factory/issue-intake.mjs --event "$EVENT_PATH" --format markdown | tee factory-intake.md
+          fi
+          cat factory-intake.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Retain the read-only report
+        uses: actions/upload-artifact@v4
+        with:
+          name: factory-intake-${{ github.event.issue.number || inputs.issue }}
+          path: factory-intake.md
+          retention-days: 7
+          if-no-files-found: error

@@ -1,0 +1,50 @@
+name: EVM conformance failure
+description: Report a GST, execution-spec, Hive, or trace parity failure.
+title: "[Conformance]: "
+labels:
+  - type:conformance
+  - needs:triage
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the mismatch and the affected hardfork or client surface.
+    validations:
+      required: true
+  - type: input
+    id: fixture
+    attributes:
+      label: Fixture or test ID
+      placeholder: gst-frontier-upstream-state-root
+    validations:
+      required: true
+  - type: textarea
+    id: reference
+    attributes:
+      label: Reference result
+      description: Give the expected state root, trace divergence, or reference-client result.
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Reproduction command
+      render: shell
+      placeholder: pnpm test:conformance:gst:isolate
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List the focused and neighboring conformance gates that must pass.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: Any RPC URL in logs is public and contains no account token.
+          required: true

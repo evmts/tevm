@@ -1,0 +1,36 @@
+- name: factory:ready
+  color: "0E8A16"
+  description: Maintainer approval for the governed coding factory to prepare a candidate.
+- name: factory:hold
+  color: "B60205"
+  description: Pause every automated factory route for this issue.
+- name: factory:running
+  color: "1D76DB"
+  description: A factory run currently owns this issue.
+- name: factory:failed
+  color: "D93F0B"
+  description: The latest factory run needs maintainer attention.
+- name: needs:triage
+  color: "FBCA04"
+  description: Intake is complete but a maintainer has not selected a route.
+- name: needs:maintainer
+  color: "B60205"
+  description: Human judgment or repository authority is required.
+- name: security
+  color: "B60205"
+  description: Private security handling only; all public factory automation is stopped.
+- name: type:bug
+  color: "D73A4A"
+  description: Reproducible defect.
+- name: type:feature
+  color: "A2EEEF"
+  description: New user-facing capability.
+- name: type:docs
+  color: "0075CA"
+  description: Documentation or example correction.
+- name: type:conformance
+  color: "5319E7"
+  description: EVM, execution-spec, trace, or client parity work.
+- name: type:maintenance
+  color: "C5DEF5"
+  description: Dependencies, tooling, CI, generation, or refactoring.

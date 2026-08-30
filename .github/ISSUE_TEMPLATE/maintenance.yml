@@ -1,0 +1,41 @@
+name: Maintenance task
+description: Propose dependency, tooling, CI, refactor, or repository maintenance.
+title: "[Maintenance]: "
+labels:
+  - type:maintenance
+  - needs:triage
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the bounded maintenance task.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why now
+      description: Identify the drift, failure, deadline, or recurring toil that makes this timely.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List objective completion and regression checks.
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Maintenance surface
+      options:
+        - Dependencies
+        - CI or release
+        - Repository tooling
+        - Refactor
+        - Generated code
+        - Performance
+    validations:
+      required: true

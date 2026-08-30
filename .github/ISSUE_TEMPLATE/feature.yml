@@ -1,0 +1,57 @@
+name: Feature request
+description: Propose an actionable, testable TEVM capability.
+title: "[Feature]: "
+labels:
+  - type:feature
+  - needs:triage
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the capability in one paragraph.
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: What user problem does this solve, and why does it belong in TEVM?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed design
+      description: Describe the API, behavior, and package boundaries. Call out compatibility constraints.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List externally observable outcomes, tests, docs, and generated surfaces required for completion.
+      placeholder: |
+        - [ ] Public types and JSDoc define the contract.
+        - [ ] A focused fixture and coverage test prove the happy path.
+        - [ ] Recursive barrels and the tevm facade expose the intended API.
+    validations:
+      required: true
+  - type: dropdown
+    id: compatibility
+    attributes:
+      label: Compatibility impact
+      options:
+        - Additive public API
+        - Internal behavior only
+        - Potentially breaking
+        - Unknown
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: This request contains no credentials, private RPC URLs, or security-sensitive details.
+          required: true
