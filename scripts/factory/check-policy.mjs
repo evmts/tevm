@@ -29,8 +29,8 @@ assert(
 	'@smthrs/targets must resolve through the vendored Flows submodule',
 )
 assert(
-	packageJson.scripts?.postinstall === 'node scripts/factory/build-flows.mjs',
-	'pnpm install must build the vendored Flows source through postinstall',
+	packageJson.scripts?.postinstall === 'node scripts/factory/build-vendored.mjs',
+	'pnpm install must build the vendored Flows and zevm sources through postinstall',
 )
 assert(
 	workspace.includes("S.Mise({ config: S.file('//mise.toml') })"),

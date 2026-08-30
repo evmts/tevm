@@ -1,6 +1,6 @@
 # Smithers/Flows implementation notes
 
-TEVM's declaration graph is active against the unpublished Flows source vendored as the `vendor/flows` submodule (built by `scripts/factory/build-flows.mjs` on `pnpm install`), with bun and foundry pinned in `mise.toml` as the `S.Mise` layer. The exact source revision, install path, CLI/model pins, approval rules, and issue routes live in `factory/policy.json`; registry fallbacks are not supported.
+TEVM's declaration graph is active against the unpublished Flows source vendored as the `vendor/flows` submodule (built by `scripts/factory/build-vendored.mjs` on `pnpm install`), with bun and foundry pinned in `mise.toml` as the `S.Mise` layer. The exact source revision, install path, CLI/model pins, approval rules, and issue routes live in `factory/policy.json`; registry fallbacks are not supported.
 
 ## What is executable
 

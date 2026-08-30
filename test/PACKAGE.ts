@@ -1,5 +1,6 @@
 /// <reference path="../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { Package as root } from '../PACKAGE.js'
 
 // Conformance against the canonical Ethereum test suites, the EIP-3155 trace
 // tooling, hive, and the parity suites: the root package.json's test:* scripts
@@ -41,10 +42,11 @@ const vitestMatchers = S.Filegroup({
 	srcs: S.glob(['vitest-matchers/**']),
 })
 
-// The runners execute the workspace package graph. Until embedded target
-// queries land in Flows, source and existing dist trees are the content key;
-// the root conformance gate depends on the aggregate build before reaching
-// these targets.
+// The runners execute the workspace package graph from each package's dist,
+// so //:allBuilds (the Nx build:dist fan-out) is the data edge every runner
+// target takes, and the source and dist trees are their content key.
+const workspaceBuild = root.allBuilds
+
 const built = S.Filegroup({
 	srcs: S.glob(['//packages/*/src/**', '//packages/*/dist/**']),
 })
@@ -70,14 +72,14 @@ const gstFast = S.Shell.Test({
 		'--limit=50',
 		'--out=artifacts/general-state-tests/boundary-frontier.json',
 	],
-	data: [runners, built, ethereumTests],
+	data: [runners, built, workspaceBuild, ethereumTests],
 })
 
 // test:conformance:gst:all.
 const gstAll = S.Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['test/ethereum-state-tests/run-general-state-tests.mjs', '--out=artifacts/general-state-tests/all.json'],
-	data: [runners, built, ethereumTests],
+	data: [runners, built, workspaceBuild, ethereumTests],
 })
 
 // test:conformance:gst:isolate: one fixture with a trace, the first step of
@@ -91,7 +93,7 @@ const gstIsolate = S.Shell.Run({
 		'--trace-out=artifacts/general-state-tests/isolate-trace.json',
 		'--out=artifacts/general-state-tests/isolate.json',
 	],
-	data: [runners, built, ethereumTests],
+	data: [runners, built, workspaceBuild, ethereumTests],
 })
 
 // test:conformance:execspec: the fast subset (eip group, shanghai, 50 cases).
@@ -104,14 +106,14 @@ const execSpecFast = S.Shell.Test({
 		'--limit=50',
 		'--out=artifacts/execution-spec-tests/eip-shanghai.json',
 	],
-	data: [runners, built, executionSpecTests],
+	data: [runners, built, workspaceBuild, executionSpecTests],
 })
 
 // test:conformance:execspec:all.
 const execSpecAll = S.Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['test/execution-spec-tests/run-execution-spec-tests.mjs', '--out=artifacts/execution-spec-tests/all.json'],
-	data: [runners, built, executionSpecTests],
+	data: [runners, built, workspaceBuild, executionSpecTests],
 })
 
 // test:conformance:execspec:isolate.
@@ -123,7 +125,7 @@ const execSpecIsolate = S.Shell.Run({
 		'--trace-out=artifacts/execution-spec-tests/isolate-trace.json',
 		'--out=artifacts/execution-spec-tests/isolate.json',
 	],
-	data: [runners, built, executionSpecTests],
+	data: [runners, built, workspaceBuild, executionSpecTests],
 })
 
 // test:conformance:gst:trace:compare: EIP-3155 trace comparison against a
@@ -140,7 +142,7 @@ const traceCompare = S.Shell.Test({
 		'--trace-diff-out=artifacts/eip3155/trace-diff.json',
 		'--out=artifacts/general-state-tests/trace-compare.json',
 	],
-	data: [runners, traceTools, built, ethereumTests],
+	data: [runners, traceTools, built, workspaceBuild, ethereumTests],
 })
 
 // test:eip3155: the trace tools' own unit tests (node --test).
@@ -181,14 +183,14 @@ const conformanceAll = S.Suite({
 const hiveSmoke = S.Shell.Test({
 	script: S.file('hive/run-hive.sh'),
 	env: { HIVE_SUITE: 'smoke', HIVE_ARTIFACT_DIR: 'artifacts/hive' },
-	data: [hive, built],
+	data: [hive, built, workspaceBuild],
 	sandbox: 'none',
 })
 
 const hiveRpcCompat = S.Shell.Test({
 	script: S.file('hive/run-hive.sh'),
 	env: { HIVE_SUITE: 'rpc-compat', HIVE_ARTIFACT_DIR: 'artifacts/hive' },
-	data: [hive, built],
+	data: [hive, built, workspaceBuild],
 	sandbox: 'none',
 })
 
@@ -201,7 +203,7 @@ const parityFast = S.Shell.Test({
 	script: S.file('//scripts/parity/run-suite.sh'),
 	args: ['fast'],
 	env: { PARITY_ARTIFACT_DIR: 'artifacts/parity' },
-	data: [S.file('//scripts/parity/run-suite.sh'), runners, built, ethereumTests, executionSpecTests],
+	data: [S.file('//scripts/parity/run-suite.sh'), runners, built, workspaceBuild, ethereumTests, executionSpecTests],
 	secrets: [S.Secret('TEVM_TEST_ALCHEMY_KEY'), S.Secret('TEVM_RPC_URLS_MAINNET'), S.Secret('TEVM_RPC_URLS_OPTIMISM')],
 	sandbox: { network: true },
 })
@@ -210,9 +212,17 @@ const parityFull = S.Shell.Test({
 	script: S.file('//scripts/parity/run-suite.sh'),
 	args: ['full'],
 	env: { PARITY_ARTIFACT_DIR: 'artifacts/parity' },
-	data: [S.file('//scripts/parity/run-suite.sh'), runners, hive, built, ethereumTests, executionSpecTests],
+	data: [S.file('//scripts/parity/run-suite.sh'), runners, hive, built, workspaceBuild, ethereumTests, executionSpecTests],
 	secrets: [S.Secret('TEVM_TEST_ALCHEMY_KEY'), S.Secret('TEVM_RPC_URLS_MAINNET'), S.Secret('TEVM_RPC_URLS_OPTIMISM')],
 	sandbox: 'none',
+})
+
+// The nightly full-conformance schedule; //.github:github projects every
+// labeled Cron into workflows/cron-nightlyConformance.yml with the shared
+// setup action.
+const nightlyConformance = S.Cron({
+	schedule: '0 3 * * *',
+	run: [conformanceAll],
 })
 
 // Everything the runners write under artifacts/.
@@ -237,6 +247,7 @@ export const Package = S.Package({
 		gstIsolate,
 		hiveRpcCompat,
 		hiveSmoke,
+		nightlyConformance,
 		parityFast,
 		parityFull,
 		runners,

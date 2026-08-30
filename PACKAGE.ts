@@ -5,7 +5,6 @@ import { Package as cli } from './cli/PACKAGE.js'
 import { Package as viem } from './extensions/viem/PACKAGE.js'
 import { Package as factory } from './factory/PACKAGE.js'
 import { Package as mcp } from './packages/mcp/PACKAGE.js'
-import { Package as conformance } from './test/PACKAGE.js'
 
 // PACKAGE.ts files are discovered automatically: the CLI globs the tree and
 // indexes each file's Package export under path-derived labels
@@ -592,13 +591,6 @@ const pr = S.Git.Pr({
 	sandbox: { network: true },
 })
 
-// Full conformance is too slow for every PR, so it runs nightly; failures
-// arrive as the conformance-triage workflow's input rather than a red PR.
-// .github/PACKAGE.ts renders the same schedule as a GitHub workflow.
-const nightlyConformance = S.Cron({
-	schedule: '0 3 * * *',
-	run: [conformance.conformanceAll],
-})
 
 // The root `clean` script: nx reset, every package's clean, node_modules.
 // The nx cache is gone; per-package cleans are `smthrs '//**:clean'`; the
@@ -641,7 +633,6 @@ export const Package = S.Package({
 		jsdocLint,
 		lint,
 		mechanicalPrePush,
-		nightlyConformance,
 		noMocksLint,
 		postCommit,
 		pr,
