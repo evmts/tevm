@@ -11,6 +11,9 @@ describe.skipIf(!hasOptimismRpc)('fork state reads', () => {
 		const stateManager = createStateManager({
 			fork: {
 				transport: transports.optimism,
+				// A load-balanced provider may not have head state on every
+				// node yet; the safe block is served everywhere.
+				blockTag: 'safe',
 			},
 		})
 		await stateManager.ready()
