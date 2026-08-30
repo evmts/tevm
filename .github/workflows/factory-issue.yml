@@ -39,7 +39,10 @@ jobs:
           ref: main
           fetch-depth: 0
           persist-credentials: false
-          submodules: recursive
+
+      - name: Initialize the vendored checkouts
+        shell: bash
+        run: git submodule update --init -- vendor
 
       - name: Resolve trusted event fields
         id: context
@@ -170,7 +173,10 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-          submodules: recursive
+
+      - name: Initialize the vendored checkouts
+        shell: bash
+        run: git submodule update --init -- vendor
 
       - name: Download candidate artifact
         uses: actions/download-artifact@v4

@@ -16,8 +16,6 @@ jobs:
       TEVM_TEST_ALCHEMY_KEY: "${{ secrets.TEVM_TEST_ALCHEMY_KEY }}"
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
       - uses: ./.github/actions/setup
         with:
           cache-url: "${{ secrets.SMITHERS_CACHE_URL }}"
