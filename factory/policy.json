@@ -22,20 +22,45 @@
 		"zevm": {
 			"localPath": "vendor/zevm",
 			"repository": "https://github.com/evmts/zevm.git",
-			"revision": "e891cf630d35c89df97e8a408318c490a9969629"
+			"revision": "014f3f2b8dba45a983853af303bc52620fcfb111"
 		}
 	},
 	"issues": {
 		"approvalLabel": "factory:ready",
-		"pauseLabels": ["factory:hold", "needs:maintainer", "security"],
-		"types": ["bug", "feature", "docs", "conformance", "maintenance"],
+		"pauseLabels": [
+			"factory:hold",
+			"needs:maintainer",
+			"security"
+		],
+		"types": [
+			"bug",
+			"feature",
+			"docs",
+			"conformance",
+			"maintenance"
+		],
 		"requiredHeadings": {
-			"all": ["Summary", "Acceptance criteria"],
-			"bug": ["Reproduction", "Expected behavior"],
-			"feature": ["Motivation"],
-			"docs": ["Documentation location"],
-			"conformance": ["Fixture or test ID", "Reference result"],
-			"maintenance": ["Why now"]
+			"all": [
+				"Summary",
+				"Acceptance criteria"
+			],
+			"bug": [
+				"Reproduction",
+				"Expected behavior"
+			],
+			"feature": [
+				"Motivation"
+			],
+			"docs": [
+				"Documentation location"
+			],
+			"conformance": [
+				"Fixture or test ID",
+				"Reference result"
+			],
+			"maintenance": [
+				"Why now"
+			]
 		},
 		"routes": {
 			"bug": "issue-to-pr",
@@ -54,10 +79,24 @@
 		"deploy": "manual-smithers-approval"
 	},
 	"gates": {
-		"intake": ["//factory:issueIntakeTest", "//factory:policyLint"],
-		"candidate": ["//:mechanicalPrePush", "//:agentLints"],
-		"planCandidate": ["//factory:queueLint"],
-		"pullRequest": ["//factory:check", "//:mechanicalPrePush"],
-		"planPullRequest": ["//factory:check", "//factory:queueLint"]
+		"intake": [
+			"//factory:issueIntakeTest",
+			"//factory:policyLint"
+		],
+		"candidate": [
+			"//:mechanicalPrePush",
+			"//:agentLints"
+		],
+		"planCandidate": [
+			"//factory:queueLint"
+		],
+		"pullRequest": [
+			"//factory:check",
+			"//:mechanicalPrePush"
+		],
+		"planPullRequest": [
+			"//factory:check",
+			"//factory:queueLint"
+		]
 	}
 }
