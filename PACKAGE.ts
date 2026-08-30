@@ -149,10 +149,14 @@ const allBuilds = S.Shell.Test({
 	env: nxEnvironment,
 })
 
+// The Nx fan-outs below write and read the same dist/ and types/ trees, so
+// they take each other as data edges in the order the twelve-step CI ran
+// them: Flows would otherwise start them all at once and one Nx process
+// would read a package's types while another rewrites them.
 const allTypes = S.Shell.Test({
 	bin: S.PackageManager.bin,
 	args: ['run', 'build:types'],
-	data: aggregateData,
+	data: [...aggregateData, allBuilds],
 	env: nxEnvironment,
 })
 
@@ -161,7 +165,7 @@ const allDeclarations = S.Alias(allTypes)
 const allTypechecks = S.Shell.Test({
 	bin: S.PackageManager.bin,
 	args: ['exec', 'nx', 'run-many', '--target=typecheck'],
-	data: aggregateData,
+	data: [...aggregateData, allTypes],
 	env: nxEnvironment,
 })
 
@@ -206,7 +210,7 @@ const integrationSecrets = [
 const allCoverage = S.Shell.Test({
 	bin: S.PackageManager.bin,
 	args: ['run', 'test:coverage'],
-	data: aggregateData,
+	data: [...aggregateData, allTypechecks],
 	env: nxEnvironment,
 	secrets: integrationSecrets,
 	sandbox: { network: true },
@@ -215,7 +219,7 @@ const allCoverage = S.Shell.Test({
 const allDocs = S.Shell.Test({
 	bin: S.PackageManager.bin,
 	args: ['run', 'generate:docs'],
-	data: aggregateData,
+	data: [...aggregateData, allCoverage],
 	env: nxEnvironment,
 })
 
@@ -236,7 +240,7 @@ const allDepsLints = S.Shell.Test({
 const allPackageLints = S.Shell.Test({
 	bin: S.PackageManager.bin,
 	args: ['run', 'lint:package'],
-	data: aggregateData,
+	data: [...aggregateData, allDocs],
 	env: nxEnvironment,
 })
 
@@ -250,7 +254,7 @@ const allApiCompat = S.Alias(allPackageLints)
 const allFixtures = S.Shell.Test({
 	bin: S.PackageManager.bin,
 	args: ['exec', 'nx', 'run-many', '--target=dev:run'],
-	data: aggregateData,
+	data: [...aggregateData, allPackageLints],
 	env: nxEnvironment,
 	secrets: integrationSecrets,
 	sandbox: { network: true },
@@ -604,7 +608,6 @@ const pr = S.Git.Pr({
 	secrets: [S.Secret('GITHUB_TOKEN')],
 	sandbox: { network: true },
 })
-
 
 // The root `clean` script: nx reset, every package's clean, node_modules.
 // The nx cache is gone; per-package cleans are `smthrs '//**:clean'`; the

@@ -62,6 +62,19 @@ for (const name of ['TEVM_TEST_ALCHEMY_KEY', 'TEVM_RPC_URLS_MAINNET', 'TEVM_RPC_
 	add(`${name} integration secret`, Boolean(process.env[name]), process.env[name] ? 'set' : 'not set', requireFull)
 }
 
+// The conformance and parity runners read upstream corpora an operator
+// materializes; without them //test:conformanceAll and //test:parityFast
+// stop at "No upstream fixture corpus configured". Reported, never required.
+for (const name of ['TEVM_GENERAL_STATE_TESTS_FIXTURES', 'TEVM_EXECUTION_SPEC_TESTS_FIXTURES']) {
+	const value = process.env[name]
+	add(
+		`${name} fixture corpus`,
+		Boolean(value),
+		value ? value : 'not set (conformance and parity runners refuse)',
+		false,
+	)
+}
+
 // A vendored checkout passes only when the index gitlink, the policy
 // revision, and the worktree HEAD agree, and the worktree is clean:
 // //:vendor refuses anything else, so preflight says so first.
