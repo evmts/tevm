@@ -27,40 +27,15 @@
 	},
 	"issues": {
 		"approvalLabel": "factory:ready",
-		"pauseLabels": [
-			"factory:hold",
-			"needs:maintainer",
-			"security"
-		],
-		"types": [
-			"bug",
-			"feature",
-			"docs",
-			"conformance",
-			"maintenance"
-		],
+		"pauseLabels": ["factory:hold", "needs:maintainer", "security"],
+		"types": ["bug", "feature", "docs", "conformance", "maintenance"],
 		"requiredHeadings": {
-			"all": [
-				"Summary",
-				"Acceptance criteria"
-			],
-			"bug": [
-				"Reproduction",
-				"Expected behavior"
-			],
-			"feature": [
-				"Motivation"
-			],
-			"docs": [
-				"Documentation location"
-			],
-			"conformance": [
-				"Fixture or test ID",
-				"Reference result"
-			],
-			"maintenance": [
-				"Why now"
-			]
+			"all": ["Summary", "Acceptance criteria"],
+			"bug": ["Reproduction", "Expected behavior"],
+			"feature": ["Motivation"],
+			"docs": ["Documentation location"],
+			"conformance": ["Fixture or test ID", "Reference result"],
+			"maintenance": ["Why now"]
 		},
 		"routes": {
 			"bug": "issue-to-pr",
@@ -79,24 +54,22 @@
 		"deploy": "manual-smithers-approval"
 	},
 	"gates": {
-		"intake": [
-			"//factory:issueIntakeTest",
-			"//factory:policyLint"
-		],
-		"candidate": [
-			"//:mechanicalPrePush",
-			"//:agentLints"
-		],
-		"planCandidate": [
-			"//factory:queueLint"
-		],
-		"pullRequest": [
-			"//factory:check",
-			"//:mechanicalPrePush"
-		],
-		"planPullRequest": [
-			"//factory:check",
-			"//factory:queueLint"
-		]
+		"intake": ["//factory:issueIntakeTest", "//factory:policyLint"],
+		"candidate": ["//:mechanicalPrePush", "//:agentLints"],
+		"planCandidate": ["//factory:queueLint"],
+		"pullRequest": ["//factory:check", "//:mechanicalPrePush"],
+		"planPullRequest": ["//factory:check", "//factory:queueLint"]
+	},
+	"corpus": {
+		"ethereumTests": {
+			"url": "https://raw.githubusercontent.com/ethereum/tests/v17.2/fixtures_general_state_tests.tgz",
+			"sha256": "82bc3cb1c23f48b2b8a2b3d9cb5d9b96ddf6c31683f75368173bee3b25a24274",
+			"extractPath": "GeneralStateTests"
+		},
+		"executionSpecTests": {
+			"url": "https://github.com/ethereum/execution-spec-tests/releases/download/v5.4.0/fixtures_stable.tar.gz",
+			"sha256": "92cf1b47ad12fb27163261fc3c1cea5df72439cab507983d06b56c94f8741909",
+			"extractPath": "fixtures/state_tests"
+		}
 	}
 }

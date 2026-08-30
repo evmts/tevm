@@ -134,22 +134,23 @@ const wasmSize = S.Github.Workflow({
 	run: [root.cargoBuilds],
 })
 
-// parity-suites.yml: the three parity jobs (RPC fast subset, full
-// conformance, hive smoke) on every PR. Artifact upload is still retained in
+// parity-suites.yml: the three parity jobs (RPC fast subset, bounded
+// conformance, hive smoke) on every PR; //:nightlyConformance keeps the
+// unbounded corpus run on its Cron, where hours are acceptable. Artifact upload is still retained in
 // the checked-in workflow because package-mode Workflow does not expose an
 // artifact declaration yet.
 const paritySuites = S.Github.Workflow({
 	name: 'parity-suites',
 	on: { pullRequest: true, workflowDispatch: true },
 	setup,
-	run: [test.parityFast, test.conformanceAll, test.hiveSmoke],
+	run: [test.parityFast, test.conformanceFast, test.hiveSmoke],
 })
 
 // The //:nightlyConformance Cron renders itself as
 // workflows/cron-nightlyConformance.yml: every labeled Cron in the graph is
 // projected, so a second explicit schedule here would run the suite twice.
 // Manual runs go through parity-suites.yml's workflow_dispatch, which also
-// runs //test:conformanceAll.
+// runs //test:conformanceFast.
 
 // claude-code-review.yml's checklist runs as //:prReview on every PR.
 const review = S.Github.Workflow({

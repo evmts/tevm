@@ -17,7 +17,7 @@ jobs:
           cache-url: "${{ secrets.SMITHERS_CACHE_URL }}"
           cache-token: "${{ secrets.SMITHERS_CACHE_TOKEN }}"
       - run: pnpm exec smthrs '//test:parityFast'
-  test-conformanceAll:
+  test-conformanceFast:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,7 +25,7 @@ jobs:
         with:
           cache-url: "${{ secrets.SMITHERS_CACHE_URL }}"
           cache-token: "${{ secrets.SMITHERS_CACHE_TOKEN }}"
-      - run: pnpm exec smthrs '//test:conformanceAll'
+      - run: pnpm exec smthrs '//test:conformanceFast'
   test-hiveSmoke:
     runs-on: ubuntu-latest
     steps:

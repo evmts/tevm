@@ -128,5 +128,8 @@ g/
 /packages/mcp/scratch-*.mjs
 **/__rpc_snapshots__/*.snap.json.*.tmp
 
+# Conformance corpus materialized by scripts/factory/fetch-conformance-corpus.mjs
+/.cache/
+
 # Smithers target-graph cache (WORKSPACE.ts S.Cache)
 .flows/

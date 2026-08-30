@@ -34,7 +34,7 @@ run_fast() {
     pnpm test:hive:smoke
   )
 
-  cp -f "$ROOT_DIR/artifacts/general-state-tests/boundary-frontier.json" "$ARTIFACT_DIR/state-tests/boundary-frontier.json" || true
+  cp -f "$ROOT_DIR/artifacts/general-state-tests/fast-cancun.json" "$ARTIFACT_DIR/state-tests/fast-cancun.json" || true
   cp -f "$ROOT_DIR/artifacts/execution-spec-tests/eip-shanghai.json" "$ARTIFACT_DIR/state-tests/eip-shanghai.json" || true
   cp -f "$ROOT_DIR/test/hive/artifacts/tevm-hive-smoke.log" "$ARTIFACT_DIR/hive/tevm-hive-smoke.log" || true
   cp -f "$ROOT_DIR/test/hive/artifacts/tevm-hive-smoke.json" "$ARTIFACT_DIR/hive/tevm-hive-smoke.json" || true

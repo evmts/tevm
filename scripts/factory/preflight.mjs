@@ -65,14 +65,17 @@ for (const name of ['TEVM_TEST_ALCHEMY_KEY', 'TEVM_RPC_URLS_MAINNET', 'TEVM_RPC_
 // The conformance and parity runners read upstream corpora an operator
 // materializes; without them //test:conformanceAll and //test:parityFast
 // stop at "No upstream fixture corpus configured". Reported, never required.
-for (const name of ['TEVM_GENERAL_STATE_TESTS_FIXTURES', 'TEVM_EXECUTION_SPEC_TESTS_FIXTURES']) {
-	const value = process.env[name]
-	add(
-		`${name} fixture corpus`,
-		Boolean(value),
-		value ? value : 'not set (conformance and parity runners refuse)',
-		false,
-	)
+for (const [name, fallback] of [
+	['TEVM_GENERAL_STATE_TESTS_FIXTURES', '.cache/conformance-corpus/ethereum-tests/GeneralStateTests'],
+	['TEVM_EXECUTION_SPEC_TESTS_FIXTURES', '.cache/conformance-corpus/execution-spec-tests/fixtures/state_tests'],
+]) {
+	const value = process.env[name] ?? resolve(repositoryRoot, fallback)
+	let present = false
+	try {
+		await access(value)
+		present = true
+	} catch {}
+	add(`${name} fixture corpus`, present, present ? value : `${value} missing (run //test:conformanceCorpus)`, false)
 }
 
 // A vendored checkout passes only when the index gitlink, the policy

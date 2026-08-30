@@ -47,6 +47,7 @@ const tree = S.Filegroup({
 		'!**/.worktrees/**',
 		'!**/.tmp-*/**',
 		'!**/.smithers/**',
+		'!**/.cache/**',
 		'!**/artifacts/**',
 		'!**/vendor/**',
 	]),

@@ -11,6 +11,18 @@ import { Package as root } from '../PACKAGE.js'
 // variables. The local runner trees are declared here; fetching multi-gigabyte
 // upstream corpora is an operator bootstrap step, not a hidden test side
 // effect. The factory preflight reports missing fixture variables explicitly.
+// Materializes the pinned upstream corpora (factory/policy.json `corpus`)
+// under //.cache/conformance-corpus so the conformance runners find real
+// vectors on both executors. Idempotent: a stamp per pin set skips the
+// network. The corpus lives outside every Filegroup glob because it is too
+// large for content-addressed capture.
+const conformanceCorpus = S.Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['scripts/factory/fetch-conformance-corpus.mjs'],
+	data: [S.file('//scripts/factory/fetch-conformance-corpus.mjs'), S.file('//factory/policy.json')],
+	sandbox: { network: true },
+})
+
 const ethereumTests = S.Filegroup({
 	srcs: S.glob(['ethereum-state-tests/**']),
 })
@@ -67,19 +79,21 @@ const gstFast = S.Shell.Test({
 	bin: S.Runtime.bin,
 	args: [
 		'test/ethereum-state-tests/run-general-state-tests.mjs',
-		'--group=boundary',
-		'--hardfork=frontier',
+		// ethereum/tests v17 refills GeneralStateTests for Cancun and Prague
+		// only (older forks live in LegacyTests), so the bounded PR subset
+		// pins the oldest fork the pinned corpus actually carries.
+		'--hardfork=cancun',
 		'--limit=50',
-		'--out=artifacts/general-state-tests/boundary-frontier.json',
+		'--out=artifacts/general-state-tests/fast-cancun.json',
 	],
-	data: [runners, built, workspaceBuild, ethereumTests],
+	data: [runners, built, workspaceBuild, ethereumTests, conformanceCorpus],
 })
 
 // test:conformance:gst:all.
 const gstAll = S.Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['test/ethereum-state-tests/run-general-state-tests.mjs', '--out=artifacts/general-state-tests/all.json'],
-	data: [runners, built, workspaceBuild, ethereumTests],
+	data: [runners, built, workspaceBuild, ethereumTests, conformanceCorpus],
 })
 
 // test:conformance:gst:isolate: one fixture with a trace, the first step of
@@ -93,7 +107,7 @@ const gstIsolate = S.Shell.Run({
 		'--trace-out=artifacts/general-state-tests/isolate-trace.json',
 		'--out=artifacts/general-state-tests/isolate.json',
 	],
-	data: [runners, built, workspaceBuild, ethereumTests],
+	data: [runners, built, workspaceBuild, ethereumTests, conformanceCorpus],
 })
 
 // test:conformance:execspec: the fast subset (eip group, shanghai, 50 cases).
@@ -106,14 +120,14 @@ const execSpecFast = S.Shell.Test({
 		'--limit=50',
 		'--out=artifacts/execution-spec-tests/eip-shanghai.json',
 	],
-	data: [runners, built, workspaceBuild, executionSpecTests],
+	data: [runners, built, workspaceBuild, executionSpecTests, conformanceCorpus],
 })
 
 // test:conformance:execspec:all.
 const execSpecAll = S.Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['test/execution-spec-tests/run-execution-spec-tests.mjs', '--out=artifacts/execution-spec-tests/all.json'],
-	data: [runners, built, workspaceBuild, executionSpecTests],
+	data: [runners, built, workspaceBuild, executionSpecTests, conformanceCorpus],
 })
 
 // test:conformance:execspec:isolate.
@@ -125,7 +139,7 @@ const execSpecIsolate = S.Shell.Run({
 		'--trace-out=artifacts/execution-spec-tests/isolate-trace.json',
 		'--out=artifacts/execution-spec-tests/isolate.json',
 	],
-	data: [runners, built, workspaceBuild, executionSpecTests],
+	data: [runners, built, workspaceBuild, executionSpecTests, conformanceCorpus],
 })
 
 // test:conformance:gst:trace:compare: EIP-3155 trace comparison against a
@@ -203,7 +217,15 @@ const parityFast = S.Shell.Test({
 	script: S.file('//scripts/parity/run-suite.sh'),
 	args: ['fast'],
 	env: { PARITY_ARTIFACT_DIR: 'artifacts/parity' },
-	data: [S.file('//scripts/parity/run-suite.sh'), runners, built, workspaceBuild, ethereumTests, executionSpecTests],
+	data: [
+		S.file('//scripts/parity/run-suite.sh'),
+		runners,
+		built,
+		workspaceBuild,
+		ethereumTests,
+		executionSpecTests,
+		conformanceCorpus,
+	],
 	secrets: [S.Secret('TEVM_TEST_ALCHEMY_KEY'), S.Secret('TEVM_RPC_URLS_MAINNET'), S.Secret('TEVM_RPC_URLS_OPTIMISM')],
 	sandbox: { network: true },
 })
@@ -212,7 +234,16 @@ const parityFull = S.Shell.Test({
 	script: S.file('//scripts/parity/run-suite.sh'),
 	args: ['full'],
 	env: { PARITY_ARTIFACT_DIR: 'artifacts/parity' },
-	data: [S.file('//scripts/parity/run-suite.sh'), runners, hive, built, workspaceBuild, ethereumTests, executionSpecTests],
+	data: [
+		S.file('//scripts/parity/run-suite.sh'),
+		runners,
+		hive,
+		built,
+		workspaceBuild,
+		ethereumTests,
+		executionSpecTests,
+		conformanceCorpus,
+	],
 	secrets: [S.Secret('TEVM_TEST_ALCHEMY_KEY'), S.Secret('TEVM_RPC_URLS_MAINNET'), S.Secret('TEVM_RPC_URLS_OPTIMISM')],
 	sandbox: 'none',
 })
@@ -235,6 +266,7 @@ export const Package = S.Package({
 	targets: {
 		clean,
 		conformanceAll,
+		conformanceCorpus,
 		conformanceFast,
 		conformanceTargets,
 		ethereumTests,
