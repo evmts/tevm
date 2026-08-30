@@ -45,8 +45,10 @@ The bootstrapper never rewrites an existing checkout. If a submodule worktree is
 5. Update submodules
 
 ```bash
-git submodule update --init --recursive
+git submodule update --init
 ```
+
+Do not pass `--recursive`: `vendor/zevm` carries eleven nested submodules (ethereum/tests, hive, foundry, hardhat, ...) that tevm never needs, and the factory initializes only the paths `//:vendor` declares.
 
 6. Set environment variables
 

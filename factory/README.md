@@ -123,7 +123,7 @@ one-click manifest.
 
 ## CI and the local Flows source
 
-CI checks the tree out with `submodules: recursive`, so `vendor/flows` lands at the same gitlink used locally; `pnpm install --frozen-lockfile` then builds it through the postinstall script. Upgrading Flows is one change: move the `vendor/flows` gitlink and the `factory/policy.json` revision together (`//factory:policyLint` refuses a mismatch).
+The generated setup action runs `git submodule update --init -- vendor` (exactly the paths `//:vendor` declares, never their nested submodules), so `vendor/flows` lands at the same gitlink used locally; `pnpm install --frozen-lockfile` then builds it through the postinstall script. Upgrading Flows is one change: move the `vendor/flows` gitlink and the `factory/policy.json` revision together (`//factory:policyLint` refuses a mismatch).
 
 ## Operator checklist
 
