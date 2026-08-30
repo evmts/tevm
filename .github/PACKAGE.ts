@@ -7,18 +7,22 @@ import { Package as tevm } from '../tevm/PACKAGE.js'
 
 // The workflow files are emitted from the graph, not hand-written: each
 // Workflow maps triggers to targets and the renderer writes the actions
-// boilerplate (rust toolchain, cbindgen, node from .nvmrc, bun, pnpm, the
-// zevm sibling clone, foundry, the native apt packages) from the WORKSPACE.ts
-// layers, replacing .github/actions/setup. Secrets a target declares become
-// the job's env. Check mode fails on drift; --write regenerates.
+// boilerplate from the WORKSPACE.ts layers: pnpm and node from the package
+// manager and runtime declarations, rustup from the Rust layer, bun and
+// foundry from the mise layer (mise.toml), and the vendored submodules from
+// //:vendor. The composite action it renders is .github/actions/setup, and
+// `pnpm install` builds vendor/flows through the postinstall script. Every
+// secret a job's targets declare becomes that job's env. Check mode fails on
+// drift; --write regenerates.
 const setup = S.Github.Setup({
 	cacheUrl: S.Secret('SMITHERS_CACHE_URL'),
 	cacheToken: S.Secret('SMITHERS_CACHE_TOKEN'),
 })
 
-// ci.yml as one affected pipeline over //:ci. Its twelve sequential steps
-// exist upstream because nx run-many is one process; here an unaffected
-// target is a cache hit and the steps become graph structure.
+// ci.yml as one pipeline over //:ci. Its twelve sequential steps exist
+// upstream because nx run-many is one process; here an unchanged target is a
+// cache hit and the steps become graph structure. `affected` stays off: the
+// CLI at the pinned Flows revision does not parse --affected-base yet.
 const ci = S.Github.Workflow({
 	name: 'ci',
 	on: {
@@ -28,7 +32,6 @@ const ci = S.Github.Workflow({
 	},
 	concurrency: { group: 'ci-${{ github.ref }}', cancelInProgress: 'pull_request' },
 	setup,
-	affected: true,
 	run: [root.ci],
 })
 
@@ -139,14 +142,11 @@ const paritySuites = S.Github.Workflow({
 	run: [test.parityFast, test.conformanceAll, test.hiveSmoke],
 })
 
-// The //:nightlyConformance schedule as a GitHub workflow. Its checked-in
-// workflow owns artifact upload until that capability lands in the renderer.
-const nightly = S.Github.Workflow({
-	name: 'nightly-conformance',
-	on: { schedule: ['0 3 * * *'], workflowDispatch: true },
-	setup,
-	run: [test.conformanceAll],
-})
+// The //:nightlyConformance Cron renders itself as
+// workflows/cron-nightlyConformance.yml: every labeled Cron in the graph is
+// projected, so a second explicit schedule here would run the suite twice.
+// Manual runs go through parity-suites.yml's workflow_dispatch, which also
+// runs //test:conformanceAll.
 
 // claude-code-review.yml's checklist runs as //:prReview on every PR.
 const review = S.Github.Workflow({
@@ -166,7 +166,7 @@ const review = S.Github.Workflow({
 // hand-written because they use a two-job approval/artifact boundary the
 // current renderer cannot express.
 const github = S.Github.CiGen({
-	workflows: [ci, release, prerelease, prereleaseExit, snapshot, jsrPublish, wasmSize, paritySuites, nightly, review],
+	workflows: [ci, release, prerelease, prereleaseExit, snapshot, jsrPublish, wasmSize, paritySuites, review],
 	preserve: [
 		'workflows/claude.yml',
 		'workflows/claude-auto-update.yml',
@@ -192,7 +192,6 @@ export const Package = S.Package({
 		ci,
 		github,
 		jsrPublish,
-		nightly,
 		paritySuites,
 		pr,
 		prerelease,
