@@ -19,6 +19,17 @@ packages:
   - test/*
   - vendor/zevm/npm/zevm
   - vendor/zevm/npm/platforms/*
+# The vendored @evmts/zevm declares one optional platform package per target.
+# Record every one of them, so the lockfile is the same bytes on a macOS
+# developer host and a Linux runner and --frozen-lockfile agrees on both.
+# The platform packages are optionalDependencies on a plain version, not the
+# workspace: protocol, so they must link to the vendored workspace members
+# rather than resolve from the registry.
+linkWorkspacePackages: true
+supportedArchitectures:
+  os: [current, darwin, linux, freebsd, win32]
+  cpu: [current, x64, arm64, ia32]
+  libc: [current, glibc, musl]
 onlyBuiltDependencies:
   - "@biomejs/biome"
   - "@swc/core"
