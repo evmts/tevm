@@ -1,0 +1,43 @@
+{
+	"name": "@tevm/contributor",
+	"version": "0.0.0",
+	"private": true,
+	"description": "Contributor control plane for the TEVM coding factory",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/evmts/tevm.git",
+		"directory": "sites/contributor"
+	},
+	"type": "module",
+	"scripts": {
+		"build": "vite build",
+		"build:app": "vite build",
+		"build:dist": "vite build",
+		"build:types": "tsc --noEmit",
+		"clean": "rm -rf dist coverage",
+		"dev": "vite",
+		"format": "biome check . --write --unsafe",
+		"format:check": "biome format .",
+		"lint": "biome check . --write --unsafe",
+		"lint:check": "biome check . --verbose",
+		"preview": "vite preview",
+		"test": "vitest",
+		"test:coverage": "vitest run --coverage",
+		"test:run": "vitest run",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@smthrs/ui": "0.33.0",
+		"react": "^19.2.6",
+		"react-dom": "^19.2.6"
+	},
+	"devDependencies": {
+		"@types/react": "^19.2.14",
+		"@types/react-dom": "^19.2.3",
+		"@vitejs/plugin-react": "^6.0.2",
+		"@vitest/coverage-v8": "^4.1.6",
+		"typescript": "^6.0.3",
+		"vite": "^8.0.13",
+		"vitest": "^4.1.6"
+	}
+}

@@ -1,0 +1,288 @@
+{
+	"schemaVersion": 1,
+	"repository": {
+		"owner": "evmts",
+		"name": "tevm",
+		"defaultBranch": "main",
+		"webUrl": "https://github.com/evmts/tevm",
+		"forkUrl": "https://github.com/evmts/tevm/fork",
+		"newIssueUrl": "https://github.com/evmts/tevm/issues/new/choose",
+		"discussionsUrl": "https://github.com/evmts/tevm/discussions",
+		"securityAdvisoryUrl": "https://github.com/evmts/tevm/security/advisories/new",
+		"docsUrl": "https://node.tevm.sh"
+	},
+	"toolchain": {
+		"node": "24.12.0",
+		"pnpm": "10.33.4",
+		"flowsRevision": "4464c7e2ab98fcc9e5f570dd15a2b2931e602702"
+	},
+	"approvalLabel": "factory:ready",
+	"issueTypes": [
+		{
+			"id": "bug",
+			"name": "Bug report",
+			"description": "Report a reproducible defect in TEVM.",
+			"route": "issue-to-pr",
+			"templateUrl": "https://github.com/evmts/tevm/issues/new?template=bug.yml"
+		},
+		{
+			"id": "feature",
+			"name": "Feature request",
+			"description": "Propose an actionable, testable TEVM capability.",
+			"route": "issue-to-plan",
+			"templateUrl": "https://github.com/evmts/tevm/issues/new?template=feature.yml"
+		},
+		{
+			"id": "docs",
+			"name": "Documentation issue",
+			"description": "Fix incorrect, missing, or confusing TEVM documentation.",
+			"route": "issue-to-pr",
+			"templateUrl": "https://github.com/evmts/tevm/issues/new?template=docs.yml"
+		},
+		{
+			"id": "conformance",
+			"name": "EVM conformance failure",
+			"description": "Report a GST, execution-spec, Hive, or trace parity failure.",
+			"route": "conformance-triage",
+			"templateUrl": "https://github.com/evmts/tevm/issues/new?template=conformance.yml"
+		},
+		{
+			"id": "maintenance",
+			"name": "Maintenance task",
+			"description": "Propose dependency, tooling, CI, refactor, or repository maintenance.",
+			"route": "issue-to-plan",
+			"templateUrl": "https://github.com/evmts/tevm/issues/new?template=maintenance.yml"
+		}
+	],
+	"plugin": {
+		"schemaVersion": 1,
+		"name": "tevm-factory",
+		"title": "TEVM coding factory",
+		"summary": "Deterministic checks, PR-history-derived agentic review, bounded repair recipes, and contributor-ready candidate gates for TEVM.",
+		"groups": [
+			{
+				"id": "checks",
+				"title": "Checks",
+				"kind": "check"
+			},
+			{
+				"id": "lints",
+				"title": "Lints",
+				"kind": "lint"
+			},
+			{
+				"id": "recipes",
+				"title": "Recipes",
+				"kind": "recipe"
+			},
+			{
+				"id": "workflows",
+				"title": "Workflows",
+				"kind": "workflow"
+			}
+		],
+		"entries": [
+			{
+				"id": "factory-check",
+				"group": "checks",
+				"workspace": ".",
+				"label": "//factory:check",
+				"title": "Factory contract",
+				"summary": "Validate issue policy, queue contracts, declarations, repository identity, generated contributor data, and source integrity."
+			},
+			{
+				"id": "factory-preflight",
+				"group": "checks",
+				"workspace": ".",
+				"label": "//factory:preflight",
+				"title": "Local preflight",
+				"summary": "Check the pinned toolchain and exact local Flows and Zevm sibling revisions before running agent lanes."
+			},
+			{
+				"id": "mechanical-pre-push",
+				"group": "checks",
+				"workspace": ".",
+				"label": "//:mechanicalPrePush",
+				"title": "Mechanical pre-push",
+				"summary": "Run repository lint, typecheck, and test gates without spending an agent seat."
+			},
+			{
+				"id": "complete-ci",
+				"group": "checks",
+				"workspace": ".",
+				"label": "//:ci",
+				"title": "Complete CI",
+				"summary": "Build, cover, test, lint, document, validate Rust, and enforce factory and changeset policy across the monorepo."
+			},
+			{
+				"id": "source-integrity",
+				"group": "lints",
+				"workspace": ".",
+				"label": "//factory:sourceIntegrity",
+				"title": "Source integrity",
+				"summary": "Reject merge markers, malformed generated output, and orphaned gitlinks."
+			},
+			{
+				"id": "repository-metadata",
+				"group": "lints",
+				"workspace": ".",
+				"label": "//factory:repositoryMetadataLint",
+				"title": "Repository metadata",
+				"summary": "Keep package and release-workflow provenance on the canonical evmts/tevm repository."
+			},
+			{
+				"id": "agent-lints",
+				"group": "lints",
+				"workspace": ".",
+				"label": "//:agentLints",
+				"title": "All agentic lints",
+				"summary": "Review the applied diff for public API, tests, docs, changesets, wire contracts, regression proof, and scope coherence.",
+				"agentic": true
+			},
+			{
+				"id": "rpc-contract",
+				"group": "lints",
+				"workspace": ".",
+				"label": "//:rpcContractLint",
+				"title": "JSON-RPC wire contract",
+				"summary": "Check exact request, result, serialization, dispatch, error, and public-client surfaces for changed RPC code.",
+				"agentic": true
+			},
+			{
+				"id": "regression-proof",
+				"group": "lints",
+				"workspace": ".",
+				"label": "//:regressionProofLint",
+				"title": "Regression proof",
+				"summary": "Judge whether a fix proves the failing public boundary, negative branches, state isolation, and equivalent inputs.",
+				"agentic": true
+			},
+			{
+				"id": "scope-coherence",
+				"group": "lints",
+				"workspace": ".",
+				"label": "//:scopeCoherenceLint",
+				"title": "Scope coherence",
+				"summary": "Distinguish coherent mechanical fan-out from unrelated or speculative change churn.",
+				"agentic": true
+			},
+			{
+				"id": "pr-review",
+				"group": "lints",
+				"workspace": ".",
+				"label": "//:prReview",
+				"title": "Pull-request review",
+				"summary": "Run the repository review checklist locally over the current diff.",
+				"agentic": true
+			},
+			{
+				"id": "metadata-write",
+				"group": "recipes",
+				"workspace": ".",
+				"label": "//factory:repositoryMetadataWrite",
+				"title": "Synchronize repository metadata",
+				"summary": "Apply the bounded mechanical repository-identity repair across manifests and release workflows."
+			},
+			{
+				"id": "fix-ci",
+				"group": "recipes",
+				"workspace": ".",
+				"label": "//workflows/fix-ci:fixCi",
+				"title": "Repair CI",
+				"summary": "Use the failing CI graph and current diff to prepare a locally gated repair candidate.",
+				"agentic": true
+			},
+			{
+				"id": "upgrade-viem",
+				"group": "recipes",
+				"workspace": ".",
+				"label": "//workflows/upgrade-viem:upgradeViem",
+				"title": "Upgrade Viem",
+				"summary": "Synchronize Viem versions, peer ranges, lockfile, snapshots, and a changeset in one bounded candidate.",
+				"agentic": true
+			},
+			{
+				"id": "pre-commit",
+				"group": "workflows",
+				"workspace": ".",
+				"label": "//:preCommit",
+				"title": "Pre-commit gate",
+				"summary": "Run root formatting, changeset status, and the factory contract before creating a commit."
+			},
+			{
+				"id": "pre-push",
+				"group": "workflows",
+				"workspace": ".",
+				"label": "//:prePush",
+				"title": "Pre-push gate",
+				"summary": "Combine deterministic candidate checks with every PR-history-derived agentic lint.",
+				"agentic": true
+			}
+		]
+	},
+	"guidedWorkflows": [
+		{
+			"id": "triage-issue",
+			"title": "Triage an issue",
+			"summary": "Normalize an existing issue and write a reviewable queue plan without GitHub write access.",
+			"label": "//workflows/issue-triage:triageIssue",
+			"command": "pnpm factory:triage -- --input issue=123 --input type=bug",
+			"approval": false
+		},
+		{
+			"id": "implement-issue",
+			"title": "Implement an approved issue",
+			"summary": "Prepare a gated local candidate after a maintainer has applied factory:ready.",
+			"label": "//workflows/issue-to-pr:implementIssue",
+			"command": "pnpm factory:implement -- --input issue=123 --input type=bug --input approval=factory:ready",
+			"approval": true
+		},
+		{
+			"id": "add-jsonrpc-method",
+			"title": "Add a JSON-RPC method",
+			"summary": "Generate the complete typed, serialized, dispatched, tested, documented, and exported RPC surface.",
+			"label": "//workflows/add-jsonrpc-method:addJsonrpcMethod",
+			"command": "pnpm exec smthrs target //workflows/add-jsonrpc-method:addJsonrpcMethod --input method=eth_example",
+			"approval": false
+		},
+		{
+			"id": "repair-rpc-regression",
+			"title": "Repair an RPC regression",
+			"summary": "Reproduce the public wire failure first, then repair the full contract and its negative branches.",
+			"label": "//workflows/repair-rpc-regression:repairRpcRegression",
+			"command": "pnpm factory:rpc-repair -- --input method=eth_getStorageAt --input 'report=<actual and expected wire values>'",
+			"approval": false
+		},
+		{
+			"id": "sync-public-surface",
+			"title": "Synchronize a public surface",
+			"summary": "Fan an existing symbol through recursive barrels, the TEVM facade, docs, and a changeset.",
+			"label": "//workflows/sync-public-surface:syncPublicSurface",
+			"command": "pnpm factory:surface-sync -- --input package=packages/actions --input symbol=<exportedSymbol>",
+			"approval": false
+		},
+		{
+			"id": "raise-coverage",
+			"title": "Raise package coverage",
+			"summary": "Add real regression tests around the least-covered paths and raise the proven package threshold.",
+			"label": "//workflows/raise-coverage:raiseCoverage",
+			"command": "pnpm exec smthrs target //workflows/raise-coverage:raiseCoverage --input package=packages/txpool",
+			"approval": false
+		},
+		{
+			"id": "conformance-triage",
+			"title": "Triage conformance drift",
+			"summary": "Isolate a GST or execution-spec fixture, compare traces, and prepare a bounded EVM repair.",
+			"label": "//workflows/conformance-triage:conformanceTriage",
+			"command": "pnpm exec smthrs target //workflows/conformance-triage:conformanceTriage --input testId=<fixture-id>",
+			"approval": false
+		}
+	],
+	"commands": {
+		"bootstrap": "node scripts/factory/bootstrap.mjs --install",
+		"factoryCheck": "pnpm factory:check",
+		"runtimeCheck": "pnpm factory:runtime-check",
+		"portal": "pnpm factory:ui",
+		"clone": "git clone https://github.com/<your-handle>/tevm.git\ncd tevm\ncorepack enable\npnpm factory:bootstrap"
+	}
+}
