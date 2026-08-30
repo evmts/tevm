@@ -53,6 +53,42 @@ describe('runTx', () => {
 		}
 	})
 
+	it('charges warm gas for storage slots declared in the access list', async () => {
+		const sender = createAddressFromString(PREFUNDED_ACCOUNTS[0].address)
+		const contractAddress = createAddressFromString('0x1000000000000000000000000000000000000000')
+		await vm.stateManager.putAccount(sender, createAccount({ balance: parseEther('100'), nonce: 0n }))
+		const contract = SimpleContract.withAddress(contractAddress.toString())
+		await vm.stateManager.putCode(contractAddress, hexToBytes(contract.deployedBytecode))
+
+		const block = new Block({ common: mainnet })
+		const read = (nonce: number, accessList: { address: Hex; storageKeys: Hex[] }[]) =>
+			runTx(vm)({
+				tx: createImpersonatedTx({
+					impersonatedAddress: sender,
+					nonce,
+					gasLimit: 100000,
+					maxFeePerGas: 10n,
+					maxPriorityFeePerGas: 2n,
+					to: contractAddress,
+					data: hexToBytes(encodeFunctionData(contract.read.get())),
+					accessList,
+				}),
+				block,
+			})
+
+		// Warmth is per transaction, so the undeclared read pays a cold SLOAD
+		// (2100) and the declared one a warm SLOAD (100): exactly 2000 apart
+		// in execution gas, which excludes the access list intrinsic cost.
+		// Regression: Uint8Array#toString() on the parsed access list produced
+		// comma-joined journal keys, so declared slots were still charged cold.
+		const slot = '0x0000000000000000000000000000000000000000000000000000000000000000' as Hex
+		const cold = await read(0, [])
+		const warm = await read(1, [{ address: contractAddress.toString() as Hex, storageKeys: [slot] }])
+		expect(cold.execResult.exceptionError).toBeUndefined()
+		expect(warm.execResult.exceptionError).toBeUndefined()
+		expect(cold.execResult.executionGasUsed - warm.execResult.executionGasUsed).toBe(2000n)
+	})
+
 	it('should execute a transaction successfully', async () => {
 		const tx = createImpersonatedTx({
 			impersonatedAddress: createAddressFromString(PREFUNDED_ACCOUNTS[0].address),

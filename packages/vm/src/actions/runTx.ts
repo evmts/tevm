@@ -26,6 +26,7 @@ import {
 	BIGINT_0,
 	BIGINT_1,
 	bytesToBigInt,
+	bytesToUnprefixedHex,
 	concatBytes,
 	EthjsAccount,
 	EthjsAddress,
@@ -83,9 +84,13 @@ export const runTx =
 		if (validatedOpts.tx.supports(Capability.EIP2718TypedTransaction) && vm.common.ethjsCommon.isActivatedEIP(2718)) {
 			const castedTx = <AccessListEIP2930Transaction>validatedOpts.tx
 			for (const accessListItem of castedTx.accessList ?? []) {
-				vm.evm.journal.addAlwaysWarmAddress(accessListItem[0].toString(), true)
+				// The parsed access list holds raw bytes; the journal keys warm
+				// entries by unprefixed hex, so Uint8Array#toString() ("1,2,3")
+				// would warm nothing and every listed slot stayed cold.
+				const address = bytesToUnprefixedHex(accessListItem[0])
+				vm.evm.journal.addAlwaysWarmAddress(address, true)
 				for (const storageKey of accessListItem[1] ?? []) {
-					vm.evm.journal.addAlwaysWarmSlot(accessListItem[0].toString(), storageKey.toString(), true)
+					vm.evm.journal.addAlwaysWarmSlot(address, bytesToUnprefixedHex(storageKey), true)
 				}
 			}
 		}
