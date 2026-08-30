@@ -5,17 +5,8 @@
 		"skipLibCheck": true,
 		"allowSyntheticDefaultImports": true,
 		"resolveJsonModule": true,
-		"lib": [
-			"esnext",
-			"dom"
-		],
-		"types": [
-			"node"
-		]
+		"lib": ["esnext", "dom"],
+		"types": ["node"]
 	},
-	"include": [
-		"src",
-		"src/**/*.json",
-		"package.json"
-	]
+	"include": ["src", "src/**/*.json", "package.json"]
 }
