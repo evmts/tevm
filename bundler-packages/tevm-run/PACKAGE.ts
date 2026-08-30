@@ -47,21 +47,21 @@ const typecheck = Shell.Test({
 
 // test:run (bun test).
 const test = Shell.Test({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['test'],
 	data: [srcs, tests, deps, bunfig, plugins, tsconfig],
 })
 
 // test:coverage (bun test --coverage).
 const testCoverage = Shell.Test({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['test', '--coverage'],
 	data: [srcs, tests, deps, bunfig, plugins, tsconfig],
 })
 
 // dev. Runs the example through the CLI in watch mode.
 const dev = Shell.Run({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['run', '--watch', 'src/tevm-run.js', 'example/example.ts'],
 	data: [srcs, example, deps, bunfig, plugins, tsconfig],
 })

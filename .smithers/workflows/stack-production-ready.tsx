@@ -2,16 +2,16 @@
 // smithers-display-name: Stack Production Ready
 /** @jsxImportSource smithers-orchestrator */
 import {
+	createSmithers,
+	OpenCodeAgent,
 	ClaudeCodeAgent as SmithersClaudeCodeAgent,
 	CodexAgent as SmithersCodexAgent,
-	OpenCodeAgent,
-	createSmithers,
-} from "smithers-orchestrator";
-import { z } from "zod/v4";
+} from 'smithers-orchestrator'
+import { z } from 'zod/v4'
 
-const STAGE = "/Users/williamcory/stack-prod";
-const ORG = "evmts";
-const MONO = "/Users/williamcory/tevm-monorepo";
+const STAGE = '/Users/williamcory/stack-prod'
+const ORG = 'evmts'
+const MONO = '/Users/williamcory/tevm-monorepo'
 
 /**
  * NEW repos needing the full treatment: production readiness + a vocs 2.x docs site + UI.
@@ -20,70 +20,74 @@ const MONO = "/Users/williamcory/tevm-monorepo";
  */
 const FULL = [
 	{
-		key: "voltaire",
-		sub: "voltaire",
-		blurb: "Ethereum primitives and cryptography, Zig + Rust (Cargo.toml + build.zig). Has a docs/sdk directory but no vocs site. Note: the npm name `voltaire` is already taken by an unrelated package at 0.0.1, so scoping (e.g. @tevm/voltaire or @evmts/voltaire) is likely required — verify before assuming.",
+		key: 'voltaire',
+		sub: 'voltaire',
+		blurb:
+			'Ethereum primitives and cryptography, Zig + Rust (Cargo.toml + build.zig). Has a docs/sdk directory but no vocs site. Note: the npm name `voltaire` is already taken by an unrelated package at 0.0.1, so scoping (e.g. @tevm/voltaire or @evmts/voltaire) is likely required — verify before assuming.',
 	},
 	{
-		key: "guillotine",
-		sub: "guillotine",
-		blurb: "An ultra-high performance and flexible EVM written in Zig (plus Cargo). docs/ holds plain markdown (README, dev, mini, performance, reports) and there is no vocs site. Note: the npm name `guillotine` is taken by an unrelated package at 1.3.1, so scoping is likely required.",
+		key: 'guillotine',
+		sub: 'guillotine',
+		blurb:
+			'An ultra-high performance and flexible EVM written in Zig (plus Cargo). docs/ holds plain markdown (README, dev, mini, performance, reports) and there is no vocs site. Note: the npm name `guillotine` is taken by an unrelated package at 1.3.1, so scoping is likely required.',
 	},
 	{
-		key: "guillotine-mini",
-		sub: "mini",
-		blurb: "A tiny and simple EVM written in Zig. Has package.json (name `guillotine-mini`, version 0.1.0, unpublished) and docs/ with markdown only. The most npm-shaped of the Zig repos.",
+		key: 'guillotine-mini',
+		sub: 'mini',
+		blurb:
+			'A tiny and simple EVM written in Zig. Has package.json (name `guillotine-mini`, version 0.1.0, unpublished) and docs/ with markdown only. The most npm-shaped of the Zig repos.',
 	},
 	{
-		key: "zevm",
-		sub: "zevm",
-		blurb: "The EVM implementation tevm consumes as a pnpm workspace member (../zevm/npm/zevm). Published to npm as @evmts/zevm but stuck at version 0.0.0, which is not a real release. It builds ESM + CJS via tsc and ships native platform packages under npm/platforms/*. tevm pins it by commit SHA in .github/actions/setup — see the pinning comment there before changing anything about its build.",
+		key: 'zevm',
+		sub: 'zevm',
+		blurb:
+			'The EVM implementation tevm consumes as a pnpm workspace member (vendor/zevm/npm/zevm). Published to npm as @evmts/zevm but stuck at version 0.0.0, which is not a real release. It builds ESM + CJS via tsc and ships native platform packages under npm/platforms/*. tevm pins it by commit SHA in .github/actions/setup — see the pinning comment there before changing anything about its build.',
 	},
-] as const;
+] as const
 
 /** Split repos that ALREADY have docs/ or site/ plus ci.yml, docs.yml and release.yml from an earlier run. These need verification and repair, not rebuilding. */
 const VERIFY = [
-	{ key: "tevm-test", sub: "test" },
-	{ key: "tevm-bundler", sub: "bundler" },
-	{ key: "tevm-cli", sub: "cli" },
-	{ key: "tevm-ethers", sub: "ethers" },
-	{ key: "tevm-mud", sub: "mud" },
-	{ key: "tevm-examples", sub: "examples" },
-] as const;
+	{ key: 'tevm-test', sub: 'test' },
+	{ key: 'tevm-bundler', sub: 'bundler' },
+	{ key: 'tevm-cli', sub: 'cli' },
+	{ key: 'tevm-ethers', sub: 'ethers' },
+	{ key: 'tevm-mud', sub: 'mud' },
+	{ key: 'tevm-examples', sub: 'examples' },
+] as const
 
-const codex = (cwd: string) => new SmithersCodexAgent({ model: "gpt-5.6-sol", cwd, skipGitRepoCheck: true });
-const opus = (cwd: string) => new SmithersClaudeCodeAgent({ model: "opus", cwd });
-const kimi = (cwd: string) => new OpenCodeAgent({ model: "kimi-for-coding/k3", cwd });
+const codex = (cwd: string) => new SmithersCodexAgent({ model: 'gpt-5.6-sol', cwd, skipGitRepoCheck: true })
+const opus = (cwd: string) => new SmithersClaudeCodeAgent({ model: 'opus', cwd })
+const kimi = (cwd: string) => new OpenCodeAgent({ model: 'kimi-for-coding/k3', cwd })
 
 const readySchema = z.looseObject({
 	repo: z.string(),
 	buildPasses: z.boolean().default(false),
 	testsPass: z.boolean().default(false),
-	testOutput: z.string().default(""),
-	publishTarget: z.string().default(""),
+	testOutput: z.string().default(''),
+	publishTarget: z.string().default(''),
 	publishWired: z.boolean().default(false),
-	versionChosen: z.string().default(""),
-	prUrl: z.string().default(""),
+	versionChosen: z.string().default(''),
+	prUrl: z.string().default(''),
 	blockers: z.array(z.string()).default([]),
 	humanActionsNeeded: z.array(z.string()).default([]),
 	summary: z.string(),
-});
+})
 
 const docsSchema = z.looseObject({
 	repo: z.string(),
-	vocsVersion: z.string().default(""),
+	vocsVersion: z.string().default(''),
 	docsBuild: z.boolean().default(false),
 	pagesWritten: z.array(z.string()).default([]),
-	deployTarget: z.string().default(""),
+	deployTarget: z.string().default(''),
 	humanActionsNeeded: z.array(z.string()).default([]),
 	summary: z.string(),
-});
+})
 
 const uiSchema = z.looseObject({
 	repo: z.string(),
 	summary: z.string(),
 	builds: z.boolean().default(false),
-});
+})
 
 const reportSchema = z.looseObject({
 	reportPath: z.string(),
@@ -91,11 +95,11 @@ const reportSchema = z.looseObject({
 	blockedRepos: z.array(z.string()).default([]),
 	humanActionsNeeded: z.array(z.string()).default([]),
 	summary: z.string(),
-});
+})
 
 const inputSchema = z.object({
 	publish: z.boolean().default(false),
-});
+})
 
 const { Workflow, Task, Sequence, Parallel, smithers } = createSmithers({
 	input: inputSchema,
@@ -103,7 +107,7 @@ const { Workflow, Task, Sequence, Parallel, smithers } = createSmithers({
 	docs: docsSchema,
 	ui: uiSchema,
 	report: reportSchema,
-});
+})
 
 const RULES = `GROUND RULES — apply to every lane:
 
@@ -113,21 +117,24 @@ const RULES = `GROUND RULES — apply to every lane:
 - HONESTY IS THE POINT. Run every build and test you claim, and paste real output. Never assert a green suite you did not run. If something cannot be made to work, report it under blockers with the specific reason — a precise blocker is far more valuable than a false success.
 - Anything that needs a human (an npm org/scope you cannot create, a missing secret, DNS or a Vercel domain, an expired token, 2FA, a crates.io owner invite) goes in humanActionsNeeded, phrased as a concrete instruction the human can act on.
 - Docs subdomains are <sub>.tevm.sh, matching the family already established for the split repos.
-- Follow each repo's existing conventions rather than imposing tevm's. Zig repos are Zig, not TypeScript.`;
+- Follow each repo's existing conventions rather than imposing tevm's. Zig repos are Zig, not TypeScript.`
 
 export default smithers((ctx) => {
-	const readies = ctx.outputs.ready ?? [];
-	const docsOut = ctx.outputs.docs ?? [];
-	const uisOut = ctx.outputs.ui ?? [];
+	const readies = ctx.outputs.ready ?? []
+	const docsOut = ctx.outputs.docs ?? []
+	const uisOut = ctx.outputs.ui ?? []
 
 	const rollup = [
 		...readies.map(
 			(r: any) =>
-				`READY ${r.repo}: build=${r.buildPasses} tests=${r.testsPass} publish=${r.publishTarget}(wired=${r.publishWired}) version=${r.versionChosen} pr=${r.prUrl}\n  ${r.summary}\n  blockers: ${(r.blockers ?? []).join("; ") || "none"}\n  human: ${(r.humanActionsNeeded ?? []).join("; ") || "none"}`,
+				`READY ${r.repo}: build=${r.buildPasses} tests=${r.testsPass} publish=${r.publishTarget}(wired=${r.publishWired}) version=${r.versionChosen} pr=${r.prUrl}\n  ${r.summary}\n  blockers: ${(r.blockers ?? []).join('; ') || 'none'}\n  human: ${(r.humanActionsNeeded ?? []).join('; ') || 'none'}`,
 		),
-		...docsOut.map((d: any) => `DOCS ${d.repo}: vocs=${d.vocsVersion} builds=${d.docsBuild} deploy=${d.deployTarget}\n  ${d.summary}\n  human: ${(d.humanActionsNeeded ?? []).join("; ") || "none"}`),
+		...docsOut.map(
+			(d: any) =>
+				`DOCS ${d.repo}: vocs=${d.vocsVersion} builds=${d.docsBuild} deploy=${d.deployTarget}\n  ${d.summary}\n  human: ${(d.humanActionsNeeded ?? []).join('; ') || 'none'}`,
+		),
 		...uisOut.map((u: any) => `UI ${u.repo}: builds=${u.builds} — ${u.summary}`),
-	].join("\n\n");
+	].join('\n\n')
 
 	return (
 		<Workflow name="stack-production-ready">
@@ -135,7 +142,7 @@ export default smithers((ctx) => {
 				<Parallel>
 					{/* New repos: readiness first, then docs + UI in parallel behind it. */}
 					{FULL.map((r) => {
-						const dir = `${STAGE}/${r.key}`;
+						const dir = `${STAGE}/${r.key}`
 						return (
 							<Sequence>
 								<Task id={`ready-${r.key}`} output={readySchema} agent={codex(STAGE)}>
@@ -195,7 +202,7 @@ DO THIS:
 									</Task>
 								</Parallel>
 							</Sequence>
-						);
+						)
 					})}
 					{/* Already-scaffolded split repos: verify and repair only. */}
 					{VERIFY.map((r) => (
@@ -219,7 +226,7 @@ Treat the earlier run's output as unverified claims. Specifically:
 					{`You are the REPORT agent for a stack-wide production-readiness push across ${ORG}: voltaire, guillotine, guillotine-mini, zevm, and the six repos split out of the tevm monorepo (tevm-test, tevm-bundler, tevm-cli, tevm-ethers, tevm-mud, tevm-examples). The core repo evmts/tevm is being handled separately by the orchestrator.
 
 LANE REPORTS:
-${rollup || "(none)"}
+${rollup || '(none)'}
 
 1. VERIFY rather than trust. For each repo: \`gh repo view ${ORG}/<repo>\`, confirm the PR exists, and check that CI and release workflows are present via \`gh api repos/${ORG}/<repo>/contents/.github/workflows\`. Where a lane claimed passing tests, sanity-check that the claim is specific (real counts and output) rather than vague — flag vague claims as unverified.
 2. Write a self-contained HTML report to /Users/williamcory/Desktop/tevm-stack-readiness/report.html — ONE file, inline CSS, no external assets, readable in BOTH light and dark. It must contain:
@@ -233,5 +240,5 @@ Report the file path, which repos are genuinely ready, which are blocked, and th
 				</Task>
 			</Sequence>
 		</Workflow>
-	);
-});
+	)
+})

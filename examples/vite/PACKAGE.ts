@@ -141,7 +141,7 @@ const anvil = S.Anvil.Fork({
 // sources .env, which carries DEPLOYER_PRIVATE_KEY, the RPC URL, and the
 // etherscan key the --verify flag uses.
 const deployContracts = Shell.Run({
-	bin: S.Host.bin('forge'),
+	bin: S.Mise.bin('forge'),
 	args: ['script', 'script/Deploy.s.sol:Deploy', '--broadcast', '--verify', '-vvvv'],
 	data: [contracts, buildContracts, foundryConfig],
 	secrets: [S.Secret('DEPLOYER_PRIVATE_KEY'), S.Secret('ETHERSCAN_API_KEY_1')],
@@ -152,7 +152,7 @@ const deployContracts = Shell.Run({
 // deploy-contracts:anvil. The same broadcast against the local fork, so no
 // approval: the target chain is disposable.
 const deployContractsAnvil = Shell.Run({
-	bin: S.Host.bin('forge'),
+	bin: S.Mise.bin('forge'),
 	args: [
 		'script',
 		'script/Deploy.s.sol:Deploy',

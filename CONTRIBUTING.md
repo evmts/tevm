@@ -12,10 +12,11 @@ pnpm --version
 
 Use Node `24.12.0` from `.nvmrc` (for example with `nvm use`).
 
-2. Install Bun `1.2.13`
+2. Install mise, which installs the pinned Bun and Foundry releases from `mise.toml`
 
 ```bash
-npm i bun --global && bun --version
+brew install mise   # or: curl https://mise.run | sh
+mise install
 ```
 
 or run bun upgrade if already installed
@@ -32,14 +33,14 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 4. Bootstrap the local coding-factory dependencies
 
-The factory uses the unpublished Flows source from the exact sibling path `../flows/flows`, plus the Zevm sibling workspace. It must not resolve Smithers packages from npm.
+The factory uses the unpublished Flows source vendored as the `vendor/flows` submodule, plus the Zevm workspace vendored as `vendor/zevm`, both pinned by gitlink. It must not resolve Smithers packages from npm.
 
 ```bash
 node scripts/factory/bootstrap.mjs --install
 pnpm factory:preflight
 ```
 
-The bootstrapper never rewrites an existing checkout. If a sibling is already present at a different revision, reconcile it manually.
+The bootstrapper never rewrites an existing checkout. If a submodule worktree is at a different revision, reconcile it manually (`git submodule update -- vendor/flows`).
 
 5. Update submodules
 

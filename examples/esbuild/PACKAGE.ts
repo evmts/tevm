@@ -28,7 +28,7 @@ const deps = S.Filegroup({ srcs: [packageJson] })
 // foundry.toml pins the solc version the plugin uses. The commented script
 // sets NODE_ENV=production, which build.js reads into its define.
 const build = Shell.Build({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['build.js'],
 	env: { NODE_ENV: 'production' },
 	data: [srcs, deps, buildScript, bunfig, foundryConfig, tsconfig, packageJson],
@@ -47,7 +47,7 @@ const dev = Shell.Run({
 // //test:run (commented out). bunfig.toml preloads plugins.ts for tests, so
 // the spec's `.sol` import resolves under bun test.
 const test = Shell.Test({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['test'],
 	data: [srcs, tests, deps, bunfig, foundryConfig, tsconfig],
 })

@@ -89,7 +89,7 @@ const coverageGate = S.Alias(testCoverage)
 
 // dev. Watches the fixture harness over every fixture in src/fixtures.
 const dev = Shell.Run({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['--watch', 'scripts/dev.ts'],
 	data: [srcs, scripts, deps, tsconfig],
 })
@@ -98,14 +98,14 @@ const dev = Shell.Run({
 // to error succeed by erroring (scripts/runFixture.ts encodes which). CI's
 // Fixtures step runs this script across the workspace.
 const fixtures = Shell.Test({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['scripts/dev.ts'],
 	data: [srcs, scripts, deps, tsconfig],
 })
 
 // fixture. Runs one named fixture with debug logging, for local debugging.
 const fixture = Shell.Run({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['run', 'scripts/fixture.ts'],
 	data: [srcs, scripts, deps, tsconfig],
 })

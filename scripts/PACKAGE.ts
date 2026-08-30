@@ -54,7 +54,7 @@ const batchAddJsdoc = S.Shell.Diff({
 // createBarrelFiles.ts rewrites the index barrel of the directory it runs
 // in from the files present there.
 const createBarrelFiles = S.Shell.Diff({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['createBarrelFiles.ts'],
 	data: [packageSources, createBarrelFilesScript],
 	changes: ['**/index.js', '**/index.ts'],
@@ -63,7 +63,7 @@ const createBarrelFiles = S.Shell.Diff({
 // updateBiomeConfig.ts regenerates the root biome config's ignore list
 // from the tree. Committed codegen: check fails on drift, --write updates.
 const updateBiomeConfig = S.Generate({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['updateBiomeConfig.ts'],
 	data: [updateBiomeConfigScript, S.file('//biome.json')],
 	changes: ['//biome.json'],

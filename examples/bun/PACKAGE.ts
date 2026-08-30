@@ -24,7 +24,7 @@ const deps = S.Filegroup({ srcs: [packageJson] })
 // dev. A bun watcher with no port. bunfig.toml preloads plugins.ts, which
 // registers the tevm plugin that compiles ExampleContract.sol on import.
 const dev = Shell.Run({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['--watch', 'readContract.ts'],
 	data: [srcs, deps, bunfig, plugins, tsconfig],
 })
@@ -34,7 +34,7 @@ const dev = Shell.Run({
 // bunfig [test] preload registers the same plugin for the spec's `.sol`
 // import.
 const test = Shell.Test({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['test'],
 	data: [srcs, tests, deps, bunfig, plugins, tsconfig],
 })

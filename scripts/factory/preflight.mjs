@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { readFileSync } from 'node:fs'
 import { access, readFile, realpath } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { command, option, parseArgs, pathWithoutNodeModuleBins, readJson, readPolicy, repositoryRoot } from './lib.mjs'
@@ -30,28 +31,60 @@ probe('codex', 'codex', ['--version'], policy.toolchain.codexCli)
 const requireFull = mode === 'full'
 const requireGithub = mode === 'github' || requireFull
 probe('gh', 'gh', ['--version'], undefined, requireGithub)
-probe('bun', 'bun', ['--version'], undefined, requireFull)
 probe('cargo', 'cargo', ['--version'], undefined, requireFull)
-probe('forge', 'forge', ['--version'], undefined, requireFull)
+
+// bun and forge are mise pins, not host binaries: the check resolves each
+// through the declared config so a stray host copy cannot pass for the pin.
+probe('mise', 'mise', ['--version'])
+const misePin = (tool) => {
+	const config = readFileSync(resolve(repositoryRoot, 'mise.toml'), 'utf8')
+	return new RegExp(`^${tool}\\s*=\\s*"([^"]+)"`, 'm').exec(config)?.[1]
+}
+for (const [tool, executable] of [
+	['bun', 'bun'],
+	['foundry', 'forge'],
+]) {
+	const pinned = misePin(tool)
+	try {
+		const path = command('mise', ['which', executable], { env: { ...process.env, MISE_YES: '1' } })
+		const output = command(path, ['--version']).split('\n')[0]
+		add(`${executable} (mise ${tool} ${pinned ?? 'unpinned'})`, pinned !== undefined && output.includes(pinned), output)
+	} catch (error) {
+		add(
+			`${executable} (mise ${tool} ${pinned ?? 'unpinned'})`,
+			false,
+			error instanceof Error ? error.message : String(error),
+		)
+	}
+}
 
 for (const name of ['TEVM_TEST_ALCHEMY_KEY', 'TEVM_RPC_URLS_MAINNET', 'TEVM_RPC_URLS_OPTIMISM']) {
 	add(`${name} integration secret`, Boolean(process.env[name]), process.env[name] ? 'set' : 'not set', requireFull)
 }
 
+// A vendored checkout passes only when the index gitlink, the policy
+// revision, and the worktree HEAD agree, and the worktree is clean:
+// //:vendor refuses anything else, so preflight says so first.
 const checkoutProbe = async (name, declaration, required) => {
 	const path = resolve(repositoryRoot, declaration.localPath)
 	try {
+		const raw = command('git', ['ls-files', '--stage', '--', declaration.localPath])
+		const gitlink = /^160000 ([0-9a-f]{40}) 0\t/.exec(raw)?.[1]
+		if (gitlink !== declaration.revision) {
+			add(name, false, `gitlink ${gitlink ?? 'missing'} disagrees with policy ${declaration.revision}`, required)
+			return
+		}
 		await access(resolve(path, '.git'))
 		const head = command('git', ['-C', path, 'rev-parse', 'HEAD'])
-		const dirty = command('git', ['-C', path, 'status', '--short'])
-		add(name, head === declaration.revision, `${head}${dirty ? ' (dirty checkout)' : ''}`, required)
+		const dirty = command('git', ['-C', path, 'status', '--porcelain', '--untracked-files=all'])
+		add(name, head === declaration.revision && !dirty, `${head}${dirty ? ' (dirty checkout)' : ''}`, required)
 	} catch (error) {
 		add(name, false, error instanceof Error ? error.message : String(error), required)
 	}
 }
 
-await checkoutProbe('local Flows checkout', policy.toolchain.flows, true)
-await checkoutProbe('Zevm checkout', policy.toolchain.zevm, requireFull)
+await checkoutProbe('vendor/flows submodule', policy.toolchain.flows, true)
+await checkoutProbe('vendor/zevm submodule', policy.toolchain.zevm, requireFull)
 
 try {
 	const executable = await realpath(

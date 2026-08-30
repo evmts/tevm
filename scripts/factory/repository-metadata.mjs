@@ -1,14 +1,18 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 
 const write = process.argv.includes('--write')
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' })
 const canonicalRepository = 'https://github.com/evmts/tevm'
 const legacyRepository = /github\.com\/evmts\/tevm-monorepo(?=\.git(?:$|[#?])|(?:$|[#?]))/g
-const manifests = git('ls-files', '-z', '--cached', '--others', '--exclude-standard', '*package.json')
-	.split('\0')
-	.filter(Boolean)
+// The index can still list a file a candidate deleted; the tree is the
+// subject here, so only paths that exist are read.
+const listed = (...patterns) =>
+	git('ls-files', '-z', '--cached', '--others', '--exclude-standard', ...patterns)
+		.split('\0')
+		.filter((path) => path !== '' && existsSync(path))
+const manifests = listed('*package.json')
 const findings = []
 const changed = []
 
@@ -63,9 +67,7 @@ for (const path of manifests) {
 	}
 }
 
-const workflowFiles = git('ls-files', '-z', '.github/workflows/*.yml', '.github/workflows/*.yaml')
-	.split('\0')
-	.filter(Boolean)
+const workflowFiles = listed('.github/workflows/*.yml', '.github/workflows/*.yaml')
 for (const path of workflowFiles) {
 	const current = readFileSync(path, 'utf8')
 	const next = current.replaceAll('evmts/tevm-monorepo', 'evmts/tevm')

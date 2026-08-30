@@ -78,7 +78,7 @@ const testVitest = Shell.Test({
 // test:run, bun half: the resolve*TestSnapshotPath specs also run under bun
 // test, with the script's glob verbatim.
 const testBun = Shell.Test({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['test', 'src/internal/resolve*TestSnapshotPath.spec.ts'],
 	data: [srcs, tests, deps, tsconfig],
 })

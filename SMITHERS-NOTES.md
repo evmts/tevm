@@ -1,6 +1,6 @@
 # Smithers/Flows implementation notes
 
-TEVM's declaration graph is active against the unpublished sibling checkout at `../flows/flows`. The exact source revision, install path, CLI/model pins, approval rules, and issue routes live in `factory/policy.json`; registry fallbacks are not supported.
+TEVM's declaration graph is active against the unpublished Flows source vendored as the `vendor/flows` submodule (built by `scripts/factory/build-flows.mjs` on `pnpm install`), with bun and foundry pinned in `mise.toml` as the `S.Mise` layer. The exact source revision, install path, CLI/model pins, approval rules, and issue routes live in `factory/policy.json`; registry fallbacks are not supported.
 
 ## What is executable
 
@@ -19,7 +19,7 @@ TEVM's declaration graph is active against the unpublished sibling checkout at `
 - Shell processes start at the repository root, including targets declared in nested packages. Nested declarations therefore use `scopedShell('<package>')`, which rewrites package-local binaries and commands to the correct working directory; `//factory:shellScopeLint` rejects drift. Root/factory/scripts/test declarations remain explicitly workspace-relative. Runtime plans and focused executions still verify semantics the typechecker cannot see.
 - Package-mode `Agent.Pr` settlement is unbound and approval-required targets have no durable local approval store. TEVM deliberately uses `Agent.Diff` plus the separate GitHub settlement job.
 - `Git.Commit`, `Git.Pr`, and some renderer-only GitHub targets are declarations, not a substitute for an operator-approved outward action in this Flows revision.
-- The workflow renderer cannot yet express the factory's two-job environment/artifact boundary. `.github/PACKAGE.ts` preserves the hand-authored factory workflows.
+- `.github/workflows/*.yml` and the composite setup action are rendered by `//.github:github` from `.github/PACKAGE.ts` and the workspace layers (pnpm/node, the Rust layer, the mise layer, `//:vendor` for `submodules: recursive`, and every secret a job's targets declare). The renderer still cannot express the factory's two-job environment/artifact boundary or artifact upload, so the factory workflows stay hand-authored and preserved, and `parity-suites.yml` no longer uploads artifacts.
 - The Node runtime declaration reads the compatible `engines.node` range. `.nvmrc`, factory policy, preflight, and CI setup jointly enforce the exact Node release.
 
 ## Validation commands

@@ -15,12 +15,12 @@
 			"review": "gpt-5.6-luna"
 		},
 		"flows": {
-			"localPath": "../flows/flows",
+			"localPath": "vendor/flows",
 			"repository": "https://github.com/smithersai/flows-proto.git",
-			"revision": "4464c7e2ab98fcc9e5f570dd15a2b2931e602702"
+			"revision": "73756b876e8816428c65187623239fd0d27a0cd6"
 		},
 		"zevm": {
-			"localPath": "../zevm",
+			"localPath": "vendor/zevm",
 			"repository": "https://github.com/evmts/zevm.git",
 			"revision": "e891cf630d35c89df97e8a408318c490a9969629"
 		}

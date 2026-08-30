@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { access, mkdir, realpath } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
+import { access, realpath } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import { command, parseArgs, pathWithoutNodeModuleBins, readPolicy, repositoryRoot } from './lib.mjs'
 
 const args = parseArgs(process.argv.slice(2))
@@ -16,28 +16,53 @@ const exists = async (path) => {
 	}
 }
 
-const ensureCheckout = async (name, declaration) => {
+// The repository index is the version authority: a vendored checkout is a
+// gitlink, and policy.json records the same SHA so the factory can name it
+// without a git call. Both must agree, and the worktree must sit at it.
+const gitlinkOf = (path) => {
+	const raw = command('git', ['ls-files', '--stage', '--', path])
+	const match = /^160000 ([0-9a-f]{40}) 0\t/.exec(raw)
+	if (!match) throw new Error(`${path} is not a gitlink in the repository index`)
+	return match[1]
+}
+
+const ensureSubmodule = async (name, declaration) => {
 	const path = resolve(repositoryRoot, declaration.localPath)
+	const gitlink = gitlinkOf(declaration.localPath)
+	if (gitlink !== declaration.revision) {
+		throw new Error(
+			`${name} gitlink ${gitlink} disagrees with factory/policy.json revision ${declaration.revision}; move both together`,
+		)
+	}
 	if (!(await exists(resolve(path, '.git')))) {
-		if (!install) throw new Error(`${name} is missing at ${path}; rerun with --install`)
-		await mkdir(dirname(path), { recursive: true })
-		command('git', ['clone', '--filter=blob:none', declaration.repository, path], { stdio: 'inherit' })
-		command('git', ['-C', path, 'checkout', '--detach', declaration.revision], { stdio: 'inherit' })
+		if (!install) throw new Error(`${name} is not checked out at ${path}; rerun with --install`)
+		command('git', ['submodule', 'update', '--init', '--recursive', '--', declaration.localPath], { stdio: 'inherit' })
 	}
 	const head = command('git', ['-C', path, 'rev-parse', 'HEAD'])
 	if (head !== declaration.revision) {
 		throw new Error(
 			`${name} is at ${head}, expected ${declaration.revision}. ` +
-				'The bootstrapper never rewrites an existing checkout; reconcile it manually.',
+				`The bootstrapper never rewrites an existing checkout; run \`git submodule update -- ${declaration.localPath}\` yourself.`,
 		)
 	}
-	console.log(`${name}: ${path} @ ${head.slice(0, 12)}`)
+	console.log(`${name}: ${declaration.localPath} @ ${head.slice(0, 12)}`)
 }
 
-await ensureCheckout('Flows', policy.toolchain.flows)
-await ensureCheckout('Zevm', policy.toolchain.zevm)
+await ensureSubmodule('Flows', policy.toolchain.flows)
+await ensureSubmodule('Zevm', policy.toolchain.zevm)
+
+// mise is how the pinned bun and foundry releases reach both the executor
+// and CI. The bootstrapper installs the pins so the first target does not
+// pay for it, but it does not install mise itself.
+try {
+	command('mise', ['--version'])
+} catch {
+	throw new Error('mise is not on PATH; install it (brew install mise, or https://mise.jdx.dev) and rerun')
+}
+if (install) command('mise', ['install'], { stdio: 'inherit', env: { ...process.env, MISE_YES: '1' } })
 
 if (install) {
+	// postinstall builds vendor/flows, so the CLI is runnable after this.
 	command('pnpm', ['install', '--frozen-lockfile'], { cwd: repositoryRoot, stdio: 'inherit' })
 	const flowsRoot = await realpath(resolve(repositoryRoot, policy.toolchain.flows.localPath))
 	const expectedCliRoot = resolve(flowsRoot, 'packages/build-cli')
@@ -59,7 +84,7 @@ if (install) {
 		throw new Error(`global smthrs must resolve inside ${expectedCliRoot}; got ${globalCli ?? 'not found'}`)
 	}
 	command('pnpm', ['exec', 'smthrs', 'gitHooks', '--write'], { cwd: repositoryRoot, stdio: 'inherit' })
-	console.log(`Git hooks use local Flows CLI: ${globalCli}`)
+	console.log(`Git hooks use vendored Flows CLI: ${globalCli}`)
 }
 
-console.log(install ? 'Factory dependencies installed.' : 'Factory sibling checkouts are present.')
+console.log(install ? 'Factory dependencies installed.' : 'Factory vendored checkouts are present.')

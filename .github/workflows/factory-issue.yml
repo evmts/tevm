@@ -39,6 +39,7 @@ jobs:
           ref: main
           fetch-depth: 0
           persist-credentials: false
+          submodules: recursive
 
       - name: Resolve trusted event fields
         id: context
@@ -64,16 +65,6 @@ jobs:
           esac
           printf 'issue=%s\n' "$issue" >> "$GITHUB_OUTPUT"
           printf 'type=%s\n' "$type" >> "$GITHUB_OUTPUT"
-
-      - name: Install pinned sibling source checkouts
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p ../flows
-          git clone --filter=blob:none https://github.com/smithersai/flows-proto.git ../flows/flows
-          git -C ../flows/flows checkout --detach 4464c7e2ab98fcc9e5f570dd15a2b2931e602702
-          git clone --filter=blob:none https://github.com/evmts/zevm.git ../zevm
-          git -C ../zevm checkout --detach e891cf630d35c89df97e8a408318c490a9969629
 
       - name: Install the TEVM toolchain
         uses: ./.github/actions/setup
@@ -179,6 +170,7 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+          submodules: recursive
 
       - name: Download candidate artifact
         uses: actions/download-artifact@v4
@@ -196,16 +188,6 @@ jobs:
           git apply --check "$RUNNER_TEMP/factory-candidate/candidate.patch"
           git apply "$RUNNER_TEMP/factory-candidate/candidate.patch"
           git diff --check
-
-      - name: Install pinned sibling source checkouts
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p ../flows
-          git clone --filter=blob:none https://github.com/smithersai/flows-proto.git ../flows/flows
-          git -C ../flows/flows checkout --detach 4464c7e2ab98fcc9e5f570dd15a2b2931e602702
-          git clone --filter=blob:none https://github.com/evmts/zevm.git ../zevm
-          git -C ../zevm checkout --detach e891cf630d35c89df97e8a408318c490a9969629
 
       - name: Install the TEVM toolchain
         uses: ./.github/actions/setup

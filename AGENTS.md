@@ -12,11 +12,12 @@ This file is the short, enforceable repository contract. `CONTRIBUTING.md` expla
 ## Toolchain and factory
 
 - Node is pinned by `.nvmrc`; pnpm is pinned by `packageManager` in `package.json`.
-- The unpublished Flows source must resolve from `../flows/flows`. Never replace the `link:` dependencies with registry packages or silently fall back to an npm release.
+- The unpublished Flows source must resolve from the `vendor/flows` submodule at the gitlink `factory/policy.json` records. Never replace the `link:` dependencies with registry packages or silently fall back to an npm release.
+- Tools outside Node, pnpm, and Rust (bun, foundry) are pinned in `mise.toml`; the executor and CI install them through mise. Never install a different release by hand and never add a host-only tool to `S.Host` when a mise pin can carry it.
 - Run `pnpm factory:preflight` after setup. Inspect targets with `pnpm exec smthrs query '//...'` and plan before an unfamiliar or expensive target with `pnpm exec smthrs target <label> --plan`.
 - Package-mode Shell targets start at the repository root. Use `scopedShell('<package path>')` for package-local tools; `pnpm factory:scope-check` rejects an unscoped nested declaration.
 - Prefer exact package labels such as `//packages/state:typecheck` or `//packages/state:testCoverage`. Use `//:mechanicalPrePush` for a complete deterministic candidate gate and `//:agentLints` for judgment checks after a candidate is applied.
-- Generated GitHub workflow declarations live in `.github/PACKAGE.ts`; checked-in workflows remain authoritative where the current renderer lacks a feature. Do not regenerate or rewrite workflows incidentally.
+- `.github/workflows/*.yml` and `.github/actions/setup/action.yml` are generated from `.github/PACKAGE.ts` and the `WORKSPACE.ts` layers; `//.github:github` fails on drift and `--write` regenerates. Never hand-edit a generated file. The preserved hand-written workflows (`claude*.yml`, `factory-*.yml`) are the only exceptions.
 - `.smithers/UI.json` is the safe no-input desktop surface. Synchronize the contributor portal with `pnpm factory:contributor-data-write`; never hand-edit its generated JSON.
 - Run `//factory:sourceIntegrity` and `//factory:repositoryMetadataLint` for generated, manifest, release, or repository-structure changes. Use the matching Diff target for a mechanical metadata repair.
 

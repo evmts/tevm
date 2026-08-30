@@ -1,0 +1,7 @@
+# Pinned tools outside the Node runtime, pnpm, and the Rust layer.
+# WORKSPACE.ts declares this file as the S.Mise layer: the package
+# executor installs these pins and leads PATH with them; the generated
+# CI setup action does the same through jdx/mise-action.
+[tools]
+bun = "1.2.13"
+foundry = "1.7.1"

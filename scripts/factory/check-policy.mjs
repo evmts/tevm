@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { access, readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { assert, readJson, readPolicy, repositoryRoot } from './lib.mjs'
+import { assert, command, readJson, readPolicy, repositoryRoot } from './lib.mjs'
 
 const policy = await readPolicy()
 const schema = await readJson(resolve(repositoryRoot, 'factory/schemas/issue-intake.schema.json'))
@@ -10,7 +10,8 @@ const packageJson = await readJson(resolve(repositoryRoot, 'package.json'))
 const workspace = await readFile(resolve(repositoryRoot, 'WORKSPACE.ts'), 'utf8')
 const smithersTypes = await readFile(resolve(repositoryRoot, 'smithers.d.ts'), 'utf8')
 const labels = await readFile(resolve(repositoryRoot, '.github/labels.yml'), 'utf8')
-const setupAction = await readFile(resolve(repositoryRoot, '.github/actions/setup/action.yml'), 'utf8')
+const gitmodules = await readFile(resolve(repositoryRoot, '.gitmodules'), 'utf8')
+const miseConfig = await readFile(resolve(repositoryRoot, 'mise.toml'), 'utf8')
 const configureWorkflow = await readFile(resolve(repositoryRoot, '.github/workflows/factory-configure.yml'), 'utf8')
 const intakeWorkflow = await readFile(resolve(repositoryRoot, '.github/workflows/factory-intake.yml'), 'utf8')
 const issueWorkflow = await readFile(resolve(repositoryRoot, '.github/workflows/factory-issue.yml'), 'utf8')
@@ -20,22 +21,45 @@ assert(/^[0-9a-f]{40}$/.test(policy.toolchain.flows.revision), 'Flows revision m
 assert(/^[0-9a-f]{40}$/.test(policy.toolchain.zevm.revision), 'Zevm revision must be a full Git SHA')
 assert(packageJson.packageManager === `pnpm@${policy.toolchain.pnpm}`, 'policy pnpm version must match packageManager')
 assert(
-	packageJson.devDependencies?.['@smthrs/build-cli'] === 'link:../flows/flows/packages/build-cli',
-	'@smthrs/build-cli must resolve through the sibling local Flows checkout',
+	packageJson.devDependencies?.['@smthrs/build-cli'] === `link:${policy.toolchain.flows.localPath}/packages/build-cli`,
+	'@smthrs/build-cli must resolve through the vendored Flows submodule',
 )
 assert(
-	packageJson.devDependencies?.['@smthrs/targets'] === 'link:../flows/flows/packages/targets',
-	'@smthrs/targets must resolve through the sibling local Flows checkout',
+	packageJson.devDependencies?.['@smthrs/targets'] === `link:${policy.toolchain.flows.localPath}/packages/targets`,
+	'@smthrs/targets must resolve through the vendored Flows submodule',
 )
+assert(
+	packageJson.scripts?.postinstall === 'node scripts/factory/build-flows.mjs',
+	'pnpm install must build the vendored Flows source through postinstall',
+)
+assert(
+	workspace.includes("S.Mise({ config: S.file('//mise.toml') })"),
+	'WORKSPACE.ts must declare mise.toml as the S.Mise layer',
+)
+for (const tool of ['bun', 'foundry']) {
+	assert(new RegExp(`^${tool}\\s*=\\s*"[^"]+"`, 'm').test(miseConfig), `mise.toml must pin ${tool}`)
+}
 assert(
 	workspace.includes(`model: '${policy.toolchain.models.implementation}'`),
 	'implementation model drifted from policy',
 )
 assert(workspace.includes(`model: '${policy.toolchain.models.review}'`), 'review model drifted from policy')
 assert(!smithersTypes.includes('declare module'), 'smithers.d.ts must not mask the linked local package types')
+// The repository index pins each vendored checkout; policy.json restates the
+// SHA so the factory can name it without git. The two must agree, and the
+// submodule must point at the repository policy names.
 for (const checkout of [policy.toolchain.flows, policy.toolchain.zevm]) {
-	assert(setupAction.includes(checkout.repository), `${checkout.repository} is missing from the shared setup action`)
-	assert(setupAction.includes(checkout.revision), `${checkout.repository} setup revision drifted from policy`)
+	assert(
+		gitmodules.includes(`path = ${checkout.localPath}\n\turl = ${checkout.repository}`),
+		`${checkout.localPath} must be a .gitmodules entry for ${checkout.repository}`,
+	)
+	const gitlink = /^160000 ([0-9a-f]{40}) 0\t/.exec(
+		command('git', ['ls-files', '--stage', '--', checkout.localPath]),
+	)?.[1]
+	assert(
+		gitlink === checkout.revision,
+		`${checkout.localPath} gitlink ${gitlink} drifted from policy ${checkout.revision}`,
+	)
 }
 
 assert(intakeWorkflow.includes('permissions:\n  contents: read\n  issues: read'), 'intake must remain read-only')

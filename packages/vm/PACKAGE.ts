@@ -72,14 +72,14 @@ const typecheck = Shell.Test({
 // test:run. `bun test` reads tsconfig directly; there is no vitest config.
 // No spec file needs a live RPC, so the whole suite stays hermetic.
 const test = Shell.Test({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['test'],
 	data: [srcs, tests, deps, tsconfig],
 })
 
 // test:coverage.
 const testCoverage = Shell.Test({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['test', '--coverage'],
 	data: [srcs, tests, deps, tsconfig],
 })

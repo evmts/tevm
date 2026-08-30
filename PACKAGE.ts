@@ -49,24 +49,29 @@ const tree = S.Filegroup({
 		'!**/.tmp-*/**',
 		'!**/.smithers/**',
 		'!**/artifacts/**',
+		'!**/vendor/**',
 	]),
 })
 
-// @evmts/zevm is a pnpm workspace member in the sibling checkout selected by
-// pnpm-workspace.yaml. Current Flows confines declared outputs to this
-// workspace, so materializing ../zevm is an explicit bootstrap prerequisite
-// instead of a target that pretends it can write outside the sandbox.
-const zevmCheckout = S.Filegroup({
-	srcs: [workspaceConfig],
+// vendor/flows (the Smithers build source the @smthrs/* link: dependencies
+// resolve through) and vendor/zevm (the @evmts/zevm pnpm workspace member)
+// are gitlinks the repository index pins. This target materializes them at
+// their pinned commits and refuses a worktree that drifted from its gitlink;
+// CI checks them out with the tree because the graph declares it.
+const vendor = S.Git.Submodules({
+	config: S.file('//.gitmodules'),
+	paths: ['vendor/*'],
 })
 
-// The sibling's build is still a first-class check. It is intentionally a
-// Test target: pnpm owns the external workspace output and Flows verifies the
-// command without claiming that ../zevm/npm/zevm/dist is a local artifact.
-const zevm = S.Shell.Test({
+// The vendored EVM's npm build. Every @tevm package imports @evmts/zevm
+// types from its dist, so the build is a declared artifact inside the
+// workspace now that the checkout is: the gitlink keys it, and the aggregate
+// Nx fan-outs below take it as a data edge so nothing typechecks before it.
+const zevm = S.Shell.Build({
 	bin: S.PackageManager.bin,
 	args: ['--filter', '@evmts/zevm', 'build'],
-	data: [zevmCheckout],
+	data: [vendor, workspaceConfig, lockfile],
+	outDirs: ['vendor/zevm/npm/zevm/dist'],
 })
 
 // The first half of the root `lint` script: biome over the root-level files.
@@ -115,7 +120,7 @@ const depsLint = S.Shell.Test({
 // more granular package targets remain runnable one at a time. Each command is
 // content-keyed on the repository inputs and can be replaced by a native query
 // without changing any consumer when that authoring primitive lands.
-const aggregateData = [tree, packageJson, lockfile, workspaceConfig]
+const aggregateData = [tree, packageJson, lockfile, workspaceConfig, zevm]
 
 // Flows is the outer content-addressed runner. Nx stays as the compatibility
 // fan-out inside these aggregate targets, but its workspace daemon and remote
@@ -177,11 +182,23 @@ const allTests = S.Suite({
 	tests: [allHermeticTests, externalIntegrationTests],
 })
 
+// The Nx coverage fan-out still reaches the packages whose suites fork live
+// chains (state, actions, blockchain, viem, cli, whatsabi, test), so it
+// declares the same three integration secrets and egress those packages'
+// first-class targets declare; CI maps the secrets into the job for it.
+const integrationSecrets = [
+	S.Secret('TEVM_TEST_ALCHEMY_KEY'),
+	S.Secret('TEVM_RPC_URLS_MAINNET'),
+	S.Secret('TEVM_RPC_URLS_OPTIMISM'),
+]
+
 const allCoverage = S.Shell.Test({
 	bin: S.PackageManager.bin,
 	args: ['run', 'test:coverage'],
 	data: aggregateData,
 	env: nxEnvironment,
+	secrets: integrationSecrets,
+	sandbox: { network: true },
 })
 
 const allDocs = S.Shell.Test({
@@ -224,6 +241,8 @@ const allFixtures = S.Shell.Test({
 	args: ['exec', 'nx', 'run-many', '--target=dev:run'],
 	data: aggregateData,
 	env: nxEnvironment,
+	secrets: integrationSecrets,
+	sandbox: { network: true },
 })
 
 const cargoBuilds = S.Shell.Test({
@@ -640,8 +659,8 @@ export const Package = S.Package({
 		snapshot,
 		snapshotPathsLint,
 		sortManifests,
+		vendor,
 		version,
 		zevm,
-		zevmCheckout,
 	},
 })

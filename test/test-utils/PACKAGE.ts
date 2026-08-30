@@ -50,7 +50,7 @@ const types = Shell.Build({
 // deps) rewrites the committed .sol.ts fixtures next to the .sol sources.
 // check regenerates and fails on drift; --write updates the tree.
 const generateContracts = S.Generate({
-	bin: S.Host.bin('bun'),
+	bin: S.Mise.bin('bun'),
 	args: ['run', 'node_modules/@tevm/ts-plugin/dist/bin/tevm-gen.js'],
 	data: [srcs, deps],
 	changes: ['src/**/*.sol.ts'],

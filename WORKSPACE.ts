@@ -43,20 +43,28 @@ const rust = S.Rust.Toolchain({
 	lockfile: cargoLockfile,
 })
 
-// Forge and Anvil back the Solidity fixtures. Each target declares its local
-// foundry.toml because this repository has no root Foundry config; the host
-// allow-list admits the CI-pinned binaries without inventing one.
+// mise.toml is the version authority for every tool outside Node, pnpm, and
+// the Rust layer: bun (the script runner and the test runtime several
+// packages use) and foundry (forge and anvil behind the Solidity fixtures
+// and the fork services). The package executor installs these pins and
+// leads PATH with them before any target resolves a tool, and the generated
+// CI setup action does the same through mise-action, so a target sees the
+// same release on a runner and on a developer host. Targets name the pinned
+// binaries as S.Mise.bin('bun') and S.Mise.bin('forge'); Anvil services find
+// anvil on the same PATH. There is no root foundry.toml, so no
+// S.Foundry.Toolchain: each fixture declares its own config.
+const mise = S.Mise({ config: S.file('//mise.toml') })
 
-// Host binaries this workspace admits. docker runs the hive simulator and the
-// docker sandbox; git clones hive and the zevm sibling; bash runs the hive
-// and parity shell scripts; forge and anvil are the foundry binaries the
-// toolchain layer above pins, named here for the targets that invoke them
-// as host tools; python3 runs scripts/claude-triage; code is the VS Code CLI
+// Host binaries this workspace admits beyond the pinned layers. docker runs
+// the hive simulator and the docker sandbox; git materializes the vendored
+// submodules and clones hive; bash runs the hive and parity shell scripts;
+// cargo is the Rust layer's executable for the crates that shell to it;
+// python3 runs scripts/claude-triage; code is the VS Code CLI
 // //lsp/ts-plugin:dev opens for plugin debugging; codex is the coding-agent
 // CLI //evals:evalSuite spawns per case. Undeclared host binaries are a
 // graph-load error.
 const host = S.Host({
-	bins: ['docker', 'git', 'bash', 'bun', 'cargo', 'forge', 'anvil', 'python3', 'code', 'codex'],
+	bins: ['docker', 'git', 'bash', 'cargo', 'python3', 'code', 'codex'],
 })
 
 // The agent registry every S.Agent.* target references by name
@@ -102,7 +110,12 @@ export const Workspace = S.Workspace('tevm', {
 	runtime,
 	packageManager,
 	nodeModules,
-	toolchains: [rust],
+	toolchains: [rust, mise],
+	// vendor/flows (the Smithers build source the @smthrs/* link: dependencies
+	// resolve through) and vendor/zevm (the @evmts/zevm workspace member) are
+	// gitlinks the repository index pins; //:vendor materializes them.
+	// Discovery stops at every .gitmodules path, so their own declaration
+	// files never join this graph.
 	host,
 	agents,
 	sandboxes,

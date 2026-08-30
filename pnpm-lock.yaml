@@ -27,13 +27,13 @@ importers:
         version: 2.31.0(@types/node@24.12.4)
       '@evmts/zevm':
         specifier: workspace:^
-        version: link:../zevm/npm/zevm
+        version: link:vendor/zevm/npm/zevm
       '@smthrs/build-cli':
-        specifier: link:../flows/flows/packages/build-cli
-        version: link:../flows/flows/packages/build-cli
+        specifier: link:vendor/flows/packages/build-cli
+        version: link:vendor/flows/packages/build-cli
       '@smthrs/targets':
-        specifier: link:../flows/flows/packages/targets
-        version: link:../flows/flows/packages/targets
+        specifier: link:vendor/flows/packages/targets
+        version: link:vendor/flows/packages/targets
       '@tevm/block':
         specifier: workspace:*
         version: link:packages/block
@@ -93,7 +93,7 @@ importers:
         version: 0.22.0(@astrojs/starlight@0.32.2(astro@5.5.2(@types/node@24.12.4)(idb-keyval@6.2.2)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.4)(terser@5.47.1)(tsx@4.22.2)(typescript@6.0.3)(yaml@2.9.0)))(typedoc-plugin-markdown@4.11.0(typedoc@0.28.19(typescript@6.0.3)))(typedoc@0.28.19(typescript@6.0.3))
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(@swc/core@1.15.33)(jiti@2.7.0)(postcss@8.5.14)(tsx@4.22.2)(typescript@6.0.3)(yaml@2.9.0)
+        version: 8.5.1(@swc/core@1.15.33)(jiti@2.7.0)(postcss@8.5.26)(tsx@4.22.2)(typescript@6.0.3)(yaml@2.9.0)
       typedoc:
         specifier: ^0.28.19
         version: 0.28.19(typescript@6.0.3)
@@ -112,93 +112,6 @@ importers:
       vitest:
         specifier: ^4.1.6
         version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@24.12.4)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@24.12.4)(typescript@6.0.3))(vite@8.0.13(@types/node@24.12.4)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))
-
-  ../zevm/npm/platforms/darwin-arm64: {}
-
-  ../zevm/npm/platforms/darwin-x64: {}
-
-  ../zevm/npm/platforms/freebsd-arm64: {}
-
-  ../zevm/npm/platforms/freebsd-x64: {}
-
-  ../zevm/npm/platforms/linux-arm64-gnu: {}
-
-  ../zevm/npm/platforms/linux-arm64-musl: {}
-
-  ../zevm/npm/platforms/linux-x64-gnu: {}
-
-  ../zevm/npm/platforms/linux-x64-musl: {}
-
-  ../zevm/npm/platforms/win32-arm64-msvc: {}
-
-  ../zevm/npm/platforms/win32-ia32-msvc: {}
-
-  ../zevm/npm/platforms/win32-x64-msvc: {}
-
-  ../zevm/npm/zevm:
-    dependencies:
-      '@ethereumjs/common':
-        specifier: ^10.1.1
-        version: 10.1.1
-      '@ethereumjs/evm':
-        specifier: ^10.1.1
-        version: 10.1.1
-      '@ethereumjs/trie':
-        specifier: 6.2.1
-        version: 6.2.1
-      '@ethereumjs/tx':
-        specifier: ^10.1.1
-        version: 10.1.1
-      '@noble/curves':
-        specifier: ^2.2.0
-        version: 2.2.0
-      '@noble/hashes':
-        specifier: ^2.2.0
-        version: 2.2.0
-    devDependencies:
-      '@types/debug':
-        specifier: ^4.1.13
-        version: 4.1.13
-      '@types/node':
-        specifier: ^25.9.1
-        version: 25.9.1
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
-    optionalDependencies:
-      '@evmts/zevm-darwin-arm64':
-        specifier: 0.0.0
-        version: 0.0.0
-      '@evmts/zevm-darwin-x64':
-        specifier: 0.0.0
-        version: 0.0.0
-      '@evmts/zevm-freebsd-arm64':
-        specifier: 0.0.0
-        version: link:../platforms/freebsd-arm64
-      '@evmts/zevm-freebsd-x64':
-        specifier: 0.0.0
-        version: link:../platforms/freebsd-x64
-      '@evmts/zevm-linux-arm64-gnu':
-        specifier: 0.0.0
-        version: 0.0.0
-      '@evmts/zevm-linux-arm64-musl':
-        specifier: 0.0.0
-        version: link:../platforms/linux-arm64-musl
-      '@evmts/zevm-linux-x64-gnu':
-        specifier: 0.0.0
-        version: 0.0.0
-      '@evmts/zevm-linux-x64-musl':
-        specifier: 0.0.0
-        version: link:../platforms/linux-x64-musl
-      '@evmts/zevm-win32-arm64-msvc':
-        specifier: 0.0.0
-        version: link:../platforms/win32-arm64-msvc
-      '@evmts/zevm-win32-ia32-msvc':
-        specifier: 0.0.0
-        version: link:../platforms/win32-ia32-msvc
-      '@evmts/zevm-win32-x64-msvc':
-        specifier: 0.0.0
-        version: link:../platforms/win32-x64-msvc
 
   bundler-packages/base-bundler:
     dependencies:
@@ -962,7 +875,7 @@ importers:
         version: 0.8.35
       tevm:
         specifier: 1.0.0-rc.151
-        version: 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@tevm/ts-plugin@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3))(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.27.7))(zod@4.4.3)
+        version: 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@tevm/ts-plugin@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3))(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.27.7))(zod@4.4.3)
       tsx:
         specifier: 4.20.6
         version: 4.20.6
@@ -1720,7 +1633,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
       '@tevm/address':
         specifier: workspace:^
         version: link:../address
@@ -1806,7 +1719,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
       '@tevm/common':
         specifier: workspace:^
         version: link:../common
@@ -1828,7 +1741,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
       '@tevm/block':
         specifier: workspace:^
         version: link:../block
@@ -1878,7 +1791,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
       '@tevm/errors':
         specifier: workspace:^
         version: link:../errors
@@ -1987,7 +1900,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
       viem:
         specifier: ^2.49.3
         version: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
@@ -2006,7 +1919,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
       '@tevm/blockchain':
         specifier: workspace:^
         version: link:../blockchain
@@ -2174,7 +2087,7 @@ importers:
     devDependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
       '@tevm/test-utils':
         specifier: workspace:^
         version: link:../../test/test-utils
@@ -2189,7 +2102,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
       '@tevm/address':
         specifier: workspace:^
         version: link:../address
@@ -2256,7 +2169,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
       '@noble/curves':
         specifier: ^2.2.0
         version: 2.2.0
@@ -2319,7 +2232,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
       '@tevm/block':
         specifier: workspace:^
         version: link:../block
@@ -2344,7 +2257,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
     devDependencies:
       '@tevm/tsconfig':
         specifier: workspace:^
@@ -2412,7 +2325,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
       '@tevm/address':
         specifier: workspace:^
         version: link:../address
@@ -2462,7 +2375,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
     devDependencies:
       '@tevm/tsconfig':
         specifier: workspace:^
@@ -2475,7 +2388,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
     devDependencies:
       '@tevm/tsconfig':
         specifier: workspace:^
@@ -2488,7 +2401,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
     devDependencies:
       '@tevm/block':
         specifier: workspace:^
@@ -2525,7 +2438,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
       '@tevm/errors':
         specifier: workspace:^
         version: link:../errors
@@ -2547,7 +2460,7 @@ importers:
     dependencies:
       '@evmts/zevm':
         specifier: workspace:*
-        version: link:../../../zevm/npm/zevm
+        version: link:../../vendor/zevm/npm/zevm
       '@tevm/block':
         specifier: workspace:^
         version: link:../block
@@ -2639,7 +2552,7 @@ importers:
         version: 19.2.6(react@19.2.6)
       tevm:
         specifier: npm:tevm@1.0.0-rc.151
-        version: 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@tevm/ts-plugin@1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3))(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.28.0))(zod@4.4.3)
+        version: 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@tevm/ts-plugin@1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3))(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.28.0))(zod@4.4.3)
       viem:
         specifier: ^2.49.3
         version: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
@@ -2682,7 +2595,7 @@ importers:
         version: 3.6.2
       tevm:
         specifier: npm:tevm@1.0.0-rc.151
-        version: 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@tevm/ts-plugin@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3))(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.27.7))(zod@4.4.3)
+        version: 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@tevm/ts-plugin@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3))(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.27.7))(zod@4.4.3)
       viem:
         specifier: ^2.49.3
         version: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
@@ -3065,6 +2978,72 @@ importers:
       '@tevm/tsupconfig':
         specifier: workspace:^
         version: link:../configs/tsupconfig
+
+  vendor/zevm/npm/platforms/darwin-arm64: {}
+
+  vendor/zevm/npm/platforms/darwin-x64: {}
+
+  vendor/zevm/npm/platforms/freebsd-arm64: {}
+
+  vendor/zevm/npm/platforms/freebsd-x64: {}
+
+  vendor/zevm/npm/platforms/linux-arm64-gnu: {}
+
+  vendor/zevm/npm/platforms/linux-arm64-musl: {}
+
+  vendor/zevm/npm/platforms/linux-x64-gnu: {}
+
+  vendor/zevm/npm/platforms/linux-x64-musl: {}
+
+  vendor/zevm/npm/platforms/win32-arm64-msvc: {}
+
+  vendor/zevm/npm/platforms/win32-ia32-msvc: {}
+
+  vendor/zevm/npm/platforms/win32-x64-msvc: {}
+
+  vendor/zevm/npm/zevm:
+    dependencies:
+      '@ethereumjs/common':
+        specifier: ^10.1.1
+        version: 10.1.1
+      '@ethereumjs/evm':
+        specifier: ^10.1.1
+        version: 10.1.1
+      '@ethereumjs/trie':
+        specifier: 6.2.1
+        version: 6.2.1
+      '@ethereumjs/tx':
+        specifier: ^10.1.1
+        version: 10.1.1
+      '@noble/curves':
+        specifier: ^2.2.0
+        version: 2.2.0
+      '@noble/hashes':
+        specifier: ^2.2.0
+        version: 2.2.0
+    devDependencies:
+      '@types/debug':
+        specifier: ^4.1.13
+        version: 4.1.13
+      '@types/node':
+        specifier: ^25.9.1
+        version: 25.9.1
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+    optionalDependencies:
+      '@evmts/zevm-darwin-arm64':
+        specifier: 0.0.0
+        version: 0.0.0
+      '@evmts/zevm-darwin-x64':
+        specifier: 0.0.0
+        version: 0.0.0
+      '@evmts/zevm-linux-arm64-gnu':
+        specifier: 0.0.0
+        version: 0.0.0
+      '@evmts/zevm-linux-x64-gnu':
+        specifier: 0.0.0
+        version: 0.0.0
 
 packages:
 
@@ -11236,7 +11215,7 @@ packages:
     resolution: {integrity: sha512-9z8TZaGM1pfswYeXrUpzPrkx8UnWYdhJclsiYMm6x/w5+nN+8Tf/LnAgfLGQCm59qAOxU8WwHEq2vNwF6i4j+Q==}
 
   clarinet@https://codeload.github.com/latticexyz/clarinet/tar.gz/9c30657e6000e0354c8c5b6e1efa3a434a0c0213:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/latticexyz/clarinet/tar.gz/9c30657e6000e0354c8c5b6e1efa3a434a0c0213}
+    resolution: {gitHosted: true, integrity: sha512-G//AddMA843sI6I5A3uICgeleptn5Bt59E9But3qZpsEA7muHP6qlY4Rc2sZW3NKXK2OB6kDYyY2SzUseUQd4A==, tarball: https://codeload.github.com/latticexyz/clarinet/tar.gz/9c30657e6000e0354c8c5b6e1efa3a434a0c0213}
     version: 0.12.5
     engines: {chrome: '>=16.0.912', firefox: '>=0.8.0', node: '>=0.3.6'}
 
@@ -19850,7 +19829,7 @@ snapshots:
       '@astrojs/mdx': 4.3.14(astro@5.5.2(@types/node@24.12.4)(idb-keyval@6.2.2)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.4)(terser@5.47.1)(tsx@4.22.2)(typescript@6.0.3)(yaml@2.9.0))
       '@astrojs/sitemap': 3.7.2
       '@pagefind/default-ui': 1.5.2
-      '@types/hast': 3.0.4
+      '@types/hast': 3.0.5
       '@types/js-yaml': 4.0.9
       '@types/mdast': 4.0.4
       astro: 5.5.2(@types/node@24.12.4)(idb-keyval@6.2.2)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.4)(terser@5.47.1)(tsx@4.22.2)(typescript@6.0.3)(yaml@2.9.0)
@@ -20208,7 +20187,7 @@ snapshots:
       '@babel/helper-string-parser': 7.29.7
       '@babel/helper-validator-identifier': 7.29.7
 
-  '@base-org/account@1.1.1(@types/react@18.3.27)(bufferutil@4.1.0)(immer@11.1.18)(react@18.3.1)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@19.2.6))(utf-8-validate@5.0.10)(zod@3.23.8)':
+  '@base-org/account@1.1.1(@types/react@18.3.27)(bufferutil@4.1.0)(immer@11.1.18)(react@18.3.1)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@18.3.1))(utf-8-validate@5.0.10)(zod@3.23.8)':
     dependencies:
       '@noble/hashes': 1.4.0
       clsx: 1.2.1
@@ -20217,7 +20196,7 @@ snapshots:
       ox: 0.6.9(typescript@6.0.3)(zod@3.23.8)
       preact: 10.24.2
       viem: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8)
-      zustand: 5.0.3(@types/react@18.3.27)(immer@11.1.18)(react@18.3.1)(use-sync-external-store@1.4.0(react@19.2.6))
+      zustand: 5.0.3(@types/react@18.3.27)(immer@11.1.18)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1))
     transitivePeerDependencies:
       - '@types/react'
       - bufferutil
@@ -20762,7 +20741,7 @@ snapshots:
       ox: 0.6.9(typescript@6.0.3)(zod@3.23.8)
       preact: 10.24.2
       viem: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8)
-      zustand: 5.0.3(@types/react@18.3.27)(immer@11.1.18)(react@18.3.1)(use-sync-external-store@1.4.0(react@19.2.6))
+      zustand: 5.0.3(@types/react@18.3.27)(immer@11.1.18)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1))
     transitivePeerDependencies:
       - '@types/react'
       - bufferutil
@@ -21850,8 +21829,8 @@ snapshots:
       hast-util-to-html: 9.0.5
       hast-util-to-text: 4.0.2
       hastscript: 9.0.1
-      postcss: 8.5.14
-      postcss-nested: 6.2.0(postcss@8.5.14)
+      postcss: 8.5.26
+      postcss-nested: 6.2.0(postcss@8.5.26)
       unist-util-visit: 5.1.0
       unist-util-visit-parents: 6.0.2
 
@@ -22430,19 +22409,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@latticexyz/block-logs-stream@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
-    dependencies:
-      '@latticexyz/common': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      debug: 4.4.3(supports-color@8.1.1)
-      rxjs: 7.5.5
-      viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
-    transitivePeerDependencies:
-      - '@aws-sdk/client-kms'
-      - asn1.js
-      - supports-color
-      - typescript
-      - zod
-
   '@latticexyz/block-logs-stream@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.35.1(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))(zod@3.23.8)':
     dependencies:
       '@latticexyz/common': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.35.1(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))(zod@3.23.8)
@@ -22482,9 +22448,22 @@ snapshots:
       - typescript
       - zod
 
-  '@latticexyz/block-logs-stream@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@latticexyz/block-logs-stream@2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
-      '@latticexyz/common': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/common': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      debug: 4.4.3(supports-color@8.1.1)
+      rxjs: 7.5.5
+      viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+    transitivePeerDependencies:
+      - '@aws-sdk/client-kms'
+      - asn1.js
+      - supports-color
+      - typescript
+      - zod
+
+  '@latticexyz/block-logs-stream@2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+    dependencies:
+      '@latticexyz/common': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       debug: 4.4.3(supports-color@8.1.1)
       rxjs: 7.5.5
       viem: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
@@ -22560,26 +22539,6 @@ snapshots:
       - wagmi
       - ws
 
-  '@latticexyz/common@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
-    dependencies:
-      '@latticexyz/schema-type': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@solidity-parser/parser': 0.16.2
-      abitype: 1.0.9(typescript@5.9.3)(zod@4.4.3)
-      debug: 4.4.3(supports-color@8.1.1)
-      execa: 9.6.1
-      p-queue: 7.4.1
-      p-retry: 5.1.2
-      prettier: 3.2.5
-      prettier-plugin-solidity: 1.3.1(prettier@3.2.5)
-      viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
-    optionalDependencies:
-      '@aws-sdk/client-kms': 3.1049.0
-      asn1.js: 5.4.1
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-      - zod
-
   '@latticexyz/common@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.35.1(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))(zod@3.23.8)':
     dependencies:
       '@latticexyz/schema-type': 2.2.23(typescript@6.0.3)(viem@2.35.1(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))(zod@3.23.8)
@@ -22640,7 +22599,24 @@ snapshots:
       - typescript
       - zod
 
-  '@latticexyz/common@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@latticexyz/common@2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+    dependencies:
+      '@latticexyz/schema-type': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@solidity-parser/parser': 0.16.2
+      abitype: 1.0.9(typescript@5.9.3)(zod@4.4.3)
+      debug: 4.4.3(supports-color@8.1.1)
+      execa: 9.6.1
+      p-queue: 7.4.1
+      p-retry: 5.1.2
+      prettier: 3.2.5
+      prettier-plugin-solidity: 1.3.1(prettier@3.2.5)
+      viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+      - zod
+
+  '@latticexyz/common@2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@latticexyz/schema-type': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@solidity-parser/parser': 0.16.2
@@ -22652,25 +22628,7 @@ snapshots:
       prettier: 3.2.5
       prettier-plugin-solidity: 1.3.1(prettier@3.2.5)
       viem: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
-    optionalDependencies:
-      '@aws-sdk/client-kms': 3.1049.0
-      asn1.js: 5.4.1
     transitivePeerDependencies:
-      - supports-color
-      - typescript
-      - zod
-
-  '@latticexyz/config@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
-    dependencies:
-      '@ark/util': 0.2.2
-      '@latticexyz/common': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/schema-type': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      find-up: 6.3.0
-      tsx: 4.22.2
-      viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
-    transitivePeerDependencies:
-      - '@aws-sdk/client-kms'
-      - asn1.js
       - supports-color
       - typescript
       - zod
@@ -22720,10 +22678,25 @@ snapshots:
       - typescript
       - zod
 
-  '@latticexyz/config@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@latticexyz/config@2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@ark/util': 0.2.2
-      '@latticexyz/common': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/common': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/schema-type': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      find-up: 6.3.0
+      tsx: 4.22.2
+      viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+    transitivePeerDependencies:
+      - '@aws-sdk/client-kms'
+      - asn1.js
+      - supports-color
+      - typescript
+      - zod
+
+  '@latticexyz/config@2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+    dependencies:
+      '@ark/util': 0.2.2
+      '@latticexyz/common': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@latticexyz/schema-type': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       find-up: 6.3.0
       tsx: 4.22.2
@@ -22850,20 +22823,6 @@ snapshots:
       table: 6.9.0
       yargs: 17.7.2
 
-  '@latticexyz/protocol-parser@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
-    dependencies:
-      '@latticexyz/common': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/config': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/schema-type': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      abitype: 1.0.9(typescript@5.9.3)(zod@4.4.3)
-      viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
-    transitivePeerDependencies:
-      - '@aws-sdk/client-kms'
-      - asn1.js
-      - supports-color
-      - typescript
-      - zod
-
   '@latticexyz/protocol-parser@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.35.1(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))(zod@3.23.8)':
     dependencies:
       '@latticexyz/common': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.35.1(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))(zod@3.23.8)
@@ -22906,10 +22865,24 @@ snapshots:
       - typescript
       - zod
 
-  '@latticexyz/protocol-parser@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@latticexyz/protocol-parser@2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
-      '@latticexyz/common': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/config': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/common': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/config': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/schema-type': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      abitype: 1.0.9(typescript@5.9.3)(zod@4.4.3)
+      viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+    transitivePeerDependencies:
+      - '@aws-sdk/client-kms'
+      - asn1.js
+      - supports-color
+      - typescript
+      - zod
+
+  '@latticexyz/protocol-parser@2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+    dependencies:
+      '@latticexyz/common': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/config': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@latticexyz/schema-type': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       abitype: 1.0.9(typescript@6.0.3)(zod@4.4.3)
       viem: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
@@ -23385,25 +23358,6 @@ snapshots:
       - typescript
       - ws
 
-  '@latticexyz/store@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
-    dependencies:
-      '@ark/util': 0.2.2
-      '@latticexyz/common': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/config': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/protocol-parser': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/schema-type': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      abitype: 1.0.9(typescript@5.9.3)(zod@4.4.3)
-      arktype: 2.0.0-beta.6
-      debug: 4.4.3(supports-color@8.1.1)
-    optionalDependencies:
-      viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
-    transitivePeerDependencies:
-      - '@aws-sdk/client-kms'
-      - asn1.js
-      - supports-color
-      - typescript
-      - zod
-
   '@latticexyz/store@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.35.1(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))(zod@3.23.8)':
     dependencies:
       '@ark/util': 0.2.2
@@ -23461,12 +23415,31 @@ snapshots:
       - typescript
       - zod
 
-  '@latticexyz/store@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@latticexyz/store@2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@ark/util': 0.2.2
-      '@latticexyz/common': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/config': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/protocol-parser': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/common': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/config': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/protocol-parser': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/schema-type': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      abitype: 1.0.9(typescript@5.9.3)(zod@4.4.3)
+      arktype: 2.0.0-beta.6
+      debug: 4.4.3(supports-color@8.1.1)
+    optionalDependencies:
+      viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+    transitivePeerDependencies:
+      - '@aws-sdk/client-kms'
+      - asn1.js
+      - supports-color
+      - typescript
+      - zod
+
+  '@latticexyz/store@2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+    dependencies:
+      '@ark/util': 0.2.2
+      '@latticexyz/common': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/config': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/protocol-parser': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@latticexyz/schema-type': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       abitype: 1.0.9(typescript@6.0.3)(zod@4.4.3)
       arktype: 2.0.0-beta.6
@@ -23523,27 +23496,6 @@ snapshots:
       - supports-color
       - typescript
       - viem
-      - zod
-
-  '@latticexyz/world@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
-    dependencies:
-      '@ark/util': 0.2.2
-      '@latticexyz/block-logs-stream': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/common': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/config': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/protocol-parser': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/schema-type': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/store': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      abitype: 1.0.9(typescript@5.9.3)(zod@4.4.3)
-      arktype: 2.0.0-beta.6
-      debug: 4.4.3(supports-color@8.1.1)
-    optionalDependencies:
-      viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
-    transitivePeerDependencies:
-      - '@aws-sdk/client-kms'
-      - asn1.js
-      - supports-color
-      - typescript
       - zod
 
   '@latticexyz/world@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.35.1(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))(zod@3.23.8)':
@@ -23609,15 +23561,36 @@ snapshots:
       - typescript
       - zod
 
-  '@latticexyz/world@2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@latticexyz/world@2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@ark/util': 0.2.2
-      '@latticexyz/block-logs-stream': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/common': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/config': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/protocol-parser': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/block-logs-stream': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/common': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/config': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/protocol-parser': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/schema-type': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/store': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      abitype: 1.0.9(typescript@5.9.3)(zod@4.4.3)
+      arktype: 2.0.0-beta.6
+      debug: 4.4.3(supports-color@8.1.1)
+    optionalDependencies:
+      viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+    transitivePeerDependencies:
+      - '@aws-sdk/client-kms'
+      - asn1.js
+      - supports-color
+      - typescript
+      - zod
+
+  '@latticexyz/world@2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+    dependencies:
+      '@ark/util': 0.2.2
+      '@latticexyz/block-logs-stream': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/common': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/config': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/protocol-parser': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@latticexyz/schema-type': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/store': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/store': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       abitype: 1.0.9(typescript@6.0.3)(zod@4.4.3)
       arktype: 2.0.0-beta.6
       debug: 4.4.3(supports-color@8.1.1)
@@ -29261,7 +29234,7 @@ snapshots:
       '@types/react': 19.2.14
       '@types/react-dom': 19.2.3(@types/react@19.2.14)
 
-  '@tevm/actions@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/actions@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@evmts/zevm': 0.0.0
       '@tevm/address': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
@@ -29272,11 +29245,11 @@ snapshots:
       '@tevm/contract': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/jsonrpc': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/node': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/node': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/receipt-manager': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/state': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/state': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/vm': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/vm': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
       zod: 4.4.3
     transitivePeerDependencies:
@@ -29286,7 +29259,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@tevm/actions@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/actions@1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@evmts/zevm': 0.0.0
       '@tevm/address': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
@@ -29297,11 +29270,11 @@ snapshots:
       '@tevm/contract': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/jsonrpc': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/node': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/node': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/receipt-manager': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/state': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/state': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/vm': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/vm': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       viem: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
       zod: 4.4.3
     transitivePeerDependencies:
@@ -29481,9 +29454,9 @@ snapshots:
       - viem
       - zod
 
-  '@tevm/client-types@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/client-types@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
-      '@tevm/actions': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/actions': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
     transitivePeerDependencies:
       - '@aws-sdk/client-kms'
@@ -29494,9 +29467,9 @@ snapshots:
       - viem
       - zod
 
-  '@tevm/client-types@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/client-types@1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
-      '@tevm/actions': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/actions': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
     transitivePeerDependencies:
       - '@aws-sdk/client-kms'
@@ -29601,10 +29574,10 @@ snapshots:
       - viem
       - zod
 
-  '@tevm/decorators@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/decorators@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
-      '@tevm/actions': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/node': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/actions': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/node': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     transitivePeerDependencies:
@@ -29615,10 +29588,10 @@ snapshots:
       - typescript
       - zod
 
-  '@tevm/decorators@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/decorators@1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
-      '@tevm/actions': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/node': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/actions': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/node': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       viem: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     transitivePeerDependencies:
@@ -29667,7 +29640,7 @@ snapshots:
       - typescript
       - viem
 
-  '@tevm/evm@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/evm@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@evmts/zevm': 0.0.0
       '@tevm/blockchain': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
@@ -29675,7 +29648,7 @@ snapshots:
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/logger': 1.0.0-rc.151
       '@tevm/predeploys': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/state': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/state': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
     transitivePeerDependencies:
       - '@aws-sdk/client-kms'
@@ -29686,7 +29659,7 @@ snapshots:
       - viem
       - zod
 
-  '@tevm/evm@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/evm@1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@evmts/zevm': 0.0.0
       '@tevm/blockchain': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
@@ -29694,7 +29667,7 @@ snapshots:
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/logger': 1.0.0-rc.151
       '@tevm/predeploys': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/state': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/state': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
     transitivePeerDependencies:
       - '@aws-sdk/client-kms'
@@ -29705,13 +29678,13 @@ snapshots:
       - viem
       - zod
 
-  '@tevm/http-client@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)':
+  '@tevm/http-client@1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)':
     dependencies:
       '@tevm/address': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/contract': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/memory-client': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
+      '@tevm/memory-client': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/viem': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/viem': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     transitivePeerDependencies:
       - '@aws-sdk/client-kms'
@@ -29734,13 +29707,13 @@ snapshots:
       - vite
       - zod
 
-  '@tevm/http-client@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(zod@4.4.3)':
+  '@tevm/http-client@1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(zod@4.4.3)':
     dependencies:
       '@tevm/address': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/contract': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/memory-client': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(zod@4.4.3)
+      '@tevm/memory-client': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/viem': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/viem': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     transitivePeerDependencies:
       - '@aws-sdk/client-kms'
@@ -29763,13 +29736,13 @@ snapshots:
       - vite
       - zod
 
-  '@tevm/http-client@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)':
+  '@tevm/http-client@1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)':
     dependencies:
       '@tevm/address': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/contract': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/memory-client': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
+      '@tevm/memory-client': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/viem': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/viem': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       viem: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     transitivePeerDependencies:
       - '@aws-sdk/client-kms'
@@ -29810,15 +29783,15 @@ snapshots:
     dependencies:
       pino: 10.3.1
 
-  '@tevm/memory-client@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)':
+  '@tevm/memory-client@1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)':
     dependencies:
-      '@tevm/actions': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/actions': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/address': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/common': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/contract': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/decorators': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/decorators': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/node': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/node': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/predeploys': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       kzg-wasm: 1.0.0
@@ -29845,15 +29818,15 @@ snapshots:
       - vite
       - zod
 
-  '@tevm/memory-client@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(zod@4.4.3)':
+  '@tevm/memory-client@1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(zod@4.4.3)':
     dependencies:
-      '@tevm/actions': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/actions': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/address': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/common': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/contract': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/decorators': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/decorators': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/node': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/node': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/predeploys': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       kzg-wasm: 1.0.0
@@ -29880,15 +29853,15 @@ snapshots:
       - vite
       - zod
 
-  '@tevm/memory-client@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)':
+  '@tevm/memory-client@1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)':
     dependencies:
-      '@tevm/actions': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/actions': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/address': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/common': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/contract': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/decorators': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/decorators': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/node': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/node': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/predeploys': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       kzg-wasm: 1.0.0
@@ -29915,7 +29888,7 @@ snapshots:
       - vite
       - zod
 
-  '@tevm/node@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/node@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@evmts/zevm': 0.0.0
       '@tevm/address': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
@@ -29923,17 +29896,17 @@ snapshots:
       '@tevm/blockchain': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/common': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/consensus': 1.0.0-rc.152
-      '@tevm/evm': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/evm': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/jsonrpc': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/logger': 1.0.0-rc.151
       '@tevm/precompiles': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/predeploys': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/receipt-manager': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/state': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/sync-storage-persister': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/state': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/sync-storage-persister': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/txpool': 1.0.0-rc.151
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/vm': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/vm': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     transitivePeerDependencies:
       - '@aws-sdk/client-kms'
@@ -29943,7 +29916,7 @@ snapshots:
       - typescript
       - zod
 
-  '@tevm/node@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/node@1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@evmts/zevm': 0.0.0
       '@tevm/address': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
@@ -29951,17 +29924,17 @@ snapshots:
       '@tevm/blockchain': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/common': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/consensus': 1.0.0-rc.152
-      '@tevm/evm': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/evm': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/jsonrpc': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/logger': 1.0.0-rc.151
       '@tevm/precompiles': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/predeploys': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/receipt-manager': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/state': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/sync-storage-persister': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/state': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/sync-storage-persister': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/txpool': 1.0.0-rc.151
       '@tevm/utils': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/vm': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/vm': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       viem: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     transitivePeerDependencies:
       - '@aws-sdk/client-kms'
@@ -30095,13 +30068,13 @@ snapshots:
       '@tevm/tsupconfig': 1.0.0-rc.151
       effect: 3.21.2
 
-  '@tevm/server@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))':
+  '@tevm/server@1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))':
     dependencies:
       '@tevm/common': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/decorators': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/decorators': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/jsonrpc': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/memory-client': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
+      '@tevm/memory-client': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       commander: 14.0.3
       zod: 4.4.3
@@ -30126,13 +30099,13 @@ snapshots:
       - viem
       - vite
 
-  '@tevm/server@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))':
+  '@tevm/server@1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))':
     dependencies:
       '@tevm/common': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/decorators': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/decorators': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/jsonrpc': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/memory-client': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(zod@4.4.3)
+      '@tevm/memory-client': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       commander: 14.0.3
       zod: 4.4.3
@@ -30157,13 +30130,13 @@ snapshots:
       - viem
       - vite
 
-  '@tevm/server@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))':
+  '@tevm/server@1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))':
     dependencies:
       '@tevm/common': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/decorators': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/decorators': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/jsonrpc': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/memory-client': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
+      '@tevm/memory-client': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       commander: 14.0.3
       zod: 4.4.3
@@ -30208,14 +30181,14 @@ snapshots:
       - typescript
       - zod
 
-  '@tevm/state@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/state@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@evmts/zevm': 0.0.0
       '@tevm/address': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/common': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/logger': 1.0.0-rc.151
-      '@tevm/test-utils': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/test-utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       ethereum-cryptography: 3.2.0
       viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
@@ -30227,14 +30200,14 @@ snapshots:
       - typescript
       - zod
 
-  '@tevm/state@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/state@1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@evmts/zevm': 0.0.0
       '@tevm/address': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/common': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/logger': 1.0.0-rc.151
-      '@tevm/test-utils': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/test-utils': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       ethereum-cryptography: 3.2.0
       viem: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
@@ -30246,9 +30219,9 @@ snapshots:
       - typescript
       - zod
 
-  '@tevm/sync-storage-persister@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/sync-storage-persister@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
-      '@tevm/state': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/state': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
     transitivePeerDependencies:
       - '@aws-sdk/client-kms'
       - asn1.js
@@ -30258,9 +30231,9 @@ snapshots:
       - viem
       - zod
 
-  '@tevm/sync-storage-persister@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/sync-storage-persister@1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
-      '@tevm/state': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/state': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
     transitivePeerDependencies:
       - '@aws-sdk/client-kms'
       - asn1.js
@@ -30270,11 +30243,11 @@ snapshots:
       - viem
       - zod
 
-  '@tevm/test-utils@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/test-utils@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@latticexyz/schema-type': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/store': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/world': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/store': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/world': 2.2.23(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@openzeppelin/contracts': 5.6.1
       '@ponder/utils': 0.2.18(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/common': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
@@ -30290,11 +30263,11 @@ snapshots:
       - typescript
       - zod
 
-  '@tevm/test-utils@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/test-utils@1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@latticexyz/schema-type': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/store': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@latticexyz/world': 2.2.23(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/store': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@latticexyz/world': 2.2.23(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@openzeppelin/contracts': 5.6.1
       '@ponder/utils': 0.2.18(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/common': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
@@ -30415,11 +30388,11 @@ snapshots:
       - typescript
       - zod
 
-  '@tevm/viem@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/viem@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
-      '@tevm/decorators': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/decorators': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/jsonrpc': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/node': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/node': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     transitivePeerDependencies:
       - '@aws-sdk/client-kms'
@@ -30429,11 +30402,11 @@ snapshots:
       - typescript
       - zod
 
-  '@tevm/viem@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/viem@1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
-      '@tevm/decorators': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/decorators': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/jsonrpc': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/node': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/node': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       viem: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     transitivePeerDependencies:
       - '@aws-sdk/client-kms'
@@ -30461,15 +30434,15 @@ snapshots:
       - typescript
       - viem
 
-  '@tevm/vm@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/vm@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@evmts/zevm': 0.0.0
       '@tevm/block': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/blockchain': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/common': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/evm': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/state': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/evm': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/state': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       eventemitter3: 5.0.4
       viem: 2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
@@ -30481,15 +30454,15 @@ snapshots:
       - typescript
       - zod
 
-  '@tevm/vm@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
+  '@tevm/vm@1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@evmts/zevm': 0.0.0
       '@tevm/block': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/blockchain': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/common': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/evm': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/state': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/evm': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/state': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/utils': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       eventemitter3: 5.0.4
       viem: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
@@ -31693,9 +31666,9 @@ snapshots:
       - zod
     optional: true
 
-  '@wagmi/connectors@5.9.5(@types/react@18.3.27)(@wagmi/core@2.20.0(@tanstack/query-core@5.100.11)(@types/react@18.3.27)(immer@11.1.18)(react@18.3.1)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@19.2.6))(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(bufferutil@4.1.0)(immer@11.1.18)(react@18.3.1)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@19.2.6))(utf-8-validate@5.0.10)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))(zod@3.23.8)':
+  '@wagmi/connectors@5.9.5(@types/react@18.3.27)(@wagmi/core@2.20.0(@tanstack/query-core@5.100.11)(@types/react@18.3.27)(immer@11.1.18)(react@18.3.1)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@18.3.1))(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(bufferutil@4.1.0)(immer@11.1.18)(react@18.3.1)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@18.3.1))(utf-8-validate@5.0.10)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))(zod@3.23.8)':
     dependencies:
-      '@base-org/account': 1.1.1(@types/react@18.3.27)(bufferutil@4.1.0)(immer@11.1.18)(react@18.3.1)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@19.2.6))(utf-8-validate@5.0.10)(zod@3.23.8)
+      '@base-org/account': 1.1.1(@types/react@18.3.27)(bufferutil@4.1.0)(immer@11.1.18)(react@18.3.1)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@18.3.1))(utf-8-validate@5.0.10)(zod@3.23.8)
       '@coinbase/wallet-sdk': 4.3.6(@types/react@18.3.27)(bufferutil@4.1.0)(immer@11.1.18)(react@19.2.6)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@19.2.6))(utf-8-validate@5.0.10)(zod@3.23.8)
       '@gemini-wallet/core': 0.2.0(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       '@metamask/sdk': 0.32.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -31764,7 +31737,7 @@ snapshots:
       eventemitter3: 5.0.1
       mipd: 0.0.7(typescript@6.0.3)
       viem: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8)
-      zustand: 5.0.0(@types/react@18.3.27)(immer@11.1.18)(react@18.3.1)(use-sync-external-store@1.4.0(react@19.2.6))
+      zustand: 5.0.0(@types/react@18.3.27)(immer@11.1.18)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1))
     optionalDependencies:
       '@tanstack/query-core': 5.100.11
       typescript: 6.0.3
@@ -36727,12 +36700,12 @@ snapshots:
 
   hast-util-embedded@3.0.0:
     dependencies:
-      '@types/hast': 3.0.4
+      '@types/hast': 3.0.5
       hast-util-is-element: 3.0.0
 
   hast-util-format@1.1.0:
     dependencies:
-      '@types/hast': 3.0.4
+      '@types/hast': 3.0.5
       hast-util-embedded: 3.0.0
       hast-util-minify-whitespace: 1.0.1
       hast-util-phrasing: 3.0.1
@@ -36783,7 +36756,7 @@ snapshots:
 
   hast-util-is-body-ok-link@3.0.1:
     dependencies:
-      '@types/hast': 3.0.4
+      '@types/hast': 3.0.5
 
   hast-util-is-element@3.0.0:
     dependencies:
@@ -36791,7 +36764,7 @@ snapshots:
 
   hast-util-minify-whitespace@1.0.1:
     dependencies:
-      '@types/hast': 3.0.4
+      '@types/hast': 3.0.5
       hast-util-embedded: 3.0.0
       hast-util-is-element: 3.0.0
       hast-util-whitespace: 3.0.0
@@ -36803,7 +36776,7 @@ snapshots:
 
   hast-util-phrasing@3.0.1:
     dependencies:
-      '@types/hast': 3.0.4
+      '@types/hast': 3.0.5
       hast-util-embedded: 3.0.0
       hast-util-has-property: 3.0.0
       hast-util-is-body-ok-link: 3.0.1
@@ -36811,7 +36784,7 @@ snapshots:
 
   hast-util-raw@9.1.0:
     dependencies:
-      '@types/hast': 3.0.4
+      '@types/hast': 3.0.5
       '@types/unist': 3.0.3
       '@ungap/structured-clone': 1.3.1
       hast-util-from-parse5: 8.0.3
@@ -36900,7 +36873,7 @@ snapshots:
 
   hast-util-to-parse5@8.0.1:
     dependencies:
-      '@types/hast': 3.0.4
+      '@types/hast': 3.0.5
       comma-separated-tokens: 2.0.3
       devlop: 1.1.0
       property-information: 7.1.0
@@ -38071,8 +38044,8 @@ snapshots:
 
   magicast@0.3.5:
     dependencies:
-      '@babel/parser': 7.29.3
-      '@babel/types': 7.29.0
+      '@babel/parser': 7.29.8
+      '@babel/types': 7.29.8
       source-map-js: 1.2.1
 
   magicast@0.5.3:
@@ -40251,15 +40224,6 @@ snapshots:
 
   possible-typed-array-names@1.1.0: {}
 
-  postcss-load-config@6.0.1(jiti@2.7.0)(postcss@8.5.14)(tsx@4.22.2)(yaml@2.9.0):
-    dependencies:
-      lilconfig: 3.1.3
-    optionalDependencies:
-      jiti: 2.7.0
-      postcss: 8.5.14
-      tsx: 4.22.2
-      yaml: 2.9.0
-
   postcss-load-config@6.0.1(jiti@2.7.0)(postcss@8.5.26)(tsx@4.22.2)(yaml@2.9.0):
     dependencies:
       lilconfig: 3.1.3
@@ -40269,9 +40233,9 @@ snapshots:
       tsx: 4.22.2
       yaml: 2.9.0
 
-  postcss-nested@6.2.0(postcss@8.5.14):
+  postcss-nested@6.2.0(postcss@8.5.26):
     dependencies:
-      postcss: 8.5.14
+      postcss: 8.5.26
       postcss-selector-parser: 6.1.2
 
   postcss-selector-parser@6.1.2:
@@ -41206,7 +41170,7 @@ snapshots:
 
   rehype-format@5.0.1:
     dependencies:
-      '@types/hast': 3.0.4
+      '@types/hast': 3.0.5
       hast-util-format: 1.1.0
 
   rehype-mermaid@3.0.0(playwright@1.60.0):
@@ -41225,13 +41189,13 @@ snapshots:
 
   rehype-parse@9.0.1:
     dependencies:
-      '@types/hast': 3.0.4
+      '@types/hast': 3.0.5
       hast-util-from-html: 2.0.3
       unified: 11.0.5
 
   rehype-raw@7.0.0:
     dependencies:
-      '@types/hast': 3.0.4
+      '@types/hast': 3.0.5
       hast-util-raw: 9.1.0
       vfile: 6.0.3
 
@@ -41253,13 +41217,13 @@ snapshots:
 
   rehype-stringify@10.0.1:
     dependencies:
-      '@types/hast': 3.0.4
+      '@types/hast': 3.0.5
       hast-util-to-html: 9.0.5
       unified: 11.0.5
 
   rehype@13.0.2:
     dependencies:
-      '@types/hast': 3.0.4
+      '@types/hast': 3.0.5
       rehype-parse: 9.0.1
       rehype-stringify: 10.0.1
       unified: 11.0.5
@@ -42717,45 +42681,45 @@ snapshots:
       source-map-support: 0.5.21
     optional: true
 
-  tevm@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@tevm/ts-plugin@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3))(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.27.7))(zod@4.4.3):
+  tevm@1.0.0-rc.151(@opentelemetry/api@1.9.1)(@tevm/ts-plugin@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3))(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.27.7))(zod@4.4.3):
     dependencies:
-      '@tevm/actions': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/actions': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/address': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/base-bundler': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/block': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/blockchain': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/bun-plugin': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/bundler-cache': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/client-types': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/client-types': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/common': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/compiler': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/config': 1.0.0-rc.151
       '@tevm/consensus': 1.0.0-rc.152
       '@tevm/contract': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/decorators': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/decorators': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/esbuild-plugin': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/evm': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/http-client': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
+      '@tevm/evm': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/http-client': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
       '@tevm/jsonrpc': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/memory-client': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
-      '@tevm/node': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/memory-client': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
+      '@tevm/node': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/precompiles': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/predeploys': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/receipt-manager': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/rollup-plugin': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/rspack-plugin': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/server': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))
+      '@tevm/server': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@6.4.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))
       '@tevm/solc': 1.0.0-rc.151(typescript@5.9.3)(zod@4.4.3)
-      '@tevm/state': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/sync-storage-persister': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/state': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/sync-storage-persister': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/ts-plugin': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/tx': 1.0.0-rc.151
       '@tevm/txpool': 1.0.0-rc.151
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/viem': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/viem': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/vite-plugin': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/vm': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/vm': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/webpack-plugin': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.27.7))
       commander: 14.0.3
       effect: 3.21.2
@@ -42784,45 +42748,45 @@ snapshots:
       - webpack
       - zod
 
-  tevm@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@tevm/ts-plugin@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3))(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.27.7))(zod@4.4.3):
+  tevm@1.0.0-rc.151(@opentelemetry/api@1.9.1)(@tevm/ts-plugin@1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3))(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.27.7))(zod@4.4.3):
     dependencies:
-      '@tevm/actions': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/actions': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/address': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/base-bundler': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/block': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/blockchain': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/bun-plugin': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/bundler-cache': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/client-types': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/client-types': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/common': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/compiler': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/config': 1.0.0-rc.151
       '@tevm/consensus': 1.0.0-rc.152
       '@tevm/contract': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/decorators': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/decorators': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/esbuild-plugin': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/evm': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/http-client': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(zod@4.4.3)
+      '@tevm/evm': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/http-client': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(zod@4.4.3)
       '@tevm/jsonrpc': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/memory-client': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(zod@4.4.3)
-      '@tevm/node': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/memory-client': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))(zod@4.4.3)
+      '@tevm/node': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/precompiles': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/predeploys': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/receipt-manager': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/rollup-plugin': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/rspack-plugin': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/server': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))
+      '@tevm/server': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))
       '@tevm/solc': 1.0.0-rc.151(typescript@5.9.3)(zod@4.4.3)
-      '@tevm/state': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/sync-storage-persister': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/state': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/sync-storage-persister': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/ts-plugin': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/tx': 1.0.0-rc.151
       '@tevm/txpool': 1.0.0-rc.151
       '@tevm/utils': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/viem': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/viem': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/vite-plugin': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/vm': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/vm': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/webpack-plugin': 1.0.0-rc.151(typescript@5.9.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.27.7))
       commander: 14.0.3
       effect: 3.21.2
@@ -42851,45 +42815,45 @@ snapshots:
       - webpack
       - zod
 
-  tevm@1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@tevm/ts-plugin@1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3))(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.28.0))(zod@4.4.3):
+  tevm@1.0.0-rc.151(@opentelemetry/api@1.9.1)(@tevm/ts-plugin@1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3))(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.28.0))(zod@4.4.3):
     dependencies:
-      '@tevm/actions': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/actions': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/address': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/base-bundler': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/block': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/blockchain': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/bun-plugin': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/bundler-cache': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/client-types': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/client-types': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/common': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/compiler': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/config': 1.0.0-rc.151
       '@tevm/consensus': 1.0.0-rc.152
       '@tevm/contract': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/decorators': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/decorators': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/errors': 1.0.0-rc.151(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/esbuild-plugin': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/evm': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/http-client': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
+      '@tevm/evm': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/http-client': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
       '@tevm/jsonrpc': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/memory-client': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
-      '@tevm/node': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/memory-client': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))(zod@4.4.3)
+      '@tevm/node': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/precompiles': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/predeploys': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/receipt-manager': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/rollup-plugin': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@tevm/rspack-plugin': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/server': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(asn1.js@5.4.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))
+      '@tevm/server': 1.0.0-rc.151(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@25.9.1)(typescript@6.0.3))(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))
       '@tevm/solc': 1.0.0-rc.151(typescript@6.0.3)(zod@4.4.3)
-      '@tevm/state': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/sync-storage-persister': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/state': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/sync-storage-persister': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/ts-plugin': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/tx': 1.0.0-rc.151
       '@tevm/txpool': 1.0.0-rc.151
       '@tevm/utils': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
-      '@tevm/viem': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/viem': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/vite-plugin': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
-      '@tevm/vm': 1.0.0-rc.151(@aws-sdk/client-kms@3.1049.0)(asn1.js@5.4.1)(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
+      '@tevm/vm': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(zod@4.4.3)
       '@tevm/webpack-plugin': 1.0.0-rc.151(typescript@6.0.3)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))(webpack@5.98.0(@swc/core@1.15.33)(esbuild@0.28.0))
       commander: 14.0.3
       effect: 3.21.2
@@ -43135,35 +43099,6 @@ snapshots:
   tsort@0.0.1: {}
 
   tsscmp@1.0.6: {}
-
-  tsup@8.5.1(@swc/core@1.15.33)(jiti@2.7.0)(postcss@8.5.14)(tsx@4.22.2)(typescript@6.0.3)(yaml@2.9.0):
-    dependencies:
-      bundle-require: 5.1.0(esbuild@0.27.7)
-      cac: 6.7.14
-      chokidar: 4.0.3
-      consola: 3.4.2
-      debug: 4.4.3(supports-color@8.1.1)
-      esbuild: 0.27.7
-      fix-dts-default-cjs-exports: 1.0.1
-      joycon: 3.1.1
-      picocolors: 1.1.1
-      postcss-load-config: 6.0.1(jiti@2.7.0)(postcss@8.5.14)(tsx@4.22.2)(yaml@2.9.0)
-      resolve-from: 5.0.0
-      rollup: 4.60.4
-      source-map: 0.7.6
-      sucrase: 3.35.1
-      tinyexec: 0.3.2
-      tinyglobby: 0.2.16
-      tree-kill: 1.2.2
-    optionalDependencies:
-      '@swc/core': 1.15.33
-      postcss: 8.5.14
-      typescript: 6.0.3
-    transitivePeerDependencies:
-      - jiti
-      - supports-color
-      - tsx
-      - yaml
 
   tsup@8.5.1(@swc/core@1.15.33)(jiti@2.7.0)(postcss@8.5.26)(tsx@4.22.2)(typescript@6.0.3)(yaml@2.9.0):
     dependencies:
@@ -44489,7 +44424,7 @@ snapshots:
   wagmi@2.16.5(@tanstack/query-core@5.100.11)(@tanstack/react-query@5.100.11(react@19.2.6))(@types/react@18.3.27)(bufferutil@4.1.0)(immer@11.1.18)(react@19.2.6)(typescript@6.0.3)(utf-8-validate@5.0.10)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))(zod@3.23.8):
     dependencies:
       '@tanstack/react-query': 5.100.11(react@18.3.1)
-      '@wagmi/connectors': 5.9.5(@types/react@18.3.27)(@wagmi/core@2.20.0(@tanstack/query-core@5.100.11)(@types/react@18.3.27)(immer@11.1.18)(react@18.3.1)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@19.2.6))(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(bufferutil@4.1.0)(immer@11.1.18)(react@18.3.1)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@19.2.6))(utf-8-validate@5.0.10)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))(zod@3.23.8)
+      '@wagmi/connectors': 5.9.5(@types/react@18.3.27)(@wagmi/core@2.20.0(@tanstack/query-core@5.100.11)(@types/react@18.3.27)(immer@11.1.18)(react@18.3.1)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@18.3.1))(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(bufferutil@4.1.0)(immer@11.1.18)(react@18.3.1)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@18.3.1))(utf-8-validate@5.0.10)(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))(zod@3.23.8)
       '@wagmi/core': 2.20.0(@tanstack/query-core@5.100.11)(@types/react@18.3.27)(immer@11.1.18)(react@19.2.6)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@19.2.6))(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       react: 19.2.6
       use-sync-external-store: 1.4.0(react@18.3.1)
@@ -45161,7 +45096,7 @@ snapshots:
       immer: 11.1.18
       react: 19.2.6
 
-  zustand@5.0.0(@types/react@18.3.27)(immer@11.1.18)(react@18.3.1)(use-sync-external-store@1.4.0(react@19.2.6)):
+  zustand@5.0.0(@types/react@18.3.27)(immer@11.1.18)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1)):
     optionalDependencies:
       '@types/react': 18.3.27
       immer: 11.1.18
@@ -45190,7 +45125,7 @@ snapshots:
       react: 19.2.6
       use-sync-external-store: 1.6.0(react@19.2.6)
 
-  zustand@5.0.3(@types/react@18.3.27)(immer@11.1.18)(react@18.3.1)(use-sync-external-store@1.4.0(react@19.2.6)):
+  zustand@5.0.3(@types/react@18.3.27)(immer@11.1.18)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1)):
     optionalDependencies:
       '@types/react': 18.3.27
       immer: 11.1.18

@@ -9,9 +9,13 @@ const write = args.has('write')
 const excluded = new Set(['PACKAGE.ts', 'factory/PACKAGE.ts', 'scripts/PACKAGE.ts', 'test/PACKAGE.ts'])
 let output = ''
 try {
-	output = execFileSync('rg', ['-l', 'S\\.Shell\\.', '--glob', 'PACKAGE.ts', '--glob', '!node_modules/**', '.'], {
-		encoding: 'utf8',
-	})
+	output = execFileSync(
+		'rg',
+		['-l', 'S\\.Shell\\.', '--glob', 'PACKAGE.ts', '--glob', '!node_modules/**', '--glob', '!vendor/**', '.'],
+		{
+			encoding: 'utf8',
+		},
+	)
 } catch (error) {
 	if (error?.status !== 1) throw error
 }

@@ -1,6 +1,6 @@
 # TEVM coding factory
 
-The coding factory is the executable governance layer over TEVM's existing Nx, pnpm, Vitest, Biome, Cargo, Foundry, conformance, and release commands. Package-mode declarations live in `WORKSPACE.ts`, root `PACKAGE.ts`, and package-local `PACKAGE.ts` files. They run against the unpublished sibling checkout at `../flows/flows`; registry fallbacks are forbidden.
+The coding factory is the executable governance layer over TEVM's existing Nx, pnpm, Vitest, Biome, Cargo, Foundry, conformance, and release commands. Package-mode declarations live in `WORKSPACE.ts`, root `PACKAGE.ts`, and package-local `PACKAGE.ts` files. They run against the unpublished Flows source vendored as the `vendor/flows` submodule at the gitlink `factory/policy.json` records; registry fallbacks are forbidden. Tools outside Node, pnpm, and Rust (bun, foundry) are pinned in `mise.toml` and declared as the `S.Mise` workspace layer, so the package executor and the generated CI install the same releases.
 
 ## Setup
 
@@ -12,7 +12,7 @@ pnpm factory:runtime-check
 pnpm factory:query
 ```
 
-The bootstrapper is conservative: it creates a missing Flows or Zevm sibling at the revision in `factory/policy.json`, but it never rewrites an existing checkout. With `--install`, it also links the local Flows CLI globally (the generated Git hooks invoke `smthrs` from `PATH`) and installs the declared hooks. Preflight verifies that both the installed packages and hook CLI resolve through that exact local checkout and that the coding CLI/model pins match policy.
+The bootstrapper is conservative: it initializes a missing `vendor/flows` or `vendor/zevm` submodule at its pinned gitlink and refuses a worktree that drifted from it, but it never rewrites an existing checkout. It requires `mise` on the host (`brew install mise` or https://mise.jdx.dev) and installs the `mise.toml` pins. With `--install`, it also links the local Flows CLI globally (the generated Git hooks invoke `smthrs` from `PATH`) and installs the declared hooks. Preflight verifies that both the installed packages and hook CLI resolve through that exact local checkout and that the coding CLI/model pins match policy.
 
 Full preflight also checks that `TEVM_TEST_ALCHEMY_KEY`,
 `TEVM_RPC_URLS_MAINNET`, and `TEVM_RPC_URLS_OPTIMISM` are present without
@@ -123,7 +123,7 @@ one-click manifest.
 
 ## CI and the local Flows source
 
-CI checks out `smithersai/flows-proto` at the policy SHA, links it into the same `../flows/flows` location used locally, and installs with the checked-in lockfile. Update the policy SHA, local link verification, and CI checkout together when upgrading Flows.
+CI checks the tree out with `submodules: recursive`, so `vendor/flows` lands at the same gitlink used locally; `pnpm install --frozen-lockfile` then builds it through the postinstall script. Upgrading Flows is one change: move the `vendor/flows` gitlink and the `factory/policy.json` revision together (`//factory:policyLint` refuses a mismatch).
 
 ## Operator checklist
 

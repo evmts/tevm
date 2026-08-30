@@ -16,5 +16,5 @@
 		"types": ["node"]
 	},
 	"include": ["WORKSPACE.ts", "PACKAGE.ts", "**/PACKAGE.ts"],
-	"exclude": ["node_modules", ".flows", "dist", "coverage"]
+	"exclude": ["node_modules", ".flows", "dist", "coverage", "vendor"]
 }

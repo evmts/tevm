@@ -11,7 +11,7 @@ const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const zevmRoot = join(repoRoot, '..', 'zevm', 'npm')
 
 if (!existsSync(zevmRoot)) {
-	console.log('Skipping Zevm publish prep because ../zevm/npm was not found')
+	console.log('Skipping Zevm publish prep because vendor/zevm/npm was not found')
 	process.exit(0)
 }
 
