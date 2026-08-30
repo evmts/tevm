@@ -299,10 +299,15 @@ const changesetCheck = S.Shell.Test({
 	data: [changesets, changesetConfig, tree, S.gitDiff()],
 })
 
+// A candidate tree (Agent.Diff scratch copy) carries no git repository, so
+// the lane form validates from files alone: every pending changeset names
+// workspace packages with a valid bump and a summary, and every internal
+// dependency uses workspace: or the current version, the rule `changeset
+// status` enforces at release time.
 const changesetCandidateCheck = S.Shell.Test({
-	bin: S.NodeModule.Bin('@changesets/cli', 'changeset'),
-	args: ['status', '--verbose', '--since=HEAD'],
-	data: [changesets, changesetConfig, tree, S.gitDiff()],
+	bin: S.Runtime.bin,
+	args: ['scripts/factory/changeset-candidate.mjs'],
+	data: [changesets, changesetConfig, workspaceConfig, tree],
 })
 
 // Agentic lints over the diff. Each enforces a CLAUDE.md rule that prose
