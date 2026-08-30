@@ -36,9 +36,9 @@ describe('@tevm/test-utils fixtures', () => {
 		const client = createMemoryClient()
 		await client.tevmReady()
 		await client.tevmSetAccount({ address, deployedBytecode: ErrorContract.deployedBytecode })
-		await expect(
-			client.tevmContract(ErrorContract.withAddress(address).write.revertWithStringError()),
-		).rejects.toThrow('This is a string error message')
+		await expect(client.tevmContract(ErrorContract.withAddress(address).write.revertWithStringError())).rejects.toThrow(
+			'This is a string error message',
+		)
 	})
 
 	it('uses the exported Optimism transport against a pinned real block', async () => {
@@ -46,9 +46,7 @@ describe('@tevm/test-utils fixtures', () => {
 			method: 'eth_getBlockByNumber',
 			params: ['0x7bfa480', false],
 		})
-		expect((block as { hash: string }).hash).toBe(
-			'0xaf131f54209291613f0b74e61903405ea84bf30368ea5c6cf787992351ad843d',
-		)
+		expect((block as { hash: string }).hash).toBe('0xaf131f54209291613f0b74e61903405ea84bf30368ea5c6cf787992351ad843d')
 	}, 30_000)
 
 	it('builds an Alchemy URL with an explicit key', () => {

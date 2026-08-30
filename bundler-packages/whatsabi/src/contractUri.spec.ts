@@ -23,9 +23,9 @@ describe('contract URI resolution', () => {
 	})
 
 	it('reports an actionable error for an unknown chain without an RPC URL', async () => {
-		await expect(
-			resolveContractUri(`evm://999999/${weth}`, {} as any),
-		).rejects.toEqual(expect.objectContaining({ name: 'UnknownChainError', _tag: 'UnknownChainError' }))
+		await expect(resolveContractUri(`evm://999999/${weth}`, {} as any)).rejects.toEqual(
+			expect.objectContaining({ name: 'UnknownChainError', _tag: 'UnknownChainError' }),
+		)
 		expect(new UnknownChainError(999999).message).toContain('Unknown chain ID: 999999')
 	})
 
@@ -34,8 +34,6 @@ describe('contract URI resolution', () => {
 		const resolved = await resolveContractUri(uri, {} as any)
 		expect(resolved?.address).toBe(weth)
 		expect(resolved?.deployedBytecode).toMatch(/^0x6080604052[0-9a-f]+$/)
-		expect(resolved?.abi).toEqual(
-			expect.arrayContaining([expect.objectContaining({ type: 'function', name: 'name' })]),
-		)
+		expect(resolved?.abi).toEqual(expect.arrayContaining([expect.objectContaining({ type: 'function', name: 'name' })]))
 	}, 30_000)
 })

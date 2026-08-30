@@ -76,9 +76,9 @@ describe('CLI integration', () => {
 		const sessions = path.join(scratch, 'sessions')
 
 		expect(runCli(['session', 'local', '--local', '--json'], packageDirectory, sessions).ok).toBe(true)
-		expect(expectOk(runCli(['get-chain-id', '--session', 'local', '--json'], packageDirectory, sessions), 'get-chain-id')).toBe(
-			900,
-		)
+		expect(
+			expectOk(runCli(['get-chain-id', '--session', 'local', '--json'], packageDirectory, sessions), 'get-chain-id'),
+		).toBe(900)
 
 		expectOk(
 			runCli(
@@ -149,13 +149,21 @@ describe('CLI integration', () => {
 		)
 
 		const account = expectOk(
-			runCli(['get-account', '--address', testAddress, '--session', 'local', '--run', '--json'], packageDirectory, sessions),
+			runCli(
+				['get-account', '--address', testAddress, '--session', 'local', '--run', '--json'],
+				packageDirectory,
+				sessions,
+			),
 			'get-account',
 		)
 		expect(account).toMatchObject({ balance: '1000000000000000000', deployedBytecode: '0x6000', nonce: '9' })
 		expect(
 			expectOk(
-				runCli(['get-bytecode', '--address', testAddress, '--session', 'local', '--run', '--json'], packageDirectory, sessions),
+				runCli(
+					['get-bytecode', '--address', testAddress, '--session', 'local', '--run', '--json'],
+					packageDirectory,
+					sessions,
+				),
 				'get-bytecode',
 			),
 		).toBe('0x6000')
@@ -187,7 +195,11 @@ describe('CLI integration', () => {
 		expect(dumped.state[testAddress.toUpperCase()]).toBeUndefined()
 		expect(readFileSync(stateFile, 'utf8')).toContain('"0x2a"')
 		expectOk(
-			runCli(['load-state', '--state-file', stateFile, '--session', 'local', '--run', '--json'], packageDirectory, sessions),
+			runCli(
+				['load-state', '--state-file', stateFile, '--session', 'local', '--run', '--json'],
+				packageDirectory,
+				sessions,
+			),
 			'load-state',
 		)
 	}, 180_000)
@@ -305,7 +317,11 @@ describe('CLI integration', () => {
 
 		const contracts = JSON.stringify([{ address, abi: JSON.parse(answerAbi), functionName: 'answer' }])
 		const multicall = expectOk(
-			runCli(['multicall', '--contracts', contracts, '--session', 'local', '--run', '--json'], packageDirectory, sessions),
+			runCli(
+				['multicall', '--contracts', contracts, '--session', 'local', '--run', '--json'],
+				packageDirectory,
+				sessions,
+			),
 			'multicall',
 		)
 		expect(multicall[0]).toBe('42')
@@ -342,10 +358,7 @@ describe('CLI integration', () => {
 		for (const [command, extra] of [
 			['create-block-filter', []],
 			['create-event-filter', ['--address', address, '--from-block', 'latest', '--to-block', 'latest']],
-			[
-				'create-contract-event-filter',
-				['--address', address, '--from-block', 'latest', '--to-block', 'latest'],
-			],
+			['create-contract-event-filter', ['--address', address, '--from-block', 'latest', '--to-block', 'latest']],
 		] as const) {
 			const filter = expectOk(
 				runCli([command, ...extra, '--session', 'local', '--run', '--json'], packageDirectory, sessions),
@@ -442,11 +455,19 @@ describe('CLI integration', () => {
 			'get-bytecode',
 		)
 		expect(bytecode).toMatch(/^0x6080604052[0-9a-f]+$/)
-		expect(expectOk(runCli(['get-chain-id', '--rpc', optimismRpc, '--run', '--json'], packageDirectory, sessions), 'get-chain-id')).toBe(
-			10,
-		)
 		expect(
-			BigInt(expectOk(runCli(['get-gas-price', '--rpc', optimismRpc, '--run', '--json'], packageDirectory, sessions), 'get-gas-price')),
+			expectOk(
+				runCli(['get-chain-id', '--rpc', optimismRpc, '--run', '--json'], packageDirectory, sessions),
+				'get-chain-id',
+			),
+		).toBe(10)
+		expect(
+			BigInt(
+				expectOk(
+					runCli(['get-gas-price', '--rpc', optimismRpc, '--run', '--json'], packageDirectory, sessions),
+					'get-gas-price',
+				),
+			),
 		).toBeGreaterThan(0n)
 		expect(
 			BigInt(
@@ -480,12 +501,7 @@ describe('CLI integration', () => {
 		expect(
 			expectOk(
 				runCli(
-					[
-						'get-ens-name',
-						'--address',
-						'0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
-						...blockArgs,
-					],
+					['get-ens-name', '--address', '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045', ...blockArgs],
 					packageDirectory,
 					sessions,
 				),

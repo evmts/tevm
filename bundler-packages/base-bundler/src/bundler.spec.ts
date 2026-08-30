@@ -152,14 +152,7 @@ describe(bundler.name, () => {
 			},
 		}
 
-		resolver = bundler(
-			config as any,
-			logger,
-			fao,
-			solcCompiler,
-			createCache(tmpdir(), fao, tmpdir()),
-			contractPackage,
-		)
+		resolver = bundler(config as any, logger, fao, solcCompiler, createCache(tmpdir(), fao, tmpdir()), contractPackage)
 	})
 
 	afterEach(() => {
