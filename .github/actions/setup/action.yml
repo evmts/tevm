@@ -38,7 +38,7 @@ runs:
     # dependency bump landing in evmts/zevm instantly broke `pnpm install --frozen-lockfile` here
     # with ERR_PNPM_OUTDATED_LOCKFILE, failing CI on every PR for reasons unrelated to that PR.
     # Bump this SHA and regenerate pnpm-lock.yaml in the same commit.
-    - name: Checkout Zevm workspace
+    - name: Checkout pinned local workspaces
       env:
         ZEVM_REF: 014f3f2b8dba45a983853af303bc52620fcfb111
       run: |
