@@ -2557,7 +2557,7 @@ importers:
         specifier: ^19.2.6
         version: 19.2.6(react@19.2.6)
       tevm:
-        specifier: npm:tevm@1.0.0-rc.153
+        specifier: workspace:*
         version: link:../../tevm
       viem:
         specifier: ^2.49.3
@@ -2600,7 +2600,7 @@ importers:
         specifier: 3.6.2
         version: 3.6.2
       tevm:
-        specifier: npm:tevm@1.0.0-rc.153
+        specifier: workspace:*
         version: link:../../tevm
       viem:
         specifier: ^2.49.3
