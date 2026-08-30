@@ -44,5 +44,5 @@ describe.skipIf(!hasOptimismRpc)('fork state reads', () => {
 
 		await stateManager.putStorage(address, firstSlot, new Uint8Array())
 		expect(await stateManager.getStorage(address, firstSlot)).toEqual(new Uint8Array())
-	})
+	}, 30_000)
 })
