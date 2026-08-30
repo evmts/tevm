@@ -43,7 +43,7 @@ const release = S.Github.Workflow({
 		push: { branches: ['v1'] },
 		workflowDispatch: true,
 	},
-	concurrency: { group: 'release-${{ github.ref }}' },
+	concurrency: { group: 'release-${{ github.ref }}', cancelInProgress: false },
 	permissions: { contents: 'write', pullRequests: 'write', idToken: 'write' },
 	setup,
 	run: [root.version, root.publish],
@@ -54,32 +54,40 @@ const release = S.Github.Workflow({
 const prerelease = S.Github.Workflow({
 	name: 'prerelease',
 	on: { push: { branches: ['main'] } },
-	concurrency: { group: 'prerelease-${{ github.ref }}' },
+	concurrency: { group: 'prerelease-${{ github.ref }}', cancelInProgress: false },
 	permissions: { contents: 'write', pullRequests: 'write', idToken: 'write' },
 	setup,
 	run: [root.prereleaseEnter, root.prerelease],
 })
 
 // prerelease-exit.yml: dispatch with a branch input; the Diff removes
-// pre.json and the workflow commits it back to that branch.
+// pre.json. The current Flows workflow renderer does not yet model committing
+// generated changes, so the checked-in workflow remains authoritative for
+// that final commit step.
 const prereleaseExit = S.Github.Workflow({
 	name: 'prerelease-exit',
 	on: {
 		workflowDispatch: {
-			inputs: { branch: S.Input.String('Exit prerelease mode on release branch', { default: 'main' }) },
+			inputs: {
+				branch: {
+					description: 'Exit prerelease mode on release branch',
+					required: true,
+					default: 'main',
+					type: 'string',
+				},
+			},
 		},
 	},
 	permissions: { contents: 'write' },
 	setup,
 	run: [root.prereleaseExit],
-	commit: { message: 'Exit prerelease mode', branch: '${{ github.event.inputs.branch }}' },
 })
 
 // snapshot.yml: dispatch-only snapshot publish.
 const snapshot = S.Github.Workflow({
 	name: 'snapshot',
 	on: { workflowDispatch: true },
-	concurrency: { group: 'snapshot-${{ github.ref }}' },
+	concurrency: { group: 'snapshot-${{ github.ref }}', cancelInProgress: false },
 	setup,
 	run: [root.snapshot],
 })
@@ -90,7 +98,14 @@ const jsrPublish = S.Github.Workflow({
 	name: 'jsr-publish',
 	on: {
 		workflowDispatch: {
-			inputs: { dry_run: S.Input.Boolean('Run in dry-run mode without publishing', { default: false }) },
+			inputs: {
+				dry_run: {
+					description: 'Run in dry-run mode without publishing',
+					required: true,
+					default: false,
+					type: 'boolean',
+				},
+			},
 		},
 	},
 	permissions: { contents: 'read', idToken: 'write' },
@@ -110,32 +125,27 @@ const wasmSize = S.Github.Workflow({
 		workflowDispatch: true,
 	},
 	setup,
-	run: [S.Query({ pattern: '//bundler-packages/**:wasmSize' })],
+	run: [root.cargoBuilds],
 })
 
 // parity-suites.yml: the three parity jobs (RPC fast subset, full
-// conformance, hive smoke) on every PR. Each job uploads artifacts/parity;
-// the targets declare those as outDirs, so the renderer attaches them.
+// conformance, hive smoke) on every PR. Artifact upload is still retained in
+// the checked-in workflow because package-mode Workflow does not expose an
+// artifact declaration yet.
 const paritySuites = S.Github.Workflow({
 	name: 'parity-suites',
 	on: { pullRequest: true, workflowDispatch: true },
 	setup,
 	run: [test.parityFast, test.conformanceAll, test.hiveSmoke],
-	artifacts: [
-		'artifacts/parity',
-		'artifacts/general-state-tests',
-		'artifacts/execution-spec-tests',
-		'test/hive/artifacts',
-	],
 })
 
-// The //:nightlyConformance schedule as a GitHub workflow.
+// The //:nightlyConformance schedule as a GitHub workflow. Its checked-in
+// workflow owns artifact upload until that capability lands in the renderer.
 const nightly = S.Github.Workflow({
 	name: 'nightly-conformance',
 	on: { schedule: ['0 3 * * *'], workflowDispatch: true },
 	setup,
 	run: [test.conformanceAll],
-	artifacts: ['artifacts/general-state-tests', 'artifacts/execution-spec-tests'],
 })
 
 // claude-code-review.yml's checklist runs as //:prReview on every PR.
@@ -152,10 +162,19 @@ const review = S.Github.Workflow({
 // GitHub issue and review events, not tree checks), claude-auto-update.yml
 // (the daily Claude Code maintenance job; its work is the agent lanes under
 // workflows/ once those run on a schedule), and claude-code-review.yml, which
-// //:prReview reads as its prompt.
+// //:prReview reads as its prompt. Factory intake and settlement remain
+// hand-written because they use a two-job approval/artifact boundary the
+// current renderer cannot express.
 const github = S.Github.CiGen({
 	workflows: [ci, release, prerelease, prereleaseExit, snapshot, jsrPublish, wasmSize, paritySuites, nightly, review],
-	preserve: ['workflows/claude.yml', 'workflows/claude-auto-update.yml', 'workflows/claude-code-review.yml'],
+	preserve: [
+		'workflows/claude.yml',
+		'workflows/claude-auto-update.yml',
+		'workflows/claude-code-review.yml',
+		'workflows/factory-configure.yml',
+		'workflows/factory-intake.yml',
+		'workflows/factory-issue.yml',
+	],
 	changes: ['workflows/**', 'actions/setup/**'],
 })
 

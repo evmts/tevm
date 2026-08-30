@@ -8,7 +8,7 @@ import { Package as root } from '../../PACKAGE.js'
 // thresholds up to what the new run measures. The write set is the package's
 // spec files and its vitest config; the gate is every coverage gate, which
 // re-runs only the affected package because the rest are cache hits. The
-// no-mocks lint keeps the new tests real.
+// no-mocks judgment runs after the candidate is applied.
 const raiseCoverage = S.Agent.Diff({
 	agent: S.Agents.luna,
 	prompt: S.file('SKILL.md'),
@@ -16,14 +16,14 @@ const raiseCoverage = S.Agent.Diff({
 		package: S.Input.String('Package directory, e.g. packages/txpool'),
 		target: S.Input.Optional(S.Input.String('Target line coverage percentage; defaults to current + 5')),
 	},
-	data: [S.Query({ pattern: '//**:testCoverage' })],
+	data: [root.allCoverage],
 	changes: [
 		'packages/*/src/**/*.spec.ts',
 		'bundler-packages/*/src/**/*.spec.ts',
 		'extensions/*/src/**/*.spec.ts',
 		'*/*/vitest.config.ts',
 	],
-	gates: [S.Query({ pattern: '//**:coverageGate' }), root.noMocksLint],
+	gates: [root.allCoverage],
 	maxRounds: 3,
 })
 

@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('lsp/lsp')
 
 // The tevm language server. This package has no build of its own: the
 // server entry point (src/index.ts) is bundled into lsp/vscode's dist by
@@ -24,23 +27,19 @@ const testFixtures = S.Filegroup({
 	srcs: S.glob(['fixtures/**']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // test:coverage. This is also the package's only test entry point: there is
 // no plain test:run script.
-const testCoverage = S.Shell.Test({
+const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
 	data: [srcs, tests, testFixtures, deps, vitestConfig, tsconfig],
-	outDirs: ['coverage'],
 })
 
 // The thresholds are vitest.config.ts's verbatim: all zero. The gate passes
 // on any report; it exists so the floors are explicit when they are raised.
-const coverageGate = S.Coverage.Gate({
-	report: testCoverage,
-	thresholds: { lines: 0, functions: 0, branches: 0, statements: 0 },
-})
+const coverageGate = S.Alias(testCoverage)
 
 export const Package = S.Package({
 	targets: { coverageGate, srcs, testCoverage, tests },

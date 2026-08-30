@@ -1,6 +1,9 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
 import { Package as shared } from '../shared/PACKAGE.js'
+
+const Shell = scopedShell('sites/core')
 
 // The tevm.sh docs site (vocs). It depends on @tevm/docs-shared for its
 // config, site links, and styles, and its samples are verified against the
@@ -16,21 +19,21 @@ const scripts = S.Filegroup({
 	srcs: S.glob(['scripts/**']),
 })
 
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('vocs'),
 	args: ['build'],
 	data: [srcs, shared.srcs, vocsConfig, packageJson],
 	outDirs: ['dist'],
 })
 
-const dev = S.Shell.Serve({
+const dev = Shell.Serve({
 	bin: S.NodeModule.Bin('vocs'),
 	args: ['dev'],
 	data: [srcs, shared.srcs, vocsConfig],
 	readiness: { port: 5173 },
 })
 
-const preview = S.Shell.Serve({
+const preview = Shell.Serve({
 	bin: S.NodeModule.Bin('vocs'),
 	args: ['preview'],
 	data: [build],
@@ -42,7 +45,7 @@ const preview = S.Shell.Serve({
 // node_modules, asserting it is the published 1.0.0-rc.151 and not the
 // workspace link, so the docs are proven against what a reader installs. The
 // pin lives in the script; bumping it is part of a release.
-const verifySamples = S.Shell.Test({
+const verifySamples = Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['scripts/verify-samples.mjs'],
 	data: [srcs, scripts, packageJson],
@@ -53,13 +56,14 @@ const verify = S.Suite({
 	tests: [verifySamples, build],
 })
 
-// The site ships through Vercel, so deployment is its own rule with the
-// platform's token. Deploys are outward actions.
-const deploy = S.Vercel.Deploy({
-	site: build,
+// The site ships through Vercel. Package-mode Flows does not currently wrap
+// the Vercel CLI, so keep the action explicit and approval-gated.
+const deploy = Shell.Run({
+	command: 'pnpm dlx vercel deploy --prod --token "$VERCEL_TOKEN"',
+	data: [build],
 	gates: [verifySamples],
 	secrets: [S.Secret('VERCEL_TOKEN')],
-	sandbox: { network: true },
+	sandbox: 'none',
 	approval: 'required',
 })
 

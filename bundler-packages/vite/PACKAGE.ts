@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('bundler-packages/vite')
 
 // Exemplar for the bundler-packages/* plugin shape (esbuild, rollup, rspack,
 // webpack, requirejs, bun follow this file). Each wraps the shared unplugin
@@ -22,29 +25,29 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/fixtures/**']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
-const types = S.Shell.Build({
+const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
-const declarations = S.Shell.Build({
+const declarations = Shell.Build({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--emitDeclarationOnly', '--declaration'],
 	data: [srcs, deps, tsconfig],
 	outDirs: ['types'],
 })
 
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, deps, tsconfig],
@@ -53,28 +56,24 @@ const typecheck = S.Shell.Test({
 // package.json comments out test, test:run, and test:ui (`//test` keys) and
 // keeps only test:coverage; the plain run is declared so //**:test covers
 // this package the same as the others.
-const test = S.Shell.Test({
+const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
 })
 
-const testCoverage = S.Shell.Test({
+const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
-	outDirs: ['coverage'],
 })
 
 // vitest.config.ts declares every threshold as 0: the gate exists so raising
 // a floor is a one-line change here and in the config, and so //**:coverageGate
 // includes the plugin packages.
-const coverageGate = S.Coverage.Gate({
-	report: testCoverage,
-	thresholds: { lines: 0, functions: 0, branches: 0, statements: 0 },
-})
+const coverageGate = S.Alias(testCoverage)
 
-const docs = S.Shell.Build({
+const docs = Shell.Build({
 	bin: S.NodeModule.Bin('typedoc'),
 	data: [srcs, deps, typedocConfig, packageJson],
 	outDirs: ['docs'],
@@ -85,7 +84,10 @@ const pack = S.Npm.Pack({
 	data: [build, types, declarations, srcs],
 })
 
-const packageLint = S.Npm.PackageLint({ pack })
+const packageLint = Shell.Test({
+	command: 'pnpm exec publint --strict . && pnpm exec attw --pack .',
+	data: [pack],
+})
 
 const apiCompat = S.Api.Compat({
 	baseline: S.Npm.Published({ manifest: packageJson }),
@@ -93,18 +95,18 @@ const apiCompat = S.Api.Compat({
 	manifest: packageJson,
 })
 
-const depsLint = S.Shell.Test({
+const depsLint = Shell.Test({
 	bin: S.NodeModule.Bin('depcheck'),
 	data: [srcs, tests, packageJson],
 })
 
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],
 })
 
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],

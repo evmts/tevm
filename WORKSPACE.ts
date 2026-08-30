@@ -5,23 +5,18 @@ import { Package as root } from './PACKAGE.js'
 const packageJson = S.file('//package.json')
 const lockfile = S.file('//pnpm-lock.yaml')
 const workspaceConfig = S.file('//pnpm-workspace.yaml')
-const nvmrc = S.file('//.nvmrc')
-const cargoManifest = S.file('//Cargo.toml')
 const cargoLockfile = S.file('//Cargo.lock')
-const cargoConfig = S.file('//.cargo/config.toml')
 
 // engines.node (^24) comes from the manifest; .nvmrc pins the exact release
-// CI installs (setup-node reads node-version-file). Both are key material,
-// so a runtime bump re-keys every target that spawns node. flake.nix carries
-// an older, unpinned dev-shell toolchain and is not an authority here.
-const runtime = S.Runtime.Node({ manifest: packageJson, versionFile: nvmrc })
+// CI installs. Current Flows accepts one runtime authority, so the graph uses
+// the compatible manifest range while factory policy and preflight enforce
+// the exact .nvmrc release. flake.nix is not an authority here.
+const runtime = S.Runtime.Node({ manifest: packageJson })
 
 // bun is a second runtime, not a package: root and package scripts execute
 // through it, several packages test with `bun test`, and two packages preload
 // the tevm bun plugin from bunfig.toml. The version is the one
 // .github/actions/setup pins. Targets reach it as S.Runtime.Bun.bin.
-const bun = S.Runtime.Bun({ version: '1.2.13' })
-
 // packageManager pins pnpm@10.33.4. pnpm-workspace.yaml carries the package
 // globs and onlyBuiltDependencies; passing it makes those graph inputs.
 const packageManager = S.PackageManager.Pnpm({
@@ -35,39 +30,22 @@ const nodeModules = S.Npm.NodeModules({
 	workspaces: workspaceConfig,
 })
 
-// The pnpm workspace package graph as a service. It backs two per-package
-// surfaces: S.Npm.WorkspaceDeps({ manifest }) resolves a manifest's
-// workspace:* dependencies to their build outputs in topological order, which
-// replaces nx's dependsOn ^build:dist edges with ordinary data edges, and
-// S.Query({ pattern }) aggregates targets across packages, which replaces nx
-// run-many. The nx cache is subsumed by the .flows cache.
-//
-// pnpm-workspace.yaml also lists ../zevm/npm/zevm and ../zevm/npm/platforms/*:
-// @evmts/zevm is a workspace member that lives in a sibling checkout outside
-// this repository. external maps that member to the //:zevm build target so
-// WorkspaceDeps resolves it like any other package; //:zevmCheckout declares
-// the clone (SMITHERS-NOTES.md, cross-repo resources).
-const workspaces = S.Npm.Workspaces({
-	config: workspaceConfig,
-	external: { '@evmts/zevm': root.zevm },
-})
+// pnpm workspace membership is part of both the package-manager and installed
+// modules declarations. Current Flows does not expose a second Workspaces
+// service; package-level dependency fan-out remains represented by the
+// existing package targets and the aggregate compatibility gates.
 
-// The cargo workspace (bundler-packages/*-rs) is a peer toolchain layer:
-// S.Cargo.Build, S.Cargo.Test, and S.Cargo.Check targets resolve their
-// toolchain and crate graph through it, keyed on Cargo.lock. .cargo/config.toml
-// redirects target-dir to dist/target, which every crate's outDirs reflects.
-// CI installs stable with rustfmt and clippy plus cbindgen.
-const cargo = S.Cargo.Workspace({
-	manifest: cargoManifest,
+// Cargo targets resolve through the pinned Rust layer. Cargo.toml and
+// .cargo/config.toml remain ordinary target inputs, while rust-toolchain.toml
+// is the version authority shared by contributors and CI.
+const rust = S.Rust.Toolchain({
+	toolchain: S.file('//rust-toolchain.toml'),
 	lockfile: cargoLockfile,
-	config: cargoConfig,
-	components: ['rustfmt', 'clippy'],
 })
 
-// forge and anvil back the Solidity fixtures (examples/vite, examples/esbuild,
-// lsp/ts-plugin, test/test-utils) and the anvil fork services. CI pins
-// foundry v1.7.1 through foundry-toolchain.
-const foundry = S.Foundry.Toolchain({ version: 'v1.7.1' })
+// Forge and Anvil back the Solidity fixtures. Each target declares its local
+// foundry.toml because this repository has no root Foundry config; the host
+// allow-list admits the CI-pinned binaries without inventing one.
 
 // Host binaries this workspace admits. docker runs the hive simulator and the
 // docker sandbox; git clones hive and the zevm sibling; bash runs the hive
@@ -78,7 +56,7 @@ const foundry = S.Foundry.Toolchain({ version: 'v1.7.1' })
 // CLI //evals:evalSuite spawns per case. Undeclared host binaries are a
 // graph-load error.
 const host = S.Host({
-	bins: ['docker', 'git', 'bash', 'forge', 'anvil', 'python3', 'code', 'codex'],
+	bins: ['docker', 'git', 'bash', 'bun', 'cargo', 'forge', 'anvil', 'python3', 'code', 'codex'],
 })
 
 // The agent registry every S.Agent.* target references by name
@@ -86,8 +64,8 @@ const host = S.Host({
 // per target, makes an engine or model swap one edit and lets the loader
 // reject an unknown agent at graph load.
 const agents = S.Agents({
-	default: S.Agent.ClaudeCode({ model: 'claude-fable-5' }),
-	luna: S.Agent.Codex({ model: 'luna' }),
+	default: S.Agent.Codex({ model: 'gpt-5.6-sol' }),
+	luna: S.Agent.Codex({ model: 'gpt-5.6-luna' }),
 	reviewPool: S.Agent.Pool(['luna', 'default']),
 })
 
@@ -97,7 +75,7 @@ const agents = S.Agents({
 // full native toolchain on a host without it.
 const sandboxes = S.Sandboxes({
 	default: S.Sandbox.Bubblewrap(),
-	docker: S.Sandbox.Docker({ dockerfile: S.file('//Dockerfile') }),
+	docker: S.Sandbox.Docker({ image: 'tevm-factory:local' }),
 })
 
 // Cross-run memory: commits retained by //:retainCommit and facts agents
@@ -122,12 +100,9 @@ export const Workspace = S.Workspace('tevm', {
 		}),
 	}),
 	runtime,
-	bun,
 	packageManager,
 	nodeModules,
-	workspaces,
-	cargo,
-	foundry,
+	toolchains: [rust],
 	host,
 	agents,
 	sandboxes,

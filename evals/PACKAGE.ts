@@ -1,5 +1,8 @@
 /// <reference path="../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../factory/scoped-shell.js'
+
+const Shell = scopedShell('evals')
 
 // The LLM eval harness: runs coding agents against tevm tasks and scores
 // the results with executable checkers. Not part of the pnpm workspace's
@@ -33,7 +36,7 @@ const realProjectsSuite = S.Filegroup({
 // runner calls no model API directly, so no API-key secret is declared;
 // codex carries its own auth. Runs are never cache hits by design; results/
 // and .runs/ are the outputs.
-const evalSuite = S.Shell.Run({
+const evalSuite = Shell.Build({
 	bin: S.Runtime.bin,
 	args: ['runner.mjs'],
 	data: [suite, runner],
@@ -43,7 +46,7 @@ const evalSuite = S.Shell.Run({
 
 // eval:real-projects. The same harness over real-protocol fixtures. Its
 // checkers read TEVM_RPC_URLS_MAINNET before falling back to RPC_URL.
-const evalRealProjects = S.Shell.Run({
+const evalRealProjects = Shell.Build({
 	bin: S.Runtime.bin,
 	args: ['real-projects/runner.mjs'],
 	data: [realProjectsSuite, realProjectsRunner],
@@ -54,7 +57,7 @@ const evalRealProjects = S.Shell.Run({
 
 // rescore. `node rescore.mjs` re-executes the checkers over existing
 // .runs/ workdirs and rewrites results/, so prior runs are key material.
-const rescore = S.Shell.Run({
+const rescore = Shell.Build({
 	bin: S.Runtime.bin,
 	args: ['rescore.mjs'],
 	data: [suite, rescoreScript, S.Filegroup({ srcs: S.glob(['results/**', '.runs/**']) })],
@@ -64,14 +67,14 @@ const rescore = S.Shell.Run({
 
 // check:suite. Validates suite.jsonl against the checkers and fixtures
 // without running any agent.
-const checkSuite = S.Shell.Test({
+const checkSuite = Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['validate-suite.mjs'],
 	data: [suite, validateSuite],
 })
 
 // check:real-projects. The same validation for the real-projects suite.
-const checkRealProjects = S.Shell.Test({
+const checkRealProjects = Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['real-projects/validate-suite.mjs'],
 	data: [realProjectsSuite, realProjectsValidateSuite],

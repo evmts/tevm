@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('test/bench')
 
 // Benchmarks over the built tevm packages. Private, so there is no pack,
 // packageLint, or apiCompat. The build:types script is commented out in
@@ -29,11 +32,11 @@ const benches = S.Filegroup({
 	srcs: S.glob(['src/**/*.bench.ts']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // build:dist. tsup reads @tevm/tsupconfig through the config file; the
 // preset is a workspace dependency, so deps already covers it.
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
 	outDirs: ['dist'],
@@ -42,21 +45,21 @@ const build = S.Shell.Build({
 // bench:run. Benchmarks are not a pass/fail gate, so this is a Run, not a
 // Test. The `bench` script is the same command without the explicit run
 // subcommand; `bench:ui` opens the vitest UI and is skipped.
-const bench = S.Shell.Run({
+const bench = Shell.Run({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['bench', 'run'],
 	data: [srcs, benches, deps, vitestConfig, tsconfig],
 })
 
 // lint:deps.
-const depsLint = S.Shell.Test({
+const depsLint = Shell.Test({
 	bin: S.NodeModule.Bin('depcheck'),
 	data: [srcs, tests, benches, packageJson],
 })
 
 // lint:check. `format:check` (`biome format .`) checks a subset of the same
 // rules, so lint covers it.
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, tests, benches, biomeConfig, rootBiomeConfig],
@@ -64,7 +67,7 @@ const lint = S.Shell.Test({
 
 // lint + format as one Diff: the `lint` and `format` scripts both rewrite
 // the tree with biome.
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, tests, benches, biomeConfig, rootBiomeConfig],

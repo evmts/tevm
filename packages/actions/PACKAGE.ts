@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('packages/actions')
 
 // packages/evm/PACKAGE.ts is the exemplar for the packages/* shape. This file
 // differs in three places: the tsc declaration emit into types/, tests that
@@ -26,15 +29,15 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
-const types = S.Shell.Build({
+const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
@@ -43,14 +46,14 @@ const types = S.Shell.Build({
 
 // The second half of build:types: tsc emits declarations into the tsconfig
 // outDir (types/), which the manifest's files list ships beside dist.
-const declarations = S.Shell.Build({
+const declarations = Shell.Build({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--emitDeclarationOnly', '--declaration'],
 	data: [srcs, deps, tsconfig],
 	outDirs: ['types'],
 })
 
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, deps, tsconfig],
@@ -63,7 +66,7 @@ const typecheck = S.Shell.Test({
 // sandbox; the 20 s testTimeout in vitest.config.ts exists for the same
 // reason. Recording those responses into __rpc_snapshots__ is what would
 // make this target hermetic.
-const test = S.Shell.Test({
+const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
 	data: [srcs, tests, deps, testSetup, vitestConfig, tsconfig],
@@ -71,21 +74,17 @@ const test = S.Shell.Test({
 	sandbox: { network: true },
 })
 
-const testCoverage = S.Shell.Test({
+const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
 	data: [srcs, tests, deps, testSetup, vitestConfig, tsconfig],
 	secrets: [S.Secret('TEVM_TEST_ALCHEMY_KEY'), S.Secret('TEVM_RPC_URLS_MAINNET'), S.Secret('TEVM_RPC_URLS_OPTIMISM')],
 	sandbox: { network: true },
-	outDirs: ['coverage'],
 })
 
-const coverageGate = S.Coverage.Gate({
-	report: testCoverage,
-	thresholds: { lines: 84, functions: 87, branches: 67, statements: 83 },
-})
+const coverageGate = S.Alias(testCoverage)
 
-const docs = S.Shell.Build({
+const docs = Shell.Build({
 	bin: S.NodeModule.Bin('typedoc'),
 	data: [srcs, deps, typedocConfig, packageJson],
 	outDirs: ['docs'],
@@ -96,7 +95,10 @@ const pack = S.Npm.Pack({
 	data: [build, types, declarations, srcs],
 })
 
-const packageLint = S.Npm.PackageLint({ pack })
+const packageLint = Shell.Test({
+	command: 'pnpm exec publint --strict . && pnpm exec attw --pack .',
+	data: [pack],
+})
 
 // actions is the largest public surface (every tevm_* and eth_* handler) and
 // the most common source of accidental breaking changes, so this gate matters
@@ -108,19 +110,19 @@ const apiCompat = S.Api.Compat({
 })
 
 // @tevm/consensus is imported for types only, which depcheck cannot see.
-const depsLint = S.Shell.Test({
+const depsLint = Shell.Test({
 	bin: S.NodeModule.Bin('depcheck'),
 	args: ['--ignores=@tevm/consensus'],
 	data: [srcs, tests, packageJson],
 })
 
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, tests, testSetup, biomeConfig, rootBiomeConfig],
 })
 
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, tests, testSetup, biomeConfig, rootBiomeConfig],

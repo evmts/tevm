@@ -6,7 +6,8 @@ import { Package as root } from '../../PACKAGE.js'
 // from the suite's per-member report (which targets are red and their logs),
 // edits inside the source write set, and the same suite is the gate, so the
 // loop settles only when the whole suite passes or maxRounds is spent. The
-// agent lints ride along so the fix does not introduce mocks or drop JSDoc.
+// agent lints run after the accepted candidate because candidate gate loops
+// cannot recursively spawn agent targets.
 const fixCi = S.Agent.Diff({
 	agent: S.Agents.luna,
 	prompt: S.file('SKILL.md'),
@@ -25,7 +26,7 @@ const fixCi = S.Agent.Diff({
 		'*/*/tsconfig.json',
 		'*/*/vitest.config.ts',
 	],
-	gates: [root.ci, root.agentLints],
+	gates: [root.ci],
 	maxRounds: 4,
 })
 

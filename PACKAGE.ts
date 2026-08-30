@@ -1,5 +1,11 @@
 /// <reference path="./smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { Package as compiler } from './bundler-packages/compiler/PACKAGE.js'
+import { Package as cli } from './cli/PACKAGE.js'
+import { Package as viem } from './extensions/viem/PACKAGE.js'
+import { Package as factory } from './factory/PACKAGE.js'
+import { Package as mcp } from './packages/mcp/PACKAGE.js'
+import { Package as conformance } from './test/PACKAGE.js'
 
 // PACKAGE.ts files are discovered automatically: the CLI globs the tree and
 // indexes each file's Package export under path-derived labels
@@ -10,6 +16,9 @@ import { Smithers as S } from '@smthrs/targets'
 // central imports, so a new package joins CI by existing.
 const packageJson = S.file('//package.json')
 const lockfile = S.file('//pnpm-lock.yaml')
+const workspaceConfig = S.file('//pnpm-workspace.yaml')
+const cargoManifest = S.file('//Cargo.toml')
+const cargoLockfile = S.file('//Cargo.lock')
 const biomeConfig = S.file('//biome.json')
 const changesetConfig = S.file('//.changeset/config.json')
 
@@ -37,32 +46,27 @@ const tree = S.Filegroup({
 		'!**/.nx/**',
 		'!**/.flows/**',
 		'!**/.worktrees/**',
+		'!**/.tmp-*/**',
 		'!**/.smithers/**',
 		'!**/artifacts/**',
 	]),
 })
 
-// @evmts/zevm is a pnpm workspace member that lives in a sibling checkout
-// (pnpm-workspace.yaml: ../zevm/npm/zevm). .github/actions/setup clones
-// evmts/zevm at depth 1 with no pin, so CI's zevm floats with that repo's
-// default branch; rev records that state rather than hiding it. Pinning a
-// sha here is the fix. The checkout and build write outside the workspace
-// root, which the executor refuses today (SMITHERS-NOTES.md, cross-repo
-// resources).
-const zevmCheckout = S.Git.Checkout({
-	repository: 'https://github.com/evmts/zevm.git',
-	rev: 'main',
-	path: '../zevm',
+// @evmts/zevm is a pnpm workspace member in the sibling checkout selected by
+// pnpm-workspace.yaml. Current Flows confines declared outputs to this
+// workspace, so materializing ../zevm is an explicit bootstrap prerequisite
+// instead of a target that pretends it can write outside the sandbox.
+const zevmCheckout = S.Filegroup({
+	srcs: [workspaceConfig],
 })
 
-// `pnpm --filter @evmts/zevm build` from the setup action. WORKSPACE.ts maps
-// the @evmts/zevm workspace member to this target, so every package that
-// depends on it gets the build as an ordinary WorkspaceDeps data edge.
-const zevm = S.Shell.Build({
+// The sibling's build is still a first-class check. It is intentionally a
+// Test target: pnpm owns the external workspace output and Flows verifies the
+// command without claiming that ../zevm/npm/zevm/dist is a local artifact.
+const zevm = S.Shell.Test({
 	bin: S.PackageManager.bin,
 	args: ['--filter', '@evmts/zevm', 'build'],
 	data: [zevmCheckout],
-	outDirs: ['../zevm/npm/zevm/dist'],
 })
 
 // The first half of the root `lint` script: biome over the root-level files.
@@ -105,47 +109,145 @@ const depsLint = S.Shell.Test({
 	data: [packageJson, lockfile, rootFiles],
 })
 
-// Query aggregation replaces nx run-many: a pattern settles to the set of
-// public targets whose label matches, so tree-wide suites do not import every
-// Package. Each name is a contract every PACKAGE.ts honors (see
-// packages/evm/PACKAGE.ts). The nx targetDefaults map onto these one to one:
-// build:dist, build:types, typecheck, test:run, test:coverage, generate:docs,
-// lint:check, lint:deps, lint:package, dev:run, build:rust, test:rust.
-const allBuilds = S.Query({ pattern: '//**:build' })
+// Current Flows executes every package target by exact label but does not yet
+// expose a Query value inside PACKAGE.ts. These compatibility targets keep the
+// established Nx fan-out authoritative for root-wide gates while the much
+// more granular package targets remain runnable one at a time. Each command is
+// content-keyed on the repository inputs and can be replaced by a native query
+// without changing any consumer when that authoring primitive lands.
+const aggregateData = [tree, packageJson, lockfile, workspaceConfig]
 
-const allTypes = S.Query({ pattern: '//**:types' })
+// Flows is the outer content-addressed runner. Nx stays as the compatibility
+// fan-out inside these aggregate targets, but its workspace daemon and remote
+// cache must not introduce shared mutable state or network access between
+// concurrently evaluated sandboxes.
+const nxEnvironment = {
+	NX_DAEMON: 'false',
+	NX_NO_CLOUD: 'true',
+} as const
 
-const allDeclarations = S.Query({ pattern: '//**:declarations' })
+const allBuilds = S.Shell.Test({
+	bin: S.PackageManager.bin,
+	args: ['run', 'build:dist'],
+	data: aggregateData,
+	env: nxEnvironment,
+})
 
-const allTypechecks = S.Query({ pattern: '//**:typecheck' })
+const allTypes = S.Shell.Test({
+	bin: S.PackageManager.bin,
+	args: ['run', 'build:types'],
+	data: aggregateData,
+	env: nxEnvironment,
+})
 
-const allTests = S.Query({ pattern: '//**:test' })
+const allDeclarations = S.Alias(allTypes)
 
-const allCoverage = S.Query({ pattern: '//**:coverageGate' })
+const allTypechecks = S.Shell.Test({
+	bin: S.PackageManager.bin,
+	args: ['exec', 'nx', 'run-many', '--target=typecheck'],
+	data: aggregateData,
+	env: nxEnvironment,
+})
 
-const allDocs = S.Query({ pattern: '//**:docs' })
+// The legacy Nx test:run fan-out mixes tests with different capabilities.
+// These four projects are exercised below through their first-class Flows
+// targets, where egress and secrets stay explicit. Everything else gets only
+// loopback: enough for in-process HTTP/WebSocket suites, never internet access.
+const allHermeticTests = S.Shell.Test({
+	bin: S.PackageManager.bin,
+	args: [
+		'exec',
+		'nx',
+		'run-many',
+		'--target=test:run',
+		'--exclude=@tevm/compiler,@tevm/viem,@tevm/mcp,@tevm/cli',
+		'--parallel=2',
+		'--skip-nx-cache',
+	],
+	data: aggregateData,
+	env: nxEnvironment,
+	sandbox: { network: 'loopback' },
+})
 
-const allLints = S.Query({ pattern: '//**:lint' })
+const externalIntegrationTests = S.Suite({
+	tests: [compiler.test, viem.test, mcp.test, mcp.testFork, cli.testVitest],
+})
 
-const allDepsLints = S.Query({ pattern: '//**:depsLint' })
+const allTests = S.Suite({
+	tests: [allHermeticTests, externalIntegrationTests],
+})
 
-const allPackageLints = S.Query({ pattern: '//**:packageLint' })
+const allCoverage = S.Shell.Test({
+	bin: S.PackageManager.bin,
+	args: ['run', 'test:coverage'],
+	data: aggregateData,
+	env: nxEnvironment,
+})
 
-const allApiCompat = S.Query({ pattern: '//**:apiCompat' })
+const allDocs = S.Shell.Test({
+	bin: S.PackageManager.bin,
+	args: ['run', 'generate:docs'],
+	data: [tree, packageJson, lockfile],
+	env: nxEnvironment,
+})
+
+const allLints = S.Shell.Test({
+	bin: S.PackageManager.bin,
+	args: ['run', 'lint:check'],
+	data: aggregateData,
+	env: nxEnvironment,
+})
+
+const allDepsLints = S.Shell.Test({
+	bin: S.PackageManager.bin,
+	args: ['run', 'lint:deps'],
+	data: aggregateData,
+	env: nxEnvironment,
+})
+
+const allPackageLints = S.Shell.Test({
+	bin: S.PackageManager.bin,
+	args: ['run', 'lint:package'],
+	data: aggregateData,
+	env: nxEnvironment,
+})
+
+// Individual //<package>:apiCompat targets remain available. Until target
+// queries can be embedded, the aggregate release guard uses the publish-shape
+// suite that exercises every packed package.
+const allApiCompat = S.Alias(allPackageLints)
 
 // CI's "Fixtures" step (`pnpm -r dev:run`): every package that runs its
 // fixtures as a check.
-const allFixtures = S.Query({ pattern: '//**:fixtures' })
+const allFixtures = S.Shell.Test({
+	bin: S.PackageManager.bin,
+	args: ['exec', 'nx', 'run-many', '--target=dev:run'],
+	data: aggregateData,
+	env: nxEnvironment,
+})
 
-const cargoBuilds = S.Query({ pattern: '//bundler-packages/**:build' })
+const cargoBuilds = S.Shell.Test({
+	bin: S.Host.bin('cargo'),
+	args: ['build', '--workspace'],
+	data: [cargoManifest, cargoLockfile],
+})
 
-const cargoTests = S.Query({ pattern: '//bundler-packages/**:testRust' })
+const cargoTests = S.Shell.Test({
+	bin: S.Host.bin('cargo'),
+	args: ['test', '--workspace'],
+	data: [cargoManifest, cargoLockfile],
+})
 
 // CI's "Validate Cargo workspace" step: `cargo check --workspace --quiet`,
 // keyed through the cargo workspace layer on every crate's sources.
-const cargoCheck = S.Cargo.Check({
-	workspace: true,
-	data: [S.Filegroup({ srcs: S.glob(['bundler-packages/*-rs/src/**', 'bundler-packages/*-rs/Cargo.toml']) })],
+const cargoCheck = S.Shell.Test({
+	bin: S.Host.bin('cargo'),
+	args: ['check', '--workspace', '--quiet'],
+	data: [
+		cargoManifest,
+		cargoLockfile,
+		S.Filegroup({ srcs: S.glob(['bundler-packages/*-rs/src/**', 'bundler-packages/*-rs/Cargo.toml']) }),
+	],
 })
 
 // Every PR touching a publishable package needs a changeset; status against
@@ -233,8 +335,86 @@ const docsParityLint = S.Agent.Lint({
 	fixes: ['docs/node/pages/**', 'sites/core/pages/**'],
 })
 
+// PRs #1894, #1971, #1969, #2049/#2081, and #2076 show a recurring
+// failure mode: the internal value is plausible while the JSON-RPC wire
+// value, type union, dispatch registration, or public client surface is not.
+const rpcContractLint = S.Agent.Lint({
+	agent: S.Agents.luna,
+	prompt: S.file('//workflows/lints/rpc-contract.md'),
+	data: [
+		S.gitDiff({
+			paths: [
+				'packages/actions/src/**',
+				'packages/jsonrpc/src/**',
+				'packages/memory-client/src/**',
+				'packages/decorators/src/**',
+				'packages/procedures/src/**',
+				'packages/server/src/**',
+				'tevm/**/index.ts',
+			],
+		}),
+	],
+	fixes: [
+		'packages/actions/src/**',
+		'packages/jsonrpc/src/**',
+		'packages/memory-client/src/**',
+		'packages/decorators/src/**',
+		'packages/procedures/src/**',
+		'packages/server/src/**',
+		'tevm/**',
+	],
+})
+
+// A coverage increase is not necessarily a regression proof. This lint is
+// grounded in follow-up review findings on stateful, negative, and alternate
+// encoding branches in PRs #2076, #2079, #2090, and #2094.
+const regressionProofLint = S.Agent.Lint({
+	agent: S.Agents.luna,
+	prompt: S.file('//workflows/lints/regression-proof.md'),
+	data: [
+		S.gitDiff({
+			paths: [
+				'packages/**/src/**',
+				'bundler-packages/**/src/**',
+				'extensions/**/src/**',
+				'test/**/*.spec.ts',
+				'test/**/*.test.ts',
+				'test/**/fixtures/**',
+			],
+		}),
+	],
+	fixes: [
+		'packages/**/*.spec.ts',
+		'packages/**/*.test.ts',
+		'bundler-packages/**/*.spec.ts',
+		'bundler-packages/**/*.test.ts',
+		'extensions/**/*.spec.ts',
+		'extensions/**/*.test.ts',
+		'test/**',
+	],
+})
+
+// The author's merged PRs are materially narrower than closed/unmerged work,
+// but PR #2091 proves raw size is the wrong signal. This check-only lint
+// distinguishes coherent mechanical fan-out from unrelated agent churn.
+const scopeCoherenceLint = S.Agent.Lint({
+	agent: S.Agents.luna,
+	prompt: S.file('//workflows/lints/scope-coherence.md'),
+	data: [S.gitDiff()],
+})
+
 const agentLints = S.Suite({
-	tests: [jsdocLint, changesetLint, noMocksLint, barrelExportsLint, snapshotPathsLint, docsParityLint],
+	tests: [
+		jsdocLint,
+		changesetLint,
+		noMocksLint,
+		barrelExportsLint,
+		snapshotPathsLint,
+		docsParityLint,
+		rpcContractLint,
+		regressionProofLint,
+		scopeCoherenceLint,
+	],
 })
 
 // The claude-code-review.yml checklist as a target: the same review,
@@ -248,11 +428,25 @@ const prReview = S.Agent.Lint({
 // Filegroup groups files, Suite groups tests, Alias renames one target. A
 // dependency edge always means "materialize files", never "execute".
 const preCommit = S.Suite({
-	tests: [lint, changesetCheck],
+	tests: [lint, changesetCheck, factory.check],
+})
+
+// Agent candidate loops can execute deterministic tool gates against their
+// scratch tree, but cannot recursively spawn another Agent.Lint. The script
+// runs static analysis and hermetic tests sequentially, using one daemonless
+// Nx scheduler at a time. It permits loopback for local integration servers
+// but never egress. External integrations remain a maintainer-only pre-push
+// lane with their own declared secrets and network capabilities below.
+const mechanicalPrePush = S.Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['scripts/factory/mechanical-pre-push.mjs'],
+	data: aggregateData,
+	env: nxEnvironment,
+	sandbox: { network: 'loopback' },
 })
 
 const prePush = S.Suite({
-	tests: [allLints, allTypechecks, allTests, agentLints],
+	tests: [mechanicalPrePush, externalIntegrationTests, agentLints],
 })
 
 // Every commit is retained as a memory fact, so agent targets see recent
@@ -287,6 +481,7 @@ const ci = S.Suite({
 		allDocs,
 		cargoBuilds,
 		cargoCheck,
+		factory.check,
 		changesetCheck,
 	],
 })
@@ -298,22 +493,28 @@ const ci = S.Suite({
 // npm with provenance through the scripts/pnpm-publish-wrapper PATH shim
 // (release:publish). The per-package apiCompat gates prove the chosen bumps
 // cover the real API deltas before anything is public.
-const version = S.Changesets.Version({
+const versionPackages = S.Changesets.Version({
 	config: changesetConfig,
 	data: [changesets],
-	lockfile: { update: S.PackageManager.bin },
-	changes: ['**/package.json', '**/CHANGELOG.md', '.changeset/**', 'pnpm-lock.yaml'],
+	changes: ['**/package.json', '**/CHANGELOG.md', '.changeset/**'],
 })
 
-const publish = S.Changesets.Publish({
-	config: changesetConfig,
-	data: [allBuilds, allTypes, allDeclarations, S.Query({ pattern: '//bundler-packages/**:napi' })],
-	prepare: S.file('//scripts/prepare-changeset-publish.mjs'),
-	publishWrapper: S.file('//scripts/pnpm-publish-wrapper'),
-	gates: [ci, allApiCompat],
-	provenance: true,
-	secrets: [S.Secret('NPM_TOKEN')],
+const version = S.Shell.Diff({
+	bin: S.PackageManager.bin,
+	args: ['install', '--lockfile-only'],
+	data: [versionPackages, packageJson, workspaceConfig],
+	changes: ['pnpm-lock.yaml'],
 	sandbox: { network: true },
+})
+
+const publish = S.Shell.Run({
+	bin: S.PackageManager.bin,
+	args: ['run', 'release:publish'],
+	data: [allBuilds, allTypes, allDeclarations, cargoBuilds],
+	env: nxEnvironment,
+	gates: [ci, allApiCompat],
+	secrets: [S.Secret('NPM_TOKEN')],
+	sandbox: 'none',
 	approval: 'required',
 })
 
@@ -335,27 +536,26 @@ const prereleaseExit = S.Shell.Diff({
 	changes: ['.changeset/pre.json'],
 })
 
-const prerelease = S.Changesets.Publish({
-	config: changesetConfig,
-	data: [allBuilds, allTypes, allDeclarations, S.Query({ pattern: '//bundler-packages/**:napi' })],
-	prepare: S.file('//scripts/prepare-changeset-publish.mjs'),
-	publishWrapper: S.file('//scripts/pnpm-publish-wrapper'),
-	pre: 'next',
+const prerelease = S.Shell.Run({
+	bin: S.PackageManager.bin,
+	args: ['run', 'release:publish'],
+	data: [allBuilds, allTypes, allDeclarations, cargoBuilds, S.file('//.changeset/pre.json')],
+	env: nxEnvironment,
 	gates: [ci, allApiCompat],
-	provenance: true,
 	secrets: [S.Secret('NPM_TOKEN')],
-	sandbox: { network: true },
+	sandbox: 'none',
 	approval: 'required',
 })
 
 // snapshot.yml: a one-off snapshot release of every package from the
 // current tree (changesets-snapshot), on dispatch only.
-const snapshot = S.Changesets.Snapshot({
-	config: changesetConfig,
+const snapshot = S.Shell.Run({
+	command: 'pnpm exec changeset version --snapshot snapshot && pnpm run release:publish',
 	data: [allBuilds, allTypes, allDeclarations],
+	env: nxEnvironment,
 	gates: [ci],
 	secrets: [S.Secret('NPM_TOKEN'), S.Secret('GITHUB_TOKEN')],
-	sandbox: { network: true },
+	sandbox: 'none',
 	approval: 'required',
 })
 
@@ -364,7 +564,7 @@ const snapshot = S.Changesets.Snapshot({
 // target is the consent for its outward action.
 const commit = S.Git.Commit({
 	gates: [preCommit],
-	message: S.Agents.luna,
+	message: S.Agents.luna!,
 })
 
 const pr = S.Git.Pr({
@@ -378,7 +578,7 @@ const pr = S.Git.Pr({
 // .github/PACKAGE.ts renders the same schedule as a GitHub workflow.
 const nightlyConformance = S.Cron({
 	schedule: '0 3 * * *',
-	run: [S.Query({ pattern: '//test:conformanceAll' })],
+	run: [conformance.conformanceAll],
 })
 
 // The root `clean` script: nx reset, every package's clean, node_modules.
@@ -393,8 +593,23 @@ export const Package = S.Package({
 	defaultVisibility: 'public',
 	targets: {
 		agentLints,
+		allApiCompat,
+		allBuilds,
+		allCoverage,
+		allDeclarations,
+		allDepsLints,
+		allDocs,
+		allFixtures,
+		allHermeticTests,
+		allLints,
+		allPackageLints,
+		allTests,
+		allTypechecks,
+		allTypes,
 		barrelExportsLint,
+		cargoBuilds,
 		cargoCheck,
+		cargoTests,
 		changesetCheck,
 		changesetLint,
 		ci,
@@ -402,9 +617,11 @@ export const Package = S.Package({
 		commit,
 		depsLint,
 		docsParityLint,
+		externalIntegrationTests,
 		format,
 		jsdocLint,
 		lint,
+		mechanicalPrePush,
 		nightlyConformance,
 		noMocksLint,
 		postCommit,
@@ -416,7 +633,10 @@ export const Package = S.Package({
 		prereleaseEnter,
 		prereleaseExit,
 		publish,
+		regressionProofLint,
 		retainCommit,
+		rpcContractLint,
+		scopeCoherenceLint,
 		snapshot,
 		snapshotPathsLint,
 		sortManifests,

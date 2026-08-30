@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('packages/client-types')
 
 // Follows the packages/evm/PACKAGE.ts exemplar with the test targets removed:
 // this package has no test scripts and no spec files.
@@ -14,17 +17,17 @@ const srcs = S.Filegroup({
 	srcs: S.glob(['src/**', '!src/**/*.spec.ts', '!src/**/*.test.ts', '!src/**/__snapshots__/**']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // build:dist.
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
 // The tsup half of build:types.
-const types = S.Shell.Build({
+const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
@@ -33,7 +36,7 @@ const types = S.Shell.Build({
 
 // The tsc half of build:types. Emits the declarations the manifest's import
 // types condition points at, into the tsconfig outDir.
-const declarations = S.Shell.Build({
+const declarations = Shell.Build({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--emitDeclarationOnly', '--declaration'],
 	data: [srcs, deps, tsconfig],
@@ -41,14 +44,14 @@ const declarations = S.Shell.Build({
 })
 
 // typecheck.
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, deps, tsconfig],
 })
 
 // generate:docs.
-const docs = S.Shell.Build({
+const docs = Shell.Build({
 	bin: S.NodeModule.Bin('typedoc'),
 	data: [srcs, deps, typedocConfig, packageJson],
 	outDirs: ['docs'],
@@ -60,7 +63,10 @@ const pack = S.Npm.Pack({
 })
 
 // lint:package.
-const packageLint = S.Npm.PackageLint({ pack })
+const packageLint = Shell.Test({
+	command: 'pnpm exec publint --strict . && pnpm exec attw --pack .',
+	data: [pack],
+})
 
 const apiCompat = S.Api.Compat({
 	baseline: S.Npm.Published({ manifest: packageJson }),
@@ -69,13 +75,13 @@ const apiCompat = S.Api.Compat({
 })
 
 // lint:deps.
-const depsLint = S.Shell.Test({
+const depsLint = Shell.Test({
 	bin: S.NodeModule.Bin('depcheck'),
 	data: [srcs, packageJson],
 })
 
 // lint:check.
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, biomeConfig, rootBiomeConfig],
@@ -83,7 +89,7 @@ const lint = S.Shell.Test({
 
 // lint. Applies lint fixes and formatting in one pass, so it also covers the
 // format script.
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, biomeConfig, rootBiomeConfig],

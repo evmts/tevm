@@ -1,6 +1,5 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
-import { Package as root } from '../../PACKAGE.js'
 import { Package as actions } from '../../packages/actions/PACKAGE.js'
 import { Package as memoryClient } from '../../packages/memory-client/PACKAGE.js'
 import { Package as tevm } from '../../tevm/PACKAGE.js'
@@ -12,8 +11,9 @@ import { Package as tevm } from '../../tevm/PACKAGE.js'
 // barrel-export rule up to the tevm meta package; the gates prove the
 // handler type-checks, its tests pass, the barrels and JSDoc are complete,
 // the committed tevm emit is regenerated, and a changeset names the packages.
-// Opening a PR is outward, so approval is declared.
-const addJsonrpcMethod = S.Agent.Pr({
+// This target stops at an applied candidate; //:agentLints is the post-apply
+// judgment gate and PR settlement remains a separate outward action.
+const addJsonrpcMethod = S.Agent.Diff({
 	agent: S.Agents.luna,
 	prompt: S.file('SKILL.md'),
 	payload: {
@@ -21,7 +21,7 @@ const addJsonrpcMethod = S.Agent.Pr({
 		spec: S.Input.Optional(S.Input.String('URL or text of the method spec (EIP, execution-apis, anvil docs)')),
 		clientMethod: S.Input.Optional(S.Input.String('Viem-style action name to expose, e.g. getBlockReceipts')),
 	},
-	data: [actions.srcs, memoryClient.srcs, tevm.srcs],
+	data: [actions.srcs, memoryClient.srcs, tevm.srcs, S.file('//factory/pr-history.md')],
 	changes: [
 		'packages/actions/src/**',
 		'packages/memory-client/src/**',
@@ -31,22 +31,8 @@ const addJsonrpcMethod = S.Agent.Pr({
 		'docs/node/pages/**',
 		'.changeset/**',
 	],
-	gates: [
-		actions.typecheck,
-		actions.test,
-		memoryClient.typecheck,
-		memoryClient.test,
-		tevm.dist,
-		tevm.types,
-		root.barrelExportsLint,
-		root.jsdocLint,
-		root.changesetLint,
-		root.docsParityLint,
-		root.noMocksLint,
-	],
-	secrets: [S.Secret('GITHUB_TOKEN')],
+	gates: [actions.typecheck, actions.test, memoryClient.typecheck, memoryClient.test, tevm.dist, tevm.types],
 	sandbox: { network: true },
-	approval: 'required',
 	maxRounds: 3,
 })
 

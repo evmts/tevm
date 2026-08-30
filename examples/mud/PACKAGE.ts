@@ -1,7 +1,10 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
 import { Package as client } from './packages/client/PACKAGE.js'
 import { Package as contracts } from './packages/contracts/PACKAGE.js'
+
+const Shell = scopedShell('examples/mud')
 
 // The MUD example is a nested pnpm workspace. Its root scripts fan out to
 // the two child packages or install tools, so this file holds no srcs. The
@@ -26,7 +29,7 @@ const test = S.Suite({
 // dev. mprocs runs the whole local stack from mprocs.yaml: anvil, mud
 // dev-contracts, the client vite server, and the MUD explorer. It
 // multiplexes interactive terminals, so it cannot run in a sandbox.
-const dev = S.Shell.Serve({
+const dev = Shell.Serve({
 	bin: S.NodeModule.Bin('mprocs'),
 	data: [mprocsConfig],
 	readiness: { port: 5173 },
@@ -36,7 +39,7 @@ const dev = S.Shell.Serve({
 // foundry:up. The foundry installer: curls foundry.paradigm.xyz and runs
 // foundryup. Keyed on its args alone; the workspace's host layer owns the
 // installed toolchain afterwards.
-const foundryUp = S.Shell.Run({
+const foundryUp = Shell.Run({
 	bin: S.Host.bin('bash'),
 	args: ['-c', 'curl -L https://foundry.paradigm.xyz | bash && bash $HOME/.foundry/bin/foundryup'],
 	sandbox: { network: true },
@@ -44,7 +47,7 @@ const foundryUp = S.Shell.Run({
 
 // mud:up. Upgrades the MUD packages to the main tag. The script then runs
 // `pnpm install`, which the workspace's install layer owns.
-const mudUp = S.Shell.Run({
+const mudUp = Shell.Run({
 	bin: S.PackageManager.bin,
 	args: ['mud', 'set-version', '--tag', 'main'],
 	sandbox: { network: true },
@@ -53,7 +56,7 @@ const mudUp = S.Shell.Run({
 // prepare. pnpm runs it on install: use the host forge if present, else
 // install foundry. Modeled as the install branch; the check branch is the
 // workspace's host layer declaring forge.
-const prepare = S.Shell.Run({
+const prepare = Shell.Run({
 	bin: S.Host.bin('bash'),
 	args: ['-c', 'forge --version || pnpm foundry:up'],
 	sandbox: { network: true },

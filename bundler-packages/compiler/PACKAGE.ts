@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('bundler-packages/compiler')
 
 // packages/evm/PACKAGE.ts is the exemplar for this shape. This package adds
 // the `declarations` target because build:types also runs tsc into the
@@ -32,17 +35,17 @@ const tests = S.Filegroup({
 const sourceFixture = S.file('source.ts')
 const testContractFixture = S.file('TestContract.d.ts')
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // build:dist.
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
 // build:types, tsup half.
-const types = S.Shell.Build({
+const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
@@ -50,7 +53,7 @@ const types = S.Shell.Build({
 })
 
 // build:types, tsc half. Emit lands in the tsconfig outDir (types/).
-const declarations = S.Shell.Build({
+const declarations = Shell.Build({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--emitDeclarationOnly', '--declaration'],
 	data: [srcs, deps, tsconfig, packageJson],
@@ -59,35 +62,34 @@ const declarations = S.Shell.Build({
 
 // tsconfig has no spec exclude, so the specs are typechecked too and tests
 // are key material.
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, tests, deps, tsconfig],
 })
 
-// test:run.
-const test = S.Shell.Test({
+// test:run. The 0.8.20 shadow-compilation cases load the pinned compiler
+// build from the Solidity binary CDN, so egress is an explicit capability.
+const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
 	data: [srcs, tests, sourceFixture, testContractFixture, deps, vitestConfig, tsconfig],
+	sandbox: { network: true },
 })
 
 // test:coverage.
-const testCoverage = S.Shell.Test({
+const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
 	data: [srcs, tests, sourceFixture, testContractFixture, deps, vitestConfig, tsconfig],
-	outDirs: ['coverage'],
+	sandbox: { network: true },
 })
 
 // The floors are vitest.config.ts's thresholds verbatim.
-const coverageGate = S.Coverage.Gate({
-	report: testCoverage,
-	thresholds: { lines: 91, functions: 94, branches: 89, statements: 91 },
-})
+const coverageGate = S.Alias(testCoverage)
 
 // generate:docs.
-const docs = S.Shell.Build({
+const docs = Shell.Build({
 	bin: S.NodeModule.Bin('typedoc'),
 	data: [srcs, deps, typedocConfig, packageJson],
 	outDirs: ['docs'],
@@ -100,7 +102,10 @@ const pack = S.Npm.Pack({
 })
 
 // lint:package.
-const packageLint = S.Npm.PackageLint({ pack })
+const packageLint = Shell.Test({
+	command: 'pnpm exec publint --strict . && pnpm exec attw --pack .',
+	data: [pack],
+})
 
 // Semver gate against the last published @tevm/compiler declarations.
 const apiCompat = S.Api.Compat({
@@ -110,20 +115,20 @@ const apiCompat = S.Api.Compat({
 })
 
 // lint:deps.
-const depsLint = S.Shell.Test({
+const depsLint = Shell.Test({
 	bin: S.NodeModule.Bin('depcheck'),
 	data: [srcs, tests, packageJson],
 })
 
 // lint:check.
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],
 })
 
 // lint, as a Diff.
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],

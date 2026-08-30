@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('examples/bun')
 
 // The bun example: a single script and its spec run through bun with the
 // tevm bun plugin preloaded, so `.sol` imports resolve in tests.
@@ -16,12 +19,12 @@ const tests = S.Filegroup({
 	srcs: S.glob(['*.spec.ts']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // dev. A bun watcher with no port. bunfig.toml preloads plugins.ts, which
 // registers the tevm plugin that compiles ExampleContract.sol on import.
-const dev = S.Shell.Run({
-	bin: S.Runtime.Bun.bin,
+const dev = Shell.Run({
+	bin: S.Host.bin('bun'),
 	args: ['--watch', 'readContract.ts'],
 	data: [srcs, deps, bunfig, plugins, tsconfig],
 })
@@ -30,8 +33,8 @@ const dev = S.Shell.Run({
 // itself and never runs a test; the target runs `bun test` directly. The
 // bunfig [test] preload registers the same plugin for the spec's `.sol`
 // import.
-const test = S.Shell.Test({
-	bin: S.Runtime.Bun.bin,
+const test = Shell.Test({
+	bin: S.Host.bin('bun'),
 	args: ['test'],
 	data: [srcs, tests, deps, bunfig, plugins, tsconfig],
 })

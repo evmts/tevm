@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('bundler-packages/mud')
 
 // packages/evm/PACKAGE.ts is the exemplar for this shape. This package adds
 // the `declarations` target because build:types also runs tsc into the
@@ -30,17 +33,17 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**', 'test/**']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // build:dist. tsup emits both entries (src/index.ts, src/react/index.ts).
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
 // build:types, tsup half.
-const types = S.Shell.Build({
+const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
@@ -48,7 +51,7 @@ const types = S.Shell.Build({
 })
 
 // build:types, tsc half. Emit lands in the tsconfig outDir (types/).
-const declarations = S.Shell.Build({
+const declarations = Shell.Build({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--emitDeclarationOnly', '--declaration'],
 	data: [srcs, deps, tsconfig, packageJson],
@@ -57,58 +60,54 @@ const declarations = S.Shell.Build({
 
 // tsconfig has no spec exclude, so the specs are typechecked too and tests
 // are key material.
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, tests, deps, tsconfig],
 })
 
 // test:run.
-const test = S.Shell.Test({
+const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
 })
 
 // test:coverage.
-const testCoverage = S.Shell.Test({
+const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
-	outDirs: ['coverage'],
 })
 
 // The floors are vitest.config.ts's thresholds verbatim. The config lowers
 // them temporarily while React tests are skipped pending a
 // @latticexyz/store-sync fix.
-const coverageGate = S.Coverage.Gate({
-	report: testCoverage,
-	thresholds: { lines: 49, functions: 54, branches: 32, statements: 49 },
-})
+const coverageGate = S.Alias(testCoverage)
 
 // generate:docs.
-const docs = S.Shell.Build({
+const docs = Shell.Build({
 	bin: S.NodeModule.Bin('typedoc'),
 	data: [srcs, deps, typedocConfig, packageJson],
 	outDirs: ['docs'],
 })
 
 // lint:deps. The --ignores list is the script's, verbatim.
-const depsLint = S.Shell.Test({
+const depsLint = Shell.Test({
 	bin: S.NodeModule.Bin('depcheck'),
 	args: ['--ignores=@testing-library/react,@tevm/config,@tevm/decorators,@tevm/node,@types/react-dom'],
 	data: [srcs, tests, packageJson],
 })
 
 // lint:check.
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],
 })
 
 // lint, as a Diff.
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],

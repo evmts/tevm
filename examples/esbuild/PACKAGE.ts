@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('examples/esbuild')
 
 // The esbuild example. The manifest's build and test:coverage/test:run
 // scripts are all commented out; the targets below are what those scripts
@@ -18,14 +21,14 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.js']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // //build:app (commented out). build.js drives esbuild with
 // esbuildPluginTevm, which compiles src/ExampleContract.sol at bundle time;
 // foundry.toml pins the solc version the plugin uses. The commented script
 // sets NODE_ENV=production, which build.js reads into its define.
-const build = S.Shell.Build({
-	bin: S.Runtime.Bun.bin,
+const build = Shell.Build({
+	bin: S.Host.bin('bun'),
 	args: ['build.js'],
 	env: { NODE_ENV: 'production' },
 	data: [srcs, deps, buildScript, bunfig, foundryConfig, tsconfig, packageJson],
@@ -35,7 +38,7 @@ const build = S.Shell.Build({
 // dev. The script is `bun run build && node ./dist/index.js`, but the build
 // script it chains is commented out, so the script fails today. The target
 // keys on the build output instead of re-running the chain.
-const dev = S.Shell.Run({
+const dev = Shell.Run({
 	bin: S.Runtime.bin,
 	args: ['./dist/index.js'],
 	data: [build],
@@ -43,8 +46,8 @@ const dev = S.Shell.Run({
 
 // //test:run (commented out). bunfig.toml preloads plugins.ts for tests, so
 // the spec's `.sol` import resolves under bun test.
-const test = S.Shell.Test({
-	bin: S.Runtime.Bun.bin,
+const test = Shell.Test({
+	bin: S.Host.bin('bun'),
 	args: ['test'],
 	data: [srcs, tests, deps, bunfig, foundryConfig, tsconfig],
 })

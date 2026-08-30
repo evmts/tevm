@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('sites/playground')
 
 // The playground site: a vite app around a pinned npm tevm (not a
 // workspace dependency), so there is no WorkspaceDeps edge.
@@ -14,7 +17,7 @@ const srcs = S.Filegroup({
 
 // build. vite build. vite.config.ts aliases node builtins to src/shims and
 // excludes tevm from prebundling, so the config is key material.
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('vite'),
 	args: ['build'],
 	data: [srcs, viteConfig, tsconfig, indexHtml, packageJson],
@@ -22,14 +25,14 @@ const build = S.Shell.Build({
 })
 
 // dev. The vite dev server.
-const dev = S.Shell.Serve({
+const dev = Shell.Serve({
 	bin: S.NodeModule.Bin('vite'),
 	data: [srcs, viteConfig, tsconfig, indexHtml],
 	readiness: { port: 5173 },
 })
 
 // preview. Serves the build output.
-const preview = S.Shell.Serve({
+const preview = Shell.Serve({
 	bin: S.NodeModule.Bin('vite'),
 	args: ['preview'],
 	data: [build],

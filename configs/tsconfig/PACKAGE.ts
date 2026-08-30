@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('configs/tsconfig')
 
 // The shared tsconfig preset. The package has no scripts: it publishes the
 // base.json preset as-is, so the only targets are the preset filegroup and
@@ -16,7 +19,10 @@ const pack = S.Npm.Pack({
 	data: [srcs],
 })
 
-const packageLint = S.Npm.PackageLint({ pack })
+const packageLint = Shell.Test({
+	command: 'pnpm exec publint --strict . && pnpm exec attw --pack .',
+	data: [pack],
+})
 
 export const Package = S.Package({
 	targets: { pack, packageLint, srcs },

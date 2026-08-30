@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('bundler-packages/runtime-rs')
 
 // bundler-packages/resolutions-rs/PACKAGE.ts is the exemplar for the Rust
 // crates in the cargo workspace. Targets resolve the toolchain through the
@@ -15,41 +18,39 @@ const srcs = S.Filegroup({
 
 // build (cargo build --release).
 const build = S.Cargo.Build({
-	crate: 'tevm_runtime_rs',
+	package: 'tevm_runtime_rs',
 	profile: 'release',
 	data: [srcs],
 })
 
 // build:debug (cargo build).
 const buildDebug = S.Cargo.Build({
-	crate: 'tevm_runtime_rs',
+	package: 'tevm_runtime_rs',
 	profile: 'dev',
 	data: [srcs],
 })
 
 // test (cargo test).
 const testRust = S.Cargo.Test({
-	crate: 'tevm_runtime_rs',
+	package: 'tevm_runtime_rs',
 	data: [srcs],
 })
 
-// build:napi. Emits the platform-native index.node plus the per-platform
-// npm/* stub packages. Platform coverage beyond the host runs in CI
-// runners; locally this builds the host triple only.
-const napi = S.Napi.Build({
-	crate: 'tevm_runtime_rs',
-	release: true,
+// build:napi. The local package-mode Flows release does not yet wrap napi, so
+// model the repository's existing host build command directly.
+const napi = Shell.Build({
+	bin: S.NodeModule.Bin('@napi-rs/cli', 'napi'),
+	args: ['build', '--platform', '--release'],
 	data: [srcs, packageJson],
-	outDirs: ['npm'],
 	outFiles: ['index.node'],
 })
 
-// Byte budget on the shipped wasm artifact, matching the resolutions-rs
-// gate so a size regression fails the build instead of a review.
-const wasmSize = S.Size.Gate({
-	of: napi,
-	file: 'tevm_runtime_rs.wasm',
-	limit: '3 mb',
+// Keep the host binding under the same deterministic local byte budget. The
+// release-only WASI artifacts remain covered by their checked-in CI job.
+const wasmSize = Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['scripts/check-file-size.mjs', 'bundler-packages/runtime-rs/index.node', '3 mb'],
+	data: [napi, S.file('//scripts/check-file-size.mjs')],
 })
 
 export const Package = S.Package({

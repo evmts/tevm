@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('packages/memory-client')
 
 // packages/evm/PACKAGE.ts is the exemplar for the packages/* shape. This
 // package sits near the top of the workspace graph, so its WorkspaceDeps
@@ -22,35 +25,35 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
-const types = S.Shell.Build({
+const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
-const declarations = S.Shell.Build({
+const declarations = Shell.Build({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--emitDeclarationOnly', '--declaration'],
 	data: [srcs, deps, tsconfig],
 	outDirs: ['types'],
 })
 
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, deps, tsconfig],
 })
 
-const test = S.Shell.Test({
+const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
@@ -58,19 +61,15 @@ const test = S.Shell.Test({
 
 // vitest.config.ts sets `autoUpdate: true`; see packages/evm/PACKAGE.ts for
 // why the graph treats the config as input only.
-const testCoverage = S.Shell.Test({
+const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
-	outDirs: ['coverage'],
 })
 
-const coverageGate = S.Coverage.Gate({
-	report: testCoverage,
-	thresholds: { lines: 88.13, functions: 100, branches: 77.08, statements: 88.13 },
-})
+const coverageGate = S.Alias(testCoverage)
 
-const docs = S.Shell.Build({
+const docs = Shell.Build({
 	bin: S.NodeModule.Bin('typedoc'),
 	data: [srcs, deps, typedocConfig, packageJson],
 	outDirs: ['docs'],
@@ -81,7 +80,10 @@ const pack = S.Npm.Pack({
 	data: [build, types, declarations, srcs],
 })
 
-const packageLint = S.Npm.PackageLint({ pack })
+const packageLint = Shell.Test({
+	command: 'pnpm exec publint --strict . && pnpm exec attw --pack .',
+	data: [pack],
+})
 
 const apiCompat = S.Api.Compat({
 	baseline: S.Npm.Published({ manifest: packageJson }),
@@ -91,19 +93,19 @@ const apiCompat = S.Api.Compat({
 
 // @tevm/errors is reached through re-exports and kzg-wasm is loaded by the
 // EVM at runtime; neither shows up as a direct import.
-const depsLint = S.Shell.Test({
+const depsLint = Shell.Test({
 	bin: S.NodeModule.Bin('depcheck'),
 	args: ['--ignores=@tevm/errors,kzg-wasm'],
 	data: [srcs, tests, packageJson],
 })
 
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],
 })
 
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],

@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('bundler-packages/tevm-run')
 
 // A bun-native package with no build step: the build:dist and build:types
 // scripts are echo placeholders saying so, and the package ships its src/
@@ -32,34 +35,33 @@ const example = S.Filegroup({
 	srcs: S.glob(['example/**']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // typecheck. tsconfig has no include, so tsc checks every script in the
 // package, src, example, and plugins.js alike.
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, tests, example, plugins, deps, tsconfig],
 })
 
 // test:run (bun test).
-const test = S.Shell.Test({
-	bin: S.Runtime.Bun.bin,
+const test = Shell.Test({
+	bin: S.Host.bin('bun'),
 	args: ['test'],
 	data: [srcs, tests, deps, bunfig, plugins, tsconfig],
 })
 
 // test:coverage (bun test --coverage).
-const testCoverage = S.Shell.Test({
-	bin: S.Runtime.Bun.bin,
+const testCoverage = Shell.Test({
+	bin: S.Host.bin('bun'),
 	args: ['test', '--coverage'],
 	data: [srcs, tests, deps, bunfig, plugins, tsconfig],
-	outDirs: ['coverage'],
 })
 
 // dev. Runs the example through the CLI in watch mode.
-const dev = S.Shell.Run({
-	bin: S.Runtime.Bun.bin,
+const dev = Shell.Run({
+	bin: S.Host.bin('bun'),
 	args: ['run', '--watch', 'src/tevm-run.js', 'example/example.ts'],
 	data: [srcs, example, deps, bunfig, plugins, tsconfig],
 })
@@ -73,14 +75,14 @@ const pack = S.Npm.Pack({
 })
 
 // lint:check.
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, tests, example, biomeConfig, rootBiomeConfig],
 })
 
 // lint, as a Diff.
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, tests, example, biomeConfig, rootBiomeConfig],

@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('extensions/test-matchers')
 
 // Vitest matchers for tevm, following the packages/evm exemplar. The specs
 // fork no live network, so there is no testFork target.
@@ -28,18 +31,18 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/*.type-spec.ts', 'src/**/__snapshots__/**']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // build:dist. tsup reads @tevm/tsupconfig through the config file; the
 // preset is a workspace dependency, so deps already covers it.
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
 // build:types, first half: tsup's dts emit into dist.
-const types = S.Shell.Build({
+const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
@@ -48,7 +51,7 @@ const types = S.Shell.Build({
 
 // build:types, second half: `tsc --emitDeclarationOnly --declaration
 // --skipLibCheck` verbatim, into the tsconfig outDir (types/).
-const declarations = S.Shell.Build({
+const declarations = Shell.Build({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--emitDeclarationOnly', '--declaration', '--skipLibCheck'],
 	data: [srcs, deps, tsconfig],
@@ -57,7 +60,7 @@ const declarations = S.Shell.Build({
 
 // typecheck. The tsconfig include covers all of src, spec files included,
 // so tests are key material here.
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, tests, deps, tsconfig],
@@ -65,7 +68,7 @@ const typecheck = S.Shell.Test({
 
 // test:run. The `test` script is the same suite in watch mode and is not a
 // CI check, so it is not a target.
-const test = S.Shell.Test({
+const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
@@ -73,15 +76,14 @@ const test = S.Shell.Test({
 
 // test:coverage. vitest.config.ts declares no coverage thresholds, so there
 // is no coverageGate: the report exists for inspection only.
-const testCoverage = S.Shell.Test({
+const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
-	outDirs: ['coverage'],
 })
 
 // generate:docs.
-const docs = S.Shell.Build({
+const docs = Shell.Build({
 	bin: S.NodeModule.Bin('typedoc'),
 	data: [srcs, deps, typedocConfig, packageJson],
 	outDirs: ['docs'],
@@ -95,7 +97,10 @@ const pack = S.Npm.Pack({
 
 // lint:package. publint --strict and attw --pack run against the packed
 // tarball.
-const packageLint = S.Npm.PackageLint({ pack })
+const packageLint = Shell.Test({
+	command: 'pnpm exec publint --strict . && pnpm exec attw --pack .',
+	data: [pack],
+})
 
 // Semver as a gate against the last published @tevm/test-matchers
 // declarations.
@@ -106,7 +111,7 @@ const apiCompat = S.Api.Compat({
 })
 
 // lint:deps, with the script's --ignores verbatim.
-const depsLint = S.Shell.Test({
+const depsLint = Shell.Test({
 	bin: S.NodeModule.Bin('depcheck'),
 	args: ['--ignores=@tevm/common'],
 	data: [srcs, tests, packageJson],
@@ -114,7 +119,7 @@ const depsLint = S.Shell.Test({
 
 // lint:check. `format:check` (`biome format .`) checks a subset of the same
 // rules, so lint covers it.
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],
@@ -122,7 +127,7 @@ const lint = S.Shell.Test({
 
 // lint + format as one Diff: the `lint` and `format` scripts both rewrite
 // the tree with biome.
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],

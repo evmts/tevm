@@ -6,17 +6,16 @@ import { Smithers as S } from '@smthrs/targets'
 // as targets. The workspace packages under test/* (bench, test-utils, the
 // integration suites) have their own PACKAGE.ts files.
 
-// The fixture corpora are external repositories pinned by rev: S.Git.Checkout
-// is the http_archive of this workspace, a content-addressed external input
-// that downloads once per rev and never at test time.
-const ethereumTests = S.Git.Checkout({
-	repository: 'https://github.com/ethereum/tests.git',
-	rev: 'v17.1',
+// Fixture locations are supplied through the runner's documented environment
+// variables. The local runner trees are declared here; fetching multi-gigabyte
+// upstream corpora is an operator bootstrap step, not a hidden test side
+// effect. The factory preflight reports missing fixture variables explicitly.
+const ethereumTests = S.Filegroup({
+	srcs: S.glob(['ethereum-state-tests/**']),
 })
 
-const executionSpecTests = S.Git.Checkout({
-	repository: 'https://github.com/ethereum/execution-spec-tests.git',
-	rev: 'v4.5.0',
+const executionSpecTests = S.Filegroup({
+	srcs: S.glob(['execution-spec-tests/**']),
 })
 
 const runners = S.Filegroup({
@@ -42,11 +41,13 @@ const vitestMatchers = S.Filegroup({
 	srcs: S.glob(['vitest-matchers/**']),
 })
 
-// The runners execute the built EVM, not sources. Query aggregates the build
-// targets of every packages/* package without this file importing each
-// Package; a pattern settles to a target set anywhere a data or suite slot
-// takes targets.
-const built = S.Query({ pattern: '//packages/**:build' })
+// The runners execute the workspace package graph. Until embedded target
+// queries land in Flows, source and existing dist trees are the content key;
+// the root conformance gate depends on the aggregate build before reaching
+// these targets.
+const built = S.Filegroup({
+	srcs: S.glob(['//packages/*/src/**', '//packages/*/dist/**']),
+})
 
 // test:conformance:targets: the hardfork/group matrix the runners iterate.
 const conformanceTargets = S.Shell.Build({
@@ -70,7 +71,6 @@ const gstFast = S.Shell.Test({
 		'--out=artifacts/general-state-tests/boundary-frontier.json',
 	],
 	data: [runners, built, ethereumTests],
-	outDirs: ['../artifacts/general-state-tests'],
 })
 
 // test:conformance:gst:all.
@@ -78,7 +78,6 @@ const gstAll = S.Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['test/ethereum-state-tests/run-general-state-tests.mjs', '--out=artifacts/general-state-tests/all.json'],
 	data: [runners, built, ethereumTests],
-	outDirs: ['../artifacts/general-state-tests'],
 })
 
 // test:conformance:gst:isolate: one fixture with a trace, the first step of
@@ -106,7 +105,6 @@ const execSpecFast = S.Shell.Test({
 		'--out=artifacts/execution-spec-tests/eip-shanghai.json',
 	],
 	data: [runners, built, executionSpecTests],
-	outDirs: ['../artifacts/execution-spec-tests'],
 })
 
 // test:conformance:execspec:all.
@@ -114,7 +112,6 @@ const execSpecAll = S.Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['test/execution-spec-tests/run-execution-spec-tests.mjs', '--out=artifacts/execution-spec-tests/all.json'],
 	data: [runners, built, executionSpecTests],
-	outDirs: ['../artifacts/execution-spec-tests'],
 })
 
 // test:conformance:execspec:isolate.
@@ -144,7 +141,6 @@ const traceCompare = S.Shell.Test({
 		'--out=artifacts/general-state-tests/trace-compare.json',
 	],
 	data: [runners, traceTools, built, ethereumTests],
-	outDirs: ['../artifacts/general-state-tests', '../artifacts/eip3155'],
 })
 
 // test:eip3155: the trace tools' own unit tests (node --test).
@@ -186,16 +182,14 @@ const hiveSmoke = S.Shell.Test({
 	script: S.file('hive/run-hive.sh'),
 	env: { HIVE_SUITE: 'smoke', HIVE_ARTIFACT_DIR: 'artifacts/hive' },
 	data: [hive, built],
-	sandbox: { network: true, docker: true },
-	outDirs: ['../artifacts/hive', 'hive/artifacts'],
+	sandbox: 'none',
 })
 
 const hiveRpcCompat = S.Shell.Test({
 	script: S.file('hive/run-hive.sh'),
 	env: { HIVE_SUITE: 'rpc-compat', HIVE_ARTIFACT_DIR: 'artifacts/hive' },
 	data: [hive, built],
-	sandbox: { network: true, docker: true },
-	outDirs: ['../artifacts/hive', 'hive/artifacts'],
+	sandbox: 'none',
 })
 
 // test:parity:fast and test:parity:full (scripts/parity/run-suite.sh). The
@@ -210,7 +204,6 @@ const parityFast = S.Shell.Test({
 	data: [S.file('//scripts/parity/run-suite.sh'), runners, built, ethereumTests, executionSpecTests],
 	secrets: [S.Secret('TEVM_TEST_ALCHEMY_KEY'), S.Secret('TEVM_RPC_URLS_MAINNET'), S.Secret('TEVM_RPC_URLS_OPTIMISM')],
 	sandbox: { network: true },
-	outDirs: ['../artifacts/parity'],
 })
 
 const parityFull = S.Shell.Test({
@@ -219,8 +212,7 @@ const parityFull = S.Shell.Test({
 	env: { PARITY_ARTIFACT_DIR: 'artifacts/parity' },
 	data: [S.file('//scripts/parity/run-suite.sh'), runners, hive, built, ethereumTests, executionSpecTests],
 	secrets: [S.Secret('TEVM_TEST_ALCHEMY_KEY'), S.Secret('TEVM_RPC_URLS_MAINNET'), S.Secret('TEVM_RPC_URLS_OPTIMISM')],
-	sandbox: { network: true, docker: true },
-	outDirs: ['../artifacts/parity'],
+	sandbox: 'none',
 })
 
 // Everything the runners write under artifacts/.
@@ -235,9 +227,11 @@ export const Package = S.Package({
 		conformanceAll,
 		conformanceFast,
 		conformanceTargets,
+		ethereumTests,
 		execSpecAll,
 		execSpecFast,
 		execSpecIsolate,
+		executionSpecTests,
 		gstAll,
 		gstFast,
 		gstIsolate,
@@ -245,9 +239,11 @@ export const Package = S.Package({
 		hiveSmoke,
 		parityFast,
 		parityFull,
+		runners,
 		traceCompare,
 		traceCompareTool,
 		traceConvert,
+		traceTools,
 		traceToolsTest,
 		vitestMatchers,
 	},

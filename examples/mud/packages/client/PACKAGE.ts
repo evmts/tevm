@@ -1,6 +1,9 @@
 /// <reference path="../../../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../../../factory/scoped-shell.js'
 import { Package as contracts } from '../contracts/PACKAGE.js'
+
+const Shell = scopedShell('examples/mud/packages/client')
 
 // The MUD example's react client. vite-plugin-mud reads the contracts
 // package's committed worlds.json, so the contracts sources are a data
@@ -16,10 +19,10 @@ const srcs = S.Filegroup({
 	srcs: S.glob(['src/**']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // build. vite build.
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('vite'),
 	args: ['build'],
 	data: [srcs, deps, contracts.srcs, viteConfig, tsconfig, tailwindConfig, postcssConfig, indexHtml, packageJson],
@@ -27,14 +30,14 @@ const build = S.Shell.Build({
 })
 
 // dev. The vite dev server.
-const dev = S.Shell.Serve({
+const dev = Shell.Serve({
 	bin: S.NodeModule.Bin('vite'),
 	data: [srcs, deps, contracts.srcs, viteConfig, tailwindConfig, postcssConfig, indexHtml],
 	readiness: { port: 5173 },
 })
 
 // preview. Serves the build output.
-const preview = S.Shell.Serve({
+const preview = Shell.Serve({
 	bin: S.NodeModule.Bin('vite'),
 	args: ['preview'],
 	data: [build],
@@ -43,7 +46,7 @@ const preview = S.Shell.Serve({
 
 // The manifest's `test` script is `tsc --noEmit`: the package has no test
 // runner, so the script is declared under its real name.
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, deps, tsconfig],

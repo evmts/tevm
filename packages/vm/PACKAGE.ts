@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('packages/vm')
 
 // packages/evm/PACKAGE.ts is the exemplar for the common shape; this file
 // differs in three places. Tests run under `bun test`, not vitest, and
@@ -31,17 +34,17 @@ const tests = S.Filegroup({
 
 // Workspace dependencies as data: the build outputs of every workspace:*
 // dependency in this manifest, in topological order.
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // build:dist. tsup has two entries (index and actions), one target.
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
 // build:types, tsup half.
-const types = S.Shell.Build({
+const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
@@ -51,7 +54,7 @@ const types = S.Shell.Build({
 // build:types, tsc half: `tsc --emitDeclarationOnly --declaration` emits
 // into the tsconfig outDir (types/). The manifest's top-level `types`
 // points at types/index.d.ts, so this emit is what npm consumers resolve.
-const declarations = S.Shell.Build({
+const declarations = Shell.Build({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--emitDeclarationOnly', '--declaration'],
 	data: [srcs, deps, tsconfig],
@@ -60,7 +63,7 @@ const declarations = S.Shell.Build({
 
 // typecheck. tsconfig excludes the spec files, so tests are not key
 // material here.
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, deps, tsconfig],
@@ -68,22 +71,21 @@ const typecheck = S.Shell.Test({
 
 // test:run. `bun test` reads tsconfig directly; there is no vitest config.
 // No spec file needs a live RPC, so the whole suite stays hermetic.
-const test = S.Shell.Test({
-	bin: S.Runtime.Bun.bin,
+const test = Shell.Test({
+	bin: S.Host.bin('bun'),
 	args: ['test'],
 	data: [srcs, tests, deps, tsconfig],
 })
 
 // test:coverage.
-const testCoverage = S.Shell.Test({
-	bin: S.Runtime.Bun.bin,
+const testCoverage = Shell.Test({
+	bin: S.Host.bin('bun'),
 	args: ['test', '--coverage'],
 	data: [srcs, tests, deps, tsconfig],
-	outDirs: ['coverage'],
 })
 
 // generate:docs.
-const docs = S.Shell.Build({
+const docs = Shell.Build({
 	bin: S.NodeModule.Bin('typedoc'),
 	data: [srcs, deps, typedocConfig, packageJson],
 	outDirs: ['docs'],
@@ -97,7 +99,10 @@ const pack = S.Npm.Pack({
 
 // lint:package. publint and attw run against the packed tarball, not the
 // source tree.
-const packageLint = S.Npm.PackageLint({ pack })
+const packageLint = Shell.Test({
+	command: 'pnpm exec publint --strict . && pnpm exec attw --pack .',
+	data: [pack],
+})
 
 // Semver as a gate: baseline is the last published @tevm/vm declarations
 // from the registry, surface is this tree's emit.
@@ -108,14 +113,14 @@ const apiCompat = S.Api.Compat({
 })
 
 // lint:deps.
-const depsLint = S.Shell.Test({
+const depsLint = Shell.Test({
 	bin: S.NodeModule.Bin('depcheck'),
 	data: [srcs, tests, packageJson],
 })
 
 // lint:check. The package biome.json extends the root config, so both are
 // key material.
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],
@@ -123,7 +128,7 @@ const lint = S.Shell.Test({
 
 // lint + format as one Diff: `biome check --write --unsafe` applies lint
 // fixes and formatting inside the package.
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],

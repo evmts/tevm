@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('docs/node')
 
 // The tevm.sh docs site (vocs) and its executable documentation tests.
 const packageJson = S.file('package.json')
@@ -15,11 +18,11 @@ const tests = S.Filegroup({
 	srcs: S.glob(['tests/**']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // build. The manifest's `build` runs `bun build:app` and `build:app` is
 // `vocs build`, so the target is the vocs build directly.
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('vocs'),
 	args: ['build'],
 	data: [srcs, deps, vocsConfig, packageJson],
@@ -27,7 +30,7 @@ const build = S.Shell.Build({
 })
 
 // dev. The vocs dev server.
-const dev = S.Shell.Serve({
+const dev = Shell.Serve({
 	bin: S.NodeModule.Bin('vocs'),
 	args: ['dev'],
 	data: [srcs, deps, vocsConfig],
@@ -35,7 +38,7 @@ const dev = S.Shell.Serve({
 })
 
 // preview. Serves the build output.
-const preview = S.Shell.Serve({
+const preview = Shell.Serve({
 	bin: S.NodeModule.Bin('vocs'),
 	args: ['preview'],
 	data: [build],
@@ -50,7 +53,7 @@ const preview = S.Shell.Serve({
 // networks over public RPC endpoints (for example mainnet.optimism.io), so
 // the whole suite declares the network sandbox. The endpoints are public,
 // so no secrets are needed.
-const test = S.Shell.Test({
+const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
 	data: [tests, deps, vitestConfig, tsconfig],
@@ -59,7 +62,7 @@ const test = S.Shell.Test({
 
 // There is no typecheck script; the tsconfig is noEmit over the whole tree
 // (pages, components, and tests), so the target covers all of it.
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, tests, deps, tsconfig],

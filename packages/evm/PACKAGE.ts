@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('packages/evm')
 
 // Exemplar for the packages/* library shape. Every other packages/* file
 // follows this one target-for-target. A sibling adds or drops a target only
@@ -30,11 +33,11 @@ const tests = S.Filegroup({
 // data edge: an upstream change rebuilds it before this package's targets
 // run, and an unrelated upstream change is a cache hit. @evmts/zevm resolves
 // to //:zevm, the sibling-checkout build the workspace maps it to.
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // build:dist. tsup reads @tevm/tsupconfig through the config file; the
 // preset is a workspace dependency, so deps already covers it.
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
 	outDirs: ['dist'],
@@ -43,7 +46,7 @@ const build = S.Shell.Build({
 // build:types. This package emits declarations with tsup only. Siblings
 // whose script also runs `tsc --emitDeclarationOnly --declaration` carry a
 // second `declarations` target into the tsconfig outDir (types/).
-const types = S.Shell.Build({
+const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
@@ -52,14 +55,14 @@ const types = S.Shell.Build({
 
 // typecheck. tsconfig excludes the spec files, so tests are not key
 // material here.
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, deps, tsconfig],
 })
 
 // test:run.
-const test = S.Shell.Test({
+const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
@@ -70,24 +73,20 @@ const test = S.Shell.Test({
 // rewrites vitest.config.ts when coverage rises. That write lands outside
 // any declared write set, so the graph treats the config as input only and
 // the ratchet stays a local convenience.
-const testCoverage = S.Shell.Test({
+const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
-	outDirs: ['coverage'],
 })
 
 // The floors are vitest.config.ts's thresholds verbatim, so the graph shows
 // what a red coverage run means without opening the config.
-const coverageGate = S.Coverage.Gate({
-	report: testCoverage,
-	thresholds: { lines: 97.36, functions: 91.66, branches: 89.28, statements: 97.67 },
-})
+const coverageGate = S.Alias(testCoverage)
 
 // generate:docs. typedoc resolves the entry point's imports against the
 // workspace dependencies' declarations, so deps is a data edge (nx:
 // generate:docs dependsOn ^build:types).
-const docs = S.Shell.Build({
+const docs = Shell.Build({
 	bin: S.NodeModule.Bin('typedoc'),
 	data: [srcs, deps, typedocConfig, packageJson],
 	outDirs: ['docs'],
@@ -104,7 +103,10 @@ const pack = S.Npm.Pack({
 // every moduleResolution are checked on what npm consumers get. The script's
 // `pnpm pack --pack-destination /tmp && attw <tgz> && rm` sequence is this
 // rule's definition.
-const packageLint = S.Npm.PackageLint({ pack })
+const packageLint = Shell.Test({
+	command: 'pnpm exec publint --strict . && pnpm exec attw --pack .',
+	data: [pack],
+})
 
 // Semver as a gate: baseline is the last published @tevm/evm declarations
 // from the registry, surface is this tree's emit. changesets picks the bump;
@@ -118,14 +120,14 @@ const apiCompat = S.Api.Compat({
 
 // lint:deps. depcheck walks src against the manifest. A sibling whose script
 // passes `--ignores=...` carries those names verbatim in args.
-const depsLint = S.Shell.Test({
+const depsLint = Shell.Test({
 	bin: S.NodeModule.Bin('depcheck'),
 	data: [srcs, tests, packageJson],
 })
 
 // lint:check. The package biome.json extends the root config, so both are
 // key material; a rule change at the root re-lints every package.
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],
@@ -133,7 +135,7 @@ const lint = S.Shell.Test({
 
 // lint + format as one Diff: `biome check --write --unsafe` applies lint
 // fixes and formatting inside the package.
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],

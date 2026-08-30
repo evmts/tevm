@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('examples/vite')
 
 // The vite example: a react app whose contracts are a foundry project
 // (foundry.toml, src/contracts) that the vite plugin compiles on import.
@@ -31,7 +34,7 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // build:contracts. forge build; foundry.toml sets out = "artifacts" and
 // resolves libs from node_modules, so deps is a data edge.
@@ -44,7 +47,7 @@ const buildContracts = S.Foundry.Build({
 // build:app. The manifest's `//build:app` key is commented out, but the
 // `build` script still chains it; this is the vite build the chain
 // intends. tevm.config.json marks the foundry project for the vite plugin.
-const buildApp = S.Shell.Build({
+const buildApp = Shell.Build({
 	bin: S.NodeModule.Bin('vite'),
 	args: ['build'],
 	data: [srcs, contracts, deps, viteConfig, tsconfig, tevmConfig, foundryConfig, indexHtml, packageJson],
@@ -57,14 +60,14 @@ const build = S.Suite({
 })
 
 // dev. The vite dev server.
-const dev = S.Shell.Serve({
+const dev = Shell.Serve({
 	bin: S.NodeModule.Bin('vite'),
 	data: [srcs, contracts, deps, viteConfig, tsconfig, tevmConfig, foundryConfig, indexHtml],
 	readiness: { port: 5173 },
 })
 
 // preview. vite preview serves the build output.
-const preview = S.Shell.Serve({
+const preview = Shell.Serve({
 	bin: S.NodeModule.Bin('vite'),
 	args: ['preview'],
 	data: [buildApp],
@@ -73,7 +76,7 @@ const preview = S.Shell.Serve({
 
 // serve. `serve -s -l tcp://0.0.0.0:5173 dist`: a static server over the
 // vite build, used by the example's e2e flow.
-const serve = S.Shell.Serve({
+const serve = Shell.Serve({
 	bin: S.NodeModule.Bin('serve'),
 	args: ['-s', '-l', 'tcp://0.0.0.0:5173', 'dist'],
 	data: [buildApp],
@@ -82,7 +85,7 @@ const serve = S.Shell.Serve({
 
 // test. The script is `vitest` (watch mode); the target runs the one-shot
 // form. vite.config.ts is the vitest config, so it is key material.
-const test = S.Shell.Test({
+const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
 	data: [srcs, tests, contracts, deps, viteConfig, tsconfig, tevmConfig],
@@ -90,7 +93,7 @@ const test = S.Shell.Test({
 
 // lint:check. The package biome.json extends the root config, so both are
 // key material.
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],
@@ -99,7 +102,7 @@ const lint = S.Shell.Test({
 // The manifest's `lint` script: `biome check . --write --unsafe` applies
 // lint fixes and formatting inside the package. This also covers the
 // package's `format` script.
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],
@@ -107,7 +110,7 @@ const format = S.Shell.Diff({
 })
 
 // format:check. `biome format .`, the format-only half of lint.
-const formatCheck = S.Shell.Test({
+const formatCheck = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['format', '.'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],
@@ -129,6 +132,7 @@ const generate = S.Generate({
 // keys on the secret as the fork URL material. No pinned block.
 const anvil = S.Anvil.Fork({
 	forkUrl: S.Secret('VITE_ALCHEMY_API_KEY'),
+	forkBlockNumber: 'latest',
 	port: 8545,
 })
 
@@ -136,7 +140,7 @@ const anvil = S.Anvil.Fork({
 // network .env configures: an outward irreversible action. The script
 // sources .env, which carries DEPLOYER_PRIVATE_KEY, the RPC URL, and the
 // etherscan key the --verify flag uses.
-const deployContracts = S.Shell.Run({
+const deployContracts = Shell.Run({
 	bin: S.Host.bin('forge'),
 	args: ['script', 'script/Deploy.s.sol:Deploy', '--broadcast', '--verify', '-vvvv'],
 	data: [contracts, buildContracts, foundryConfig],
@@ -147,7 +151,7 @@ const deployContracts = S.Shell.Run({
 
 // deploy-contracts:anvil. The same broadcast against the local fork, so no
 // approval: the target chain is disposable.
-const deployContractsAnvil = S.Shell.Run({
+const deployContractsAnvil = Shell.Run({
 	bin: S.Host.bin('forge'),
 	args: [
 		'script',

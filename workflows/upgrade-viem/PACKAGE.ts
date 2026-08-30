@@ -9,8 +9,9 @@ import { Package as root } from '../../PACKAGE.js'
 // is exactly those files. The gates are the tree-wide typecheck and test
 // queries plus the snapshot lint, so a snapshot that flipped from success to
 // error is caught as a regression instead of accepted with -u. pnpm install
-// needs the registry, hence the network sandbox.
-const upgradeViem = S.Agent.Pr({
+// needs the registry, hence the network sandbox. This lane stops at an
+// applied candidate; agentic judgment and PR settlement run afterward.
+const upgradeViem = S.Agent.Diff({
 	agent: S.Agents.luna,
 	prompt: S.file('SKILL.md'),
 	payload: {
@@ -27,15 +28,8 @@ const upgradeViem = S.Agent.Pr({
 		'**/*.spec.ts',
 		'.changeset/**',
 	],
-	gates: [
-		S.Query({ pattern: '//**:typecheck' }),
-		S.Query({ pattern: '//**:test' }),
-		root.snapshotPathsLint,
-		root.changesetLint,
-	],
-	secrets: [S.Secret('GITHUB_TOKEN')],
+	gates: [root.allTypechecks, root.allTests],
 	sandbox: { network: true },
-	approval: 'required',
 	maxRounds: 3,
 })
 

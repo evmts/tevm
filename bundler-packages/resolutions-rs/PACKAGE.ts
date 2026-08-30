@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('bundler-packages/resolutions-rs')
 
 // Exemplar for the Rust crates in the cargo workspace (runtime-rs and solc-rs
 // follow this shape). Targets resolve the toolchain and crate graph through
@@ -31,13 +34,13 @@ const testFixtures = S.Filegroup({
 // is the dev profile. The release profile in the root Cargo.toml turns on lto
 // and panic=abort, so the two profiles key apart on more than a flag.
 const build = S.Cargo.Build({
-	crate: 'tevm_resolutions_rs',
+	package: 'tevm_resolutions_rs',
 	profile: 'release',
 	data: [srcs],
 })
 
 const buildDebug = S.Cargo.Build({
-	crate: 'tevm_resolutions_rs',
+	package: 'tevm_resolutions_rs',
 	profile: 'dev',
 	data: [srcs],
 })
@@ -46,43 +49,31 @@ const buildDebug = S.Cargo.Build({
 // stays the JS runner set and //bundler-packages/**:testRust is the cargo
 // set (root CI's "Tests Rust" step).
 const testRust = S.Cargo.Test({
-	crate: 'tevm_resolutions_rs',
+	package: 'tevm_resolutions_rs',
 	data: [srcs],
 })
 
-// build:napi. napi emits the platform-native index.node plus the per-platform
-// npm/* stub packages the manifest's napi.targets list names; the wasi
-// target produces the .wasm the size gate measures. Platform coverage beyond
-// the host runs in CI runners; locally this builds the host triple only.
-const napi = S.Napi.Build({
-	crate: 'tevm_resolutions_rs',
-	release: true,
-	targets: [
-		'aarch64-apple-darwin',
-		'aarch64-unknown-linux-gnu',
-		'aarch64-unknown-linux-musl',
-		'aarch64-pc-windows-msvc',
-		'x86_64-unknown-linux-musl',
-		'x86_64-apple-darwin',
-		'i686-pc-windows-msvc',
-		'wasm32-wasip1-threads',
-	],
+// build:napi. The local package-mode Flows release does not yet wrap napi,
+// so declare the repository's existing command directly. It builds the host
+// binding; the release matrix remains the responsibility of CI runners.
+const napi = Shell.Build({
+	bin: S.NodeModule.Bin('@napi-rs/cli', 'napi'),
+	args: ['build', '--platform', '--release'],
 	data: [srcs, packageJson],
-	outDirs: ['npm'],
-	outFiles: ['index.node', 'tevm_resolutions_rs.wasm32-wasi.wasm'],
+	outFiles: ['index.node'],
 })
 
-// The wasm-size-check workflow as a gate: a byte budget on the shipped wasi
-// artifact, failing the build instead of a reviewer eyeballing a report.
-const wasmSize = S.Size.Gate({
-	of: napi,
-	file: 'tevm_resolutions_rs.wasm32-wasi.wasm',
-	limit: '3 mb',
+// Keep the host binding under a deterministic byte budget. WASI artifacts are
+// produced only by the release matrix and retain their checked-in CI budget.
+const wasmSize = Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['scripts/check-file-size.mjs', 'bundler-packages/resolutions-rs/index.node', '3 mb'],
+	data: [napi, S.file('//scripts/check-file-size.mjs')],
 })
 
 // The `example` script: examples/usage.js loads the native binding through
 // index.js.
-const example = S.Shell.Run({
+const example = Shell.Run({
 	bin: S.Runtime.bin,
 	args: ['examples/usage.js'],
 	data: [examples, bindings, napi],
@@ -91,7 +82,7 @@ const example = S.Shell.Run({
 // test/index.js exercises the binding from node against test/fixtures. No
 // package.json script runs it today; it is declared so the JS surface has a
 // test the same way the crate does.
-const testNode = S.Shell.Test({
+const testNode = Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['test/index.js'],
 	data: [testFixtures, bindings, napi],
@@ -100,7 +91,7 @@ const testNode = S.Shell.Test({
 // prepublishOnly: `napi prepublish -t npm` stamps the platform packages'
 // versions from the manifest before publish. A Diff over the stub manifests,
 // so a version drift is visible as a check.
-const prepublish = S.Shell.Diff({
+const prepublish = Shell.Diff({
 	bin: S.NodeModule.Bin('@napi-rs/cli', 'napi'),
 	args: ['prepublish', '-t', 'npm'],
 	data: [napi, packageJson],
@@ -112,7 +103,10 @@ const pack = S.Npm.Pack({
 	data: [bindings, napi, prepublish],
 })
 
-const packageLint = S.Npm.PackageLint({ pack })
+const packageLint = Shell.Test({
+	command: 'pnpm exec publint --strict . && pnpm exec attw --pack .',
+	data: [pack],
+})
 
 const clean = S.Clean({
 	targets: [build, buildDebug, napi],

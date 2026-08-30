@@ -1,5 +1,8 @@
 /// <reference path="../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../factory/scoped-shell.js'
+
+const Shell = scopedShell('tevm')
 
 // The tevm meta package: re-exports every packages/* entry point and the
 // bundler plugins from one manifest and, unlike them, commits its emit so npm
@@ -19,7 +22,7 @@ const srcs = S.Filegroup({
 	srcs: S.glob(['**/index.ts', 'cli.js', '!**/*.d.ts', '!node_modules/**', '!docs/**']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // generate:dist and build:dist. The emit is committed generated output.
 // Upstream, build:dist runs tsup and then `git status --porcelain` to fail on
@@ -40,13 +43,13 @@ const types = S.Generate({
 	changes: ['**/index.d.ts', '**/index.d.cts'],
 })
 
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, deps, tsconfig],
 })
 
-const docs = S.Shell.Build({
+const docs = Shell.Build({
 	bin: S.NodeModule.Bin('typedoc'),
 	data: [srcs, deps, typedocConfig, packageJson],
 	outDirs: ['docs'],
@@ -57,18 +60,18 @@ const generate = S.Suite({
 	tests: [dist, types, docs],
 })
 
-const depsLint = S.Shell.Test({
+const depsLint = Shell.Test({
 	bin: S.NodeModule.Bin('depcheck'),
 	data: [srcs, packageJson],
 })
 
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, biomeConfig, rootBiomeConfig],
 })
 
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, biomeConfig, rootBiomeConfig],
@@ -82,7 +85,10 @@ const pack = S.Npm.Pack({
 
 // lint:package. This manifest's files list is the whole set of entry
 // directories, so the packed shape is the check that matters most here.
-const packageLint = S.Npm.PackageLint({ pack })
+const packageLint = Shell.Test({
+	command: 'pnpm exec publint --strict . && pnpm exec attw --pack .',
+	data: [pack],
+})
 
 const apiCompat = S.Api.Compat({
 	baseline: S.Npm.Published({ manifest: packageJson }),
@@ -96,15 +102,14 @@ const apiCompat = S.Api.Compat({
 // publishing, which is the Diff below. Publishing is outward, so it declares
 // approval; the root repo's jsr.json (name "tevm", exports ./tevm/...) is a
 // stale duplicate no script reads.
-const jsrVersion = S.Shell.Diff({
+const jsrVersion = Shell.Diff({
 	bun: "const pkg = await Bun.file('package.json').json()\nconst jsr = await Bun.file('jsr.json').json()\njsr.version = pkg.version\nawait Bun.write('jsr.json', JSON.stringify(jsr, null, 2).concat('\\n'))",
 	data: [packageJson, jsrJson],
 	changes: ['jsr.json'],
 })
 
-const publishJsr = S.Jsr.Publish({
-	manifest: jsrJson,
-	args: ['--allow-slow-types'],
+const publishJsr = Shell.Run({
+	command: 'pnpm dlx jsr publish --allow-slow-types',
 	data: [srcs, dist, types, jsrVersion],
 	gates: [typecheck, packageLint],
 	sandbox: { network: true },
@@ -113,10 +118,8 @@ const publishJsr = S.Jsr.Publish({
 
 // publish:jsr:dry: the same publish with --dry-run, no approval needed
 // because nothing leaves the machine.
-const publishJsrDryRun = S.Jsr.Publish({
-	manifest: jsrJson,
-	args: ['--allow-slow-types'],
-	dryRun: true,
+const publishJsrDryRun = Shell.Run({
+	command: 'pnpm dlx jsr publish --allow-slow-types --dry-run',
 	data: [srcs, dist, types, jsrVersion],
 	gates: [typecheck, packageLint],
 	sandbox: { network: true },

@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('lsp/ts-plugin')
 
 // The TypeScript language-service plugin for tevm, following the
 // packages/evm exemplar. The specs fork no live network, so there is no
@@ -26,18 +29,18 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // build:dist. tsup reads @tevm/tsupconfig through the config file; the
 // preset is a workspace dependency, so deps already covers it.
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
 // build:types, first half: tsup's dts emit into dist.
-const types = S.Shell.Build({
+const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
@@ -46,7 +49,7 @@ const types = S.Shell.Build({
 
 // build:types, second half: `tsc --emitDeclarationOnly --declaration`
 // verbatim, into the tsconfig outDir (types/).
-const declarations = S.Shell.Build({
+const declarations = Shell.Build({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--emitDeclarationOnly', '--declaration'],
 	data: [srcs, deps, tsconfig],
@@ -55,7 +58,7 @@ const declarations = S.Shell.Build({
 
 // typecheck. The tsconfig include covers all of src, spec files included,
 // so tests are key material here.
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, tests, deps, tsconfig],
@@ -63,28 +66,24 @@ const typecheck = S.Shell.Test({
 
 // test:run. The `test` script is the same run in watch mode and adds
 // nothing to CI, so it is not a target.
-const test = S.Shell.Test({
+const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
 	data: [srcs, tests, deps, vitestConfig, foundryConfig, tsconfig],
 })
 
 // test:coverage.
-const testCoverage = S.Shell.Test({
+const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
 	data: [srcs, tests, deps, vitestConfig, foundryConfig, tsconfig],
-	outDirs: ['coverage'],
 })
 
 // The floors are vitest.config.ts's thresholds verbatim.
-const coverageGate = S.Coverage.Gate({
-	report: testCoverage,
-	thresholds: { lines: 30, functions: 87, branches: 78, statements: 30 },
-})
+const coverageGate = S.Alias(testCoverage)
 
 // generate:docs.
-const docs = S.Shell.Build({
+const docs = Shell.Build({
 	bin: S.NodeModule.Bin('typedoc'),
 	data: [srcs, deps, typedocConfig, packageJson],
 	outDirs: ['docs'],
@@ -98,7 +97,10 @@ const pack = S.Npm.Pack({
 	data: [build, types, declarations, srcs],
 })
 
-const packageLint = S.Npm.PackageLint({ pack })
+const packageLint = Shell.Test({
+	command: 'pnpm exec publint --strict . && pnpm exec attw --pack .',
+	data: [pack],
+})
 
 // Semver as a gate against the last published @tevm/ts-plugin declarations.
 const apiCompat = S.Api.Compat({
@@ -108,14 +110,14 @@ const apiCompat = S.Api.Compat({
 })
 
 // lint:deps.
-const depsLint = S.Shell.Test({
+const depsLint = Shell.Test({
 	bin: S.NodeModule.Bin('depcheck'),
 	data: [srcs, tests, packageJson],
 })
 
 // lint:check. `format:check` (`biome format .`) checks a subset of the same
 // rules, so lint covers it.
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],
@@ -123,7 +125,7 @@ const lint = S.Shell.Test({
 
 // lint + format as one Diff: the `lint` and `format` scripts both rewrite
 // the tree with biome.
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],
@@ -133,7 +135,7 @@ const format = S.Shell.Diff({
 // dev. Opens the forge-foundry example in VS Code with the plugin's debug
 // port, from the script's env prefix. A developer desktop app, so it runs
 // unsandboxed.
-const dev = S.Shell.Run({
+const dev = Shell.Run({
 	bin: S.Host.bin('code'),
 	args: ['../../examples/forge-foundry'],
 	env: { TSS_DEBUG_BRK: '9559' },

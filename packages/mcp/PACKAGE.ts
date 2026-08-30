@@ -1,5 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 import { Smithers as S } from '@smthrs/targets'
+import { scopedShell } from '../../factory/scoped-shell.js'
+
+const Shell = scopedShell('packages/mcp')
 
 // Follows the packages/evm/PACKAGE.ts exemplar with a reduced script set: no
 // lint:deps, lint:package, or clean scripts, so the depsLint, pack,
@@ -22,18 +25,18 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
 })
 
-const deps = S.Npm.WorkspaceDeps({ manifest: packageJson })
+const deps = S.Filegroup({ srcs: [packageJson] })
 
 // build:dist. tsup builds both entries from tsup.config.js: the library and
 // the tevm-mcp CLI the manifest's bin points at.
-const build = S.Shell.Build({
+const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
 // The tsup half of build:types.
-const types = S.Shell.Build({
+const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
 	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
@@ -42,7 +45,7 @@ const types = S.Shell.Build({
 
 // The tsc half of build:types. Emits the declarations the manifest's types
 // condition points at, into the tsconfig outDir.
-const declarations = S.Shell.Build({
+const declarations = Shell.Build({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--emitDeclarationOnly', '--declaration'],
 	data: [srcs, deps, tsconfig],
@@ -51,46 +54,46 @@ const declarations = S.Shell.Build({
 
 // typecheck. The tsconfig excludes the spec files, so tests are not key
 // material here.
-const typecheck = S.Shell.Test({
+const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
 	data: [srcs, deps, tsconfig],
 })
 
 // test:run, minus the fork spec so the hermetic suite never needs network.
-const test = S.Shell.Test({
+const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--exclude', '**/fork.spec.ts'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
 })
 
-// fork.spec.ts forks live mainnet through the public
-// ethereum-rpc.publicnode.com endpoint. It needs the network sandbox but no
-// secrets: the endpoint takes no API key.
-const testFork = S.Shell.Test({
+// fork.spec.ts forks live mainnet through the configured archive endpoint,
+// with PublicNode as a developer fallback. The configured endpoint avoids
+// public providers' short proof windows in the external-integration gate.
+const testFork = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', 'src/fork.spec.ts'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
 	sandbox: { network: true },
+	secrets: [S.Secret('TEVM_RPC_URLS_MAINNET')],
 })
 
 // test:coverage. The config declares no thresholds, so there is no gate.
-const testCoverage = S.Shell.Test({
+const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage', '--exclude', '**/fork.spec.ts'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
-	outDirs: ['coverage'],
 })
 
 // generate:docs.
-const docs = S.Shell.Build({
+const docs = Shell.Build({
 	bin: S.NodeModule.Bin('typedoc'),
 	data: [srcs, deps, typedocConfig, packageJson],
 	outDirs: ['docs'],
 })
 
 // lint:check.
-const lint = S.Shell.Test({
+const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],
@@ -98,7 +101,7 @@ const lint = S.Shell.Test({
 
 // lint. Applies lint fixes and formatting in one pass, so it also covers the
 // format script.
-const format = S.Shell.Diff({
+const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
 	data: [srcs, tests, biomeConfig, rootBiomeConfig],

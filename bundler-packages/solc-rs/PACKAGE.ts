@@ -13,21 +13,21 @@ const srcs = S.Filegroup({
 
 // build (cargo build --release).
 const build = S.Cargo.Build({
-	crate: 'tevm_solc_rs',
+	package: 'tevm_solc_rs',
 	profile: 'release',
 	data: [srcs],
 })
 
 // build:debug (cargo build).
 const buildDebug = S.Cargo.Build({
-	crate: 'tevm_solc_rs',
+	package: 'tevm_solc_rs',
 	profile: 'dev',
 	data: [srcs],
 })
 
 // test (cargo test).
 const testRust = S.Cargo.Test({
-	crate: 'tevm_solc_rs',
+	package: 'tevm_solc_rs',
 	data: [srcs],
 })
 
