@@ -128,7 +128,7 @@ describe('Tevm MCP tools', () => {
 		)
 		expect(account.isContract).toBe(true)
 		// eth_getStorageAt returns the canonical 32-byte word, left-padded (#2081).
-	expect(account.storageValue).toMatch(/^0x0+2a$/i)
+		expect(account.storageValue).toMatch(/^0x0+2a$/i)
 
 		const cheatAddress = '0x1000000000000000000000000000000000000001'
 		await executeTool(
