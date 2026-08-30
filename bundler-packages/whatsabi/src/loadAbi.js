@@ -1,4 +1,5 @@
 import { loaders, whatsabi } from '@shazow/whatsabi'
+import { tolerantSignatureLookup } from './tolerantSignatureLookup.js'
 
 /**
  * @param {object} options
@@ -13,6 +14,11 @@ export const loadAbi = async ({ address, client, explorerUrl, followProxies, eth
 	return whatsabi.autoload(address, {
 		provider: client,
 		followProxies,
+		// whatsabi's own default order; wrapped so a lookup-service outage
+		// leaves selectors unnamed instead of rejecting the resolution.
+		signatureLookup: tolerantSignatureLookup(
+			new loaders.MultiSignatureLookup([new loaders.OpenChainSignatureLookup(), new loaders.FourByteSignatureLookup()]),
+		),
 		abiLoader: new loaders.MultiABILoader([
 			new loaders.SourcifyABILoader({
 				chainId: client.chain?.id ?? 1,
