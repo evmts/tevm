@@ -14,7 +14,7 @@
 	"toolchain": {
 		"node": "24.12.0",
 		"pnpm": "10.33.4",
-		"flowsRevision": "9c762b0b36be53dc8dec539bad44733774638b52"
+		"flowsRevision": "cf4ddf3215572de3f65c35ac6822357dac7ad04e"
 	},
 	"approvalLabel": "factory:ready",
 	"issueTypes": [
