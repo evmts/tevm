@@ -8,6 +8,6 @@
 
 > **EthSignTransactionJsonRpcRequest** = `JsonRpcRequest`\<`"eth_signTransaction"`, readonly \[\{ `accessList?`: readonly `object`[]; `authorizationList?`: readonly `unknown`[]; `blobVersionedHashes?`: readonly `Hex`[]; `chainId?`: `Hex`; `data?`: `Hex`; `from`: `Address`; `gas?`: `Hex`; `gasPrice?`: `Hex`; `maxFeePerBlobGas?`: `Hex`; `maxFeePerGas?`: `Hex`; `maxPriorityFeePerGas?`: `Hex`; `nonce?`: `Hex`; `to?`: `Address`; `type?`: `Hex`; `value?`: `Hex`; \}\]\>
 
-Defined in: [packages/actions/src/eth/EthJsonRpcRequest.ts:283](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcRequest.ts#L283)
+Defined in: [packages/actions/src/eth/EthJsonRpcRequest.ts:294](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcRequest.ts#L294)
 
 JSON-RPC request for `eth_signTransaction` procedure

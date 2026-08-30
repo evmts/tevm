@@ -6,4 +6,4 @@
 
 # Type Alias: AnvilLoadStateResult
 
-> **AnvilLoadStateResult** = `null`
+> **AnvilLoadStateResult** = `boolean`

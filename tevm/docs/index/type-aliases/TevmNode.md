@@ -297,6 +297,20 @@ Gets all stored snapshots for evm_snapshot/evm_revert
 
 `Map`\<`string`, [`TevmSnapshot`](../../node/type-aliases/TevmSnapshot.md)\>
 
+### getStrictImpersonation
+
+> `readonly` **getStrictImpersonation**: () => `boolean`
+
+Gets whether strict impersonation is enabled.
+When enabled, tevm emulates anvil: sending a transaction from an address that is
+neither a prefunded dev account nor actively impersonated throws a
+`NoSignerAvailableError`. Defaults to false, which keeps tevm's permissive
+auto-impersonation behavior.
+
+#### Returns
+
+`boolean`
+
 ### getTracesEnabled
 
 > `readonly` **getTracesEnabled**: () => `boolean`
@@ -599,6 +613,26 @@ Pass undefined to clear the override and use current time.
 #### Returns
 
 `void`
+
+### setStrictImpersonation
+
+> `readonly` **setStrictImpersonation**: (`enabled`) => `void`
+
+Sets whether to enforce strict impersonation.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `enabled` | `boolean` |
+
+#### Returns
+
+`void`
+
+#### See
+
+getStrictImpersonation
 
 ### setTracesEnabled
 

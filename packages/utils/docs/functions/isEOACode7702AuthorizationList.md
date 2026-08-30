@@ -8,7 +8,7 @@
 
 > **isEOACode7702AuthorizationList**(`input`): `input is EOACode7702AuthorizationList`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:221
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:221
 
 ## Parameters
 

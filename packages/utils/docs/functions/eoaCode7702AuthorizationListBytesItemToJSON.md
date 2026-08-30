@@ -8,7 +8,7 @@
 
 > **eoaCode7702AuthorizationListBytesItemToJSON**(`authorizationList`): `EOACode7702AuthorizationListItem`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:212
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:212
 
 ## Parameters
 

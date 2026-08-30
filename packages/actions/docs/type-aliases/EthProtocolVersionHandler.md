@@ -8,7 +8,7 @@
 
 > **EthProtocolVersionHandler** = (`request`) => `Promise`\<[`EthProtocolVersionResult`](EthProtocolVersionResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:185](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L185)
+Defined in: [packages/actions/src/eth/EthHandler.ts:187](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L187)
 
 ## Parameters
 

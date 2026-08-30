@@ -8,6 +8,6 @@
 
 > **AnvilImpersonateAccountJsonRpcResponse** = `JsonRpcResponse`\<`"anvil_impersonateAccount"`, `SerializeToJson`\<[`AnvilImpersonateAccountResult`](AnvilImpersonateAccountResult.md)\>, `AnvilError`\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcResponse.ts:50](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcResponse.ts#L50)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcResponse.ts:49](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcResponse.ts#L49)
 
 JSON-RPC response for `anvil_impersonateAccount` procedure

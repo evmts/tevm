@@ -8,6 +8,6 @@
 
 > **AnvilMineJsonRpcRequest** = `JsonRpcRequest`\<`"anvil_mine"`, readonly \[`Hex`, `Hex`\]\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:71](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L71)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:69](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L69)
 
 JSON-RPC request for `anvil_mine` method

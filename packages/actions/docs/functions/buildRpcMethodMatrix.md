@@ -8,7 +8,7 @@
 
 > **buildRpcMethodMatrix**(`runtimeMethods`, `typedMethods?`): readonly [`RpcMethodMatrixEntry`](../type-aliases/RpcMethodMatrixEntry.md)[]
 
-Defined in: [packages/actions/src/rpcMethodMatrix.ts:30](https://github.com/evmts/tevm/blob/main/packages/actions/src/rpcMethodMatrix.ts#L30)
+Defined in: [packages/actions/src/rpcMethodMatrix.ts:44](https://github.com/evmts/tevm/blob/main/packages/actions/src/rpcMethodMatrix.ts#L44)
 
 ## Parameters
 

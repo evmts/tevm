@@ -8,7 +8,7 @@
 
 > `const` **KeyEncoding**: `object`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:14
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:14
 
 ## Type Declaration
 

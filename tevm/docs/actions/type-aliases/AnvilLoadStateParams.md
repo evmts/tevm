@@ -14,4 +14,4 @@ Params for `anvil_loadState` handler
 
 | Property | Modifier | Type | Description |
 | ------ | ------ | ------ | ------ |
-| <a id="state"></a> `state` | `readonly` | `Record`\<[`Hex`](Hex.md), [`Hex`](Hex.md)\> | The state to load |
+| <a id="state"></a> `state` | `readonly` | [`Hex`](Hex.md) | The opaque state blob returned by `anvil_dumpState`. |

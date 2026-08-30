@@ -6,7 +6,7 @@
 
 # Class: EthjsAccount
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:175
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:175
 
 ## Constructors
 
@@ -14,7 +14,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:175
 
 > **new EthjsAccount**(`nonce?`, `balance?`, `storageRoot?`, `codeHash?`, `codeSize?`, `version?`): `Account`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:182
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:182
 
 #### Parameters
 
@@ -35,12 +35,12 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:182
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="_balance"></a> `_balance` | `bigint` \| `null` | zevm/npm/zevm/dist/util.d.ts:177 |
-| <a id="_codehash"></a> `_codeHash` | `Uint8Array`\<`ArrayBufferLike`\> \| `null` | zevm/npm/zevm/dist/util.d.ts:179 |
-| <a id="_codesize"></a> `_codeSize` | `number` \| `null` | zevm/npm/zevm/dist/util.d.ts:180 |
-| <a id="_nonce"></a> `_nonce` | `bigint` \| `null` | zevm/npm/zevm/dist/util.d.ts:176 |
-| <a id="_storageroot"></a> `_storageRoot` | `Uint8Array`\<`ArrayBufferLike`\> \| `null` | zevm/npm/zevm/dist/util.d.ts:178 |
-| <a id="_version"></a> `_version` | `number` \| `null` | zevm/npm/zevm/dist/util.d.ts:181 |
+| <a id="_balance"></a> `_balance` | `bigint` \| `null` | vendor/zevm/npm/zevm/dist/util.d.ts:177 |
+| <a id="_codehash"></a> `_codeHash` | `Uint8Array`\<`ArrayBufferLike`\> \| `null` | vendor/zevm/npm/zevm/dist/util.d.ts:179 |
+| <a id="_codesize"></a> `_codeSize` | `number` \| `null` | vendor/zevm/npm/zevm/dist/util.d.ts:180 |
+| <a id="_nonce"></a> `_nonce` | `bigint` \| `null` | vendor/zevm/npm/zevm/dist/util.d.ts:176 |
+| <a id="_storageroot"></a> `_storageRoot` | `Uint8Array`\<`ArrayBufferLike`\> \| `null` | vendor/zevm/npm/zevm/dist/util.d.ts:178 |
+| <a id="_version"></a> `_version` | `number` \| `null` | vendor/zevm/npm/zevm/dist/util.d.ts:181 |
 
 ## Accessors
 
@@ -50,7 +50,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:182
 
 > **get** **balance**(): `bigint`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:187
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:187
 
 ##### Returns
 
@@ -60,7 +60,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:187
 
 > **set** **balance**(`balance`): `void`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:188
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:188
 
 ##### Parameters
 
@@ -80,7 +80,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:188
 
 > **get** **codeHash**(): `Uint8Array`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:191
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:191
 
 ##### Returns
 
@@ -90,7 +90,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:191
 
 > **set** **codeHash**(`codeHash`): `void`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:192
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:192
 
 ##### Parameters
 
@@ -110,7 +110,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:192
 
 > **get** **codeSize**(): `number`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:193
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:193
 
 ##### Returns
 
@@ -120,7 +120,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:193
 
 > **set** **codeSize**(`codeSize`): `void`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:194
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:194
 
 ##### Parameters
 
@@ -140,7 +140,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:194
 
 > **get** **nonce**(): `bigint`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:185
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:185
 
 ##### Returns
 
@@ -150,7 +150,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:185
 
 > **set** **nonce**(`nonce`): `void`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:186
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:186
 
 ##### Parameters
 
@@ -170,7 +170,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:186
 
 > **get** **storageRoot**(): `Uint8Array`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:189
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:189
 
 ##### Returns
 
@@ -180,7 +180,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:189
 
 > **set** **storageRoot**(`storageRoot`): `void`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:190
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:190
 
 ##### Parameters
 
@@ -200,7 +200,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:190
 
 > **get** **version**(): `number`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:183
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:183
 
 ##### Returns
 
@@ -210,7 +210,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:183
 
 > **set** **version**(`version`): `void`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:184
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:184
 
 ##### Parameters
 
@@ -228,7 +228,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:184
 
 > **\_validate**(): `void`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:195
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:195
 
 #### Returns
 
@@ -240,7 +240,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:195
 
 > **isContract**(): `boolean`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:199
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:199
 
 #### Returns
 
@@ -252,7 +252,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:199
 
 > **isEmpty**(): `boolean`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:200
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:200
 
 #### Returns
 
@@ -264,7 +264,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:200
 
 > **raw**(): `Uint8Array`\<`ArrayBufferLike`\>[]
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:196
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:196
 
 #### Returns
 
@@ -276,7 +276,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:196
 
 > **serialize**(): `Uint8Array`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:197
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:197
 
 #### Returns
 
@@ -288,7 +288,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:197
 
 > **serializeWithPartialInfo**(): `Uint8Array`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:198
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:198
 
 #### Returns
 

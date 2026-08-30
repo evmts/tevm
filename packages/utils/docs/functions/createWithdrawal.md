@@ -8,7 +8,7 @@
 
 > **createWithdrawal**(`withdrawalData`): [`Withdrawal`](../classes/Withdrawal.md)
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:239
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:239
 
 ## Parameters
 

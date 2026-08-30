@@ -8,6 +8,6 @@
 
 > **AnvilDropTransactionJsonRpcResponse** = `JsonRpcResponse`\<`"anvil_dropTransaction"`, `SerializeToJson`\<[`AnvilDropTransactionResult`](AnvilDropTransactionResult.md)\>, `AnvilError`\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcResponse.ts:128](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcResponse.ts#L128)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcResponse.ts:127](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcResponse.ts#L127)
 
 JSON-RPC response for `anvil_dropTransaction` procedure

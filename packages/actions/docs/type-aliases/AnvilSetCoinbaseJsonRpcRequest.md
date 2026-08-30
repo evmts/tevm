@@ -8,7 +8,7 @@
 
 > **AnvilSetCoinbaseJsonRpcRequest** = `JsonRpcRequest`\<`"anvil_setCoinbase"`, readonly \[`Address`\]\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:66](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L66)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:64](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L64)
 
 JSON-RPC request for `anvil_setCoinbase` method
 Not included atm because tevm_call supports it and i was getting methodNotFound errors trying it in anvil

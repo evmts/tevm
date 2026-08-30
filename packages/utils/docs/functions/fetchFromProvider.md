@@ -8,7 +8,7 @@
 
 > **fetchFromProvider**(`url`, `params`): `Promise`\<`unknown`\>
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:241
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:241
 
 ## Parameters
 

@@ -8,7 +8,7 @@
 
 > **bytesToBool**(`bytes_`, `opts?`): `boolean`
 
-Defined in: tevm-monorepo/node\_modules/.pnpm/viem@2.49.3\_bufferutil@4.1.0\_typescript@6.0.3\_utf-8-validate@5.0.10\_zod@4.4.3/node\_modules/viem/\_types/utils/encoding/fromBytes.d.ts:79
+Defined in: node\_modules/.pnpm/viem@2.49.3\_bufferutil@4.1.0\_typescript@6.0.3\_utf-8-validate@5.0.10\_zod@4.4.3/node\_modules/viem/\_types/utils/encoding/fromBytes.d.ts:79
 
 Decodes a byte array into a boolean.
 

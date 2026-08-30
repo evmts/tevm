@@ -8,7 +8,7 @@
 
 > **EthBlockNumberHandler** = (`request?`) => `Promise`\<[`EthBlockNumberResult`](EthBlockNumberResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:101](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L101)
+Defined in: [packages/actions/src/eth/EthHandler.ts:103](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L103)
 
 ## Parameters
 

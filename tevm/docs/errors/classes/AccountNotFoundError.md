@@ -105,8 +105,6 @@ The first error that matches the function, or the original error.
 
 ### captureStackTrace()
 
-#### Call Signature
-
 > `static` **captureStackTrace**(`targetObject`, `constructorOpt?`): `void`
 
 Creates a `.stack` property on `targetObject`, which when accessed returns
@@ -153,81 +151,18 @@ function c() {
 a();
 ```
 
-##### Parameters
+#### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
 | `targetObject` | `object` |
 | `constructorOpt?` | `Function` |
 
-##### Returns
+#### Returns
 
 `void`
 
-##### Inherited from
-
-[`ResourceNotFoundError`](ResourceNotFoundError.md).[`captureStackTrace`](ResourceNotFoundError.md#capturestacktrace)
-
-#### Call Signature
-
-> `static` **captureStackTrace**(`targetObject`, `constructorOpt?`): `void`
-
-Creates a `.stack` property on `targetObject`, which when accessed returns
-a string representing the location in the code at which
-`Error.captureStackTrace()` was called.
-
-```js
-const myObject = {};
-Error.captureStackTrace(myObject);
-myObject.stack;  // Similar to `new Error().stack`
-```
-
-The first line of the trace will be prefixed with
-`${myObject.name}: ${myObject.message}`.
-
-The optional `constructorOpt` argument accepts a function. If given, all frames
-above `constructorOpt`, including `constructorOpt`, will be omitted from the
-generated stack trace.
-
-The `constructorOpt` argument is useful for hiding implementation
-details of error generation from the user. For instance:
-
-```js
-function a() {
-  b();
-}
-
-function b() {
-  c();
-}
-
-function c() {
-  // Create an error without stack trace to avoid calculating the stack trace twice.
-  const { stackTraceLimit } = Error;
-  Error.stackTraceLimit = 0;
-  const error = new Error();
-  Error.stackTraceLimit = stackTraceLimit;
-
-  // Capture the stack trace above function b
-  Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace
-  throw error;
-}
-
-a();
-```
-
-##### Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `targetObject` | `object` |
-| `constructorOpt?` | `Function` |
-
-##### Returns
-
-`void`
-
-##### Inherited from
+#### Inherited from
 
 [`ResourceNotFoundError`](ResourceNotFoundError.md).[`captureStackTrace`](ResourceNotFoundError.md#capturestacktrace)
 
@@ -257,48 +192,23 @@ Indicates whether the argument provided is a built-in Error instance or not.
 
 ### prepareStackTrace()
 
-#### Call Signature
-
 > `static` **prepareStackTrace**(`err`, `stackTraces`): `any`
 
-##### Parameters
+#### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
 | `err` | `Error` |
 | `stackTraces` | `CallSite`[] |
 
-##### Returns
+#### Returns
 
 `any`
 
-##### See
+#### See
 
 https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
-##### Inherited from
-
-[`ResourceNotFoundError`](ResourceNotFoundError.md).[`prepareStackTrace`](ResourceNotFoundError.md#preparestacktrace)
-
-#### Call Signature
-
-> `static` **prepareStackTrace**(`err`, `stackTraces`): `any`
-
-##### Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `err` | `Error` |
-| `stackTraces` | `CallSite`[] |
-
-##### Returns
-
-`any`
-
-##### See
-
-https://v8.dev/docs/stack-trace-api#customizing-stack-traces
-
-##### Inherited from
+#### Inherited from
 
 [`ResourceNotFoundError`](ResourceNotFoundError.md).[`prepareStackTrace`](ResourceNotFoundError.md#preparestacktrace)

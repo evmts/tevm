@@ -8,6 +8,6 @@
 
 > **AnvilMineDetailedJsonRpcResponse** = `JsonRpcResponse`\<`"anvil_mineDetailed"`, [`AnvilMineDetailedResult`](AnvilMineDetailedResult.md), `AnvilError`\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcResponse.ts:367](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcResponse.ts#L367)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcResponse.ts:366](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcResponse.ts#L366)
 
 JSON-RPC response for `anvil_mineDetailed` procedure

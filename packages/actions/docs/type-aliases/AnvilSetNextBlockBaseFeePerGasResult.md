@@ -8,4 +8,4 @@
 
 > **AnvilSetNextBlockBaseFeePerGasResult** = `null`
 
-Defined in: [packages/actions/src/anvil/AnvilResult.ts:99](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilResult.ts#L99)
+Defined in: [packages/actions/src/anvil/AnvilResult.ts:97](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilResult.ts#L97)

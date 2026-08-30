@@ -8,4 +8,4 @@
 
 > **EthjsLog** = \[`Uint8Array`, `Uint8Array`[], `Uint8Array`\]
 
-Defined in: zevm/npm/zevm/dist/receipt.d.ts:7
+Defined in: vendor/zevm/npm/zevm/dist/receipt.d.ts:7

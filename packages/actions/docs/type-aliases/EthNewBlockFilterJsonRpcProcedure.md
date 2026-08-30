@@ -8,7 +8,7 @@
 
 > **EthNewBlockFilterJsonRpcProcedure** = (`request`) => `Promise`\<[`EthNewBlockFilterJsonRpcResponse`](EthNewBlockFilterJsonRpcResponse.md)\>
 
-Defined in: [packages/actions/src/eth/EthProcedure.ts:235](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthProcedure.ts#L235)
+Defined in: [packages/actions/src/eth/EthProcedure.ts:241](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthProcedure.ts#L241)
 
 ## Parameters
 

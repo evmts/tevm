@@ -8,7 +8,7 @@
 
 > **bytesToUtf8**(`bytes`): `string`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:151
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:151
 
 ## Parameters
 

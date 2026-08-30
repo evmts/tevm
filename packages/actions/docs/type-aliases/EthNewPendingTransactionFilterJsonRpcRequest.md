@@ -8,6 +8,6 @@
 
 > **EthNewPendingTransactionFilterJsonRpcRequest** = `JsonRpcRequest`\<`"eth_newPendingTransactionFilter"`, readonly \[\]\>
 
-Defined in: [packages/actions/src/eth/EthJsonRpcRequest.ts:324](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcRequest.ts#L324)
+Defined in: [packages/actions/src/eth/EthJsonRpcRequest.ts:335](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcRequest.ts#L335)
 
 JSON-RPC request for `eth_newPendingTransactionFilter` procedure

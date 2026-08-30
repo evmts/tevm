@@ -54,6 +54,7 @@ A mapping of `eth_*` method names to their return type
 | <a id="eth_protocolversion"></a> `eth_protocolVersion` | [`EthProtocolVersionJsonRpcResponse`](EthProtocolVersionJsonRpcResponse.md) |
 | <a id="eth_sendrawtransaction"></a> `eth_sendRawTransaction` | [`EthSendRawTransactionJsonRpcResponse`](EthSendRawTransactionJsonRpcResponse.md) |
 | <a id="eth_sendtransaction"></a> `eth_sendTransaction` | [`EthSendTransactionJsonRpcResponse`](EthSendTransactionJsonRpcResponse.md) |
+| <a id="eth_sendunsignedtransaction"></a> `eth_sendUnsignedTransaction` | [`EthSendUnsignedTransactionJsonRpcResponse`](EthSendUnsignedTransactionJsonRpcResponse.md) |
 | <a id="eth_sign"></a> `eth_sign` | [`EthSignJsonRpcResponse`](EthSignJsonRpcResponse.md) |
 | <a id="eth_signtransaction"></a> `eth_signTransaction` | [`EthSignTransactionJsonRpcResponse`](EthSignTransactionJsonRpcResponse.md) |
 | <a id="eth_simulatev1"></a> `eth_simulateV1` | [`EthSimulateV1JsonRpcResponse`](EthSimulateV1JsonRpcResponse.md) |

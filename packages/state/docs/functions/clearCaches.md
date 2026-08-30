@@ -8,7 +8,7 @@
 
 > **clearCaches**(`baseState`, `skipFetchingFromFork?`): () => `void`
 
-Defined in: [tevm-monorepo/packages/state/src/actions/clearCaches.js:5](https://github.com/evmts/tevm/blob/main/packages/state/src/actions/clearCaches.js#L5)
+Defined in: [packages/state/src/actions/clearCaches.js:5](https://github.com/evmts/tevm/blob/main/packages/state/src/actions/clearCaches.js#L5)
 
 Resets all internal caches
 

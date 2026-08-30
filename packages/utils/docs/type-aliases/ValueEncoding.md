@@ -8,4 +8,4 @@
 
 > **ValueEncoding** = *typeof* [`ValueEncoding`](../variables/ValueEncoding.md)\[keyof *typeof* [`ValueEncoding`](../variables/ValueEncoding.md)\]
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:20
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:20

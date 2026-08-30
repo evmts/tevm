@@ -8,7 +8,7 @@
 
 > **EthSimulateV2Handler** = (`request`) => `Promise`\<[`EthSimulateV2Result`](EthSimulateV2Result.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:217](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L217)
+Defined in: [packages/actions/src/eth/EthHandler.ts:223](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L223)
 
 ## Parameters
 

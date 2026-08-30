@@ -8,6 +8,6 @@
 
 > **AnvilDropAllTransactionsJsonRpcRequest** = `JsonRpcRequest`\<`"anvil_dropAllTransactions"`, readonly \[\]\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:178](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L178)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:171](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L171)
 
 JSON-RPC request for `anvil_dropAllTransactions` method

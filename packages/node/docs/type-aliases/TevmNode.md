@@ -8,7 +8,7 @@
 
 > **TevmNode**\<`TMode`, `TExtended`\> = `object` & [`EIP1193EventEmitter`](EIP1193EventEmitter.md) & `TExtended`
 
-Defined in: [packages/node/src/TevmNode.ts:45](https://github.com/evmts/tevm/blob/main/packages/node/src/TevmNode.ts#L45)
+Defined in: [packages/node/src/TevmNode.ts:47](https://github.com/evmts/tevm/blob/main/packages/node/src/TevmNode.ts#L47)
 
 The base client used by Tevm. Add extensions to add additional functionality
 
@@ -298,6 +298,20 @@ Gets all stored snapshots for evm_snapshot/evm_revert
 #### Returns
 
 `Map`\<`string`, [`TevmSnapshot`](TevmSnapshot.md)\>
+
+### getStrictImpersonation
+
+> `readonly` **getStrictImpersonation**: () => `boolean`
+
+Gets whether strict impersonation is enabled.
+When enabled, tevm emulates anvil: sending a transaction from an address that is
+neither a prefunded dev account nor actively impersonated throws a
+`NoSignerAvailableError`. Defaults to false, which keeps tevm's permissive
+auto-impersonation behavior.
+
+#### Returns
+
+`boolean`
 
 ### getTracesEnabled
 
@@ -601,6 +615,26 @@ Pass undefined to clear the override and use current time.
 #### Returns
 
 `void`
+
+### setStrictImpersonation
+
+> `readonly` **setStrictImpersonation**: (`enabled`) => `void`
+
+Sets whether to enforce strict impersonation.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `enabled` | `boolean` |
+
+#### Returns
+
+`void`
+
+#### See
+
+getStrictImpersonation
 
 ### setTracesEnabled
 

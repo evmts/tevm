@@ -8,4 +8,4 @@
 
 > `const` **bytesToUnprefixedHex**: *typeof* `nobleBytesToHex`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:131
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:131

@@ -8,6 +8,6 @@
 
 > **EthNewFilterJsonRpcRequest** = `JsonRpcRequest`\<`"eth_newFilter"`, readonly \[`SerializeToJson`\<[`FilterParams`](FilterParams.md)\>\]\>
 
-Defined in: [packages/actions/src/eth/EthJsonRpcRequest.ts:314](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcRequest.ts#L314)
+Defined in: [packages/actions/src/eth/EthJsonRpcRequest.ts:325](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcRequest.ts#L325)
 
 JSON-RPC request for `eth_newFilter` procedure

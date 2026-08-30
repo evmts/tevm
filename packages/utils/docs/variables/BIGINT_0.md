@@ -8,4 +8,4 @@
 
 > `const` **BIGINT\_0**: `0n` = `0n`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:126
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:126

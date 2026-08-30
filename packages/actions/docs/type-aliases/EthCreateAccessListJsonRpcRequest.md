@@ -8,6 +8,6 @@
 
 > **EthCreateAccessListJsonRpcRequest** = `JsonRpcRequest`\<`"eth_createAccessList"`, readonly \[[`JsonRpcTransaction`](JsonRpcTransaction.md), `BlockTag` \| `Hex`\]\>
 
-Defined in: [packages/actions/src/eth/EthJsonRpcRequest.ts:353](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcRequest.ts#L353)
+Defined in: [packages/actions/src/eth/EthJsonRpcRequest.ts:364](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcRequest.ts#L364)
 
 JSON-RPC request for `eth_createAccessList` procedure

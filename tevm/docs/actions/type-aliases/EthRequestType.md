@@ -48,6 +48,7 @@ A mapping of `eth_*` method names to their request type
 | <a id="eth_protocolversion"></a> `eth_protocolVersion` | [`EthProtocolVersionJsonRpcRequest`](EthProtocolVersionJsonRpcRequest.md) |
 | <a id="eth_sendrawtransaction"></a> `eth_sendRawTransaction` | [`EthSendRawTransactionJsonRpcRequest`](EthSendRawTransactionJsonRpcRequest.md) |
 | <a id="eth_sendtransaction"></a> `eth_sendTransaction` | [`EthSendTransactionJsonRpcRequest`](EthSendTransactionJsonRpcRequest.md) |
+| <a id="eth_sendunsignedtransaction"></a> `eth_sendUnsignedTransaction` | [`EthSendUnsignedTransactionJsonRpcRequest`](EthSendUnsignedTransactionJsonRpcRequest.md) |
 | <a id="eth_sign"></a> `eth_sign` | [`EthSignJsonRpcRequest`](EthSignJsonRpcRequest.md) |
 | <a id="eth_signtransaction"></a> `eth_signTransaction` | [`EthSignTransactionJsonRpcRequest`](EthSignTransactionJsonRpcRequest.md) |
 | <a id="eth_syncing"></a> `eth_syncing` | [`EthSyncingJsonRpcRequest`](EthSyncingJsonRpcRequest.md) |

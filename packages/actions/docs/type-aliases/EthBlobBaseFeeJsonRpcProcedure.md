@@ -8,7 +8,7 @@
 
 > **EthBlobBaseFeeJsonRpcProcedure** = (`request`) => `Promise`\<[`EthBlobBaseFeeJsonRpcResponse`](EthBlobBaseFeeJsonRpcResponse.md)\>
 
-Defined in: [packages/actions/src/eth/EthProcedure.ts:105](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthProcedure.ts#L105)
+Defined in: [packages/actions/src/eth/EthProcedure.ts:107](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthProcedure.ts#L107)
 
 ## Parameters
 

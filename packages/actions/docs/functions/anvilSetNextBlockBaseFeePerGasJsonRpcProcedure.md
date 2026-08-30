@@ -8,7 +8,7 @@
 
 > **anvilSetNextBlockBaseFeePerGasJsonRpcProcedure**(`client`): [`AnvilSetNextBlockBaseFeePerGasProcedure`](../type-aliases/AnvilSetNextBlockBaseFeePerGasProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilSetNextBlockBaseFeePerGasProcedure.js:9](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilSetNextBlockBaseFeePerGasProcedure.js#L9)
+Defined in: [packages/actions/src/anvil/anvilSetNextBlockBaseFeePerGasProcedure.js:11](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilSetNextBlockBaseFeePerGasProcedure.js#L11)
 
 Request handler for anvil_setNextBlockBaseFeePerGas JSON-RPC requests.
 Sets the base fee per gas for the next block only (EIP-1559).

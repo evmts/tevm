@@ -8,7 +8,7 @@
 
 > **EthEstimateGasHandler** = (`request`) => `Promise`\<[`EthEstimateGasResult`](EthEstimateGasResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:109](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L109)
+Defined in: [packages/actions/src/eth/EthHandler.ts:111](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L111)
 
 ## Parameters
 

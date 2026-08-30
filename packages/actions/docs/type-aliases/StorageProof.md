@@ -8,7 +8,7 @@
 
 > **StorageProof** = `object`
 
-Defined in: [packages/actions/src/eth/EthResult.ts:313](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L313)
+Defined in: [packages/actions/src/eth/EthResult.ts:319](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L319)
 
 Storage proof for a single storage slot
 
@@ -16,6 +16,6 @@ Storage proof for a single storage slot
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="key"></a> `key` | [`Hex`](Hex.md) | The key of the storage slot | [packages/actions/src/eth/EthResult.ts:317](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L317) |
-| <a id="proof"></a> `proof` | [`Hex`](Hex.md)[] | The merkle proof for this storage slot | [packages/actions/src/eth/EthResult.ts:325](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L325) |
-| <a id="value"></a> `value` | [`Hex`](Hex.md) | The value of the storage slot | [packages/actions/src/eth/EthResult.ts:321](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L321) |
+| <a id="key"></a> `key` | [`Hex`](Hex.md) | The key of the storage slot | [packages/actions/src/eth/EthResult.ts:323](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L323) |
+| <a id="proof"></a> `proof` | [`Hex`](Hex.md)[] | The merkle proof for this storage slot | [packages/actions/src/eth/EthResult.ts:331](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L331) |
+| <a id="value"></a> `value` | [`Hex`](Hex.md) | The value of the storage slot | [packages/actions/src/eth/EthResult.ts:327](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L327) |

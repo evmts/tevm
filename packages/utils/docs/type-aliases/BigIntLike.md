@@ -8,4 +8,4 @@
 
 > **BigIntLike** = `bigint` \| `PrefixedHexString` \| `number` \| `Uint8Array`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:6
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:6

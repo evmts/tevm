@@ -6,7 +6,10 @@
 
 # Type Alias: EIP1193RequestFn\<TRpcSchema\>
 
-> **EIP1193RequestFn**\<`TRpcSchema`\> = \<`TRpcSchemaOverride`, `TParameters`, `_ReturnType`\>(`args`, `options?`) => `Promise`\<`_ReturnType`\>
+> **EIP1193RequestFn**\<`TRpcSchema`\> = `TypedEIP1193RequestFn`\<`TRpcSchema`\> & (`args`, `options?`) => `Promise`\<`unknown`\>
+
+An EIP-1193 request function with schema-aware Tevm overloads and an open
+fallback compatible with providers such as Ethers' `Eip1193Provider`.
 
 ## Type Parameters
 
@@ -14,21 +17,13 @@
 | ------ | ------ |
 | `TRpcSchema` *extends* [`RpcSchema`](../../decorators/type-aliases/RpcSchema.md) \| `undefined` | `undefined` |
 
-## Type Parameters
+## Example
 
-| Type Parameter | Default type |
-| ------ | ------ |
-| `TRpcSchemaOverride` *extends* [`RpcSchemaOverride`](../../decorators/type-aliases/RpcSchemaOverride.md) \| `undefined` | `undefined` |
-| `TParameters` *extends* [`EIP1193Parameters`](../../decorators/type-aliases/EIP1193Parameters.md)\<[`DerivedRpcSchema`](../../decorators/type-aliases/DerivedRpcSchema.md)\<`TRpcSchema`, `TRpcSchemaOverride`\>\> | [`EIP1193Parameters`](../../decorators/type-aliases/EIP1193Parameters.md)\<[`DerivedRpcSchema`](../../decorators/type-aliases/DerivedRpcSchema.md)\<`TRpcSchema`, `TRpcSchemaOverride`\>\> |
-| `_ReturnType` | [`DerivedRpcSchema`](../../decorators/type-aliases/DerivedRpcSchema.md)\<`TRpcSchema`, `TRpcSchemaOverride`\> *extends* [`RpcSchema`](../../decorators/type-aliases/RpcSchema.md) ? `Extract`\<[`DerivedRpcSchema`](../../decorators/type-aliases/DerivedRpcSchema.md)\<`TRpcSchema`, `TRpcSchemaOverride`\>\[`number`\], \{ `Method`: `TParameters`\[`"method"`\]; \}\>\[`"ReturnType"`\] : `unknown` |
+```typescript
+import { createMemoryClient } from 'tevm'
+import { BrowserProvider } from 'ethers'
 
-## Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `args` | `TParameters` |
-| `options?` | [`EIP1193RequestOptions`](../../decorators/type-aliases/EIP1193RequestOptions.md) |
-
-## Returns
-
-`Promise`\<`_ReturnType`\>
+const client = createMemoryClient()
+const provider = new BrowserProvider(client)
+const blockNumber = await client.request({ method: 'eth_blockNumber' })
+```

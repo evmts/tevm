@@ -8,7 +8,7 @@
 
 > **EthUnsubscribeHandler** = (`request`) => `Promise`\<[`EthUnsubscribeResult`](EthUnsubscribeResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:211](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L211)
+Defined in: [packages/actions/src/eth/EthHandler.ts:217](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L217)
 
 ## Parameters
 

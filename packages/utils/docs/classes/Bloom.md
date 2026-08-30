@@ -6,7 +6,7 @@
 
 # Class: Bloom
 
-Defined in: zevm/npm/zevm/dist/receipt.d.ts:22
+Defined in: vendor/zevm/npm/zevm/dist/receipt.d.ts:22
 
 Ethereum logs bloom filter.
 
@@ -16,7 +16,7 @@ Ethereum logs bloom filter.
 
 > **new Bloom**(`bitvector?`, `common?`): `Bloom`
 
-Defined in: zevm/npm/zevm/dist/receipt.d.ts:25
+Defined in: vendor/zevm/npm/zevm/dist/receipt.d.ts:25
 
 #### Parameters
 
@@ -33,7 +33,7 @@ Defined in: zevm/npm/zevm/dist/receipt.d.ts:25
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="bitvector"></a> `bitvector` | `Uint8Array` | zevm/npm/zevm/dist/receipt.d.ts:24 |
+| <a id="bitvector"></a> `bitvector` | `Uint8Array` | vendor/zevm/npm/zevm/dist/receipt.d.ts:24 |
 
 ## Methods
 
@@ -41,7 +41,7 @@ Defined in: zevm/npm/zevm/dist/receipt.d.ts:25
 
 > **add**(`value`): `void`
 
-Defined in: zevm/npm/zevm/dist/receipt.d.ts:26
+Defined in: vendor/zevm/npm/zevm/dist/receipt.d.ts:26
 
 #### Parameters
 
@@ -59,7 +59,7 @@ Defined in: zevm/npm/zevm/dist/receipt.d.ts:26
 
 > **check**(`value`): `boolean`
 
-Defined in: zevm/npm/zevm/dist/receipt.d.ts:27
+Defined in: vendor/zevm/npm/zevm/dist/receipt.d.ts:27
 
 #### Parameters
 
@@ -77,7 +77,7 @@ Defined in: zevm/npm/zevm/dist/receipt.d.ts:27
 
 > **multiCheck**(`values`): `boolean`
 
-Defined in: zevm/npm/zevm/dist/receipt.d.ts:28
+Defined in: vendor/zevm/npm/zevm/dist/receipt.d.ts:28
 
 #### Parameters
 
@@ -95,7 +95,7 @@ Defined in: zevm/npm/zevm/dist/receipt.d.ts:28
 
 > **or**(`bloom`): `void`
 
-Defined in: zevm/npm/zevm/dist/receipt.d.ts:29
+Defined in: vendor/zevm/npm/zevm/dist/receipt.d.ts:29
 
 #### Parameters
 

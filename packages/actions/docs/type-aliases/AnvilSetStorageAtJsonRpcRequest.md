@@ -8,6 +8,6 @@
 
 > **AnvilSetStorageAtJsonRpcRequest** = `JsonRpcRequest`\<`"anvil_setStorageAt"`, \[`Address`, `Hex`, `Hex`\]\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:113](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L113)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:111](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L111)
 
 JSON-RPC request for `anvil_setStorageAt` method

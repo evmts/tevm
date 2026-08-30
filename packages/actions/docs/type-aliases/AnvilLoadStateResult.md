@@ -6,6 +6,6 @@
 
 # Type Alias: AnvilLoadStateResult
 
-> **AnvilLoadStateResult** = `null`
+> **AnvilLoadStateResult** = `boolean`
 
-Defined in: [packages/actions/src/anvil/AnvilResult.ts:38](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilResult.ts#L38)
+Defined in: [packages/actions/src/anvil/AnvilResult.ts:36](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilResult.ts#L36)

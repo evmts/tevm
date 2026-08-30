@@ -8,7 +8,7 @@
 
 > **anvilResetJsonRpcProcedure**(`node`): [`AnvilResetProcedure`](../type-aliases/AnvilResetProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilResetProcedure.js:17](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilResetProcedure.js#L17)
+Defined in: [packages/actions/src/anvil/anvilResetProcedure.js:18](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilResetProcedure.js#L18)
 
 Request handler for anvil_reset JSON-RPC requests.
 If the node is forked, anvil_reset will reset to the forked block.

@@ -8,7 +8,7 @@
 
 > **AnvilSetBlockGasLimitParams** = `object`
 
-Defined in: [packages/actions/src/anvil/AnvilParams.ts:343](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L343)
+Defined in: [packages/actions/src/anvil/AnvilParams.ts:346](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L346)
 
 Params for `anvil_setBlockGasLimit` handler
 
@@ -16,4 +16,4 @@ Params for `anvil_setBlockGasLimit` handler
 
 | Property | Modifier | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="gaslimit"></a> `gasLimit` | `readonly` | `bigint` | The gas limit to set for subsequent blocks | [packages/actions/src/anvil/AnvilParams.ts:347](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L347) |
+| <a id="gaslimit"></a> `gasLimit` | `readonly` | `bigint` | The gas limit to set for subsequent blocks | [packages/actions/src/anvil/AnvilParams.ts:350](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L350) |

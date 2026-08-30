@@ -8,7 +8,7 @@
 
 > **EthGetBlockByHashHandler** = (`request`) => `Promise`\<[`EthGetBlockByHashResult`](EthGetBlockByHashResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:123](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L123)
+Defined in: [packages/actions/src/eth/EthHandler.ts:125](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L125)
 
 ## Parameters
 

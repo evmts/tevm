@@ -8,7 +8,7 @@
 
 > **createMapDb**(`__namedParameters`): [`MapDb`](../type-aliases/MapDb.md)
 
-Defined in: zevm/npm/zevm/dist/receipt-manager.d.ts:14
+Defined in: vendor/zevm/npm/zevm/dist/receipt-manager.d.ts:14
 
 ## Parameters
 

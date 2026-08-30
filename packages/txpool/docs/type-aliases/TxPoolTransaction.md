@@ -8,4 +8,4 @@
 
 > **TxPoolTransaction** = `TypedTransaction` \| [`ImpersonatedTx`](../interfaces/ImpersonatedTx.md)
 
-Defined in: zevm/npm/zevm/dist/txpool.d.ts:6
+Defined in: vendor/zevm/npm/zevm/dist/txpool.d.ts:6

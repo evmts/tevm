@@ -8,7 +8,7 @@
 
 > **AnvilIncreaseTimeParams** = `object`
 
-Defined in: [packages/actions/src/anvil/AnvilParams.ts:378](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L378)
+Defined in: [packages/actions/src/anvil/AnvilParams.ts:381](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L381)
 
 Params for `anvil_increaseTime` handler
 
@@ -16,4 +16,4 @@ Params for `anvil_increaseTime` handler
 
 | Property | Modifier | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="seconds"></a> `seconds` | `readonly` | `bigint` | The number of seconds to increase time by | [packages/actions/src/anvil/AnvilParams.ts:382](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L382) |
+| <a id="seconds"></a> `seconds` | `readonly` | `bigint` | The number of seconds to increase time by | [packages/actions/src/anvil/AnvilParams.ts:385](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L385) |

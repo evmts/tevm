@@ -8,6 +8,6 @@
 
 > **AnvilDropAllTransactionsParams** = \{ \} \| `undefined` \| `never`
 
-Defined in: [packages/actions/src/anvil/AnvilParams.ts:309](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L309)
+Defined in: [packages/actions/src/anvil/AnvilParams.ts:312](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L312)
 
 Params for `anvil_dropAllTransactions` handler

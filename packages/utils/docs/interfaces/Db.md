@@ -6,7 +6,7 @@
 
 # Interface: Db\<TKey, TValue\>
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:42
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:42
 
 ## Type Parameters
 
@@ -21,7 +21,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:42
 
 > **batch**(`opStack`): `Promise`\<`void`\>
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:46
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:46
 
 #### Parameters
 
@@ -39,7 +39,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:46
 
 > **del**(`key`, `opts?`): `Promise`\<`void`\>
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:45
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:45
 
 #### Parameters
 
@@ -58,7 +58,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:45
 
 > **get**(`key`, `opts?`): `Promise`\<`TValue` \| `undefined`\>
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:43
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:43
 
 #### Parameters
 
@@ -77,7 +77,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:43
 
 > **open**(): `Promise`\<`void`\>
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:48
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:48
 
 #### Returns
 
@@ -89,7 +89,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:48
 
 > **put**(`key`, `val`, `opts?`): `Promise`\<`void`\>
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:44
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:44
 
 #### Parameters
 
@@ -109,7 +109,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:44
 
 > **shallowCopy**(): `DB`\<`TKey`, `TValue`\>
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:47
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:47
 
 #### Returns
 

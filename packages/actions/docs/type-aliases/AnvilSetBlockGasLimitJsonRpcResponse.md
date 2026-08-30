@@ -8,6 +8,6 @@
 
 > **AnvilSetBlockGasLimitJsonRpcResponse** = `JsonRpcResponse`\<`"anvil_setBlockGasLimit"`, `SerializeToJson`\<[`AnvilSetBlockGasLimitResult`](AnvilSetBlockGasLimitResult.md)\>, `AnvilError`\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcResponse.ts:243](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcResponse.ts#L243)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcResponse.ts:242](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcResponse.ts#L242)
 
 JSON-RPC response for `anvil_setBlockGasLimit` procedure

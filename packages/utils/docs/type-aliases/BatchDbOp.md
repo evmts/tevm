@@ -8,7 +8,7 @@
 
 > **BatchDbOp**\<`TKey`, `TValue`\> = `PutBatch`\<`TKey`, `TValue`\> \| `DelBatch`\<`TKey`\>
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:41
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:41
 
 ## Type Parameters
 

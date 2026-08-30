@@ -8,4 +8,4 @@
 
 > `const` **BIGINT\_1**: `1n` = `1n`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:127
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:127

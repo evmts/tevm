@@ -8,7 +8,7 @@
 
 > **EthGetBlockByHashJsonRpcProcedure** = (`request`) => `Promise`\<[`EthGetBlockByHashJsonRpcResponse`](EthGetBlockByHashJsonRpcResponse.md)\>
 
-Defined in: [packages/actions/src/eth/EthProcedure.ts:139](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthProcedure.ts#L139)
+Defined in: [packages/actions/src/eth/EthProcedure.ts:141](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthProcedure.ts#L141)
 
 ## Parameters
 

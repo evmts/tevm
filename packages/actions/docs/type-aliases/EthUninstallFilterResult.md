@@ -8,6 +8,6 @@
 
 > **EthUninstallFilterResult** = `boolean`
 
-Defined in: [packages/actions/src/eth/EthResult.ts:293](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L293)
+Defined in: [packages/actions/src/eth/EthResult.ts:299](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthResult.ts#L299)
 
 JSON-RPC response for `eth_uninstallFilter` procedure

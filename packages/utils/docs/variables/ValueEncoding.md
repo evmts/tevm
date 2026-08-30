@@ -8,7 +8,7 @@
 
 > `const` **ValueEncoding**: `object`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:20
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:20
 
 ## Type Declaration
 

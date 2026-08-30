@@ -8,6 +8,6 @@
 
 > **AnvilRemoveBlockTimestampIntervalJsonRpcRequest** = `JsonRpcRequest`\<`"anvil_removeBlockTimestampInterval"`, readonly \[\]\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:273](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L273)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:266](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L266)
 
 JSON-RPC request for `anvil_removeBlockTimestampInterval` method

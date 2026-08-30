@@ -8,7 +8,7 @@
 
 > **EthCoinbaseHandler** = (`request`) => `Promise`\<[`EthCoinbaseResult`](EthCoinbaseResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:107](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L107)
+Defined in: [packages/actions/src/eth/EthHandler.ts:109](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L109)
 
 ## Parameters
 

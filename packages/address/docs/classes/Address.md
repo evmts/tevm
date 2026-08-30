@@ -6,7 +6,7 @@
 
 # Class: Address
 
-Defined in: [tevm-monorepo/packages/address/src/Address.js:44](https://github.com/evmts/tevm/blob/main/packages/address/src/Address.js#L44)
+Defined in: [packages/address/src/Address.js:44](https://github.com/evmts/tevm/blob/main/packages/address/src/Address.js#L44)
 
 A specialized Ethereum address class that extends EthjsAddress with TEVM-specific
 functionality. This class provides EIP-55 compliant checksummed address formatting
@@ -60,7 +60,7 @@ address = createAddress('8ba1f109551bd432803012645ac136ddd64dba72');
 
 > **new Address**(`bytes`): `Address`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:163
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:163
 
 #### Parameters
 
@@ -80,7 +80,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:163
 
 | Property | Type | Inherited from | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="bytes"></a> `bytes` | `Uint8Array` | `EthjsAddress.bytes` | zevm/npm/zevm/dist/util.d.ts:162 |
+| <a id="bytes"></a> `bytes` | `Uint8Array` | `EthjsAddress.bytes` | vendor/zevm/npm/zevm/dist/util.d.ts:162 |
 
 ## Methods
 
@@ -88,7 +88,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:163
 
 > **equals**(`address`): `boolean`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:166
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:166
 
 #### Parameters
 
@@ -110,7 +110,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:166
 
 > **isPrecompileOrSystemAddress**(): `boolean`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:168
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:168
 
 #### Returns
 
@@ -126,7 +126,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:168
 
 > **isZero**(): `boolean`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:167
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:167
 
 #### Returns
 
@@ -142,7 +142,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:167
 
 > **toBytes**(): `Uint8Array`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:170
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:170
 
 #### Returns
 
@@ -158,7 +158,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:170
 
 > **toString**(): `` `0x${string}` ``
 
-Defined in: [tevm-monorepo/packages/address/src/Address.js:63](https://github.com/evmts/tevm/blob/main/packages/address/src/Address.js#L63)
+Defined in: [packages/address/src/Address.js:63](https://github.com/evmts/tevm/blob/main/packages/address/src/Address.js#L63)
 
 Returns the checksummed EIP-55 compliant address string.
 
@@ -191,7 +191,7 @@ console.log(address.toString()); // '0x8ba1f109551bD432803012645Ac136ddd64DBA72'
 
 > `static` **fromString**(`str`): `Address`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:164
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:164
 
 #### Parameters
 
@@ -213,7 +213,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:164
 
 > `static` **zero**(): `Address`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:165
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:165
 
 #### Returns
 

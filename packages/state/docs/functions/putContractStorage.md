@@ -8,7 +8,7 @@
 
 > **putContractStorage**(`baseState`): (`address`, `key`, `value`) => `Promise`\<`void`\>
 
-Defined in: [tevm-monorepo/packages/state/src/actions/putContractStorage.js:13](https://github.com/evmts/tevm/blob/main/packages/state/src/actions/putContractStorage.js#L13)
+Defined in: [packages/state/src/actions/putContractStorage.js:13](https://github.com/evmts/tevm/blob/main/packages/state/src/actions/putContractStorage.js#L13)
 
 Adds value to the cache for the `account`
 corresponding to `address` at the provided `key`.

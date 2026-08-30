@@ -8,7 +8,7 @@
 
 > **EthEstimateGasJsonRpcProcedure** = (`request`) => `Promise`\<[`EthEstimateGasJsonRpcResponse`](EthEstimateGasJsonRpcResponse.md)\>
 
-Defined in: [packages/actions/src/eth/EthProcedure.ts:119](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthProcedure.ts#L119)
+Defined in: [packages/actions/src/eth/EthProcedure.ts:121](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthProcedure.ts#L121)
 
 ## Parameters
 

@@ -8,7 +8,7 @@
 
 > **eoaCode7702AuthorizationMessageToSign**(`input`): `Uint8Array`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:214
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:214
 
 ## Parameters
 

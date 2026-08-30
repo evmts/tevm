@@ -8,7 +8,7 @@
 
 > **EthGetTransactionCountHandler** = (`request`) => `Promise`\<[`EthGetTransactionCountResult`](EthGetTransactionCountResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:145](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L145)
+Defined in: [packages/actions/src/eth/EthHandler.ts:147](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L147)
 
 ## Parameters
 

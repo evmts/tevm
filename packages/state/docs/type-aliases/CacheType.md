@@ -8,4 +8,4 @@
 
 > **CacheType** = *typeof* [`CacheType`](../variables/CacheType.md)\[keyof *typeof* [`CacheType`](../variables/CacheType.md)\]
 
-Defined in: zevm/npm/zevm/dist/statemanager.d.ts:2
+Defined in: vendor/zevm/npm/zevm/dist/statemanager.d.ts:2

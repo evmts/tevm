@@ -6,7 +6,7 @@
 
 # Class: EthjsAddress
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:161
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:161
 
 ## Constructors
 
@@ -14,7 +14,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:161
 
 > **new EthjsAddress**(`bytes`): `Address`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:163
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:163
 
 #### Parameters
 
@@ -30,7 +30,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:163
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="bytes"></a> `bytes` | `Uint8Array` | zevm/npm/zevm/dist/util.d.ts:162 |
+| <a id="bytes"></a> `bytes` | `Uint8Array` | vendor/zevm/npm/zevm/dist/util.d.ts:162 |
 
 ## Methods
 
@@ -38,7 +38,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:163
 
 > **equals**(`address`): `boolean`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:166
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:166
 
 #### Parameters
 
@@ -56,7 +56,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:166
 
 > **isPrecompileOrSystemAddress**(): `boolean`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:168
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:168
 
 #### Returns
 
@@ -68,7 +68,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:168
 
 > **isZero**(): `boolean`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:167
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:167
 
 #### Returns
 
@@ -80,7 +80,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:167
 
 > **toBytes**(): `Uint8Array`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:170
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:170
 
 #### Returns
 
@@ -92,7 +92,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:170
 
 > **toString**(): `` `0x${string}` ``
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:169
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:169
 
 #### Returns
 
@@ -104,7 +104,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:169
 
 > `static` **fromString**(`str`): `Address`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:164
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:164
 
 #### Parameters
 
@@ -122,7 +122,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:164
 
 > `static` **zero**(): `Address`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:165
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:165
 
 #### Returns
 

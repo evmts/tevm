@@ -8,6 +8,6 @@
 
 > **AnvilSetNextBlockBaseFeePerGasJsonRpcRequest** = `JsonRpcRequest`\<`"anvil_setNextBlockBaseFeePerGas"`, readonly \[`Hex`\]\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:224](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L224)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:217](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L217)
 
 JSON-RPC request for `anvil_setNextBlockBaseFeePerGas` method

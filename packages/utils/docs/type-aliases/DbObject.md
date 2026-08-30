@@ -8,7 +8,7 @@
 
 > **DbObject** = `object`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:11
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:11
 
 ## Index Signature
 

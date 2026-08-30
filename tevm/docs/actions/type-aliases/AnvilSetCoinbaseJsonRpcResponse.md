@@ -6,6 +6,6 @@
 
 # Type Alias: AnvilSetCoinbaseJsonRpcResponse
 
-> **AnvilSetCoinbaseJsonRpcResponse** = [`JsonRpcResponse`](../../index/type-aliases/JsonRpcResponse.md)\<`"anvil_setCoinbase"`, [`Address`](../../index/type-aliases/Address.md), `AnvilError`\>
+> **AnvilSetCoinbaseJsonRpcResponse** = [`JsonRpcResponse`](../../index/type-aliases/JsonRpcResponse.md)\<`"anvil_setCoinbase"`, `null`, `AnvilError`\>
 
 JSON-RPC response for `anvil_setCoinbase` procedure

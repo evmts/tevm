@@ -8,7 +8,7 @@
 
 > **EthChainIdJsonRpcProcedure** = (`request`) => `Promise`\<[`EthChainIdJsonRpcResponse`](EthChainIdJsonRpcResponse.md)\>
 
-Defined in: [packages/actions/src/eth/EthProcedure.ts:115](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthProcedure.ts#L115)
+Defined in: [packages/actions/src/eth/EthProcedure.ts:117](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthProcedure.ts#L117)
 
 ## Parameters
 

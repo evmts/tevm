@@ -8,6 +8,6 @@
 
 > **AnvilMetadataParams** = \{ \} \| `undefined` \| `never`
 
-Defined in: [packages/actions/src/anvil/AnvilParams.ts:266](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L266)
+Defined in: [packages/actions/src/anvil/AnvilParams.ts:269](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L269)
 
 Params for `anvil_metadata` handler

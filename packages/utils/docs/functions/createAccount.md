@@ -8,7 +8,7 @@
 
 > **createAccount**(`accountData`): [`EthjsAccount`](../classes/EthjsAccount.md)
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:202
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:202
 
 ## Parameters
 

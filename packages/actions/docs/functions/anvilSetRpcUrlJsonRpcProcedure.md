@@ -8,7 +8,7 @@
 
 > **anvilSetRpcUrlJsonRpcProcedure**(`client`): [`AnvilSetRpcUrlProcedure`](../type-aliases/AnvilSetRpcUrlProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilSetRpcUrlProcedure.js:29](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilSetRpcUrlProcedure.js#L29)
+Defined in: [packages/actions/src/anvil/anvilSetRpcUrlProcedure.js:44](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilSetRpcUrlProcedure.js#L44)
 
 Request handler for anvil_setRpcUrl JSON-RPC requests.
 Sets a new RPC URL for forking mode. This method is primarily used to change

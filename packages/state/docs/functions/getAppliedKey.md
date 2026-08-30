@@ -8,7 +8,7 @@
 
 > **getAppliedKey**(`baseState`, `skipFetchingFromFork?`): ((`address`) => `Uint8Array`) \| `undefined`
 
-Defined in: [tevm-monorepo/packages/state/src/actions/getAppliedKey.js:9](https://github.com/evmts/tevm/blob/main/packages/state/src/actions/getAppliedKey.js#L9)
+Defined in: [packages/state/src/actions/getAppliedKey.js:9](https://github.com/evmts/tevm/blob/main/packages/state/src/actions/getAppliedKey.js#L9)
 
 ## Parameters
 

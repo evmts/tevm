@@ -8,7 +8,7 @@
 
 > **eoaCode7702RecoverAuthority**(`input`): [`EthjsAddress`](../classes/EthjsAddress.md)
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:219
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:219
 
 ## Parameters
 

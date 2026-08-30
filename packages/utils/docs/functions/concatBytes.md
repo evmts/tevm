@@ -8,7 +8,7 @@
 
 > **concatBytes**(...`arrays`): `Uint8Array`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:152
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:152
 
 ## Parameters
 

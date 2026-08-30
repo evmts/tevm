@@ -8,4 +8,4 @@
 
 > `const` **SECP256K1\_ORDER\_DIV\_2**: `bigint`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:129
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:129

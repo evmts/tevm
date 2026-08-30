@@ -8,4 +8,4 @@
 
 > **DbType** = `"Receipts"` \| `"TxHash"` \| `"SkeletonBlock"` \| `"SkeletonBlockHashToNumber"` \| `"SkeletonStatus"` \| `"SkeletonUnfinalizedBlockByHash"` \| `"Preimage"`
 
-Defined in: zevm/npm/zevm/dist/receipt-manager.d.ts:2
+Defined in: vendor/zevm/npm/zevm/dist/receipt-manager.d.ts:2

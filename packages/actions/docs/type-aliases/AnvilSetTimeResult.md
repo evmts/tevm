@@ -8,4 +8,4 @@
 
 > **AnvilSetTimeResult** = [`Hex`](Hex.md)
 
-Defined in: [packages/actions/src/anvil/AnvilResult.ts:107](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilResult.ts#L107)
+Defined in: [packages/actions/src/anvil/AnvilResult.ts:105](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilResult.ts#L105)

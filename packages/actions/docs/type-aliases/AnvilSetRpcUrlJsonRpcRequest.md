@@ -8,6 +8,6 @@
 
 > **AnvilSetRpcUrlJsonRpcRequest** = `JsonRpcRequest`\<`"anvil_setRpcUrl"`, readonly \[`string`\]\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:201](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L201)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:194](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L194)
 
 JSON-RPC request for `anvil_setRpcUrl` method

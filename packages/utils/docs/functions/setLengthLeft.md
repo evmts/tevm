@@ -8,7 +8,7 @@
 
 > **setLengthLeft**(`msg`, `length`, `opts?`): `Uint8Array`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:141
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:141
 
 ## Parameters
 

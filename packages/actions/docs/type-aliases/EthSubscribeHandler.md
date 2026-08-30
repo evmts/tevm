@@ -8,7 +8,7 @@
 
 > **EthSubscribeHandler** = (`request`) => `Promise`\<[`EthSubscribeResult`](EthSubscribeResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:209](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L209)
+Defined in: [packages/actions/src/eth/EthHandler.ts:215](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L215)
 
 ## Parameters
 

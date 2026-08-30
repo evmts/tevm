@@ -6,6 +6,6 @@
 
 # Type Alias: AnvilDumpStateJsonRpcRequest
 
-> **AnvilDumpStateJsonRpcRequest** = [`JsonRpcRequest`](../../index/type-aliases/JsonRpcRequest.md)\<`"anvil_dumpState"`, readonly \[`SerializeToJson`\<[`AnvilDumpStateParams`](AnvilDumpStateParams.md)\>\]\>
+> **AnvilDumpStateJsonRpcRequest** = [`JsonRpcRequest`](../../index/type-aliases/JsonRpcRequest.md)\<`"anvil_dumpState"`, readonly \[\] \| readonly \[`boolean`\]\>
 
 JSON-RPC request for `anvil_dumpState` method

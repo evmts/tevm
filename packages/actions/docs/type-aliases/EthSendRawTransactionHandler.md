@@ -8,7 +8,7 @@
 
 > **EthSendRawTransactionHandler** = (`request`) => `Promise`\<[`EthSendRawTransactionResult`](EthSendRawTransactionResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:187](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L187)
+Defined in: [packages/actions/src/eth/EthHandler.ts:189](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L189)
 
 ## Parameters
 

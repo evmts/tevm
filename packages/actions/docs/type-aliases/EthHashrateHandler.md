@@ -8,7 +8,7 @@
 
 > **EthHashrateHandler** = (`request?`) => `Promise`\<[`EthHashrateResult`](EthHashrateResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:111](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L111)
+Defined in: [packages/actions/src/eth/EthHandler.ts:113](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L113)
 
 ## Parameters
 

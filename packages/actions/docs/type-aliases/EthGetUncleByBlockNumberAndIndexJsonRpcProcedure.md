@@ -8,7 +8,7 @@
 
 > **EthGetUncleByBlockNumberAndIndexJsonRpcProcedure** = (`request`) => `Promise`\<[`EthGetUncleByBlockNumberAndIndexJsonRpcResponse`](EthGetUncleByBlockNumberAndIndexJsonRpcResponse.md)\>
 
-Defined in: [packages/actions/src/eth/EthProcedure.ts:207](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthProcedure.ts#L207)
+Defined in: [packages/actions/src/eth/EthProcedure.ts:209](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthProcedure.ts#L209)
 
 ## Parameters
 

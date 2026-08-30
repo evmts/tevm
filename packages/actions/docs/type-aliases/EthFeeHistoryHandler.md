@@ -8,7 +8,7 @@
 
 > **EthFeeHistoryHandler** = (`request`) => `Promise`\<[`EthFeeHistoryResult`](EthFeeHistoryResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:119](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L119)
+Defined in: [packages/actions/src/eth/EthHandler.ts:121](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L121)
 
 ## Parameters
 

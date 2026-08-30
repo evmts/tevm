@@ -8,6 +8,6 @@
 
 > **AnvilRemoveBlockTimestampIntervalJsonRpcResponse** = `JsonRpcResponse`\<`"anvil_removeBlockTimestampInterval"`, `SerializeToJson`\<[`AnvilRemoveBlockTimestampIntervalResult`](AnvilRemoveBlockTimestampIntervalResult.md)\>, `AnvilError`\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcResponse.ts:353](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcResponse.ts#L353)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcResponse.ts:352](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcResponse.ts#L352)
 
 JSON-RPC response for `anvil_removeBlockTimestampInterval` procedure

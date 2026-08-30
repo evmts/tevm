@@ -8,7 +8,7 @@
 
 > **AnvilSetTimeParams** = `object`
 
-Defined in: [packages/actions/src/anvil/AnvilParams.ts:400](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L400)
+Defined in: [packages/actions/src/anvil/AnvilParams.ts:403](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L403)
 
 Params for `anvil_setTime` handler
 
@@ -16,4 +16,4 @@ Params for `anvil_setTime` handler
 
 | Property | Modifier | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="timestamp"></a> `timestamp` | `readonly` | `bigint` | The timestamp to set | [packages/actions/src/anvil/AnvilParams.ts:404](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L404) |
+| <a id="timestamp"></a> `timestamp` | `readonly` | `bigint` | The timestamp to set | [packages/actions/src/anvil/AnvilParams.ts:407](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L407) |

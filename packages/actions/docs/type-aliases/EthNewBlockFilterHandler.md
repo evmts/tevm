@@ -8,7 +8,7 @@
 
 > **EthNewBlockFilterHandler** = (`request`) => `Promise`\<[`EthNewBlockFilterResult`](EthNewBlockFilterResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:201](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L201)
+Defined in: [packages/actions/src/eth/EthHandler.ts:207](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L207)
 
 ## Parameters
 

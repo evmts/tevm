@@ -8,7 +8,7 @@
 
 > **EthFeeHistoryJsonRpcProcedure** = (`request`) => `Promise`\<[`EthFeeHistoryJsonRpcResponse`](EthFeeHistoryJsonRpcResponse.md)\>
 
-Defined in: [packages/actions/src/eth/EthProcedure.ts:131](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthProcedure.ts#L131)
+Defined in: [packages/actions/src/eth/EthProcedure.ts:133](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthProcedure.ts#L133)
 
 ## Parameters
 

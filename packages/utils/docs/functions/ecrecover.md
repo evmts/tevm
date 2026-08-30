@@ -8,7 +8,7 @@
 
 > **ecrecover**(`msgHash`, `v`, `r`, `s`, `chainId?`): `Uint8Array`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:210
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:210
 
 ## Parameters
 

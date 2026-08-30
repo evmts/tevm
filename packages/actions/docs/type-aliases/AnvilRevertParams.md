@@ -8,7 +8,7 @@
 
 > **AnvilRevertParams** = `object`
 
-Defined in: [packages/actions/src/anvil/AnvilParams.ts:332](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L332)
+Defined in: [packages/actions/src/anvil/AnvilParams.ts:335](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L335)
 
 Params for `anvil_revert` handler
 
@@ -16,4 +16,4 @@ Params for `anvil_revert` handler
 
 | Property | Modifier | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="snapshotid"></a> `snapshotId` | `readonly` | [`Hex`](Hex.md) | The snapshot ID to revert to | [packages/actions/src/anvil/AnvilParams.ts:336](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L336) |
+| <a id="snapshotid"></a> `snapshotId` | `readonly` | [`Hex`](Hex.md) | The snapshot ID to revert to | [packages/actions/src/anvil/AnvilParams.ts:339](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilParams.ts#L339) |

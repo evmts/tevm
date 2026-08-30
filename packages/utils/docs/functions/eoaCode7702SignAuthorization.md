@@ -8,7 +8,7 @@
 
 > **eoaCode7702SignAuthorization**(`input`, `privateKey`, `ecSign?`): `EOACode7702AuthorizationListBytesItem`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:216
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:216
 
 ## Parameters
 

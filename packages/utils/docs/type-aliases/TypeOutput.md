@@ -8,4 +8,4 @@
 
 > **TypeOutput** = *typeof* [`TypeOutput`](../variables/TypeOutput.md)\[keyof *typeof* [`TypeOutput`](../variables/TypeOutput.md)\]
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:50
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:50

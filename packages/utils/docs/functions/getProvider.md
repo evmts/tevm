@@ -8,7 +8,7 @@
 
 > **getProvider**(`provider`): `string`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:242
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:242
 
 ## Parameters
 

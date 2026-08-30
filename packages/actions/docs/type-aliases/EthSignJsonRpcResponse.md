@@ -8,6 +8,6 @@
 
 > **EthSignJsonRpcResponse** = `JsonRpcResponse`\<`"eth_sign"`, `Hex`, `string` \| `number`\>
 
-Defined in: [packages/actions/src/eth/EthJsonRpcResponse.ts:309](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcResponse.ts#L309)
+Defined in: [packages/actions/src/eth/EthJsonRpcResponse.ts:319](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcResponse.ts#L319)
 
 JSON-RPC response for `eth_sign` procedure

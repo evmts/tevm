@@ -8,6 +8,6 @@
 
 > **AnvilDealJsonRpcResponse** = `JsonRpcResponse`\<`"anvil_deal"`, `SerializeToJson`\<[`AnvilDealResult`](AnvilDealResult.md)\>, `AnvilError`\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcResponse.ts:202](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcResponse.ts#L202)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcResponse.ts:201](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcResponse.ts#L201)
 
 JSON-RPC response for `anvil_deal` procedure

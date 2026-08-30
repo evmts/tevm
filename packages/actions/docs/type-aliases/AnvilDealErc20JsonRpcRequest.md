@@ -8,6 +8,6 @@
 
 > **AnvilDealErc20JsonRpcRequest** = `JsonRpcRequest`\<`"anvil_dealErc20"`, readonly \[\{ `account`: `Address`; `amount`: `Hex`; `erc20`: `Address`; \}\]\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:149](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L149)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:142](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L142)
 
 JSON-RPC request for `anvil_dealErc20` method

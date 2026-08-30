@@ -8,7 +8,7 @@
 
 > **JsonRpcStateOverride** = `object`
 
-Defined in: [packages/actions/src/eth/EthJsonRpcRequest.ts:376](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcRequest.ts#L376)
+Defined in: [packages/actions/src/eth/EthJsonRpcRequest.ts:387](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthJsonRpcRequest.ts#L387)
 
 State override for simulateV1
 

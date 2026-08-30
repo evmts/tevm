@@ -8,7 +8,7 @@
 
 > **anvilSetCodeJsonRpcProcedure**(`client`): [`AnvilSetCodeProcedure`](../type-aliases/AnvilSetCodeProcedure.md)
 
-Defined in: [packages/actions/src/anvil/anvilSetCodeProcedure.js:8](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilSetCodeProcedure.js#L8)
+Defined in: [packages/actions/src/anvil/anvilSetCodeProcedure.js:9](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/anvilSetCodeProcedure.js#L9)
 
 Request handler for anvil_setCode JSON-RPC requests.
 

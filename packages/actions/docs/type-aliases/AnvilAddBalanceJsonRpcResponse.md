@@ -8,6 +8,6 @@
 
 > **AnvilAddBalanceJsonRpcResponse** = `JsonRpcResponse`\<`"anvil_addBalance"`, `null`, `AnvilError`\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcResponse.ts:298](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcResponse.ts#L298)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcResponse.ts:297](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcResponse.ts#L297)
 
 JSON-RPC response for `anvil_addBalance` procedure

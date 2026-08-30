@@ -8,4 +8,4 @@
 
 > `const` **rpcMethodMatrix**: readonly [`RpcMethodMatrixEntry`](../type-aliases/RpcMethodMatrixEntry.md)[] = `blockedMethodGroups`
 
-Defined in: [packages/actions/src/rpcMethodMatrix.ts:54](https://github.com/evmts/tevm/blob/main/packages/actions/src/rpcMethodMatrix.ts#L54)
+Defined in: [packages/actions/src/rpcMethodMatrix.ts:68](https://github.com/evmts/tevm/blob/main/packages/actions/src/rpcMethodMatrix.ts#L68)

@@ -40,6 +40,7 @@ This class is abstract and should be extended by other error classes.
 - [`NonceAlreadyUsedError`](NonceAlreadyUsedError.md)
 - [`NonceTooHighError`](NonceTooHighError.md)
 - [`NonceTooLowError`](NonceTooLowError.md)
+- [`NoSignerAvailableError`](NoSignerAvailableError.md)
 - [`ParseError`](ParseError.md)
 - [`PendingTransactionTimeoutError`](PendingTransactionTimeoutError.md)
 - [`RateLimitExceededError`](RateLimitExceededError.md)

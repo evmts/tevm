@@ -8,7 +8,7 @@
 
 > **defineCall**\<`TAbi`\>(`abi`, `handlers`): (`__namedParameters`) => `Promise`\<`ExecResult`\>
 
-Defined in: [defineCall.ts:55](https://github.com/evmts/tevm/blob/main/packages/precompiles/src/defineCall.ts#L55)
+Defined in: [defineCall.ts:56](https://github.com/evmts/tevm/blob/main/packages/precompiles/src/defineCall.ts#L56)
 
 Defines a call handler for a contract precompile by mapping function names to handler implementations.
 

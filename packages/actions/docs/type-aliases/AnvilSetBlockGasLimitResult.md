@@ -8,4 +8,4 @@
 
 > **AnvilSetBlockGasLimitResult** = `null`
 
-Defined in: [packages/actions/src/anvil/AnvilResult.ts:97](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilResult.ts#L97)
+Defined in: [packages/actions/src/anvil/AnvilResult.ts:95](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilResult.ts#L95)

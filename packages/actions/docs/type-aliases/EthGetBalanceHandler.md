@@ -8,7 +8,7 @@
 
 > **EthGetBalanceHandler** = (`request`) => `Promise`\<[`EthGetBalanceResult`](EthGetBalanceResult.md)\>
 
-Defined in: [packages/actions/src/eth/EthHandler.ts:121](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L121)
+Defined in: [packages/actions/src/eth/EthHandler.ts:123](https://github.com/evmts/tevm/blob/main/packages/actions/src/eth/EthHandler.ts#L123)
 
 ## Parameters
 

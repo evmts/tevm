@@ -8,7 +8,7 @@
 
 > **setStateRoot**(`baseState`, `skipFetchingFromFork?`): (`stateRoot`, `clearCache?`) => `Promise`\<`void`\>
 
-Defined in: [tevm-monorepo/packages/state/src/actions/setStateRoot.js:23](https://github.com/evmts/tevm/blob/main/packages/state/src/actions/setStateRoot.js#L23)
+Defined in: [packages/state/src/actions/setStateRoot.js:23](https://github.com/evmts/tevm/blob/main/packages/state/src/actions/setStateRoot.js#L23)
 
 Changes the currently loaded state root
 

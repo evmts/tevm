@@ -8,6 +8,6 @@
 
 > **AnvilSetNonceJsonRpcRequest** = `JsonRpcRequest`\<`"anvil_setNonce"`, readonly \[`Address`, `Hex`\]\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:108](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L108)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:106](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L106)
 
 JSON-RPC request for `anvil_setNonce` method

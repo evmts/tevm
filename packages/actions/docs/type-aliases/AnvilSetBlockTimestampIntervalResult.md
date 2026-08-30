@@ -8,4 +8,4 @@
 
 > **AnvilSetBlockTimestampIntervalResult** = `null`
 
-Defined in: [packages/actions/src/anvil/AnvilResult.ts:109](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilResult.ts#L109)
+Defined in: [packages/actions/src/anvil/AnvilResult.ts:107](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilResult.ts#L107)

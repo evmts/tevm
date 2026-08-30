@@ -8,6 +8,6 @@
 
 > **AnvilSnapshotJsonRpcRequest** = `JsonRpcRequest`\<`"anvil_snapshot"`, readonly \[\]\>
 
-Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:237](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L237)
+Defined in: [packages/actions/src/anvil/AnvilJsonRpcRequest.ts:230](https://github.com/evmts/tevm/blob/main/packages/actions/src/anvil/AnvilJsonRpcRequest.ts#L230)
 
 JSON-RPC request for `anvil_snapshot` method

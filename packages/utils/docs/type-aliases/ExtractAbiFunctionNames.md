@@ -8,7 +8,7 @@
 
 > **ExtractAbiFunctionNames**\<`abi`, `abiStateMutability`\> = `ExtractAbiFunctions`\<`abi`, `abiStateMutability`\>\[`"name"`\]
 
-Defined in: tevm-monorepo/node\_modules/.pnpm/abitype@1.2.4\_typescript@6.0.3\_zod@4.4.3/node\_modules/abitype/dist/types/utils.d.ts:178
+Defined in: node\_modules/.pnpm/abitype@1.2.4\_typescript@6.0.3\_zod@4.4.3/node\_modules/abitype/dist/types/utils.d.ts:178
 
 Extracts all [AbiFunction](AbiFunction.md) names from [Abi](Abi.md).
 

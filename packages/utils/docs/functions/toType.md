@@ -10,7 +10,7 @@
 
 > **toType**\<`T`\>(`input`, `outputType`): `null`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:155
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:155
 
 ### Type Parameters
 
@@ -33,7 +33,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:155
 
 > **toType**\<`T`\>(`input`, `outputType`): `undefined`
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:156
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:156
 
 ### Type Parameters
 
@@ -56,7 +56,7 @@ Defined in: zevm/npm/zevm/dist/util.d.ts:156
 
 > **toType**\<`T`\>(`input`, `outputType`): `TypeOutputReturnType`\[`T`\]
 
-Defined in: zevm/npm/zevm/dist/util.d.ts:157
+Defined in: vendor/zevm/npm/zevm/dist/util.d.ts:157
 
 ### Type Parameters
 
