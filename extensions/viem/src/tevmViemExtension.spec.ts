@@ -41,7 +41,8 @@ describe('tevmViemExtension', () => {
 			address: params.address,
 		})
 		expect(balance).toBe(420n)
-	})
+		// The first request pays the fresh Optimism fork's state fetch.
+	}, 30_000)
 
 	it('setAccount should handle various account parameters', async () => {
 		const decorated = tevmViemExtension()(client)
