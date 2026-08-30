@@ -286,12 +286,15 @@ const cargoCheck = S.Shell.Test({
 
 // Every PR touching a publishable package needs a changeset; status against
 // origin/main is the same check release:check runs.
-// `changeset status` also verifies every internal dependency names the
-// current version, so the manifests are key material beside the diff.
+// `changeset status` validates every pending changeset and that each
+// internal dependency names the current version, so the manifests are key
+// material beside the changesets. It runs without --since: that flag only
+// narrows which changeset files count, and an Agent.Diff candidate tree
+// carries no origin/main ref to narrow against.
 const changesetCheck = S.Shell.Test({
 	bin: S.NodeModule.Bin('@changesets/cli', 'changeset'),
-	args: ['status', '--verbose', '--since=origin/main'],
-	data: [changesets, changesetConfig, tree, S.gitDiff()],
+	args: ['status', '--verbose'],
+	data: [changesets, changesetConfig, tree],
 })
 
 // Agentic lints over the diff. Each enforces a CLAUDE.md rule that prose
