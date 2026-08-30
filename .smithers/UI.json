@@ -1,0 +1,150 @@
+{
+	"schemaVersion": 1,
+	"name": "tevm-factory",
+	"title": "TEVM coding factory",
+	"summary": "Deterministic checks, PR-history-derived agentic review, bounded repair recipes, and contributor-ready candidate gates for TEVM.",
+	"groups": [
+		{ "id": "checks", "title": "Checks", "kind": "check" },
+		{ "id": "lints", "title": "Lints", "kind": "lint" },
+		{ "id": "recipes", "title": "Recipes", "kind": "recipe" },
+		{ "id": "workflows", "title": "Workflows", "kind": "workflow" }
+	],
+	"entries": [
+		{
+			"id": "factory-check",
+			"group": "checks",
+			"workspace": ".",
+			"label": "//factory:check",
+			"title": "Factory contract",
+			"summary": "Validate issue policy, queue contracts, declarations, repository identity, generated contributor data, and source integrity."
+		},
+		{
+			"id": "factory-preflight",
+			"group": "checks",
+			"workspace": ".",
+			"label": "//factory:preflight",
+			"title": "Local preflight",
+			"summary": "Check the pinned toolchain and exact local Flows and Zevm sibling revisions before running agent lanes."
+		},
+		{
+			"id": "mechanical-pre-push",
+			"group": "checks",
+			"workspace": ".",
+			"label": "//:mechanicalPrePush",
+			"title": "Mechanical pre-push",
+			"summary": "Run repository lint, typecheck, and test gates without spending an agent seat."
+		},
+		{
+			"id": "complete-ci",
+			"group": "checks",
+			"workspace": ".",
+			"label": "//:ci",
+			"title": "Complete CI",
+			"summary": "Build, cover, test, lint, document, validate Rust, and enforce factory and changeset policy across the monorepo."
+		},
+		{
+			"id": "source-integrity",
+			"group": "lints",
+			"workspace": ".",
+			"label": "//factory:sourceIntegrity",
+			"title": "Source integrity",
+			"summary": "Reject merge markers, malformed generated output, and orphaned gitlinks."
+		},
+		{
+			"id": "repository-metadata",
+			"group": "lints",
+			"workspace": ".",
+			"label": "//factory:repositoryMetadataLint",
+			"title": "Repository metadata",
+			"summary": "Keep package and release-workflow provenance on the canonical evmts/tevm repository."
+		},
+		{
+			"id": "agent-lints",
+			"group": "lints",
+			"workspace": ".",
+			"label": "//:agentLints",
+			"title": "All agentic lints",
+			"summary": "Review the applied diff for public API, tests, docs, changesets, wire contracts, regression proof, and scope coherence.",
+			"agentic": true
+		},
+		{
+			"id": "rpc-contract",
+			"group": "lints",
+			"workspace": ".",
+			"label": "//:rpcContractLint",
+			"title": "JSON-RPC wire contract",
+			"summary": "Check exact request, result, serialization, dispatch, error, and public-client surfaces for changed RPC code.",
+			"agentic": true
+		},
+		{
+			"id": "regression-proof",
+			"group": "lints",
+			"workspace": ".",
+			"label": "//:regressionProofLint",
+			"title": "Regression proof",
+			"summary": "Judge whether a fix proves the failing public boundary, negative branches, state isolation, and equivalent inputs.",
+			"agentic": true
+		},
+		{
+			"id": "scope-coherence",
+			"group": "lints",
+			"workspace": ".",
+			"label": "//:scopeCoherenceLint",
+			"title": "Scope coherence",
+			"summary": "Distinguish coherent mechanical fan-out from unrelated or speculative change churn.",
+			"agentic": true
+		},
+		{
+			"id": "pr-review",
+			"group": "lints",
+			"workspace": ".",
+			"label": "//:prReview",
+			"title": "Pull-request review",
+			"summary": "Run the repository review checklist locally over the current diff.",
+			"agentic": true
+		},
+		{
+			"id": "metadata-write",
+			"group": "recipes",
+			"workspace": ".",
+			"label": "//factory:repositoryMetadataWrite",
+			"title": "Synchronize repository metadata",
+			"summary": "Apply the bounded mechanical repository-identity repair across manifests and release workflows."
+		},
+		{
+			"id": "fix-ci",
+			"group": "recipes",
+			"workspace": ".",
+			"label": "//workflows/fix-ci:fixCi",
+			"title": "Repair CI",
+			"summary": "Use the failing CI graph and current diff to prepare a locally gated repair candidate.",
+			"agentic": true
+		},
+		{
+			"id": "upgrade-viem",
+			"group": "recipes",
+			"workspace": ".",
+			"label": "//workflows/upgrade-viem:upgradeViem",
+			"title": "Upgrade Viem",
+			"summary": "Synchronize Viem versions, peer ranges, lockfile, snapshots, and a changeset in one bounded candidate.",
+			"agentic": true
+		},
+		{
+			"id": "pre-commit",
+			"group": "workflows",
+			"workspace": ".",
+			"label": "//:preCommit",
+			"title": "Pre-commit gate",
+			"summary": "Run root formatting, changeset status, and the factory contract before creating a commit."
+		},
+		{
+			"id": "pre-push",
+			"group": "workflows",
+			"workspace": ".",
+			"label": "//:prePush",
+			"title": "Pre-push gate",
+			"summary": "Combine deterministic candidate checks with every PR-history-derived agentic lint.",
+			"agentic": true
+		}
+	]
+}

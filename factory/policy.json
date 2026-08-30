@@ -1,0 +1,63 @@
+{
+	"$schema": "./policy.schema.json",
+	"schemaVersion": 1,
+	"repository": {
+		"owner": "evmts",
+		"name": "tevm",
+		"defaultBranch": "main"
+	},
+	"toolchain": {
+		"node": "24.12.0",
+		"pnpm": "10.33.4",
+		"codexCli": "0.150.1",
+		"models": {
+			"implementation": "gpt-5.6-sol",
+			"review": "gpt-5.6-luna"
+		},
+		"flows": {
+			"localPath": "../flows/flows",
+			"repository": "https://github.com/smithersai/flows-proto.git",
+			"revision": "4464c7e2ab98fcc9e5f570dd15a2b2931e602702"
+		},
+		"zevm": {
+			"localPath": "../zevm",
+			"repository": "https://github.com/evmts/zevm.git",
+			"revision": "e891cf630d35c89df97e8a408318c490a9969629"
+		}
+	},
+	"issues": {
+		"approvalLabel": "factory:ready",
+		"pauseLabels": ["factory:hold", "needs:maintainer", "security"],
+		"types": ["bug", "feature", "docs", "conformance", "maintenance"],
+		"requiredHeadings": {
+			"all": ["Summary", "Acceptance criteria"],
+			"bug": ["Reproduction", "Expected behavior"],
+			"feature": ["Motivation"],
+			"docs": ["Documentation location"],
+			"conformance": ["Fixture or test ID", "Reference result"],
+			"maintenance": ["Why now"]
+		},
+		"routes": {
+			"bug": "issue-to-pr",
+			"feature": "issue-to-plan",
+			"docs": "issue-to-pr",
+			"conformance": "conformance-triage",
+			"maintenance": "issue-to-plan"
+		}
+	},
+	"approvals": {
+		"intake": "none-read-only",
+		"candidateDiff": "explicit-smthrs-invocation-or-factory-ready-label",
+		"pullRequest": "factory-ready-label-and-factory-approval-environment",
+		"fork": "explicit-contributor-action",
+		"release": "manual-smithers-approval",
+		"deploy": "manual-smithers-approval"
+	},
+	"gates": {
+		"intake": ["//factory:issueIntakeTest", "//factory:policyLint"],
+		"candidate": ["//:mechanicalPrePush", "//:agentLints"],
+		"planCandidate": ["//factory:queueLint"],
+		"pullRequest": ["//factory:check", "//:mechanicalPrePush"],
+		"planPullRequest": ["//factory:check", "//factory:queueLint"]
+	}
+}

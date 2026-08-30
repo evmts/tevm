@@ -1,0 +1,45 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "TEVM issue intake result",
+	"type": "object",
+	"additionalProperties": false,
+	"required": [
+		"schemaVersion",
+		"repository",
+		"issue",
+		"type",
+		"route",
+		"risk",
+		"status",
+		"ready",
+		"labels",
+		"missingHeadings",
+		"warnings",
+		"bodyDigest"
+	],
+	"properties": {
+		"schemaVersion": { "const": 1 },
+		"repository": { "type": "string", "pattern": "^[^/]+/[^/]+$" },
+		"issue": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["number", "state", "title", "url", "author"],
+			"properties": {
+				"number": { "type": "integer", "minimum": 1 },
+				"state": { "enum": ["OPEN", "CLOSED"] },
+				"title": { "type": "string", "minLength": 1 },
+				"url": { "type": "string", "format": "uri" },
+				"author": { "type": "string", "minLength": 1 }
+			}
+		},
+		"type": { "enum": ["bug", "feature", "docs", "conformance", "maintenance", "unknown"] },
+		"route": { "enum": ["issue-to-pr", "issue-to-plan", "conformance-triage", "manual-triage"] },
+		"risk": { "enum": ["low", "medium", "high"] },
+		"status": { "enum": ["closed", "needs-info", "awaiting-approval", "held", "ready"] },
+		"ready": { "type": "boolean" },
+		"labels": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+		"missingHeadings": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+		"warnings": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+		"bodyDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+	}
+}

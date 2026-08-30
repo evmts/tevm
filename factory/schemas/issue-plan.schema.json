@@ -1,0 +1,17 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "TEVM queued issue plan frontmatter",
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["schemaVersion", "issue", "url", "type", "route", "risk", "bodyDigest", "status"],
+	"properties": {
+		"schemaVersion": { "const": 1 },
+		"issue": { "type": "integer", "minimum": 1 },
+		"url": { "type": "string", "pattern": "^https://github\\.com/evmts/tevm/issues/[1-9][0-9]*$" },
+		"type": { "enum": ["bug", "feature", "docs", "conformance", "maintenance"] },
+		"route": { "enum": ["issue-to-pr", "issue-to-plan", "conformance-triage"] },
+		"risk": { "enum": ["low", "medium"] },
+		"bodyDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+		"status": { "const": "planned" }
+	}
+}
