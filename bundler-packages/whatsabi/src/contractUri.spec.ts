@@ -18,12 +18,12 @@ describe('contract URI resolution', () => {
 			etherscanBaseUrl: 'https://example.com',
 			followProxies: true,
 		})
-		expect(parseUri('https://example.com')).toBeUndefined()
+		expect(parseUri('https://example.com' as any)).toBeUndefined()
 		expect(knownChains[10]).toMatchObject({ id: 10, name: 'OP Mainnet' })
 	})
 
 	it('reports an actionable error for an unknown chain without an RPC URL', async () => {
-		await expect(resolveContractUri(`evm://999999/${weth}`, {} as any)).rejects.toEqual(
+		await expect(resolveContractUri(`evm://999999/${weth}` as any, {} as any)).rejects.toEqual(
 			expect.objectContaining({ name: 'UnknownChainError', _tag: 'UnknownChainError' }),
 		)
 		expect(new UnknownChainError(999999).message).toContain('Unknown chain ID: 999999')
@@ -31,7 +31,7 @@ describe('contract URI resolution', () => {
 
 	it('loads an ABI and deployed bytecode from a real Optimism contract', async () => {
 		const uri = `evm://10/${weth}?rpcUrl=${encodeURIComponent(optimismRpc)}`
-		const resolved = await resolveContractUri(uri, {} as any)
+		const resolved = await resolveContractUri(uri as any, {} as any)
 		expect(resolved?.address).toBe(weth)
 		expect(resolved?.deployedBytecode).toMatch(/^0x6080604052[0-9a-f]+$/)
 		expect(resolved?.abi).toEqual(expect.arrayContaining([expect.objectContaining({ type: 'function', name: 'name' })]))

@@ -67,7 +67,8 @@
 	},
 	"devDependencies": {
 		"@tevm/tsconfig": "workspace:^",
-		"@tevm/tsupconfig": "workspace:^"
+		"@tevm/tsupconfig": "workspace:^",
+		"@types/node": "^25.9.0"
 	},
 	"peerDependencies": {
 		"viem": "^2.49.3"
