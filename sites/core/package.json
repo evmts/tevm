@@ -14,7 +14,7 @@
 		"@tevm/docs-shared": "workspace:*",
 		"react": "^19.2.6",
 		"react-dom": "^19.2.6",
-		"tevm": "npm:tevm@1.0.0-rc.151",
+		"tevm": "npm:tevm@1.0.0-rc.153",
 		"viem": "^2.49.3",
 		"vocs": "1.4.1"
 	},

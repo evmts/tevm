@@ -23,6 +23,7 @@ const setup = S.Github.Setup({
 // upstream because nx run-many is one process; here an unchanged target is a
 // cache hit and the steps become graph structure. `affected` stays off: the
 // CLI at the pinned Flows revision does not parse --affected-base yet.
+// //:changesetCheck reads origin/main, so the job checks out full history.
 const ci = S.Github.Workflow({
 	name: 'ci',
 	on: {
@@ -32,6 +33,7 @@ const ci = S.Github.Workflow({
 	},
 	concurrency: { group: 'ci-${{ github.ref }}', cancelInProgress: 'pull_request' },
 	setup,
+	fullHistory: true,
 	run: [root.ci],
 })
 

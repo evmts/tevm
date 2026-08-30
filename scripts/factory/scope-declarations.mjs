@@ -7,18 +7,22 @@ import { parseArgs } from './lib.mjs'
 const args = parseArgs(process.argv.slice(2))
 const write = args.has('write')
 const excluded = new Set(['PACKAGE.ts', 'factory/PACKAGE.ts', 'scripts/PACKAGE.ts', 'test/PACKAGE.ts'])
-let output = ''
-try {
-	output = execFileSync(
-		'rg',
-		['-l', 'S\\.Shell\\.', '--glob', 'PACKAGE.ts', '--glob', '!node_modules/**', '--glob', '!vendor/**', '.'],
-		{
-			encoding: 'utf8',
-		},
-	)
-} catch (error) {
-	if (error?.status !== 1) throw error
+// The candidate tree, not the host: tracked and untracked PACKAGE.ts files
+// from git, read in-process, so the lint needs no ripgrep on the runner.
+const listed = execFileSync(
+	'git',
+	['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '*PACKAGE.ts', ':!vendor/**', ':!node_modules/**'],
+	{ encoding: 'utf8' },
+)
+	.split('\0')
+	.filter(Boolean)
+const matches = []
+for (const file of listed) {
+	if (/(^|\/)node_modules\//.test(file)) continue
+	const source = await readFile(file, 'utf8')
+	if (/S\.Shell\./.test(source)) matches.push(file)
 }
+const output = matches.join('\n')
 const files = output
 	.trim()
 	.split('\n')

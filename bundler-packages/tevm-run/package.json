@@ -1,12 +1,12 @@
 {
 	"name": "tevm-run",
 	"version": "1.0.0-rc.153",
-	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/evmts/tevm.git",
 		"directory": "bundler-packages/tevm-run"
 	},
+	"license": "MIT",
 	"type": "module",
 	"exports": {
 		"./package.json": "./package.json",

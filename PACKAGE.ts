@@ -88,22 +88,34 @@ const format = S.Shell.Diff({
 	changes: ['biome.json', 'package.json', '*.md', '*.ts'],
 })
 
-// Manifest hygiene as Generate: check fails on an unsorted package.json,
-// --write sorts them. Replaces the sort-package-json and
-// sort-package-json:check scripts. The script's apps/* and experimental/*
-// globs match nothing in the tree and are dropped.
-const sortManifests = S.Generate({
+// Manifest hygiene. sort-package-json --check is the lint every gate runs,
+// a plain test over the manifests; the Diff form is the --write repair,
+// confined to the manifest write set. (A Generate check materializes its
+// tree into a scratch copy, which cost twelve minutes per run here.)
+const manifestGlobs = [
+	'package.json',
+	'bundler-packages/*/package.json',
+	'configs/*/package.json',
+	'examples/*/package.json',
+	'extensions/*/package.json',
+	'packages/*/package.json',
+	'tevm/package.json',
+]
+
+const manifests = S.Filegroup({
+	srcs: S.glob(manifestGlobs),
+})
+
+const sortManifestsCheck = S.Shell.Test({
 	bin: S.NodeModule.Bin('sort-package-json'),
-	args: [
-		'package.json',
-		'bundler-packages/*/package.json',
-		'configs/*/package.json',
-		'examples/*/package.json',
-		'extensions/*/package.json',
-		'packages/*/package.json',
-		'tevm/package.json',
-	],
-	data: [tree],
+	args: ['--check', ...manifestGlobs],
+	data: [manifests],
+})
+
+const sortManifests = S.Shell.Diff({
+	bin: S.NodeModule.Bin('sort-package-json'),
+	args: manifestGlobs,
+	data: [manifests],
 	changes: ['package.json', '*/package.json', '*/*/package.json'],
 })
 
@@ -203,7 +215,7 @@ const allCoverage = S.Shell.Test({
 const allDocs = S.Shell.Test({
 	bin: S.PackageManager.bin,
 	args: ['run', 'generate:docs'],
-	data: [tree, packageJson, lockfile],
+	data: aggregateData,
 	env: nxEnvironment,
 })
 
@@ -270,10 +282,12 @@ const cargoCheck = S.Shell.Test({
 
 // Every PR touching a publishable package needs a changeset; status against
 // origin/main is the same check release:check runs.
+// `changeset status` also verifies every internal dependency names the
+// current version, so the manifests are key material beside the diff.
 const changesetCheck = S.Shell.Test({
 	bin: S.NodeModule.Bin('@changesets/cli', 'changeset'),
 	args: ['status', '--verbose', '--since=origin/main'],
-	data: [changesets, changesetConfig, S.gitDiff()],
+	data: [changesets, changesetConfig, tree, S.gitDiff()],
 })
 
 // Agentic lints over the diff. Each enforces a CLAUDE.md rule that prose
@@ -493,7 +507,7 @@ const ci = S.Suite({
 		cargoTests,
 		allTypechecks,
 		allLints,
-		sortManifests,
+		sortManifestsCheck,
 		allDepsLints,
 		allPackageLints,
 		allDocs,
@@ -650,6 +664,7 @@ export const Package = S.Package({
 		snapshot,
 		snapshotPathsLint,
 		sortManifests,
+		sortManifestsCheck,
 		vendor,
 		version,
 		zevm,

@@ -71,10 +71,10 @@
 		"@tevm/common": "workspace:^",
 		"@tevm/evm": "workspace:^",
 		"@tevm/state": "workspace:^",
-		"@tevm/utils": "workspace:^",
-		"@tevm/vm": "workspace:^",
 		"@tevm/tsconfig": "workspace:^",
 		"@tevm/tsupconfig": "workspace:^",
+		"@tevm/utils": "workspace:^",
+		"@tevm/vm": "workspace:^",
 		"qheap": "^1.4.0"
 	},
 	"publishConfig": {

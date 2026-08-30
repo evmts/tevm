@@ -30,12 +30,12 @@
 			}
 		}
 	},
-	"bin": {
-		"tevm-mcp": "./dist/cli.js"
-	},
 	"main": "dist/index.js",
 	"module": "dist/index.js",
 	"types": "types/index.d.ts",
+	"bin": {
+		"tevm-mcp": "./dist/cli.js"
+	},
 	"files": [
 		"dist",
 		"src",

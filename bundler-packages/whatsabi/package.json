@@ -45,7 +45,6 @@
 	"scripts": {
 		"//lint:package": "bunx publint --strict && attw --pack",
 		"//test": "vitest --coverage",
-		"test:coverage": "vitest run --coverage",
 		"//test:run": "vitest run",
 		"//test:ui": "vitest --ui",
 		"all": "pnpm i  && bun run build && bun run lint && bun run lint:check && bun run format:check && bun run format && bun run test:coverage && bun run generate:docs",
@@ -58,7 +57,8 @@
 		"generate:docs": "typedoc",
 		"lint": "biome check . --write --unsafe",
 		"lint:check": "biome check . --verbose",
-		"lint:deps": "bunx depcheck"
+		"lint:deps": "bunx depcheck",
+		"test:coverage": "vitest run --coverage"
 	},
 	"dependencies": {
 		"@shazow/whatsabi": "^0.26.0",
