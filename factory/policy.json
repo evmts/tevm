@@ -17,7 +17,7 @@
 		"flows": {
 			"localPath": "vendor/flows",
 			"repository": "https://github.com/smithersai/flows-proto.git",
-			"revision": "cf4ddf3215572de3f65c35ac6822357dac7ad04e"
+			"revision": "7dcced7b113a19c909cf882c24ebaddd8766b730"
 		},
 		"zevm": {
 			"localPath": "vendor/zevm",
