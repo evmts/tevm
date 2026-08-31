@@ -10,14 +10,12 @@ on:
         type: boolean
 permissions:
   contents: read
-  idToken: write
+  id-token: write
 jobs:
   tevm-publishJsr:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
       - uses: ./.github/actions/setup
         with:
           cache-url: "${{ secrets.SMITHERS_CACHE_URL }}"

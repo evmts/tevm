@@ -10,15 +10,13 @@ concurrency:
   cancel-in-progress: false
 permissions:
   contents: write
-  pullRequests: write
-  idToken: write
+  pull-requests: write
+  id-token: write
 jobs:
   version:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
       - uses: ./.github/actions/setup
         with:
           cache-url: "${{ secrets.SMITHERS_CACHE_URL }}"
@@ -33,8 +31,6 @@ jobs:
       TEVM_TEST_ALCHEMY_KEY: "${{ secrets.TEVM_TEST_ALCHEMY_KEY }}"
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
       - uses: ./.github/actions/setup
         with:
           cache-url: "${{ secrets.SMITHERS_CACHE_URL }}"
