@@ -7,6 +7,33 @@ description: Extend EVM with JavaScript-based precompile at a given address
 
 Tevm lets you register JavaScript functions as EVM precompiles at fixed addresses — useful for crypto, oracles, complex math, bridges, custom data structures, and test helpers.
 
+## Hardhat and Foundry Console Logs
+
+Tevm can print calls made by Hardhat's `console.sol` and forge-std's `console.sol` or `console2.sol`. Enable the built-in console precompile when creating a node or memory client:
+
+```typescript showLineNumbers filename="console-logs.ts"
+import { createMemoryClient } from 'tevm'
+
+const client = createMemoryClient({ consoleLog: true })
+
+// Calls to console.log(...) during EVM execution now print to console.log.
+```
+
+The feature is disabled by default. To capture the formatted arguments without writing to the JavaScript console, provide an `onLog` handler:
+
+```typescript showLineNumbers filename="capture-console-logs.ts"
+import { createMemoryClient } from 'tevm'
+
+const solidityLogs: unknown[][] = []
+const client = createMemoryClient({
+  consoleLog: {
+    onLog: (args) => solidityLogs.push(args),
+  },
+})
+```
+
+Integer values are formatted as decimal strings, addresses are checksummed, and byte values remain hex strings. Unknown or malformed console calls are ignored so logging cannot make contract execution revert. A custom precompile registered at the console address takes precedence over this built-in handler.
+
 ## Quick Start
 
 ### Basic Example

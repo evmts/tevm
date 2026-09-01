@@ -1,6 +1,7 @@
 import { type Common } from '@tevm/common'
 import type { ConsensusService } from '@tevm/consensus'
 import type { LogOptions } from '@tevm/logger'
+import type { ConsoleLogHandler } from '@tevm/precompiles'
 import type { Predeploy } from '@tevm/predeploys'
 import type { StateOptions } from '@tevm/state'
 import type { SyncStoragePersister } from '@tevm/sync-storage-persister'
@@ -46,6 +47,21 @@ export type TevmNodeOptions<TCommon extends Common = Common> = StateOptions & {
 	 * Enable profiler. Defaults to false.
 	 */
 	readonly profiler?: boolean
+	/**
+	 * Print calls made through Hardhat's `console.sol` or forge-std's `console.sol` and `console2.sol`.
+	 * Defaults to `false`. Pass a handler to capture formatted arguments instead of writing to `console.log`.
+	 * @example
+	 * ```ts
+	 * import { createTevmNode } from '@tevm/node'
+	 *
+	 * const node = createTevmNode({
+	 *   consoleLog: {
+	 *     onLog: (args) => console.log('Solidity:', ...args),
+	 *   },
+	 * })
+	 * ```
+	 */
+	readonly consoleLog?: boolean | { readonly onLog?: ConsoleLogHandler }
 	/**
 	 * Custom precompiles allow you to run arbitrary JavaScript code in the EVM.
 	 * See the [Precompile guide](https://todo.todo) documentation for a deeper dive

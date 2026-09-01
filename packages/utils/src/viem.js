@@ -43,6 +43,8 @@ export {
 	serializeTransaction,
 	stringToHex,
 	toBytes,
+	toFunctionSelector,
+	toFunctionSignature,
 	toHex,
 	toRlp,
 } from 'viem/utils'

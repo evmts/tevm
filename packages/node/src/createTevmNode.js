@@ -5,7 +5,7 @@ import { createNoopConsensusService } from '@tevm/consensus'
 import { createEvm } from '@tevm/evm'
 import { createJsonRpcFetcher } from '@tevm/jsonrpc'
 import { createLogger } from '@tevm/logger'
-import { p256VerifyPrecompile } from '@tevm/precompiles'
+import { consoleLogPrecompile, p256VerifyPrecompile } from '@tevm/precompiles'
 import { ReceiptsManager } from '@tevm/receipt-manager'
 import { createStateManager } from '@tevm/state'
 import { TxPool } from '@tevm/txpool'
@@ -532,18 +532,21 @@ export const createTevmNode = (options = {}) => {
 
 	const evmPromise = Promise.all([chainCommonPromise, stateManagerPromise, blockchainPromise]).then(
 		([common, stateManager, blockchain]) => {
+			const customPrecompileAddresses = new Set(
+				(options.customPrecompiles ?? []).map((precompile) => precompile.address.toString()),
+			)
+			const builtInPrecompiles = [
+				p256VerifyPrecompile(),
+				...(options.consoleLog
+					? [consoleLogPrecompile(typeof options.consoleLog === 'object' ? options.consoleLog : {})]
+					: []),
+			].filter((precompile) => !customPrecompileAddresses.has(precompile.address.toString()))
 			return createEvm({
 				common,
 				stateManager,
 				blockchain,
 				allowUnlimitedContractSize: options.allowUnlimitedContractSize ?? false,
-				customPrecompiles: [
-					...[p256VerifyPrecompile()].filter(
-						(p) =>
-							!new Set((options.customPrecompiles ?? []).map((p) => p.address.toString())).has(p.address.toString()),
-					),
-					...(options.customPrecompiles ?? []),
-				],
+				customPrecompiles: [...builtInPrecompiles, ...(options.customPrecompiles ?? [])],
 				profiler: options.profiler ?? false,
 				loggingLevel,
 			})
