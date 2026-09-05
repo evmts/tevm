@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process'
 
+// Sibling source edits are outside Flows' file boundary. Let Zig inspect them
+// before the uncached Nx lanes instead of replaying a native build receipt.
+const native = spawnSync(process.execPath, ['scripts/factory/build-native.mjs'], { stdio: 'inherit' })
+if (native.error) throw native.error
+if (native.status !== 0) process.exit(native.status ?? 1)
+
 const common = ['--parallel=2', '--skip-nx-cache']
 const lanes = [
 	{

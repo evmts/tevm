@@ -64,13 +64,19 @@ const vendor = S.Git.Submodules({
 	paths: ['vendor/flows'],
 })
 
-// ZEVM's native build uses the maintained sibling Zig sources. Zig owns the
-// dependency cache; the local addon is staged for @evmts/zevm's loader.
-const zevm = S.Shell.Build({
+// Zig must check sibling source contents on every invocation. The addon lives
+// outside TEVM's captured outputs, so a cached build receipt cannot restore it.
+// Include release pins so dependent checks invalidate when native revisions move.
+const zevm = S.Shell.Run({
 	bin: S.Runtime.bin,
 	args: ['scripts/factory/build-native.mjs'],
-	data: [workspaceConfig, lockfile, S.file('//scripts/factory/build-native.mjs'), S.file('//mise.toml')],
-	outDirs: ['.cache/zevm'],
+	data: [
+		workspaceConfig,
+		lockfile,
+		S.file('//scripts/factory/build-native.mjs'),
+		S.file('//mise.toml'),
+		S.file('//factory/native-dependencies.json'),
+	],
 })
 
 // The first half of the root `lint` script: biome over the root-level files.
@@ -131,7 +137,9 @@ const depsLint = S.Shell.Test({
 // more granular package targets remain runnable one at a time. Each command is
 // content-keyed on the repository inputs and can be replaced by a native query
 // without changing any consumer when that authoring primitive lands.
-const aggregateData = [tree, packageJson, lockfile, workspaceConfig, zevm]
+// Postinstall stages the native addon. Keep its explicit rebuild target uncached;
+// release pins invalidate aggregate verdicts when any native dependency changes.
+const aggregateData = [tree, packageJson, lockfile, workspaceConfig, S.file('//factory/native-dependencies.json')]
 
 // Flows is the outer content-addressed runner. Nx stays as the compatibility
 // fan-out inside these aggregate targets, but its workspace daemon and remote

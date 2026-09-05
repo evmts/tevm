@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { command, repositoryRoot } from './lib.mjs'
 
@@ -12,6 +12,4 @@ if (version !== expected) throw new Error(`Expected Zig ${expected}; run mise in
 command('zig', ['build', 'npm-native', '-Doptimize=ReleaseSafe'], { cwd: root, stdio: 'inherit' })
 const addon = resolve(root, 'npm/zevm/native/zevm.node')
 await copyFile(resolve(root, 'zig-out/npm/native/zevm.node'), addon)
-await mkdir(resolve(repositoryRoot, '.cache/zevm'), { recursive: true })
-await writeFile(resolve(repositoryRoot, '.cache/zevm/build.json'), `${JSON.stringify({ zig: version, addon })}\n`)
 console.log('Native ZEVM addon built from ../zevm, ../voltaire, and ../guillotine-mini')

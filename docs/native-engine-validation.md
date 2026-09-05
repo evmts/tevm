@@ -68,6 +68,12 @@ Guillotine Mini's broader `zig build test` run reports storage mismatches and
 missing reference traces. The run was stopped after repeated failures; its
 assertions remain in place and that gate is not green.
 
+The explicit `//:zevm` rebuild is uncached: deleting the staged addon and
+running the target twice restored it on both invocations. The mechanical gate
+builds native sources before its Nx lanes, and native revision pins participate
+in aggregate check keys. This avoids replaying a build receipt for a missing
+addon outside the TEVM cache outputs.
+
 ## Unresolved release gates
 
 - `//:agentLints` runs, but the migration's large deletion diff exceeds the
