@@ -5,6 +5,8 @@ on:
 concurrency:
   group: "review-${{ github.ref }}"
   cancel-in-progress: true
+permissions:
+  contents: read
 jobs:
   review:
     runs-on: ubuntu-latest

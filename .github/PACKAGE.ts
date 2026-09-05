@@ -186,6 +186,7 @@ const paritySuites = S.Github.Workflow({
 const nightlyConformance = S.Github.Workflow({
 	name: 'cron-nightlyConformance',
 	on: { schedule: ['0 3 * * *'], workflowDispatch: true },
+	permissions: { contents: 'read' },
 	setup,
 	steps: nativeSteps('pnpm exec smthrs target //test:nightlyConformance'),
 })
@@ -194,6 +195,7 @@ const nightlyConformance = S.Github.Workflow({
 const review = S.Github.Workflow({
 	name: 'review',
 	on: { pullRequest: true },
+	permissions: { contents: 'read' },
 	concurrency: { group: 'review-${{ github.ref }}', cancelInProgress: true },
 	setup,
 	steps: nativeSteps('pnpm exec smthrs target //:prReview'),
