@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/actions",
-	"version": "1.0.0-rc.153",
+	"version": "1.0.0-rc.154",
 	"private": false,
 	"description": "A typesafe library for writing forge scripts in typescript",
 	"keywords": [

@@ -1,5 +1,28 @@
 # @tevm/cli
 
+## 1.0.0-rc.154
+
+### Major Changes
+
+- 138aae1: Replace the JavaScript execution stack with ZEVM's native node, built from sibling ZEVM, Voltaire and Guillotine Mini sources. Expose serialized JSON-RPC and lifecycle/block events, viem memory clients, ethers integration, and HTTP/WebSocket/IPC servers. Remove EthereumJS dependencies and the old internal VM/state/transaction packages and facade exports.
+
+  This is a breaking engine and public API migration. Native addons are required for in-process execution; browsers connect through JSON-RPC. State dumps, CLI sessions and direct mutable engine APIs change. See `docs/native-engine-migration.md` for supported replacements and removed surfaces.
+
+### Patch Changes
+
+- Updated dependencies [138aae1]
+- Updated dependencies [42a8f85]
+  - @tevm/memory-client@1.0.0-rc.154
+  - @tevm/actions@1.0.0-rc.154
+  - @tevm/common@1.0.0-rc.154
+  - @tevm/server@1.0.0-rc.154
+  - @tevm/utils@1.0.0-rc.154
+  - @tevm/base-bundler@1.0.0-rc.154
+  - @tevm/bundler-cache@1.0.0-rc.154
+  - @tevm/config@1.0.0-rc.154
+  - @tevm/contract@1.0.0-rc.154
+  - @tevm/jsonrpc@1.0.0-rc.154
+
 ## 1.0.0-rc.151
 
 ### Patch Changes

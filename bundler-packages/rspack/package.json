@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/rspack-plugin",
-	"version": "1.0.0-rc.151",
+	"version": "1.0.0-rc.154",
 	"private": false,
 	"description": "An (experimental) rspack plugin for tevm",
 	"keywords": [

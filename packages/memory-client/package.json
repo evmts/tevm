@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/memory-client",
-	"version": "1.0.0-rc.151",
+	"version": "1.0.0-rc.154",
 	"private": false,
 	"description": "MemoryClient for tevm is an in memory devnet for JavaScript",
 	"keywords": [

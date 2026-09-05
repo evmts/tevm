@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/test-utils",
-	"version": "1.0.0-rc.151",
+	"version": "1.0.0-rc.154",
 	"private": false,
 	"description": "Testing utils and fixtures for tevm",
 	"keywords": [

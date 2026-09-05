@@ -1,5 +1,15 @@
 # @tevm/contract
 
+## 1.0.0-rc.154
+
+### Patch Changes
+
+- 42a8f85: Graduate the tested release candidate to the stable tevm 1.0.0 release. Every published package in the linked group is versioned together so that `tevm` and the `@tevm/*` entry points documented in the migration guide all resolve to `1.0.0`.
+- Updated dependencies [138aae1]
+- Updated dependencies [42a8f85]
+  - @tevm/utils@1.0.0-rc.154
+  - @tevm/errors@1.0.0-rc.154
+
 ## 1.0.0-rc.151
 
 ### Patch Changes

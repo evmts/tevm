@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/mcp",
-	"version": "1.0.0-rc.151",
+	"version": "1.0.0-rc.154",
 	"private": false,
 	"description": "An MCP server that gives AI agents an in-process Tevm EVM",
 	"keywords": [
