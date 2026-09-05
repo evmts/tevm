@@ -54,7 +54,8 @@ it(
 				/\[tevm-run\] bun run --bun --config=.*bunfig\.toml --install=fallback \.\/example\/example\.ts/,
 			)
 			expect(result).toInclude('success')
-			expect(result).toInclude('address:  0x5FbDB2315678afecb367f032d93F642f64180aa3')
+			// Native deployment receipts encode addresses as lowercase RPC data.
+			expect(result).toInclude('address:  0x5fbdb2315678afecb367f032d93f642f64180aa3')
 			expect(result).toInclude('SimpleContract.get()')
 			expect(result).toInclude('20n')
 		} finally {
