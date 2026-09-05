@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/vite-plugin",
-	"version": "1.0.0-rc.151",
+	"version": "1.0.0-rc.154",
 	"private": false,
 	"description": "A vite plugin for tevm",
 	"keywords": [

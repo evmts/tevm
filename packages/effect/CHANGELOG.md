@@ -1,5 +1,12 @@
 # @tevm/effect
 
+## 1.0.0-rc.154
+
+### Patch Changes
+
+- 933d0e2: Correct Effect utility examples to import from `@tevm/effect` and execute their Effects, including the two-stage `createRequireEffect` API.
+- 42a8f85: Graduate the tested release candidate to the stable tevm 1.0.0 release. Every published package in the linked group is versioned together so that `tevm` and the `@tevm/*` entry points documented in the migration guide all resolve to `1.0.0`.
+
 ## 1.0.0-rc.151
 
 ### Patch Changes

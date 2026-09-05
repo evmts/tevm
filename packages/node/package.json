@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/node",
-	"version": "1.0.0-rc.153",
+	"version": "1.0.0-rc.154",
 	"private": false,
 	"description": "Client implementations of Tevm",
 	"keywords": [

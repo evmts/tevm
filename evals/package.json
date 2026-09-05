@@ -10,9 +10,9 @@
 		"check:real-projects": "node real-projects/validate-suite.mjs"
 	},
 	"dependencies": {
-		"@tevm/vite-plugin": "1.0.0-rc.151",
+		"@tevm/vite-plugin": "1.0.0-rc.154",
 		"solc": "0.8.35",
-		"tevm": "1.0.0-rc.153",
+		"tevm": "1.0.0-rc.154",
 		"tsx": "4.20.6",
 		"typescript": "5.9.3",
 		"viem": "2.49.3",

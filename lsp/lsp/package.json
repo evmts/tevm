@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/lsp",
-	"version": "1.0.0-rc.151",
+	"version": "1.0.0-rc.154",
 	"private": false,
 	"sideEffects": false,
 	"description": "The language server for Tevm",

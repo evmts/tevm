@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/unplugin",
-	"version": "1.0.0-rc.151",
+	"version": "1.0.0-rc.154",
 	"private": false,
 	"description": "Internal unplugin for Tevm",
 	"keywords": [

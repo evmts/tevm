@@ -829,13 +829,13 @@ importers:
   evals:
     dependencies:
       '@tevm/vite-plugin':
-        specifier: 1.0.0-rc.151
+        specifier: 1.0.0-rc.154
         version: link:../bundler-packages/vite
       solc:
         specifier: 0.8.35
         version: 0.8.35
       tevm:
-        specifier: 1.0.0-rc.153
+        specifier: 1.0.0-rc.154
         version: link:../tevm
       tsx:
         specifier: 4.20.6
@@ -9314,7 +9314,7 @@ packages:
     engines: {node: '>=10'}
 
   ds-test@https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0}
+    resolution: {gitHosted: true, integrity: sha512-cTKz9+PTVIvBARdhqEpjgxSzvzYPj5vV5gAcJWnh4pfkIywTbZdBbvagyBjjnd6AzdW8i7NIFG7YyPd8sHiR2g==, tarball: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0}
     version: 1.0.0
 
   dset@3.1.4:
@@ -10044,7 +10044,7 @@ packages:
     hasBin: true
 
   forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/886b4f8b63409ef474542de6394d25a9b5908ed3:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/886b4f8b63409ef474542de6394d25a9b5908ed3}
+    resolution: {gitHosted: true, integrity: sha512-5CJo9sHKhW9G2Ezs/3rG16KvjEDb4x6sCfXzM/BJys17u2BE1B9waeQtA+G55GsdkTMgY8X0SOpRPRC1qhC4Lg==, tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/886b4f8b63409ef474542de6394d25a9b5908ed3}
     version: 1.16.2
 
   form-data@4.0.5:
