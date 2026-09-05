@@ -67,7 +67,6 @@
 		"@tevm/errors": "workspace:^"
 	},
 	"devDependencies": {
-		"@tevm/test-utils": "workspace:^",
 		"@tevm/tsconfig": "workspace:^",
 		"@tevm/tsupconfig": "workspace:^"
 	},

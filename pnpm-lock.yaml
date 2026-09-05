@@ -120,37 +120,37 @@ importers:
   ../zevm/npm/zevm:
     optionalDependencies:
       '@evmts/zevm-darwin-arm64':
-        specifier: 0.0.0
+        specifier: 0.1.0
         version: link:../platforms/darwin-arm64
       '@evmts/zevm-darwin-x64':
-        specifier: 0.0.0
+        specifier: 0.1.0
         version: link:../platforms/darwin-x64
       '@evmts/zevm-freebsd-arm64':
-        specifier: 0.0.0
+        specifier: 0.1.0
         version: link:../platforms/freebsd-arm64
       '@evmts/zevm-freebsd-x64':
-        specifier: 0.0.0
+        specifier: 0.1.0
         version: link:../platforms/freebsd-x64
       '@evmts/zevm-linux-arm64-gnu':
-        specifier: 0.0.0
+        specifier: 0.1.0
         version: link:../platforms/linux-arm64-gnu
       '@evmts/zevm-linux-arm64-musl':
-        specifier: 0.0.0
+        specifier: 0.1.0
         version: link:../platforms/linux-arm64-musl
       '@evmts/zevm-linux-x64-gnu':
-        specifier: 0.0.0
+        specifier: 0.1.0
         version: link:../platforms/linux-x64-gnu
       '@evmts/zevm-linux-x64-musl':
-        specifier: 0.0.0
+        specifier: 0.1.0
         version: link:../platforms/linux-x64-musl
       '@evmts/zevm-win32-arm64-msvc':
-        specifier: 0.0.0
+        specifier: 0.1.0
         version: link:../platforms/win32-arm64-msvc
       '@evmts/zevm-win32-ia32-msvc':
-        specifier: 0.0.0
+        specifier: 0.1.0
         version: link:../platforms/win32-ia32-msvc
       '@evmts/zevm-win32-x64-msvc':
-        specifier: 0.0.0
+        specifier: 0.1.0
         version: link:../platforms/win32-x64-msvc
 
   bundler-packages/base-bundler:
@@ -1077,7 +1077,7 @@ importers:
         version: 0.2.0
       forge-std:
         specifier: github:foundry-rs/forge-std
-        version: https://codeload.github.com/foundry-rs/forge-std/tar.gz/452bdecf8772bf113532f67c5cf3accb71895cd0
+        version: https://codeload.github.com/foundry-rs/forge-std/tar.gz/886b4f8b63409ef474542de6394d25a9b5908ed3
       react-helmet:
         specifier: ^6.1.0
         version: 6.1.0(react@19.2.6)
@@ -1305,12 +1305,6 @@ importers:
         specifier: ^4.1.11
         version: 4.4.3
     devDependencies:
-      '@tevm/memory-client':
-        specifier: workspace:^
-        version: link:../memory-client
-      '@tevm/test-utils':
-        specifier: workspace:^
-        version: link:../../test/test-utils
       '@tevm/tsconfig':
         specifier: workspace:^
         version: link:../../configs/tsconfig
@@ -1506,9 +1500,6 @@ importers:
         specifier: ^2.49.3
         version: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     devDependencies:
-      '@tevm/test-utils':
-        specifier: workspace:^
-        version: link:../../test/test-utils
       '@tevm/tsconfig':
         specifier: workspace:^
         version: link:../../configs/tsconfig
@@ -1528,9 +1519,6 @@ importers:
         specifier: ^2.49.3
         version: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     devDependencies:
-      '@tevm/test-utils':
-        specifier: workspace:^
-        version: link:../../test/test-utils
       '@tevm/tsconfig':
         specifier: workspace:^
         version: link:../../configs/tsconfig
@@ -10055,8 +10043,8 @@ packages:
     resolution: {integrity: sha512-W8+hV/qnShs4pZSIcHfYvKi7ds1FjNVW14XG5fMkkTBzbUGJh5BxbTc3KZZy7nWbPpaHLGnRszMZNZlLvi6qww==}
     hasBin: true
 
-  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/452bdecf8772bf113532f67c5cf3accb71895cd0:
-    resolution: {gitHosted: true, integrity: sha512-Od5Z0plmn7McUWPT4vsHYuMD+ZsKM2T97T2s+QTiyBXxNhH70mAmfQrH9btSyvfGwt5CFT2vhLmND2I3FHpaRA==, tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/452bdecf8772bf113532f67c5cf3accb71895cd0}
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/886b4f8b63409ef474542de6394d25a9b5908ed3:
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/886b4f8b63409ef474542de6394d25a9b5908ed3}
     version: 1.16.2
 
   form-data@4.0.5:
@@ -25002,7 +24990,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/452bdecf8772bf113532f67c5cf3accb71895cd0: {}
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/886b4f8b63409ef474542de6394d25a9b5908ed3: {}
 
   form-data@4.0.5:
     dependencies:

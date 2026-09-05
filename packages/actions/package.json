@@ -68,11 +68,9 @@
 		"@tevm/node": "workspace:^"
 	},
 	"devDependencies": {
-		"@tevm/test-utils": "workspace:^",
 		"@tevm/tsconfig": "workspace:^",
 		"@tevm/tsupconfig": "workspace:^",
-		"abitype": "^1.2.4",
-		"@tevm/memory-client": "workspace:^"
+		"abitype": "^1.2.4"
 	},
 	"peerDependencies": {
 		"viem": "^2.49.3",
