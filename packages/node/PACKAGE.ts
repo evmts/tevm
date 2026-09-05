@@ -26,7 +26,7 @@ const srcs = S.Filegroup({
 })
 
 const tests = S.Filegroup({
-	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
+	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**', 'fixtures/**']),
 })
 
 // Workspace dependencies as data: the build outputs of every workspace:*
@@ -56,11 +56,14 @@ const typecheck = Shell.Test({
 	data: [srcs, deps, tsconfig],
 })
 
-// test:run. No spec file needs a live RPC, so the whole suite stays hermetic.
+// The native hardfork regression gate includes the existing fork tests, which
+// spawn fixtures/fork-server.cjs. Without this declaration testCoverage fails
+// with listen EPERM before those tests can run. Permit only local RPC traffic.
 const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
+	sandbox: { network: 'loopback' },
 })
 
 // test:coverage.
@@ -68,6 +71,7 @@ const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
+	sandbox: { network: 'loopback' },
 })
 
 // The floors are vitest.config.ts's thresholds verbatim.
