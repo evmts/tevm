@@ -7,7 +7,7 @@ import { ExecutionError } from '../ethereum/ExecutionErrorError.js'
  * @property {string} [docsPath]
  * @property {string} [docsSlug]
  * @property {string[]} [metaMessages]
- * @property {ExecutionError|import('@evmts/zevm/evm-error').EVMError} [cause]
+ * @property {ExecutionError|Error} [cause]
  * @property {string} [details]
  * @property {object} [meta]
  */

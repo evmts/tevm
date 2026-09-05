@@ -97,10 +97,11 @@ export default function Session({ args: [name], options }: Props) {
 						? (await createPublicClient({ transport: http(options.fork) }).getBlockNumber()).toString()
 						: undefined)
 				const session: CliSession = {
-					version: 1,
+					version: 2,
 					name,
 					...(options.fork ? { forkUrl: options.fork } : {}),
-					...(forkBlock ? { forkBlock, blockNumber: forkBlock } : { blockNumber: '0' }),
+					...(forkBlock ? { forkBlock } : {}),
+					blockNumber: '0',
 					updatedAt: new Date().toISOString(),
 				}
 				const sessionPath = writeSession(session)

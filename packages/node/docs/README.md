@@ -4,13 +4,16 @@
 
 # @tevm/node
 
-The internal node implementation for Tevm. It composes the ZEVM-backed Tevm runtime packages and exposes the base node API used by MemoryClient and JSON-RPC transports.
+A serialized native ZEVM engine with JSON-RPC and an event emitter. Execution and node state live in the Zig runtime, backed by Voltaire and Guillotine Mini.
 
-- [@tevm/vm](https://github.com/evmts/tevm/tree/main/packages/vm)
-- [@tevm/evm](https://github.com/evmts/tevm/tree/main/packages/evm)
-- [@tevm/blockchain](https://github.com/evmts/tevm/tree/main/packages/blockchain)
-- [@tevm/state](https://github.com/evmts/tevm/tree/main/packages/state)
+```js
+import { createZevmEngine } from '@tevm/node'
+const engine = createZevmEngine()
+try {
+  console.log(await engine.request({ method: 'eth_chainId' }))
+} finally {
+  await engine.close()
+}
+```
 
-## License 📄
-
-<a href="_media/LICENSE"><img src="https://user-images.githubusercontent.com/35039927/231030761-66f5ce58-a4e9-4695-b1fe-255b1bceac92.png" width="200" /></a>
+`rpc` accepts raw JSON including batches and notifications. `request` throws `NativeRpcError` with the native code and data. Events are `request`, `response`, `block`, and `close`. Close releases the native handle. See the [migration guide](_media/native-engine-migration.md) for configuration and native build requirements.

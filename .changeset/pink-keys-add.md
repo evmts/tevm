@@ -12,7 +12,6 @@
 "@tevm/config": patch
 "@tevm/effect": patch
 "@tevm/ethers": patch
-"@tevm/state": patch
 "@tevm/contract": patch
 "@tevm/solc": patch
 ---

@@ -1,5 +1,5 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
 
 // bundler-packages/resolutions-rs/PACKAGE.ts is the exemplar for the Rust
 // crates in the cargo workspace. This crate is private and ships no napi

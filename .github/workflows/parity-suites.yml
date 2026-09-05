@@ -3,35 +3,18 @@ name: parity-suites
 on:
   pull_request:
   workflow_dispatch:
+env:
+  TEVM_RPC_URLS_MAINNET: "${{ secrets.TEVM_RPC_URLS_MAINNET }}"
+  TEVM_RPC_URLS_OPTIMISM: "${{ secrets.TEVM_RPC_URLS_OPTIMISM }}"
+  TEVM_TEST_ALCHEMY_KEY: "${{ secrets.TEVM_TEST_ALCHEMY_KEY }}"
 jobs:
-  test-parityFast:
-    runs-on: ubuntu-latest
-    env:
-      TEVM_RPC_URLS_MAINNET: "${{ secrets.TEVM_RPC_URLS_MAINNET }}"
-      TEVM_RPC_URLS_OPTIMISM: "${{ secrets.TEVM_RPC_URLS_OPTIMISM }}"
-      TEVM_TEST_ALCHEMY_KEY: "${{ secrets.TEVM_TEST_ALCHEMY_KEY }}"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-        with:
-          cache-url: "${{ secrets.SMITHERS_CACHE_URL }}"
-          cache-token: "${{ secrets.SMITHERS_CACHE_TOKEN }}"
-      - run: pnpm exec smthrs '//test:parityFast'
-  test-conformanceFast:
+  parity-suites:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
         with:
-          cache-url: "${{ secrets.SMITHERS_CACHE_URL }}"
-          cache-token: "${{ secrets.SMITHERS_CACHE_TOKEN }}"
-      - run: pnpm exec smthrs '//test:conformanceFast'
-  test-hiveSmoke:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-        with:
-          cache-url: "${{ secrets.SMITHERS_CACHE_URL }}"
-          cache-token: "${{ secrets.SMITHERS_CACHE_TOKEN }}"
-      - run: pnpm exec smthrs '//test:hiveSmoke'
+          fetch-depth: "0"
+      - name: Checkout pinned native sources
+        run: node scripts/factory/checkout-native.mjs
+      - uses: "./.github/actions/setup"
+      - run: pnpm exec smthrs target //test:parityFast //test:conformanceFast //test:hiveSmoke

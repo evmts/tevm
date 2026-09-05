@@ -10,6 +10,3 @@
 [submodule "vendor/flows"]
 	path = vendor/flows
 	url = https://github.com/smithersai/flows-proto.git
-[submodule "vendor/zevm"]
-	path = vendor/zevm
-	url = https://github.com/evmts/zevm.git

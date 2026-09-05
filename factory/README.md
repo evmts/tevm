@@ -12,7 +12,7 @@ pnpm factory:runtime-check
 pnpm factory:query
 ```
 
-The bootstrapper is conservative: it initializes a missing `vendor/flows` or `vendor/zevm` submodule at its pinned gitlink and refuses a worktree that drifted from it, but it never rewrites an existing checkout. It requires `mise` on the host (`brew install mise` or https://mise.jdx.dev) and installs the `mise.toml` pins. With `--install`, it also links the local Flows CLI globally (the generated Git hooks invoke `smthrs` from `PATH`) and installs the declared hooks. Preflight verifies that both the installed packages and hook CLI resolve through that exact local checkout and that the coding CLI/model pins match policy.
+The bootstrapper is conservative: it initializes the missing `vendor/flows` submodule at its pinned gitlink and refuses a worktree that drifted from it, but it never rewrites an existing checkout. It also requires sibling `../zevm`, `../voltaire`, and `../guillotine-mini` checkouts for the native engine. It requires `mise` on the host (`brew install mise` or https://mise.jdx.dev) and installs the `mise.toml` pins. With `--install`, it also links the local Flows CLI globally (the generated Git hooks invoke `smthrs` from `PATH`) and installs the declared hooks. Preflight verifies that both the installed packages and hook CLI resolve through that exact local checkout and that the coding CLI/model pins match policy.
 
 Full preflight also checks that `TEVM_TEST_ALCHEMY_KEY`,
 `TEVM_RPC_URLS_MAINNET`, and `TEVM_RPC_URLS_OPTIMISM` are present without

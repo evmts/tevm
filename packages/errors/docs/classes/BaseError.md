@@ -27,7 +27,6 @@ This class is abstract and should be extended by other error classes.
 - [`InsufficientFundsError`](InsufficientFundsError.md)
 - [`InsufficientPermissionsError`](InsufficientPermissionsError.md)
 - [`InternalError`](InternalError.md)
-- [`InternalEvmError`](InternalEvmError.md)
 - [`InvalidAddressError`](InvalidAddressError.md)
 - [`InvalidGasPriceError`](InvalidGasPriceError.md)
 - [`InvalidParamsError`](InvalidParamsError.md)

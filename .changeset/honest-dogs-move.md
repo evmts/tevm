@@ -9,7 +9,6 @@
 "@tevm/solc": patch
 "@tevm/bun-plugin": patch
 "@tevm/node": patch
-"@tevm/procedures": patch
 "@tevm/tsupconfig": patch
 "@tevm/ethers": patch
 "@tevm/actions": patch
@@ -20,9 +19,7 @@
 "@tevm/logger": patch
 "@tevm/server": patch
 "@tevm/test-utils": patch
-"@tevm/state": patch
 "@tevm/ts-plugin": patch
-"@tevm/tx": patch
 "@tevm/vscode": patch
 "@tevm/lsp": patch
 ---

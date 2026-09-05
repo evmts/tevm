@@ -1,0 +1,160 @@
+[**@tevm/common**](../README.md)
+
+***
+
+[@tevm/common](../globals.md) / flame
+
+# Variable: flame
+
+> `const` **flame**: `object`
+
+## Type Declaration
+
+### blockExplorers
+
+> **blockExplorers**: `object`
+
+#### Type Declaration
+
+#### blockExplorers.default
+
+> `readonly` **default**: `object`
+
+##### Type Declaration
+
+#### blockExplorers.default.name
+
+> `readonly` **name**: `"Flame Explorer"`
+
+#### blockExplorers.default.url
+
+> `readonly` **url**: `"https://explorer.flame.astria.org"`
+
+### blockTime?
+
+> `optional` **blockTime?**: `number`
+
+### contracts
+
+> **contracts**: `object`
+
+#### Type Declaration
+
+#### contracts.multicall3
+
+> `readonly` **multicall3**: `object`
+
+##### Type Declaration
+
+#### contracts.multicall3.address
+
+> `readonly` **address**: `"0xcA11bde05977b3631167028862bE2a173976CA11"`
+
+#### contracts.multicall3.blockCreated
+
+> `readonly` **blockCreated**: `6829148`
+
+### custom?
+
+> `optional` **custom?**: `Record`\<`string`, `unknown`\>
+
+### ensTlds?
+
+> `optional` **ensTlds?**: readonly `string`[]
+
+### experimental\_preconfirmationTime?
+
+> `optional` **experimental\_preconfirmationTime?**: `number`
+
+### extendSchema?
+
+> `optional` **extendSchema?**: `Record`\<`string`, `unknown`\>
+
+### fees?
+
+> `optional` **fees?**: `ChainFees`
+
+### formatters?
+
+> `optional` **formatters?**: `undefined`
+
+### id
+
+> **id**: `253368190`
+
+### name
+
+> **name**: `"Flame"`
+
+### nativeCurrency
+
+> **nativeCurrency**: `object`
+
+#### Type Declaration
+
+#### nativeCurrency.decimals
+
+> `readonly` **decimals**: `18`
+
+#### nativeCurrency.name
+
+> `readonly` **name**: `"TIA"`
+
+#### nativeCurrency.symbol
+
+> `readonly` **symbol**: `"TIA"`
+
+### network
+
+> `readonly` **network**: `"flame"`
+
+### prepareTransactionRequest?
+
+> `optional` **prepareTransactionRequest?**: ((`args`, `options`) => `Promise`\<`PrepareTransactionRequestParameters`\>) \| \[((`args`, `options`) => `Promise`\<`PrepareTransactionRequestParameters`\>) \| `undefined`, `object`\]
+
+### rpcUrls
+
+> **rpcUrls**: `object`
+
+#### Type Declaration
+
+#### rpcUrls.default
+
+> `readonly` **default**: `object`
+
+##### Type Declaration
+
+#### rpcUrls.default.http
+
+> `readonly` **http**: readonly \[`"https://rpc.flame.astria.org"`\]
+
+#### rpcUrls.default.webSocket
+
+> `readonly` **webSocket**: readonly \[`"wss://ws.flame.astria.org"`\]
+
+### serializers?
+
+> `optional` **serializers?**: `ChainSerializers`
+
+### sourceId?
+
+> `optional` **sourceId?**: `number`
+
+### testnet?
+
+> `optional` **testnet?**: `boolean`
+
+### verifyHash?
+
+> `optional` **verifyHash?**: (`client`, `parameters`) => `Promise`\<`VerifyHashActionReturnType`\>
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `client` | `Client` |
+| `parameters` | `VerifyHashActionParameters` |
+
+#### Returns
+
+`Promise`\<`VerifyHashActionReturnType`\>

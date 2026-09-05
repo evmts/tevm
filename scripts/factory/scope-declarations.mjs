@@ -11,7 +11,17 @@ const excluded = new Set(['PACKAGE.ts', 'factory/PACKAGE.ts', 'scripts/PACKAGE.t
 // from git, read in-process, so the lint needs no ripgrep on the runner.
 const listed = execFileSync(
 	'git',
-	['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '*PACKAGE.ts', ':!vendor/**', ':!node_modules/**'],
+	[
+		'ls-files',
+		'-z',
+		'--cached',
+		'--others',
+		'--exclude-standard',
+		'--',
+		'*PACKAGE.ts',
+		':!vendor/**',
+		':!node_modules/**',
+	],
 	{ encoding: 'utf8' },
 )
 	.split('\0')
@@ -19,7 +29,14 @@ const listed = execFileSync(
 const matches = []
 for (const file of listed) {
 	if (/(^|\/)node_modules\//.test(file)) continue
-	const source = await readFile(file, 'utf8')
+	let source
+	try {
+		source = await readFile(file, 'utf8')
+	} catch (error) {
+		// git ls-files --cached includes deletions in an unapplied candidate.
+		if (error.code === 'ENOENT') continue
+		throw error
+	}
 	if (/S\.Shell\./.test(source)) matches.push(file)
 }
 const output = matches.join('\n')

@@ -1,5 +1,6 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { Package as root } from '../../PACKAGE.js'
 
 // "Make CI green" as a lane. The data edge is //:ci itself: the agent starts

@@ -49,11 +49,11 @@ export const options = zod.object({
 		),
 	chainId: zod
 		.string()
-		.default('900')
+		.default('31337')
 		.describe(
 			option({
-				description: 'Use known chain ID',
-				defaultValueDescription: '900 (tevm)',
+				description: 'Native chain ID',
+				defaultValueDescription: '31337 (TEVM)',
 			}),
 		),
 	forkBlockNumber: zod

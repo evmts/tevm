@@ -36,7 +36,7 @@ Defined in: [extensions/ethers/src/contract/Contract.d.ts:18](https://github.com
 | Parameter | Type |
 | ------ | ------ |
 | `target` | `string` \| `Addressable` |
-| `abi` | `InterfaceAbi` \| `Interface` |
+| `abi` | `Interface` \| `InterfaceAbi` |
 | `runner?` | `ContractRunner` \| `null` |
 | `_deployTx?` | `TransactionResponse` \| `null` |
 

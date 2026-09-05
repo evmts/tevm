@@ -1,6 +1,5 @@
 ---
 "@tevm/actions": patch
-"@tevm/procedures": patch
 "tevm": patch
 ---
 

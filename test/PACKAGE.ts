@@ -1,5 +1,6 @@
 /// <reference path="../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { Package as root } from '../PACKAGE.js'
 
 // Conformance against the canonical Ethereum test suites, the EIP-3155 trace
@@ -74,90 +75,21 @@ const conformanceTargets = S.Shell.Build({
 	outDirs: ['../artifacts/conformance-target-groups'],
 })
 
-// test:conformance:gst: the fast subset (boundary group, frontier, 50 cases).
-const gstFast = S.Shell.Test({
-	bin: S.Runtime.bin,
-	args: [
-		'test/ethereum-state-tests/run-general-state-tests.mjs',
-		// ethereum/tests v17 refills GeneralStateTests for Cancun and Prague
-		// only (older forks live in LegacyTests), so the bounded PR subset
-		// pins the oldest fork the pinned corpus actually carries.
-		'--hardfork=cancun',
-		'--limit=50',
-		'--out=artifacts/general-state-tests/fast-cancun.json',
-	],
-	data: [runners, built, workspaceBuild, ethereumTests, conformanceCorpus],
-})
-
-// test:conformance:gst:all.
-const gstAll = S.Shell.Test({
-	bin: S.Runtime.bin,
-	args: ['test/ethereum-state-tests/run-general-state-tests.mjs', '--out=artifacts/general-state-tests/all.json'],
-	data: [runners, built, workspaceBuild, ethereumTests, conformanceCorpus],
-})
-
-// test:conformance:gst:isolate: one fixture with a trace, the first step of
-// a triage. The script hard-codes the id; the conformance-triage lane passes
-// its own through the same flag.
-const gstIsolate = S.Shell.Run({
-	bin: S.Runtime.bin,
-	args: [
-		'test/ethereum-state-tests/run-general-state-tests.mjs',
-		'--isolate=gst-frontier-upstream-state-root',
-		'--trace-out=artifacts/general-state-tests/isolate-trace.json',
-		'--out=artifacts/general-state-tests/isolate.json',
-	],
-	data: [runners, built, workspaceBuild, ethereumTests, conformanceCorpus],
-})
-
-// test:conformance:execspec: the fast subset (eip group, shanghai, 50 cases).
-const execSpecFast = S.Shell.Test({
-	bin: S.Runtime.bin,
-	args: [
-		'test/execution-spec-tests/run-execution-spec-tests.mjs',
-		'--group=eip',
-		'--hardfork=shanghai',
-		'--limit=50',
-		'--out=artifacts/execution-spec-tests/eip-shanghai.json',
-	],
-	data: [runners, built, workspaceBuild, executionSpecTests, conformanceCorpus],
-})
-
-// test:conformance:execspec:all.
-const execSpecAll = S.Shell.Test({
-	bin: S.Runtime.bin,
-	args: ['test/execution-spec-tests/run-execution-spec-tests.mjs', '--out=artifacts/execution-spec-tests/all.json'],
-	data: [runners, built, workspaceBuild, executionSpecTests, conformanceCorpus],
-})
-
-// test:conformance:execspec:isolate.
-const execSpecIsolate = S.Shell.Run({
-	bin: S.Runtime.bin,
-	args: [
-		'test/execution-spec-tests/run-execution-spec-tests.mjs',
-		'--isolate=est-shanghai-eip4895-header-validation',
-		'--trace-out=artifacts/execution-spec-tests/isolate-trace.json',
-		'--out=artifacts/execution-spec-tests/isolate.json',
-	],
-	data: [runners, built, workspaceBuild, executionSpecTests, conformanceCorpus],
-})
-
-// test:conformance:gst:trace:compare: EIP-3155 trace comparison against a
-// reference client trace. This is the debugging tool conformance failures
-// reduce to: opcode-level divergence instead of a failing state root.
-const traceCompare = S.Shell.Test({
-	bin: S.Runtime.bin,
-	args: [
-		'test/ethereum-state-tests/run-general-state-tests.mjs',
-		'--group=eip',
-		'--trace-out=artifacts/general-state-tests/actual-trace.json',
-		'--trace-compare=true',
-		'--trace-reference=artifacts/general-state-tests/reference-trace.json',
-		'--trace-diff-out=artifacts/eip3155/trace-diff.json',
-		'--out=artifacts/general-state-tests/trace-compare.json',
-	],
-	data: [runners, traceTools, built, workspaceBuild, ethereumTests],
-})
+// Native conformance is owned by Guillotine Mini. These targets retain the
+// repository's suite labels while executing its real Zig specification tests.
+const nativeConformance = (target: string) =>
+	S.Shell.Test({
+		bin: S.Runtime.bin,
+		args: ['scripts/native-conformance.mjs', target],
+		data: [S.file('//scripts/native-conformance.mjs'), S.file('//mise.toml')],
+	})
+const gstFast = nativeConformance('specs-cancun-tstore-basic')
+const gstAll = nativeConformance('specs')
+const gstIsolate = nativeConformance('specs-frontier-create')
+const execSpecFast = nativeConformance('specs-berlin-intrinsic-gas-cost')
+const execSpecAll = nativeConformance('specs-blockchain')
+const execSpecIsolate = nativeConformance('specs-berlin-intrinsic-gas-cost')
+const traceCompare = nativeConformance('test-trace')
 
 // test:eip3155: the trace tools' own unit tests (node --test).
 const traceToolsTest = S.Shell.Test({

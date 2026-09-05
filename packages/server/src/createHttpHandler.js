@@ -1,122 +1,42 @@
-import { tevmSend } from '@tevm/decorators'
-import { InternalError, InvalidRequestError, MethodNotFoundError, UnsupportedProviderMethodError } from '@tevm/errors'
-import { InvalidJsonError } from './errors/InvalidJsonError.js'
-import { ReadRequestBodyError } from './errors/ReadRequestBodyError.js'
 import { getRequestBody } from './internal/getRequestBody.js'
-import { handleBulkRequest } from './internal/handleBulkRequest.js'
-import { handleError } from './internal/handleError.js'
-import { parseRequest } from './internal/parseRequest.js'
-
-const DEFAULT_MAX_BODY_SIZE = 1024 * 1024
-const DEFAULT_MAX_HEADER_SIZE = 16 * 1024
-const DEFAULT_MAX_BATCH_SIZE = 100
-const DEFAULT_REQUEST_TIMEOUT = 30_000
 
 /**
- * Creates a Node.js HTTP handler for handling JSON-RPC requests with a Tevm node.
- * Any unimplemented methods will be proxied to the given proxyUrl
- * This handler works for any server that supports the Node.js http module
+ * Expose the native JSON-RPC dispatcher over HTTP. Parsing, batches, error
+ * encoding and notification semantics are owned by ZEVM.
  * @param {import('./Client.js').Client} client
- * @param {{ compatibility?: boolean; maxBodySize?: number; maxHeaderSize?: number; maxBatchSize?: number; requestTimeout?: number; cors?: boolean }} [options]
- * @returns {import('http').RequestListener}
- * @throws {never}
- * @example
- * ```ts
- * const handler = createHttpHandler(client, {
- *   compatibility: true,
- *   maxBodySize: 1024 * 1024,
- *   maxHeaderSize: 16 * 1024,
- * })
- * ```
+ * @param {{maxBodySize?: number; maxBatchSize?: number; requestTimeout?: number; cors?: boolean}} [options]
+ * @returns {import('node:http').RequestListener}
  */
-export const createHttpHandler = (client, options = {}) => {
-	const {
-		compatibility = false,
-		maxBodySize = DEFAULT_MAX_BODY_SIZE,
-		maxHeaderSize = DEFAULT_MAX_HEADER_SIZE,
-		maxBatchSize = DEFAULT_MAX_BATCH_SIZE,
-		requestTimeout = DEFAULT_REQUEST_TIMEOUT,
-		cors = false,
-	} = options
-
-	/** @param {import('http').IncomingMessage} req */
-	const getHeaderSize = (req) => {
-		if (Array.isArray(req.rawHeaders) && req.rawHeaders.length > 0) {
-			return Buffer.byteLength(req.rawHeaders.join('\r\n'), 'utf8')
-		}
-		return Buffer.byteLength(JSON.stringify(req.headers ?? {}), 'utf8')
-	}
-
+export function createHttpHandler(client, options = {}) {
 	return async (req, res) => {
-		if (cors) {
+		if (options.cors) {
 			res.setHeader('Access-Control-Allow-Origin', '*')
 			res.setHeader('Access-Control-Allow-Headers', 'content-type')
 			res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
 			if (req.method === 'OPTIONS') return void res.writeHead(204).end()
 		}
-		if (requestTimeout > 0 && typeof req.setTimeout === 'function') {
-			req.setTimeout(requestTimeout, () => {
-				if (!res.headersSent) res.writeHead(408).end()
-				if (typeof req.destroy === 'function') req.destroy()
-			})
-		}
-		if (compatibility) {
-			const pathname = new URL(req.url ?? '/', 'http://localhost').pathname
-			if (pathname !== '/') return void res.writeHead(404).end()
-			if (req.method !== 'POST') return void res.writeHead(405, { Allow: 'POST' }).end()
-			if (getHeaderSize(req) > maxHeaderSize) return void res.writeHead(431).end()
-
-			const contentType = req.headers['content-type']
-			const parsedContentType = contentType?.split(';')[0]?.trim()?.toLowerCase()
-			if (parsedContentType !== 'application/json') {
-				return void res.writeHead(415).end()
+		if (req.method !== 'POST') return void res.writeHead(405, { Allow: 'POST' }).end()
+		req.setTimeout(options.requestTimeout ?? 30_000, () => req.destroy())
+		const body = await getRequestBody(req, { maxBodySize: options.maxBodySize ?? 1024 * 1024 })
+		if (typeof body !== 'string') return void res.writeHead(413).end()
+		if (options.maxBatchSize !== undefined) {
+			try {
+				const parsed = JSON.parse(body)
+				if (Array.isArray(parsed) && parsed.length > options.maxBatchSize) return void res.writeHead(413).end()
+			} catch {
+				/* The native parser returns the JSON-RPC parse error. */
 			}
 		}
-
-		const body = await getRequestBody(req, { maxBodySize })
-		if (body instanceof ReadRequestBodyError) {
-			if (body.shortMessage === 'Request body exceeds configured max body size') {
-				return void res.writeHead(413, { Connection: 'close' }).end()
-			}
-			return handleError(client, body, res)
+		try {
+			const response = await client.transport.tevm.rpc(body)
+			if (response === null) return void res.writeHead(204).end()
+			res.writeHead(200, { 'Content-Type': 'application/json' }).end(response)
+		} catch {
+			res
+				.writeHead(503, { 'Content-Type': 'application/json' })
+				.end(
+					JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32603, message: 'Native engine unavailable' } }),
+				)
 		}
-		if (body instanceof InvalidRequestError) {
-			return handleError(client, body, res)
-		}
-
-		const parsedRequest = parseRequest(body, {
-			allowEmptyBatch: !compatibility,
-			maxBatchSize,
-			requireJsonrpc: compatibility,
-		})
-		if (parsedRequest instanceof InvalidJsonError || parsedRequest instanceof InvalidRequestError) {
-			return handleError(client, parsedRequest, res)
-		}
-
-		if (Array.isArray(parsedRequest)) {
-			const responses = await handleBulkRequest(client, /** @type {any} */ (parsedRequest), {
-				suppressNotifications: compatibility,
-			})
-			if (compatibility && responses.length === 0) return void res.writeHead(204).end()
-			res.writeHead(200, { 'Content-Type': 'application/json' })
-			return void res.end(JSON.stringify(responses))
-		}
-
-		const response = await client.transport.tevm
-			.extend(tevmSend())
-			.send(/** @type any */ (parsedRequest))
-			.catch((e) => ('code' in e ? e : new InternalError('Unexpected error', { cause: e })))
-
-		if (compatibility && parsedRequest.id === undefined) return void res.writeHead(204).end()
-		if ('code' in response && 'message' in response) return handleError(client, response, res, parsedRequest)
-		if (
-			response.error?.code === UnsupportedProviderMethodError.code ||
-			response.error?.code === MethodNotFoundError.code
-		) {
-			return handleError(client, response.error, res, parsedRequest)
-		}
-
-		res.writeHead(200, { 'Content-Type': 'application/json' })
-		return void res.end(JSON.stringify(response))
 	}
 }

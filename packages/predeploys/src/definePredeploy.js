@@ -1,34 +1,37 @@
-import { createAddress } from '@tevm/address'
+import { getAddress } from '@tevm/utils'
 
 /**
- * Defines a predeploy contract to use in the tevm vm
+ * Defines an addressed contract whose runtime code can be installed in native state
  * @type {import('./DefinePredeployFn.js').DefinePredeployFn}
  * @example
  * ```ts
  * import { definePredeploy } from 'tevm/predeploys'
- * import { createMemoryClient } from 'tevm/vm'
+ * import { createMemoryClient } from 'tevm'
  * import { createContract } from 'tevm/contract'
  *
  * const predeploy = definePredeploy(
  *   createContract({
  *     name: 'PredeployExample',
  *     humanReadableAbi: ['function foo() external pure returns (uint256)'],
- *     bytecode: '0x608060405234801561001057600080fd5b5061012f806100206000396000f3fe608060405260043610610041576000357c0100',
- *     deployedBytecode: '0x608060405260043610610041576000357c010000',
+ *     bytecode: '0x600a600c600039600a6000f3602a60005260206000f3',
+ *     deployedBytecode: '0x602a60005260206000f3',
  *   }).withAddress(`0x${'23'.repeat(20)}`),
  * )
  *
- * const vm = createMemoryClient({
- *  customPredeploys: [predeploy],
+ * const client = createMemoryClient()
+ * await client.tevmSetAccount({
+ *   address: predeploy.contract.address,
+ *   deployedBytecode: predeploy.contract.deployedBytecode,
  * })
+ * await client.tevmClose()
  * ```
  */
 export const definePredeploy = (contract) => {
-	const ethjsAddress = createAddress(contract.address)
+	const address = getAddress(contract.address)
 	return {
 		contract,
 		predeploy: () => ({
-			address: ethjsAddress,
+			address: address,
 		}),
 	}
 }

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { base, mainnet, optimism } from '@tevm/common'
 import { createMemoryClient } from '@tevm/memory-client'
-import { http } from 'viem'
+import { createPublicClient, http } from 'viem'
 
 const chainByName = {
 	mainnet,
@@ -17,7 +17,7 @@ const chainByName = {
  *   createLocal: () => Promise<{handle: string, chainId: number, blockNumber: bigint, expiresAt: string}>,
  *   createFork: (input: {url: string, blockNumber?: string, chain?: 'auto' | 'mainnet' | 'optimism' | 'base'}) => Promise<{handle: string, chainId: number, blockNumber: bigint, expiresAt: string}>,
  *   get: (handle: string) => import('@tevm/memory-client').MemoryClient,
- *   close: (handle: string) => boolean,
+ *   close: (handle: string) => Promise<boolean>,
  *   size: () => number
  * }} A manager whose handles expire after the configured idle lifetime.
  *
@@ -43,6 +43,7 @@ export const createSessionManager = (options = {}) => {
 		for (const [handle, session] of sessions) {
 			if (session.expiresAt <= currentTime) {
 				sessions.delete(handle)
+				void session.client.tevmClose()
 			}
 		}
 	}
@@ -53,9 +54,15 @@ export const createSessionManager = (options = {}) => {
 	const add = async (client) => {
 		prune()
 		if (sessions.size >= maximumSessions) {
+			await client.tevmClose()
 			throw new Error(`Session limit reached (${maximumSessions}). Close an existing session before creating another.`)
 		}
-		await client.tevmReady()
+		try {
+			await client.tevmReady()
+		} catch (error) {
+			await client.tevmClose()
+			throw error
+		}
 		const handle = randomUUID()
 		const expiresAt = now() + idleTtlMs
 		sessions.set(handle, { client, expiresAt })
@@ -71,19 +78,22 @@ export const createSessionManager = (options = {}) => {
 		createLocal: () =>
 			add(
 				createMemoryClient({
-					miningConfig: { type: 'manual' },
+					mining: { auto: false },
 				}),
 			),
-		createFork: (input) => {
+		createFork: async (input) => {
 			const common = input.chain && input.chain !== 'auto' ? chainByName[input.chain] : undefined
+			const chainId =
+				common?.id ??
+				(await createPublicClient({ transport: http(input.url, { retryCount: 0, timeout: 10000 }) }).getChainId())
 			return add(
 				createMemoryClient({
-					...(common ? { common } : {}),
+					...(common ? { common } : { chainId }),
 					fork: {
-						transport: http(input.url)({}),
-						...(input.blockNumber ? { blockTag: BigInt(input.blockNumber) } : {}),
+						url: input.url,
+						...(input.blockNumber ? { blockNumber: Number(input.blockNumber) } : {}),
 					},
-					miningConfig: { type: 'manual' },
+					mining: { auto: false },
 				}),
 			)
 		},
@@ -96,7 +106,13 @@ export const createSessionManager = (options = {}) => {
 			session.expiresAt = now() + idleTtlMs
 			return session.client
 		},
-		close: (handle) => sessions.delete(handle),
+		close: async (handle) => {
+			const session = sessions.get(handle)
+			if (!session) return false
+			sessions.delete(handle)
+			await session.client.tevmClose()
+			return true
+		},
 		size: () => {
 			prune()
 			return sessions.size

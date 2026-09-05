@@ -1,62 +1,13 @@
-<p align="center">
-  <a href="https://tevm.sh/">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/35039927/218812217-92f0f784-cb85-43b9-9ca6-e2b9effd9eb2.png">
-      <img alt="tevm logo" src="https://user-images.githubusercontent.com/35039927/218812217-92f0f784-cb85-43b9-9ca6-e2b9effd9eb2.png" width="auto" height="300">
-    </picture>
-  </a>
-</p>
-
 # @tevm/actions
 
-Actions add functionality to the [base client](https://github.com/evmts/tevm/tree/main/packages/node)
+Browser-safe helpers over native ZEVM JSON-RPC. These functions encode calls and decode results; all EVM execution and state remain in the native server.
 
-## Installation
+```js
+import { tevmCall } from '@tevm/actions'
+import { createPublicClient, http } from 'viem'
 
-Action handlers can be imported from `tevm/actions` or `@tevm/actions`
-
-```bash
-npm install tevm
+const client = createPublicClient({ transport: http('http://127.0.0.1:8545') })
+console.log(await tevmCall(client, { to: '0x0000000000000000000000000000000000000123' }))
 ```
 
-or
-
-```bash
-npm install @tevm/actions
-```
-
-## Usage
-
-Action handlers take a client and return an tevm action handler function
-
-```typescript
-import {createTevmNode} from 'tevm/node'
-import {callHandler} from 'tevm/actions'
-
-/**
- * Most action handlers wrap the base client
- */
-const client = createTevmNode()
-
-/**
- * To use the action first instanciate it with the base client
- * @type {import('tevm/actions').CallHandler}
- */
-const call = callHandler(client)
-
-/**
- * @type{import('tevm/actions').CallHandlerResult}
- */
-const callResult = await call({
-  to: `0x${'01'.repeat(20)}`,
-  value: 1n,
-})
-```
-
-## Actions
-
-See [generated actions docs](./docs/API.md)
-
-## License 📄
-
-<a href="./LICENSE"><img src="https://user-images.githubusercontent.com/35039927/231030761-66f5ce58-a4e9-4695-b1fe-255b1bceac92.png" width="200" /></a>
+For an embedded Node.js engine use `createMemoryClient` from `@tevm/memory-client`. It binds these helpers to its native transport.

@@ -6,39 +6,26 @@
 
 # Function: verifyMessage()
 
-> **verifyMessage**(`params`): `boolean`
+> **verifyMessage**(`parameters`): `Promise`\<`boolean`\>
 
-Defined in: [packages/utils/src/signature.js:163](https://github.com/evmts/tevm/blob/main/packages/utils/src/signature.js#L163)
+Defined in: node\_modules/.pnpm/viem@2.49.3\_bufferutil@4.1.0\_typescript@6.0.3\_utf-8-validate@5.0.10\_zod@4.4.3/node\_modules/viem/\_types/utils/signature/verifyMessage.d.ts:29
 
-Verifies a message signature
+Verify that a message was signed by the provided address.
+
+Note:  Only supports Externally Owned Accounts. Does not support Contract Accounts.
+       It is highly recommended to use `publicClient.verifyMessage` instead to ensure
+       wallet interoperability.
+
+- Docs [https://viem.sh/docs/utilities/verifyMessage](https://viem.sh/docs/utilities/verifyMessage)
 
 ## Parameters
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `params` | \{ `address`: `` `0x${string}` ``; `message`: `string`; `signature`: `Signature`; \} | The parameters |
-| `params.address` | `` `0x${string}` `` | The expected signer address |
-| `params.message` | `string` | The original message |
-| `params.signature` | `Signature` | The signature |
+| `parameters` | `VerifyMessageParameters` | VerifyMessageParameters |
 
 ## Returns
 
-`boolean`
+`Promise`\<`boolean`\>
 
-Whether the signature is valid
-
-## Example
-
-```js
-import { verifyMessage } from '@tevm/utils'
-
-const isValid = verifyMessage({
-  address: '0xa6fb229e9b0a4e4ef52ea6991adcfc59207c7711',
-  message: 'Hello world',
-  signature: {
-    r: 0x...,
-    s: 0x...,
-    v: 27
-  }
-})
-```
+Whether or not the signature is valid. VerifyMessageReturnType

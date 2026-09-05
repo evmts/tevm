@@ -1,5 +1,4 @@
 ---
-"@tevm/procedures": minor
 "@tevm/actions": minor
 "tevm": minor
 ---

@@ -8,7 +8,7 @@ import { BaseError } from './BaseError.js'
  * @property {string} [docsPath]
  * @property {string} [docsSlug]
  * @property {string[]} [metaMessages]
- * @property {BaseError|Error|import('@evmts/zevm/evm-error').EVMError} [cause]
+ * @property {BaseError|Error|Error} [cause]
  * @property {string} [details]
  * @property {object} [meta]
  */

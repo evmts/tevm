@@ -1,47 +1,27 @@
-import { ConnectButton } from '@rainbow-me/rainbowkit'
-
 import { useState } from 'react'
-import { EthersExample } from './EthersExample'
+import { createPublicClient, http } from 'viem'
 import { SolEditor } from './SolEditor'
-import { WagmiEvents } from './wagmi/WagmiEvents'
-import { WagmiReads } from './wagmi/WagmiReads'
-import { WagmiWrites } from './wagmi/WagmiWrites'
 
 export function App() {
-	const [selectedComponent, selectComponent] = useState<keyof typeof components>('editor')
-
-	const components = {
-		editor: <SolEditor />,
-		reads: <WagmiReads />,
-		writes: <WagmiWrites />,
-		events: <WagmiEvents />,
-		ethers: <EthersExample />,
-	} as const
-
+	const [result, setResult] = useState('Start the native TEVM server on port 8545, then connect.')
 	return (
-		<>
-			<h1>Tevm example</h1>
-			<ConnectButton />
-			{
-				<>
-					<hr />
-					<div style={{ display: 'flex' }}>
-						{Object.keys(components).map((component) => {
-							return (
-								<button
-									key={component}
-									type="button"
-									onClick={() => selectComponent(component as keyof typeof components)}
-								>
-									{component}
-								</button>
-							)
-						})}
-					</div>
-					<h2>{selectedComponent}</h2>
-					{components[selectedComponent]}
-				</>
-			}
-		</>
+		<main>
+			<h1>TEVM native example</h1>
+			<button
+				type="button"
+				onClick={async () => {
+					try {
+						const client = createPublicClient({ transport: http('http://127.0.0.1:8545') })
+						setResult(`Native engine head: ${await client.getBlockNumber()}`)
+					} catch (error) {
+						setResult(String(error))
+					}
+				}}
+			>
+				Read native block
+			</button>
+			<p>{result}</p>
+			<SolEditor />
+		</main>
 	)
 }

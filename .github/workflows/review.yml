@@ -6,12 +6,13 @@ concurrency:
   group: "review-${{ github.ref }}"
   cancel-in-progress: true
 jobs:
-  prReview:
+  review:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
         with:
-          cache-url: "${{ secrets.SMITHERS_CACHE_URL }}"
-          cache-token: "${{ secrets.SMITHERS_CACHE_TOKEN }}"
-      - run: pnpm exec smthrs '//:prReview'
+          fetch-depth: "0"
+      - name: Checkout pinned native sources
+        run: node scripts/factory/checkout-native.mjs
+      - uses: "./.github/actions/setup"
+      - run: pnpm exec smthrs target //:prReview

@@ -1,4 +1,4 @@
-import type { SetAccountParams, SetAccountResult } from '@tevm/actions'
+import type { SetAccountParams } from '@tevm/actions'
 import { option } from 'pastel'
 import { z } from 'zod'
 import CliAction from '../components/CliAction.js'
@@ -129,7 +129,7 @@ const defaultValues: Record<string, any> = {
 
 export default function SetAccount({ options }: Props) {
 	// Use the action hook with inlined createParams and executeAction
-	const actionResult = useAction<SetAccountParams, SetAccountResult>({
+	const actionResult = useAction<SetAccountParams, unknown>({
 		actionName: 'set-account',
 		options,
 		defaultValues,
@@ -143,6 +143,10 @@ export default function SetAccount({ options }: Props) {
 				throw new Error('Address is required')
 			}
 
+			if (enhancedOptions['storageRoot'] || enhancedOptions['state'])
+				throw new Error(
+					'Use --state-diff to update explicit storage slots; storage roots and replacement state are unsupported',
+				)
 			return {
 				address: targetAddress,
 
@@ -150,25 +154,15 @@ export default function SetAccount({ options }: Props) {
 				nonce: enhancedOptions['nonce'] ? BigInt(enhancedOptions['nonce']) : undefined,
 				balance: enhancedOptions['balance'] ? BigInt(enhancedOptions['balance']) : undefined,
 				deployedBytecode: enhancedOptions['deployedBytecode'] ?? undefined,
-				storageRoot: enhancedOptions['storageRoot'] ?? undefined,
-
-				// Handle state objects - ensure they're processed as Records<Hex, Hex>
-				state: enhancedOptions['state']
-					? typeof enhancedOptions['state'] === 'string'
-						? JSON.parse(enhancedOptions['state'])
-						: enhancedOptions['state']
-					: undefined,
-
-				stateDiff: enhancedOptions['stateDiff']
-					? typeof enhancedOptions['stateDiff'] === 'string'
+				storage:
+					typeof enhancedOptions['stateDiff'] === 'string'
 						? JSON.parse(enhancedOptions['stateDiff'])
-						: enhancedOptions['stateDiff']
-					: undefined,
+						: enhancedOptions['stateDiff'],
 			}
 		},
 
 		// Inlined executeAction function
-		executeAction: async (client: any, params: SetAccountParams): Promise<SetAccountResult> => {
+		executeAction: async (client: any, params: SetAccountParams): Promise<unknown> => {
 			return await client.tevmSetAccount(params)
 		},
 	})

@@ -1,5 +1,5 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
 
 // Shared docs-site sources consumed by sites/core. The package has no
 // scripts and no build: its exports map points at src/ directly, so the

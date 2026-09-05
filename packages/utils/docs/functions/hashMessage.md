@@ -6,29 +6,23 @@
 
 # Function: hashMessage()
 
-> **hashMessage**(`message`): `` `0x${string}` ``
+> **hashMessage**\<`to`\>(`message`, `to_?`): `HashMessageReturnType`\<`to`\>
 
-Defined in: [packages/utils/src/signature.js:109](https://github.com/evmts/tevm/blob/main/packages/utils/src/signature.js#L109)
+Defined in: node\_modules/.pnpm/viem@2.49.3\_bufferutil@4.1.0\_typescript@6.0.3\_utf-8-validate@5.0.10\_zod@4.4.3/node\_modules/viem/\_types/utils/signature/hashMessage.d.ts:7
 
-Hashes a message according to EIP-191
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `to` *extends* `To` | `"hex"` |
 
 ## Parameters
 
-| Parameter | Type | Description |
-| ------ | ------ | ------ |
-| `message` | `string` | The message to hash |
+| Parameter | Type |
+| ------ | ------ |
+| `message` | `SignableMessage` |
+| `to_?` | `to` |
 
 ## Returns
 
-`` `0x${string}` ``
-
-The message hash
-
-## Example
-
-```js
-import { hashMessage } from '@tevm/utils'
-
-const hash = hashMessage('Hello world')
-// 0x8144a6fa26be252b86456491fbcd43c1de7e022241845ffea1c3df066f7cfede
-```
+`HashMessageReturnType`\<`to`\>

@@ -8,7 +8,7 @@
 
 > **executeTool**(`name`, `input`, `sessions`): `Promise`\<`unknown`\>
 
-Defined in: [packages/mcp/src/executeTool.js:137](https://github.com/evmts/tevm/blob/main/packages/mcp/src/executeTool.js#L137)
+Defined in: [packages/mcp/src/executeTool.js:115](https://github.com/evmts/tevm/blob/main/packages/mcp/src/executeTool.js#L115)
 
 Executes one validated Tevm MCP tool against an isolated session manager.
 
@@ -18,11 +18,11 @@ Executes one validated Tevm MCP tool against an isolated session manager.
 | ------ | ------ | ------ |
 | `name` | `string` | MCP tool name. |
 | `input` | `unknown` | Untrusted MCP tool arguments. |
-| `sessions` | \{ `close`: (`handle`) => `boolean`; `createFork`: (`input`) => `Promise`\<\{ `blockNumber`: `bigint`; `chainId`: `number`; `expiresAt`: `string`; `handle`: `string`; \}\>; `createLocal`: () => `Promise`\<\{ `blockNumber`: `bigint`; `chainId`: `number`; `expiresAt`: `string`; `handle`: `string`; \}\>; `get`: (`handle`) => `object`; `size`: () => `number`; \} | Session manager. |
-| `sessions.close` | (`handle`) => `boolean` | - |
+| `sessions` | \{ `close`: (`handle`) => `Promise`\<`boolean`\>; `createFork`: (`input`) => `Promise`\<\{ `blockNumber`: `bigint`; `chainId`: `number`; `expiresAt`: `string`; `handle`: `string`; \}\>; `createLocal`: () => `Promise`\<\{ `blockNumber`: `bigint`; `chainId`: `number`; `expiresAt`: `string`; `handle`: `string`; \}\>; `get`: (`handle`) => `MemoryClient`; `size`: () => `number`; \} | Session manager. |
+| `sessions.close` | (`handle`) => `Promise`\<`boolean`\> | - |
 | `sessions.createFork` | (`input`) => `Promise`\<\{ `blockNumber`: `bigint`; `chainId`: `number`; `expiresAt`: `string`; `handle`: `string`; \}\> | - |
 | `sessions.createLocal` | () => `Promise`\<\{ `blockNumber`: `bigint`; `chainId`: `number`; `expiresAt`: `string`; `handle`: `string`; \}\> | - |
-| `sessions.get` | (`handle`) => `object` | - |
+| `sessions.get` | (`handle`) => `MemoryClient` | - |
 | `sessions.size` | () => `number` | - |
 
 ## Returns

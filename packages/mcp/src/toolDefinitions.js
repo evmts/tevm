@@ -10,11 +10,11 @@ const descriptions = {
 	evm_close_session:
 		'Close an EVM session when its state is no longer needed. Use this to release memory before creating more sessions.',
 	evm_call_contract:
-		'Read a contract without changing state. Use an ABI or one human-readable function signature. Returns decoded output, exact gas use, raw output, and logs.',
+		'Read a contract without changing state. Use an ABI or one human-readable function signature. Returns decoded output, raw output, and a gas estimate.',
 	evm_send_transaction:
-		'Execute a state-changing contract function and add it to the session txpool. Use evm_mine afterward to commit it. Returns decoded output, gas use, logs, and transaction hash.',
+		'Execute a state-changing contract function and add it to the session txpool. Use evm_mine afterward to commit it. Returns a gas estimate and transaction hash. Read the mined receipt for actual gas use and logs.',
 	evm_deploy_contract:
-		'Deploy EVM bytecode or compile and deploy Solidity source into a session. The deployment enters the txpool, so use evm_mine to commit it. Returns the created address, gas use, and transaction hash.',
+		'Deploy EVM bytecode or compile and deploy Solidity source into a session. The deployment enters the txpool, so use evm_mine to commit it. Returns the predicted address, gas limit, and transaction hash. Confirm creation in the mined receipt.',
 	evm_get_account:
 		'Inspect account balance, nonce, code, and an optional exact storage slot. Use this for debugging local overrides or reading forked contract storage.',
 	evm_set_account:

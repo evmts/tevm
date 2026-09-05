@@ -1,4 +1,4 @@
-import type { MineParams, MineResult } from '@tevm/actions'
+import type { MineParams } from '@tevm/actions'
 import { option } from 'pastel'
 import { z } from 'zod'
 import CliAction from '../components/CliAction.js'
@@ -85,7 +85,7 @@ const defaultValues: Record<string, any> = {
 
 export default function Mine({ options }: Props) {
 	// Use the action hook with inlined createParams and executeAction
-	const actionResult = useAction<MineParams, MineResult>({
+	const actionResult = useAction<MineParams, unknown>({
 		actionName: 'mine',
 		options,
 		defaultValues,
@@ -94,13 +94,13 @@ export default function Mine({ options }: Props) {
 		// Inlined createParams function
 		createParams: (enhancedOptions: Record<string, any>): MineParams => {
 			return {
-				blockCount: enhancedOptions['blockCount'] ?? 1,
+				blocks: enhancedOptions['blockCount'] ?? 1,
 				interval: enhancedOptions['interval'] ?? 1,
 			}
 		},
 
 		// Inlined executeAction function
-		executeAction: async (client: any, params: MineParams): Promise<MineResult> => {
+		executeAction: async (client: any, params: MineParams): Promise<unknown> => {
 			return await client.tevmMine(params)
 		},
 	})

@@ -1,12 +1,7 @@
 ---
-"@tevm/sync-storage-persister": minor
 "@tevm/node": minor
 "@tevm/http-client": minor
-"@tevm/precompiles": minor
-"@tevm/blockchain": minor
-"@tevm/decorators": minor
 "@tevm/predeploys": minor
-"@tevm/procedures": minor
 "@tevm/ethers": minor
 "@tevm/contract": minor
 "@tevm/actions": minor
@@ -15,15 +10,7 @@
 "@tevm/common": minor
 "@tevm/errors": minor
 "@tevm/server": minor
-"@tevm/txpool": minor
-"@tevm/block": minor
-"@tevm/state": minor
 "@tevm/utils": minor
-"@tevm/trie": minor
-"@tevm/evm": minor
-"@tevm/rlp": minor
-"@tevm/tx": minor
-"@tevm/vm": minor
 "tevm": minor
 ---
 

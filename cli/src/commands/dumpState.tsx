@@ -1,5 +1,9 @@
 import { writeFileSync } from 'node:fs'
-import type { DumpStateParams, DumpStateResult } from '@tevm/actions'
+import type { Hex } from 'viem'
+
+type DumpStateParams = Record<string, never>
+type DumpStateResult = Hex
+
 import { option } from 'pastel'
 import { z } from 'zod'
 import CliAction from '../components/CliAction.js'
@@ -95,19 +99,19 @@ export default function DumpState({ options }: Props) {
 
 		// Inlined createParams function
 		createParams: (enhancedOptions: Record<string, any>): DumpStateParams => {
-			return {
-				blockTag: enhancedOptions['blockTag'] ?? undefined,
-			}
+			if (enhancedOptions['blockTag'] && enhancedOptions['blockTag'] !== 'latest')
+				throw new Error('Only current native state can be dumped')
+			return {}
 		},
 
 		// Inlined executeAction function
-		executeAction: async (client: any, params: DumpStateParams): Promise<DumpStateResult> => {
-			const result = await client.tevmDumpState(params)
+		executeAction: async (client: any): Promise<DumpStateResult> => {
+			const result = await client.tevmDumpState()
 
 			const outputFile = options.outputFile
-			if (outputFile && result.state) {
+			if (outputFile) {
 				try {
-					writeFileSync(outputFile, `${JSON.stringify(result.state, null, 2)}\n`)
+					writeFileSync(outputFile, `${JSON.stringify(result)}\n`)
 				} catch (error) {
 					const message = error instanceof Error ? error.message : String(error)
 					throw new Error(`Failed to write state to file ${outputFile}: ${message}`)

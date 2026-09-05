@@ -4,14 +4,10 @@
 
 import { spawn } from 'node:child_process'
 import fs from 'node:fs'
+import { createRequire } from 'node:module'
 import os from 'node:os'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { generateTemplates } from './templates.js'
-
-// ESM replacement for __dirname
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 /**
  * Creates a TypeScript project for interactive editing
@@ -27,14 +23,12 @@ export async function createEditorProject(actionName, options, createParams) {
 	fs.mkdirSync(projectDir, { recursive: true })
 
 	// Generate the template files
-	const templates = generateTemplates(actionName, options, createParams)
+	const templates = generateTemplates(actionName, options, await createParams(options))
 
 	// Write all template files to the project directory
 	const filesToWrite = {
 		'package.json': templates.packageJson,
 		'script.ts': templates.scriptTemplate,
-		'plugins.ts': templates.pluginsTemplate,
-		'bunfig.toml': templates.bunfigTemplate,
 		'tsconfig.json': templates.tsconfigTemplate,
 		'README.md': templates.readmeContent,
 	}
@@ -44,51 +38,15 @@ export async function createEditorProject(actionName, options, createParams) {
 		fs.writeFileSync(path.join(projectDir, filename), content, 'utf8')
 	})
 
-	// Copy the bun.lockb file to the project
-	const lockbPath = path.join(__dirname, 'bun.lockb')
-	if (fs.existsSync(lockbPath)) {
-		fs.copyFileSync(lockbPath, path.join(projectDir, 'bun.lockb'))
+	// Link the installed host instead of installing an older registry engine.
+	const require = createRequire(import.meta.url)
+	for (const name of ['@tevm/memory-client', '@tevm/contract', 'viem']) {
+		const source = path.dirname(require.resolve(`${name}/package.json`))
+		const destination = path.join(projectDir, 'node_modules', name)
+		fs.mkdirSync(path.dirname(destination), { recursive: true })
+		fs.symlinkSync(source, destination, 'dir')
 	}
-
-	// Create a .installing file to indicate installation is in progress
-	const waitingPath = path.join(projectDir, '.installing')
-	fs.writeFileSync(waitingPath, 'Installing dependencies...', 'utf8')
-
-	// Start bun install in the background with optimization flags
-	const bunInstallProcess = spawn(
-		'bun',
-		[
-			'install',
-			'--frozen-lockfile', // Use the lockfile we provided
-			'--no-cache', // Skip using the cache
-			'--no-progress', // Skip progress output
-			'--no-summary', // Skip installation summary
-			'--no-save', // Don't update package.json or lockfile
-		],
-		{
-			cwd: projectDir,
-			stdio: 'ignore',
-			detached: true,
-		},
-	)
-
-	// When the install completes, remove the waiting file
-	const handleInstallExit = () => {
-		try {
-			if (fs.existsSync(waitingPath)) {
-				fs.unlinkSync(waitingPath)
-				// Create a .ready file to indicate installation is complete
-				fs.writeFileSync(path.join(projectDir, '.ready'), 'Dependencies installed successfully!', 'utf8')
-			}
-		} catch (error) {
-			console.error('Failed to update installation status:', error)
-		}
-	}
-	const bunInstallProcessEvents = /** @type {any} */ (bunInstallProcess)
-	bunInstallProcessEvents.on('exit', handleInstallExit)
-
-	// Don't wait for it to complete - let it run in the background
-	bunInstallProcess.unref()
+	fs.writeFileSync(path.join(projectDir, '.ready'), 'Using the installed native host', 'utf8')
 
 	return projectDir
 }

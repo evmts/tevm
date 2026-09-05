@@ -4,51 +4,14 @@
 
 [@tevm/actions](../globals.md) / GetAccountParams
 
-# Type Alias: GetAccountParams\<TThrowOnFail\>
+# Type Alias: GetAccountParams
 
-> **GetAccountParams**\<`TThrowOnFail`\> = [`BaseParams`](BaseParams.md)\<`TThrowOnFail`\> & `object`
+> **GetAccountParams** = `object`
 
-Defined in: [packages/actions/src/GetAccount/GetAccountParams.ts:11](https://github.com/evmts/tevm/blob/main/packages/actions/src/GetAccount/GetAccountParams.ts#L11)
+Defined in: TevmActions.ts:32
 
-Tevm params to get an account
+## Properties
 
-## Type Declaration
-
-### address
-
-> `readonly` **address**: [`Address`](Address.md)
-
-Address of account
-
-### blockTag?
-
-> `readonly` `optional` **blockTag?**: [`BlockParam`](BlockParam.md)
-
-Block tag to fetch account from
-- bigint for block number
-- hex string for block hash
-- 'latest', 'earliest', 'pending', 'forked' etc. tags
-
-### returnStorage?
-
-> `readonly` `optional` **returnStorage?**: `boolean`
-
-If true the handler will return the contract storage
-It only returns storage that happens to be cached in the vm
-In fork mode if storage hasn't yet been cached it will not be returned
-This defaults to false
-Be aware that this can be very expensive if a contract has a lot of storage
-
-## Type Parameters
-
-| Type Parameter | Default type |
-| ------ | ------ |
-| `TThrowOnFail` *extends* `boolean` | `boolean` |
-
-## Example
-
-```ts
-const getAccountParams: import('@tevm/api').GetAccountParams = {
-  address: '0x...',
-}
-```
+| Property | Type | Defined in |
+| ------ | ------ | ------ |
+| <a id="address"></a> `address` | `Address` | TevmActions.ts:32 |

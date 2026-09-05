@@ -6,63 +6,26 @@
 
 # Type Alias: TevmContract
 
-> **TevmContract** = \<`TAbi`, `TFunctionName`\>(`client`, `params`) => `Promise`\<`ContractResult`\<`TAbi`, `TFunctionName`\>\>
+> **TevmContract** = \<`TAbi`, `TName`\>(`client`, `params`) => `Promise`\<[`CallResult`](CallResult.md) & `object`\>
 
-Defined in: [packages/memory-client/src/TevmContractType.ts:48](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/TevmContractType.ts#L48)
+Defined in: packages/actions/dist/index.d.ts:60
 
-A type representing the handler for a TEVM contract procedure.
-
-This type reuses the viem `contractRead`/`contractWrite` API to encode ABI, function name, and arguments.
+ABI-aware contract call preserving the function's return type.
 
 ## Type Parameters
 
-| Type Parameter | Default type | Description |
-| ------ | ------ | ------ |
-| `TAbi` *extends* `Abi` \| readonly `unknown`[] | `Abi` | The ABI of the contract. |
-| `TFunctionName` *extends* `ContractFunctionName`\<`TAbi`\> | `ContractFunctionName`\<`TAbi`\> | The name of the contract function. |
+| Type Parameter |
+| ------ |
+| `TAbi` *extends* `Abi` |
+| `TName` *extends* `ContractFunctionName`\<`TAbi`\> |
 
 ## Parameters
 
-| Parameter | Type | Description |
-| ------ | ------ | ------ |
-| `client` | `Client`\<[`TevmTransport`](TevmTransport.md)\<`string`\>\> | The viem client configured with TEVM transport. |
-| `params` | `ContractParams`\<`TAbi`, `TFunctionName`\> & `CallEvents` | Parameters for the contract method call, including ABI, function name, and arguments. |
+| Parameter | Type |
+| ------ | ------ |
+| `client` | [`RpcClient`](RpcClient.md) |
+| `params` | `Omit`\<[`CallParams`](CallParams.md), `"to"` \| `"data"`\> & `object` |
 
 ## Returns
 
-`Promise`\<`ContractResult`\<`TAbi`, `TFunctionName`\>\>
-
-The result of the contract method call.
-
-## Example
-
-```typescript
-import { tevmContract } from 'tevm/actions'
-import { createClient, http } from 'viem'
-import { optimism } from 'tevm/common'
-import { createTevmTransport } from 'tevm'
-
-const client = createClient({
-  transport: createTevmTransport({
-    fork: { transport: http('https://mainnet.optimism.io')({}) }
-  }),
-  chain: optimism,
-})
-
-async function example() {
-  const res = await tevmContract(client, {
-    abi: [...],
-    functionName: 'myFunction',
-    args: [...],
-  })
-  console.log(res)
-}
-
-example()
-```
-
-## See
-
- - [ContractParams](https://tevm.sh/reference/tevm/actions/type-aliases/contractparams/) for options reference.
- - [ContractResult](https://tevm.sh/reference/tevm/actions/type-aliases/contractresult/) for return values reference.
- - [BaseCallParams](https://tevm.sh/reference/tevm/actions/type-aliases/basecallparams-1/) for the base call parameters.
+`Promise`\<[`CallResult`](CallResult.md) & `object`\>

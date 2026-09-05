@@ -107,10 +107,10 @@ export default function GetAccount({ options }: Props) {
 				throw new Error('Address is required')
 			}
 
+			if (enhancedOptions['blockTag'] && enhancedOptions['blockTag'] !== 'latest')
+				throw new Error('Use get-balance/get-storage-at for historical reads')
 			return {
 				address: targetAddress,
-				returnStorage: enhancedOptions['returnStorage'] ?? false,
-				blockTag: enhancedOptions['blockTag'] ?? undefined,
 			}
 		},
 

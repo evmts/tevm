@@ -12,27 +12,27 @@ permissions:
   contents: write
   pull-requests: write
   id-token: write
+env:
+  TEVM_RPC_URLS_MAINNET: "${{ secrets.TEVM_RPC_URLS_MAINNET }}"
+  TEVM_RPC_URLS_OPTIMISM: "${{ secrets.TEVM_RPC_URLS_OPTIMISM }}"
+  TEVM_TEST_ALCHEMY_KEY: "${{ secrets.TEVM_TEST_ALCHEMY_KEY }}"
 jobs:
-  version:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
         with:
-          cache-url: "${{ secrets.SMITHERS_CACHE_URL }}"
-          cache-token: "${{ secrets.SMITHERS_CACHE_TOKEN }}"
-      - run: pnpm exec smthrs '//:version'
-  publish:
-    runs-on: ubuntu-latest
-    env:
-      NPM_TOKEN: "${{ secrets.NPM_TOKEN }}"
-      TEVM_RPC_URLS_MAINNET: "${{ secrets.TEVM_RPC_URLS_MAINNET }}"
-      TEVM_RPC_URLS_OPTIMISM: "${{ secrets.TEVM_RPC_URLS_OPTIMISM }}"
-      TEVM_TEST_ALCHEMY_KEY: "${{ secrets.TEVM_TEST_ALCHEMY_KEY }}"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
+          fetch-depth: "0"
+      - name: Checkout pinned native sources
+        run: node scripts/factory/checkout-native.mjs
+      - uses: "./.github/actions/setup"
+      - run: pnpm exec changeset status
+      - name: Create version PR or publish approved packages
+        uses: changesets/action@v1
         with:
-          cache-url: "${{ secrets.SMITHERS_CACHE_URL }}"
-          cache-token: "${{ secrets.SMITHERS_CACHE_TOKEN }}"
-      - run: pnpm exec smthrs '//:publish'
+          version: pnpm release:version
+          publish: pnpm release:publish
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          NPM_TOKEN: "${{ secrets.NPM_TOKEN }}"
+          NODE_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}"

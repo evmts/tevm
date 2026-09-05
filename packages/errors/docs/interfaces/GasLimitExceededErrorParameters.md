@@ -10,7 +10,7 @@
 
 | Property | Type |
 | ------ | ------ |
-| <a id="cause"></a> `cause?` | [`BaseError`](../classes/BaseError.md) \| `Error` \| `EVMError` |
+| <a id="cause"></a> `cause?` | [`BaseError`](../classes/BaseError.md) \| `Error` |
 | <a id="details"></a> `details?` | `string` |
 | <a id="docsbaseurl"></a> `docsBaseUrl?` | `string` |
 | <a id="docspath"></a> `docsPath?` | `string` |

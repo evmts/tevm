@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import { encodeErrorResult } from 'viem'
+import { afterEach, describe, expect, it } from 'vitest'
 import { createMemoryClient } from '../../../packages/memory-client/src/createMemoryClient.js'
 import {
 	AdvancedContract,
@@ -13,6 +14,10 @@ import {
 } from './index.js'
 
 const address = '0x0000000000000000000000000000000000000042'
+const clients: ReturnType<typeof createMemoryClient>[] = []
+afterEach(async () => {
+	await Promise.all(clients.splice(0).map((client) => client.tevmClose()))
+})
 
 describe('@tevm/test-utils fixtures', () => {
 	it('ships usable ABI and bytecode for every exported contract fixture', () => {
@@ -25,6 +30,7 @@ describe('@tevm/test-utils fixtures', () => {
 
 	it('executes the SimpleContract fixture in a real in-process EVM', async () => {
 		const client = createMemoryClient()
+		clients.push(client)
 		await client.tevmReady()
 		await client.tevmSetAccount({ address, deployedBytecode: SimpleContract.deployedBytecode })
 		const contract = SimpleContract.withAddress(address)
@@ -35,11 +41,19 @@ describe('@tevm/test-utils fixtures', () => {
 
 	it('preserves revert information from the ErrorContract fixture', async () => {
 		const client = createMemoryClient()
+		clients.push(client)
 		await client.tevmReady()
 		await client.tevmSetAccount({ address, deployedBytecode: ErrorContract.deployedBytecode })
-		await expect(client.tevmContract(ErrorContract.withAddress(address).write.revertWithStringError())).rejects.toThrow(
-			'This is a string error message',
-		)
+		await expect(
+			client.tevmContract(ErrorContract.withAddress(address).write.revertWithStringError()),
+		).rejects.toMatchObject({
+			code: 3,
+			data: encodeErrorResult({
+				abi: [{ type: 'error', name: 'Error', inputs: [{ type: 'string' }] }],
+				errorName: 'Error',
+				args: ['This is a string error message'],
+			}),
+		})
 	})
 
 	it('uses the exported Optimism transport against a pinned real block', async () => {

@@ -49,7 +49,11 @@ const ensureSubmodule = async (name, declaration) => {
 }
 
 await ensureSubmodule('Flows', policy.toolchain.flows)
-await ensureSubmodule('Zevm', policy.toolchain.zevm)
+for (const sibling of ['zevm', 'voltaire', 'guillotine-mini']) {
+	if (!(await exists(resolve(repositoryRoot, '..', sibling, 'build.zig')))) {
+		throw new Error(`Missing ../${sibling} checkout; native development requires all three sibling repositories`)
+	}
+}
 
 // mise is how the pinned bun and foundry releases reach both the executor
 // and CI. The bootstrapper installs the pins so the first target does not

@@ -1,29 +1,37 @@
-import { createServer as createNetServer } from 'node:net'
-import { createIpcConnectionHandler } from './internal/createIpcConnectionHandler.js'
+import { createServer } from 'node:net'
+import { StringDecoder } from 'node:string_decoder'
+import { createRpcConnection } from './internal/createRpcConnection.js'
+import { extractJsonRpcFrames } from './internal/extractJsonRpcFrames.js'
 
-/**
- * Creates a Unix domain socket JSON-RPC server backed by a Tevm client.
- *
- * The server accepts concatenated or newline-delimited JSON-RPC messages and
- * streams `eth_subscription` notifications over the same connection.
- *
- * @param {import('./Client.js').Client} client - Tevm client that handles JSON-RPC requests.
- * @param {import('node:net').ServerOpts} [serverOptions] - Options passed to `node:net.createServer`.
- * @param {{ maxMessageSize?: number; maxBatchSize?: number }} [handlerOptions] - IPC framing limits.
- * @returns {import('node:net').Server} A Node.js server that can listen on a Unix domain socket path.
- * @throws {never} Startup and connection errors are emitted by the returned server.
- * @example
- * ```typescript
- * import { createMemoryClient } from 'tevm'
- * import { createIpcServer } from 'tevm/server'
- *
- * const client = createMemoryClient()
- * const server = createIpcServer(client)
- *
- * server.listen('/tmp/tevm.ipc', () => {
- *   console.log('Tevm IPC server listening at /tmp/tevm.ipc')
- * })
- * ```
+/** Create an IPC server supporting native RPC and connection-scoped subscriptions.
+ * @param {import('./Client.js').Client} client
+ * @param {import('node:net').ServerOpts} [options]
+ * @param {{maxMessageSize?: number}} [limits]
+ * @returns {import('node:net').Server}
  */
-export const createIpcServer = (client, serverOptions = {}, handlerOptions = {}) =>
-	createNetServer(serverOptions, createIpcConnectionHandler(client, handlerOptions))
+export function createIpcServer(client, options = {}, limits = {}) {
+	return createServer(options, (socket) => {
+		socket.on('error', () => socket.destroy())
+		const decoder = new StringDecoder('utf8')
+		let buffer = ''
+		let queue = Promise.resolve()
+		const connection = createRpcConnection(client.transport.tevm, (json) => {
+			if (!socket.destroyed) socket.write(`${json}\n`)
+		})
+		socket.on('data', (data) => {
+			buffer += decoder.write(data)
+			if (Buffer.byteLength(buffer) > (limits.maxMessageSize ?? 1024 * 1024)) return void socket.destroy()
+			const [frames, remaining] = extractJsonRpcFrames(buffer)
+			buffer = remaining
+			for (const frame of frames)
+				queue = queue
+					.then(() => connection.rpc(frame))
+					.catch(() => {
+						socket.destroy()
+					})
+		})
+		socket.on('close', () => {
+			void queue.finally(() => connection.close())
+		})
+	})
+}

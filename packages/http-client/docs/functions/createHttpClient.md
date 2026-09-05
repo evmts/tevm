@@ -4,29 +4,22 @@
 
 [@tevm/http-client](../globals.md) / createHttpClient
 
-# ~~Function: createHttpClient()~~
+# Function: createHttpClient()
 
-> **createHttpClient**(`params`): [`HttpClient`](../interfaces/HttpClient.md)
+> **createHttpClient**(`options`): `Client`\<`HttpTransport`\<`undefined`, `false`\>, `undefined`, `undefined`, `PublicRpcSchema`, `object` & `PublicActions`\<`HttpTransport`\<`undefined`, `false`\>, `undefined`\>\>
 
-Defined in: [http-client/src/createHttpClient.js:11](https://github.com/evmts/tevm/blob/main/packages/http-client/src/createHttpClient.js#L11)
+Defined in: [packages/http-client/src/createHttpClient.js:7](https://github.com/evmts/tevm/blob/main/packages/http-client/src/createHttpClient.js#L7)
+
+Create a remote client for a native TEVM HTTP server.
 
 ## Parameters
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `params` | [`HttpClientOptions`](../type-aliases/HttpClientOptions.md) | - |
+| `options` | \{ `name?`: `string`; `url`: `string`; \} | - |
+| `options.name?` | `string` | - |
+| `options.url` | `string` | - |
 
 ## Returns
 
-[`HttpClient`](../interfaces/HttpClient.md)
-
-## Deprecated
-
-a new version of HttpClient will be built in a future version
-For now we suggest you use viem
-
-## Example
-
-```ts
-
-```
+`Client`\<`HttpTransport`\<`undefined`, `false`\>, `undefined`, `undefined`, `PublicRpcSchema`, `object` & `PublicActions`\<`HttpTransport`\<`undefined`, `false`\>, `undefined`\>\>

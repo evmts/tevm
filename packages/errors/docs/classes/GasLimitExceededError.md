@@ -35,12 +35,6 @@ Additional parameters for the BaseError.
 
 - [`BaseError`](BaseError.md)
 
-## Extended by
-
-- [`CodeSizeExceedsMaximumError`](CodeSizeExceedsMaximumError.md)
-- [`CodeStoreOutOfGasError`](CodeStoreOutOfGasError.md)
-- [`OutOfGasError`](OutOfGasError.md)
-
 ## Constructors
 
 ### Constructor

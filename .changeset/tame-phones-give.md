@@ -1,5 +1,4 @@
 ---
-"@tevm/precompiles": minor
 "tevm": minor
 ---
 

@@ -1,12 +1,12 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { Package as actions } from '../../packages/actions/PACKAGE.js'
 import { Package as errors } from '../../packages/errors/PACKAGE.js'
 import { Package as jsonrpc } from '../../packages/jsonrpc/PACKAGE.js'
 import { Package as memoryClient } from '../../packages/memory-client/PACKAGE.js'
 import { Package as node } from '../../packages/node/PACKAGE.js'
 import { Package as server } from '../../packages/server/PACKAGE.js'
-import { Package as state } from '../../packages/state/PACKAGE.js'
 
 // The recurring repair lane from Will's PR history: reproduce the public
 // JSON-RPC failure first, repair the entire wire contract, and keep the
@@ -35,8 +35,6 @@ const repairRpcRegression = S.Agent.Diff({
 		node.tests,
 		server.srcs,
 		server.tests,
-		state.srcs,
-		state.tests,
 		S.file('//CLAUDE.md'),
 		S.file('//factory/pr-history.md'),
 	],
@@ -47,7 +45,6 @@ const repairRpcRegression = S.Agent.Diff({
 		'packages/memory-client/src/**',
 		'packages/node/src/**',
 		'packages/server/src/**',
-		'packages/state/src/**',
 		'tevm/**',
 		'docs/node/pages/**',
 		'.changeset/**',
@@ -65,8 +62,6 @@ const repairRpcRegression = S.Agent.Diff({
 		node.test,
 		server.typecheck,
 		server.test,
-		state.typecheck,
-		state.test,
 	],
 	sandbox: { network: true },
 	maxRounds: 4,

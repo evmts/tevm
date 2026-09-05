@@ -1,10 +1,11 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { scopedShell } from '../../factory/scoped-shell.js'
 
 const Shell = scopedShell('packages/common')
 
-// Follows the packages/evm/PACKAGE.ts exemplar. This package's build:types
+// Follows the packages/contract/PACKAGE.ts exemplar. This package's build:types
 // also runs tsc, so it carries the extra declarations target into the
 // tsconfig outDir.
 const packageJson = S.file('package.json')

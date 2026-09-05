@@ -1,11 +1,11 @@
-import { EditorState, Compartment } from '@codemirror/state'
-import { EditorView, keymap } from '@codemirror/view'
-import { basicSetup } from 'codemirror'
 import { javascript } from '@codemirror/lang-javascript'
-import { solidity } from '@replit/codemirror-lang-solidity'
+import { Compartment, EditorState } from '@codemirror/state'
 import { oneDark } from '@codemirror/theme-one-dark'
-import { examples, type Example } from './examples'
-import { runCode, type RunLine } from './runner'
+import { EditorView, keymap } from '@codemirror/view'
+import { solidity } from '@replit/codemirror-lang-solidity'
+import { basicSetup } from 'codemirror'
+import { type Example, examples } from './examples'
+import { type RunLine, runCode } from './runner'
 import './style.css'
 
 const app = document.querySelector<HTMLDivElement>('#app')!
@@ -14,7 +14,7 @@ app.innerHTML = `
 	<header class="header">
 		<div class="header-title">
 			<h1>tevm playground</h1>
-			<p>A real EVM, running in this page. No node. No RPC server. No signup. View it, run it, copy it out.</p>
+			<p>Run contracts on your local native ZEVM server through JSON-RPC. Start pnpm native:server in the TEVM repository first.</p>
 		</div>
 		<a class="header-link" href="https://tevm.sh" target="_blank" rel="noreferrer">tevm.sh →</a>
 	</header>
@@ -38,11 +38,11 @@ app.innerHTML = `
 	</div>
 	<section class="pane output-pane">
 		<div class="pane-head"><span>Output</span><span class="run-status"></span></div>
-		<pre class="output"><span class="dim">Press Run. Everything executes locally in your browser tab.</span></pre>
+		<pre class="output"><span class="dim">Press Run. Requests execute on your local ZEVM server at localhost:8545.</span></pre>
 	</section>
 	<footer class="foot">
 		Solidity here is precompiled — in-browser solc is not in this version.
-		Copied files run as-is in a fresh project: <code>npm install tevm@1.0.0-rc.151 viem</code>, then <code>node --experimental-strip-types file.ts</code> (or tsx).
+		Copied files run as-is in a fresh project: <code>npm install viem</code>, then <code>node --experimental-strip-types file.ts</code> (or tsx).
 	</footer>
 `
 
@@ -131,7 +131,8 @@ const select = (e: Example, code?: string) => {
 	tsView.setState(tsState(code ?? e.code))
 	solView.setState(solState(e.solidity))
 	blurbEl.textContent = e.blurb + (e.usesNetwork ? ' Uses a public RPC to fetch fork state — it can rate-limit.' : '')
-	outputEl.innerHTML = '<span class="dim">Press Run. Everything executes locally in your browser tab.</span>'
+	outputEl.innerHTML =
+		'<span class="dim">Press Run. Requests execute on your local ZEVM server at localhost:8545.</span>'
 	statusEl.textContent = ''
 	history.replaceState(null, '', encodeState())
 	renderTabs()
@@ -157,10 +158,7 @@ const run = async () => {
 		await runCode(tsView.state.doc.toString(), append)
 		statusEl.textContent = `done in ${((performance.now() - started) / 1000).toFixed(2)}s`
 	} catch (err) {
-		const text =
-			err instanceof Error
-				? `${err.name}: ${err.message || err.stack || 'Unknown error'}`
-				: String(err)
+		const text = err instanceof Error ? `${err.name}: ${err.message || err.stack || 'Unknown error'}` : String(err)
 		append({ kind: 'error', text })
 		statusEl.textContent = 'failed'
 	} finally {

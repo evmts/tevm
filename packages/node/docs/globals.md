@@ -6,39 +6,33 @@
 
 ## Classes
 
-- [ProviderRpcError](classes/ProviderRpcError.md)
+- [NativeRpcError](classes/NativeRpcError.md)
 
 ## Type Aliases
 
-- [AutoMining](type-aliases/AutoMining.md)
-- [~~BaseClientOptions~~](type-aliases/BaseClientOptions.md)
-- [CustomPrecompile](type-aliases/CustomPrecompile.md)
-- [EIP1193EventEmitter](type-aliases/EIP1193EventEmitter.md)
-- [EIP1193EventMap](type-aliases/EIP1193EventMap.md)
-- [EIP1193Events](type-aliases/EIP1193Events.md)
-- [ExExEvent](type-aliases/ExExEvent.md)
-- [ExExHook](type-aliases/ExExHook.md)
-- [Extension](type-aliases/Extension.md)
-- [Filter](type-aliases/Filter.md)
-- [FilterLog](type-aliases/FilterLog.md)
-- [FilterType](type-aliases/FilterType.md)
-- [Hardfork](type-aliases/Hardfork.md)
-- [IntervalMining](type-aliases/IntervalMining.md)
-- [ManualMining](type-aliases/ManualMining.md)
-- [MiningConfig](type-aliases/MiningConfig.md)
-- [ProviderConnectInfo](type-aliases/ProviderConnectInfo.md)
-- [ProviderMessage](type-aliases/ProviderMessage.md)
-- [SnapshotMetadata](type-aliases/SnapshotMetadata.md)
-- [TevmNode](type-aliases/TevmNode.md)
-- [TevmNodeOptions](type-aliases/TevmNodeOptions.md)
-- [TevmSnapshot](type-aliases/TevmSnapshot.md)
-
-## Variables
-
-- [GENESIS\_STATE](variables/GENESIS_STATE.md)
-- [prefundedAccounts](variables/prefundedAccounts.md)
+- [EngineRequest](type-aliases/EngineRequest.md)
+- [JsonValue](type-aliases/JsonValue.md)
+- [ZevmEngine](type-aliases/ZevmEngine.md)
+- [ZevmEngineOptions](type-aliases/ZevmEngineOptions.md)
 
 ## Functions
 
-- [createIntervalMiner](functions/createIntervalMiner.md)
-- [createTevmNode](functions/createTevmNode.md)
+- [createZevmEngine](functions/createZevmEngine.md)
+
+## References
+
+### createTevmNode
+
+Renames and re-exports [createZevmEngine](functions/createZevmEngine.md)
+
+***
+
+### TevmNode
+
+Renames and re-exports [ZevmEngine](type-aliases/ZevmEngine.md)
+
+***
+
+### TevmNodeOptions
+
+Renames and re-exports [ZevmEngineOptions](type-aliases/ZevmEngineOptions.md)

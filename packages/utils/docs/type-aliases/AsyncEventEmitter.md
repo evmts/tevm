@@ -8,7 +8,7 @@
 
 > **AsyncEventEmitter**\<`T`\> = `object`
 
-Defined in: [packages/utils/src/index.ts:150](https://github.com/evmts/tevm/blob/main/packages/utils/src/index.ts#L150)
+Defined in: [packages/utils/src/index.ts:85](https://github.com/evmts/tevm/blob/main/packages/utils/src/index.ts#L85)
 
 ## Type Parameters
 
@@ -22,7 +22,7 @@ Defined in: [packages/utils/src/index.ts:150](https://github.com/evmts/tevm/blob
 
 > **emit**\<`K`\>(`event`, ...`args`): `boolean`
 
-Defined in: [packages/utils/src/index.ts:154](https://github.com/evmts/tevm/blob/main/packages/utils/src/index.ts#L154)
+Defined in: [packages/utils/src/index.ts:89](https://github.com/evmts/tevm/blob/main/packages/utils/src/index.ts#L89)
 
 #### Type Parameters
 
@@ -47,7 +47,7 @@ Defined in: [packages/utils/src/index.ts:154](https://github.com/evmts/tevm/blob
 
 > **off**\<`K`\>(`event`, `listener`): `void`
 
-Defined in: [packages/utils/src/index.ts:153](https://github.com/evmts/tevm/blob/main/packages/utils/src/index.ts#L153)
+Defined in: [packages/utils/src/index.ts:88](https://github.com/evmts/tevm/blob/main/packages/utils/src/index.ts#L88)
 
 #### Type Parameters
 
@@ -72,7 +72,7 @@ Defined in: [packages/utils/src/index.ts:153](https://github.com/evmts/tevm/blob
 
 > **on**\<`K`\>(`event`, `listener`): `void`
 
-Defined in: [packages/utils/src/index.ts:151](https://github.com/evmts/tevm/blob/main/packages/utils/src/index.ts#L151)
+Defined in: [packages/utils/src/index.ts:86](https://github.com/evmts/tevm/blob/main/packages/utils/src/index.ts#L86)
 
 #### Type Parameters
 
@@ -97,7 +97,7 @@ Defined in: [packages/utils/src/index.ts:151](https://github.com/evmts/tevm/blob
 
 > **once**\<`K`\>(`event`, `listener`): `void`
 
-Defined in: [packages/utils/src/index.ts:152](https://github.com/evmts/tevm/blob/main/packages/utils/src/index.ts#L152)
+Defined in: [packages/utils/src/index.ts:87](https://github.com/evmts/tevm/blob/main/packages/utils/src/index.ts#L87)
 
 #### Type Parameters
 
@@ -122,7 +122,7 @@ Defined in: [packages/utils/src/index.ts:152](https://github.com/evmts/tevm/blob
 
 > **removeAllListeners**\<`K`\>(`event?`): `void`
 
-Defined in: [packages/utils/src/index.ts:155](https://github.com/evmts/tevm/blob/main/packages/utils/src/index.ts#L155)
+Defined in: [packages/utils/src/index.ts:90](https://github.com/evmts/tevm/blob/main/packages/utils/src/index.ts#L90)
 
 #### Type Parameters
 

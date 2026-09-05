@@ -33,7 +33,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 4. Bootstrap the local coding-factory dependencies
 
-The factory uses the unpublished Flows source vendored as the `vendor/flows` submodule, plus the Zevm workspace vendored as `vendor/zevm`, both pinned by gitlink. It must not resolve Smithers packages from npm.
+The factory uses unpublished Flows source at the pinned `vendor/flows` gitlink. It must not resolve Smithers packages from npm. Native execution builds from sibling `../zevm`, `../voltaire`, and `../guillotine-mini` checkouts; keep these repositories beside TEVM.
 
 ```bash
 node scripts/factory/bootstrap.mjs --install
@@ -48,7 +48,7 @@ The bootstrapper never rewrites an existing checkout. If a submodule worktree is
 git submodule update --init
 ```
 
-Do not pass `--recursive`: `vendor/zevm` carries eleven nested submodules (ethereum/tests, hive, foundry, hardhat, ...) that tevm never needs, and the factory initializes only the paths `//:vendor` declares.
+The factory initializes only the paths `//:vendor` declares. ZEVM is a sibling checkout rather than a TEVM submodule. After native edits, run `mise exec -- node scripts/factory/build-native.mjs` to rebuild the addon from current source.
 
 6. Set environment variables
 
@@ -96,7 +96,7 @@ The factory turns common repository work into typed, bounded targets. Start with
 ```bash
 pnpm factory:check
 pnpm factory:query
-pnpm exec smthrs target //packages/address:typecheck --plan
+pnpm exec smthrs target //packages/node:typecheck --plan
 ```
 
 Issue intake is deterministic and copies no issue body into its result:

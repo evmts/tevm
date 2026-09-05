@@ -4,33 +4,101 @@
 
 [@tevm/common](../globals.md) / Common
 
-# Type Alias: Common
+# Type Alias: Common\<formatters, extendSchema\>
 
-> **Common** = `Prettify`\<`ViemChain` & `object`\>
+> **Common**\<`formatters`, `extendSchema`\> = `object` & `ChainConfig`\<`formatters`, `extendSchema`\>
 
-Common is the main representation of chain specific configuration for tevm clients.
+## Type Declaration
 
-Tevm specific chain configuration wrapping a viem chain and ZEVM common.
-Common contains the common configuration set between all chains such as fee information, hardfork information, eip information, predeployed contracts, default block explorers and more.
-Extends the Viem Chain type with the ZEVM-backed Common instance used by the VM.
+### blockExplorers?
 
-## Example
+> `optional` **blockExplorers?**: `object`
 
-```typescript
-import { optimism, Common } from 'tevm/common'
-import { createMemoryClient } from 'tevm'}
+Collection of block explorers
 
-const createClient = (common: Common) => {
-  const client = createMemoryClient({
-    common,
-  })
-  return client
-}
+#### Type Declaration
 
-const client = createClient(optimism)
-```
+#### Index Signature
 
-## See
+\[`key`: `string`\]: `ChainBlockExplorer`
 
- - [createCommon](https://tevm.sh/reference/tevm/common/functions/createcommon/)
- - [Tevm client docs](https://tevm.sh/learn/clients/)
+#### blockExplorers.default
+
+> **default**: `ChainBlockExplorer`
+
+### blockTime?
+
+> `optional` **blockTime?**: `number`
+
+Block time in milliseconds.
+
+### contracts?
+
+> `optional` **contracts?**: [`Prettify`](Prettify.md)\<`object` & `object`\>
+
+Collection of contracts
+
+### ensTlds?
+
+> `optional` **ensTlds?**: readonly `string`[]
+
+Collection of ENS TLDs for the chain.
+
+### experimental\_preconfirmationTime?
+
+> `optional` **experimental\_preconfirmationTime?**: `number`
+
+Preconfirmation time in milliseconds.
+
+### id
+
+> **id**: `number`
+
+ID in number form
+
+### name
+
+> **name**: `string`
+
+Human-readable name
+
+### nativeCurrency
+
+> **nativeCurrency**: `ChainNativeCurrency`
+
+Currency used by chain
+
+### rpcUrls
+
+> **rpcUrls**: `object`
+
+Collection of RPC endpoints
+
+#### Type Declaration
+
+#### Index Signature
+
+\[`key`: `string`\]: `ChainRpcUrls`
+
+#### rpcUrls.default
+
+> **default**: `ChainRpcUrls`
+
+### sourceId?
+
+> `optional` **sourceId?**: `number`
+
+Source Chain ID (ie. the L1 chain)
+
+### testnet?
+
+> `optional` **testnet?**: `boolean`
+
+Flag for test networks
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `formatters` *extends* `ChainFormatters` \| `undefined` | `ChainFormatters` \| `undefined` |
+| `extendSchema` *extends* `Record`\<`string`, `unknown`\> \| `undefined` | `Record`\<`string`, `unknown`\> \| `undefined` |

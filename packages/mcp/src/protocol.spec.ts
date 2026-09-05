@@ -29,7 +29,7 @@ describe('Tevm MCP stdio protocol', () => {
 		expect(response.content[0]).toMatchObject({ type: 'text' })
 		const payload = JSON.parse((response.content[0] as { type: 'text'; text: string }).text)
 		expect(payload.handle).toMatch(/^[0-9a-f-]{36}$/)
-		expect(payload.chainId).toBe(900)
+		expect(payload.chainId).toBe(31337)
 		expect(payload.blockNumber).toBe('0')
 	})
 

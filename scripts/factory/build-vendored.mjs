@@ -1,14 +1,8 @@
 #!/usr/bin/env node
-// Builds the vendored sources an installed workspace cannot use unbuilt:
-// vendor/flows, which the @smthrs/* link: dependencies resolve through and
-// whose packages export dist/esm, and vendor/zevm's npm package, whose dist
-// every @tevm package imports. Both are gitlinks at the revisions
-// factory/policy.json records; a checkout carries neither build, so it runs
-// once per pinned revision on every host, including a CI runner.
-// package.json runs this as postinstall so `pnpm install` leaves the CLI
-// runnable and the workspace resolvable; stamps under the (gitignored) dist
-// directories keep the second run free. //:zevm remains the graph's own
-// declaration of the zevm build for targets that key on it.
+// Builds the pinned vendor/flows source and the maintained native ZEVM addon.
+// Flows stamps are keyed by its pinned gitlink. Native builds always invoke Zig
+// so edits in any sibling repository participate in its content-based cache.
+// postinstall prepares the Flows CLI and native addon; build:host builds TEVM.
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { command, readPolicy, repositoryRoot } from './lib.mjs'
@@ -65,26 +59,5 @@ if (stamp === head && (await exists(entry))) {
 	console.log(`Vendored Flows built at ${head.slice(0, 12)}`)
 }
 
-// @evmts/zevm: the same idempotent build //:zevm declares, keyed on the
-// gitlink so a moved pin rebuilds and an unchanged one costs nothing.
-const zevmRoot = resolve(repositoryRoot, policy.toolchain.zevm.localPath)
-const zevmPackage = resolve(zevmRoot, 'npm/zevm')
-const zevmStamp = resolve(zevmPackage, 'dist/.tevm-vendored-build')
-const zevmEntry = resolve(zevmPackage, 'dist/index.js')
-if (!(await exists(resolve(zevmPackage, 'package.json')))) {
-	throw new Error(
-		`${zevmPackage} is not checked out; run \`git submodule update --init -- ${policy.toolchain.zevm.localPath}\``,
-	)
-}
-const zevmHead = command('git', ['-C', zevmRoot, 'rev-parse', 'HEAD'])
-const zevmStamped = (await exists(zevmStamp)) ? (await readFile(zevmStamp, 'utf8')).trim() : ''
-if (zevmStamped === zevmHead && (await exists(zevmEntry))) {
-	console.log(`Vendored zevm already built at ${zevmHead.slice(0, 12)}`)
-} else {
-	console.log(`Building vendored zevm at ${zevmHead.slice(0, 12)}`)
-	command('pnpm', ['--filter', '@evmts/zevm', 'build'], { cwd: repositoryRoot, env, stdio: 'inherit' })
-	if (!(await exists(zevmEntry))) throw new Error(`zevm build did not produce ${zevmEntry}`)
-	await mkdir(dirname(zevmStamp), { recursive: true })
-	await writeFile(zevmStamp, `${zevmHead}\n`, 'utf8')
-	console.log(`Vendored zevm built at ${zevmHead.slice(0, 12)}`)
-}
+// Native engine builds use Zig's source-aware cache across the sibling repos.
+command('node', ['scripts/factory/build-native.mjs'], { cwd: repositoryRoot, env, stdio: 'inherit' })

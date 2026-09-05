@@ -1,22 +1,20 @@
-export type { CreateMemoryClientFn } from './CreateMemoryClientFn.js'
-export { createClient, publicActions, testActions, walletActions } from './createClient.js'
+export type * from '@tevm/actions'
+export type { BoundTevmContract } from '@tevm/actions'
+export {
+	tevmCall,
+	tevmContract,
+	tevmDeal,
+	tevmDeploy,
+	tevmDumpState,
+	tevmGetAccount,
+	tevmLoadState,
+	tevmMine,
+	tevmSetAccount,
+} from '@tevm/actions'
+export { createClient, publicActions, testActions, walletActions } from 'viem'
 export { createMemoryClient } from './createMemoryClient.js'
 export { createTevmTransport } from './createTevmTransport.js'
 export type { MemoryClient } from './MemoryClient.js'
 export type { MemoryClientOptions } from './MemoryClientOptions.js'
-export type { TevmActions } from './TevmActions.js'
-export type { TevmContract } from './TevmContractType.js'
-export type { TevmRpcSchema } from './TevmRpcSchema.js'
-export type { TevmTransport } from './TevmTransport.js'
-export type { TevmViemActionsApi } from './TevmViemActionsApi.js'
-export { tevmCall } from './tevmCall.js'
-export { tevmContract } from './tevmContract.js'
-export { tevmDeal } from './tevmDeal.js'
-export { tevmDeploy } from './tevmDeploy.js'
-export { tevmDumpState } from './tevmDumpState.js'
-export { tevmGetAccount } from './tevmGetAccount.js'
-export { tevmLoadState } from './tevmLoadState.js'
-export { tevmMine } from './tevmMine.js'
 export { tevmReady } from './tevmReady.js'
-export { tevmSetAccount } from './tevmSetAccount.js'
 export { tevmViemActions } from './tevmViemActions.js'

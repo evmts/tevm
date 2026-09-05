@@ -1,10 +1,11 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { scopedShell } from '../../factory/scoped-shell.js'
 
 const Shell = scopedShell('packages/actions')
 
-// packages/evm/PACKAGE.ts is the exemplar for the packages/* shape. This file
+// packages/contract/PACKAGE.ts is the exemplar for the packages/* shape. This file
 // differs in three places: the tsc declaration emit into types/, tests that
 // need live RPC endpoints, and the vitest setup files outside the package.
 const packageJson = S.file('package.json')
@@ -14,12 +15,6 @@ const typedocConfig = S.file('typedoc.json')
 const vitestConfig = S.file('vitest.config.ts')
 const biomeConfig = S.file('biome.json')
 const rootBiomeConfig = S.file('//biome.json')
-
-// vitest.config.ts loads two setup files: the shared matchers under
-// //test/vitest-matchers and this package's test/setup.ts.
-const testSetup = S.Filegroup({
-	srcs: [S.file('test/setup.ts'), S.file('//test/vitest-matchers/utils.ts')],
-})
 
 const srcs = S.Filegroup({
 	srcs: S.glob(['src/**', '!src/**/*.spec.ts', '!src/**/*.test.ts', '!src/**/__snapshots__/**']),
@@ -59,27 +54,17 @@ const typecheck = Shell.Test({
 	data: [srcs, deps, tsconfig],
 })
 
-// Two dozen spec files (eth_call, eth_getLogs, debug_traceTransaction, the
-// fork handlers) fork optimism and mainnet through the RPC URLs ci.yml
-// injects, and they share files with hermetic cases, so the suite cannot be
-// split by pattern. The whole run carries the secrets and the network
-// sandbox; the 20 s testTimeout in vitest.config.ts exists for the same
-// reason. Recording those responses into __rpc_snapshots__ is what would
-// make this target hermetic.
+// Native action tests run locally without external RPC services.
 const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
-	data: [srcs, tests, deps, testSetup, vitestConfig, tsconfig],
-	secrets: [S.Secret('TEVM_TEST_ALCHEMY_KEY'), S.Secret('TEVM_RPC_URLS_MAINNET'), S.Secret('TEVM_RPC_URLS_OPTIMISM')],
-	sandbox: { network: true },
+	data: [srcs, tests, deps, vitestConfig, tsconfig],
 })
 
 const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
-	data: [srcs, tests, deps, testSetup, vitestConfig, tsconfig],
-	secrets: [S.Secret('TEVM_TEST_ALCHEMY_KEY'), S.Secret('TEVM_RPC_URLS_MAINNET'), S.Secret('TEVM_RPC_URLS_OPTIMISM')],
-	sandbox: { network: true },
+	data: [srcs, tests, deps, vitestConfig, tsconfig],
 })
 
 const coverageGate = S.Alias(testCoverage)
@@ -109,23 +94,23 @@ const apiCompat = S.Api.Compat({
 	manifest: packageJson,
 })
 
-// @tevm/consensus is imported for types only, which depcheck cannot see.
+// Validate dependencies on the native wire types and viem ABI helpers.
 const depsLint = Shell.Test({
 	bin: S.NodeModule.Bin('depcheck'),
-	args: ['--ignores=@tevm/consensus'],
+	args: [],
 	data: [srcs, tests, packageJson],
 })
 
 const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--verbose'],
-	data: [srcs, tests, testSetup, biomeConfig, rootBiomeConfig],
+	data: [srcs, tests, biomeConfig, rootBiomeConfig],
 })
 
 const format = Shell.Diff({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.', '--write', '--unsafe'],
-	data: [srcs, tests, testSetup, biomeConfig, rootBiomeConfig],
+	data: [srcs, tests, biomeConfig, rootBiomeConfig],
 	changes: ['**'],
 })
 

@@ -1,27 +1,39 @@
-import { describe, expect, it } from 'vitest'
+import { fork } from 'node:child_process'
+import { once } from 'node:events'
+import { expect, it } from 'vitest'
 import { createSessionManager } from './createSessionManager.js'
 import { executeTool } from './executeTool.js'
 
-describe('Tevm MCP public RPC fork', () => {
-	it('forks real Ethereum mainnet and reads live contract storage', async () => {
-		const sessions = createSessionManager()
-		const forkUrl = process.env.TEVM_RPC_URLS_MAINNET?.split(',')[0] ?? 'https://ethereum-rpc.publicnode.com'
-		const fork: any = await executeTool('evm_fork_chain', { url: forkUrl, chain: 'mainnet' }, sessions)
-		expect(fork.chainId).toBe(1)
-		expect(BigInt(fork.blockNumber)).toBeGreaterThan(20_000_000n)
-
-		const weth: any = await executeTool(
+it('forks a real local native upstream through the MCP tool', async () => {
+	const upstream = fork(new URL('../../node/fixtures/fork-server.cjs', import.meta.url), {
+		stdio: ['ignore', 'ignore', 'inherit', 'ipc'],
+	})
+	const sessions = createSessionManager()
+	let handle: string | undefined
+	try {
+		const [{ url }] = await once(upstream, 'message')
+		const inferred = await sessions.createFork({ url, blockNumber: '1', chain: 'auto' })
+		expect(inferred.chainId).toBe(31337)
+		await sessions.close(inferred.handle)
+		const forked: any = await executeTool('evm_fork_chain', { url, chain: 'mainnet', blockNumber: '1' }, sessions)
+		handle = forked.handle
+		expect(forked.chainId).toBe(1)
+		// ZEVM forks upstream state into a local chain, whose genesis is block zero.
+		expect(forked.blockNumber).toBe('0')
+		const account: any = await executeTool(
 			'evm_get_account',
-			{
-				session: fork.handle,
-				address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-				storageSlot: '0x00',
-			},
+			{ session: handle, address: '0x0000000000000000000000000000000000000123', storageSlot: '0x00' },
 			sessions,
 		)
-		expect(weth.isContract).toBe(true)
-		expect(weth.code.length).toBeGreaterThan(100)
-		expect(weth.storageValue).toMatch(/^0x[0-9a-f]{64}$/i)
-		expect(weth.storageValue).not.toBe(`0x${'0'.repeat(64)}`)
-	})
+		expect(account.balance).toBe('42')
+		expect(account.isContract).toBe(true)
+		expect(account.code).toBe('0x602a60005260206000f3')
+		expect(account.storageValue).toBe(`0x${'0'.repeat(62)}2a`)
+		expect(JSON.parse(JSON.stringify(account))).toEqual(account)
+	} finally {
+		if (handle) await sessions.close(handle)
+		const exited = once(upstream, 'exit')
+		upstream.kill('SIGTERM')
+		await exited
+	}
 })

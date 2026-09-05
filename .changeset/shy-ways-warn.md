@@ -1,9 +1,6 @@
 ---
-"@tevm/sync-storage-persister": patch
 "@tevm/actions": patch
 "@tevm/node": patch
-"@tevm/procedures": patch
-"@tevm/state": patch
 "@tevm/utils": patch
 "tevm": patch
 "@tevm/base-bundler": patch
@@ -27,21 +24,15 @@
 "@tevm/lsp": patch
 "@tevm/ts-plugin": patch
 "@tevm/vscode": patch
-"@tevm/blockchain": patch
-"@tevm/client-types": patch
 "@tevm/common": patch
 "@tevm/contract": patch
-"@tevm/decorators": patch
 "@tevm/effect": patch
 "@tevm/errors": patch
-"@tevm/evm": patch
 "@tevm/http-client": patch
 "@tevm/jsonrpc": patch
 "@tevm/memory-client": patch
-"@tevm/precompiles": patch
 "@tevm/predeploys": patch
 "@tevm/server": patch
-"@tevm/vm": patch
 ---
 
 Added docs for all packages to https://tevm.sh

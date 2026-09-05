@@ -8,43 +8,49 @@
 
 > `const` **tevmDefault**: `object`
 
-The default chain if no fork url is passed
-
 ## Type Declaration
 
 ### blockExplorers?
 
 > `optional` **blockExplorers?**: `object`
 
-Collection of block explorers
-
 #### Type Declaration
 
 #### Index Signature
 
-\[`key`: `string`\]: `ChainBlockExplorer`
+\[`key`: `string`\]: `object`
 
 #### blockExplorers.default
 
-> **default**: `ChainBlockExplorer`
+> **default**: `object`
+
+##### Type Declaration
+
+#### blockExplorers.default.apiUrl?
+
+> `optional` **apiUrl?**: `string`
+
+#### blockExplorers.default.name
+
+> **name**: `string`
+
+#### blockExplorers.default.url
+
+> **url**: `string`
 
 ### blockTime?
 
 > `optional` **blockTime?**: `number`
 
-Block time in milliseconds.
-
 ### contracts?
 
 > `optional` **contracts?**: `object`
-
-Collection of contracts
 
 #### Type Declaration
 
 #### Index Signature
 
-\[`key`: `string`\]: `ChainContract` \| \{\[`sourceId`: `number`\]: `ChainContract` \| `undefined`; \} \| `undefined`
+\[`x`: `string`\]: `ChainContract` \| \{\[`sourceId`: `number`\]: `ChainContract` \| `undefined`; \} \| `undefined`
 
 #### contracts.ensRegistry?
 
@@ -62,118 +68,103 @@ Collection of contracts
 
 > `optional` **multicall3?**: `ChainContract`
 
-### copy
-
-> **copy**: () => \{ blockExplorers?: \{ \[key: string\]: ChainBlockExplorer; default: ChainBlockExplorer; \} \| undefined; blockTime?: number \| undefined; contracts?: \{ ...; \} \| undefined; ... 16 more ...; copy: () =\> ...; \}
-
-#### Returns
-
-\{ blockExplorers?: \{ \[key: string\]: ChainBlockExplorer; default: ChainBlockExplorer; \} \| undefined; blockTime?: number \| undefined; contracts?: \{ ...; \} \| undefined; ... 16 more ...; copy: () =\> ...; \}
-
-### ~~custom?~~
+### custom?
 
 > `optional` **custom?**: `Record`\<`string`, `unknown`\>
-
-Custom chain data.
-
-#### Deprecated
-
-use `.extend` instead.
 
 ### ensTlds?
 
 > `optional` **ensTlds?**: readonly `string`[]
 
-Collection of ENS TLDs for the chain.
-
-### ethjsCommon
-
-> **ethjsCommon**: `Common`
-
 ### experimental\_preconfirmationTime?
 
 > `optional` **experimental\_preconfirmationTime?**: `number`
-
-Preconfirmation time in milliseconds.
 
 ### extendSchema?
 
 > `optional` **extendSchema?**: `Record`\<`string`, `unknown`\>
 
-Extend schema.
-
 ### fees?
 
-> `optional` **fees?**: `ChainFees`\<`ChainFormatters` \| `undefined`\>
-
-Modifies how fees are derived.
+> `optional` **fees?**: `ChainFees`
 
 ### formatters?
 
-> `optional` **formatters?**: `ChainFormatters`
-
-Modifies how data is formatted and typed (e.g. blocks and transactions)
+> `optional` **formatters?**: `undefined`
 
 ### id
 
-> **id**: `number`
-
-ID in number form
+> **id**: `31337`
 
 ### name
 
-> **name**: `string`
-
-Human-readable name
+> **name**: `"Foundry"`
 
 ### nativeCurrency
 
-> **nativeCurrency**: `ChainNativeCurrency`
+> **nativeCurrency**: `object`
 
-Currency used by chain
+#### Type Declaration
+
+#### nativeCurrency.decimals
+
+> `readonly` **decimals**: `18`
+
+#### nativeCurrency.name
+
+> `readonly` **name**: `"Ether"`
+
+#### nativeCurrency.symbol
+
+> `readonly` **symbol**: `"ETH"`
 
 ### prepareTransactionRequest?
 
-> `optional` **prepareTransactionRequest?**: `PrepareTransactionRequestFn` \| \[`PrepareTransactionRequestFn`, `object`\]
-
-Function to prepare a transaction request. Runs before the transaction is filled.
+> `optional` **prepareTransactionRequest?**: ((`args`, `options`) => `Promise`\<`PrepareTransactionRequestParameters`\>) \| \[((`args`, `options`) => `Promise`\<`PrepareTransactionRequestParameters`\>) \| `undefined`, `object`\]
 
 ### rpcUrls
 
 > **rpcUrls**: `object`
 
-Collection of RPC endpoints
-
 #### Type Declaration
-
-#### Index Signature
-
-\[`key`: `string`\]: `ChainRpcUrls`
 
 #### rpcUrls.default
 
-> **default**: `ChainRpcUrls`
+> `readonly` **default**: `object`
+
+##### Type Declaration
+
+#### rpcUrls.default.http
+
+> `readonly` **http**: readonly \[`"http://127.0.0.1:8545"`\]
+
+#### rpcUrls.default.webSocket
+
+> `readonly` **webSocket**: readonly \[`"ws://127.0.0.1:8545"`\]
 
 ### serializers?
 
-> `optional` **serializers?**: `ChainSerializers`\<`ChainFormatters` \| `undefined`, `TransactionSerializable`\>
-
-Modifies how data is serialized (e.g. transactions).
+> `optional` **serializers?**: `ChainSerializers`
 
 ### sourceId?
 
 > `optional` **sourceId?**: `number`
 
-Source Chain ID (ie. the L1 chain)
-
 ### testnet?
 
 > `optional` **testnet?**: `boolean`
 
-Flag for test networks
-
 ### verifyHash?
 
-> `optional` **verifyHash?**: `ChainVerifyHashFn`
+> `optional` **verifyHash?**: (`client`, `parameters`) => `Promise`\<`VerifyHashActionReturnType`\>
 
-Chain-specific signature verification.
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `client` | `Client` |
+| `parameters` | `VerifyHashActionParameters` |
+
+#### Returns
+
+`Promise`\<`VerifyHashActionReturnType`\>

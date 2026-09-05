@@ -1,5 +1,6 @@
 /// <reference path="./smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { Package as root } from './PACKAGE.js'
 
 const packageJson = S.file('//package.json')
@@ -112,7 +113,8 @@ export const Workspace = S.Workspace('tevm', {
 	nodeModules,
 	toolchains: [rust, mise],
 	// vendor/flows (the Smithers build source the @smthrs/* link: dependencies
-	// resolve through) and vendor/zevm (the @evmts/zevm workspace member) are
+	// resolve through) is the remaining factory dependency; native ZEVM uses siblings.
+	// Submodules are
 	// gitlinks the repository index pins; //:vendor materializes them.
 	// Discovery stops at every .gitmodules path, so their own declaration
 	// files never join this graph.

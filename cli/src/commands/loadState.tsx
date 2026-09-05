@@ -1,5 +1,9 @@
 import { readFileSync } from 'node:fs'
-import type { LoadStateParams, LoadStateResult } from '@tevm/actions'
+import type { Hex } from 'viem'
+
+type LoadStateParams = { state: Hex }
+type LoadStateResult = unknown
+
 import { option } from 'pastel'
 import { z } from 'zod'
 import CliAction from '../components/CliAction.js'
@@ -83,7 +87,7 @@ const defaultValues: Record<string, any> = {
 }
 
 // Helper function to parse state
-const parseState = (options: Record<string, any>): Record<string, any> => {
+const parseState = (options: Record<string, any>): Hex => {
 	// Try stateJson first
 	if (options['stateJson']) {
 		try {
@@ -118,6 +122,8 @@ export default function LoadState({ options }: Props) {
 		createParams: (enhancedOptions: Record<string, any>): LoadStateParams => {
 			// Parse the state synchronously
 			const state = parseState(enhancedOptions)
+			if (typeof state !== 'string' || !/^0x(?:[0-9a-fA-F]{2})*$/.test(state))
+				throw new Error('State must be a JSON-encoded native hex blob')
 
 			return {
 				state,
@@ -126,7 +132,7 @@ export default function LoadState({ options }: Props) {
 
 		// Inlined executeAction function
 		executeAction: async (client: any, params: LoadStateParams): Promise<LoadStateResult> => {
-			return await client.tevmLoadState(params)
+			return await client.tevmLoadState(params.state)
 		},
 	})
 

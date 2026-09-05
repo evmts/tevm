@@ -1,5 +1,0 @@
-{
-	"main": "../dist/actions/index.cjs",
-	"module": "../dist/actions/index.js",
-	"types": "../types/actions/index.d.ts"
-}

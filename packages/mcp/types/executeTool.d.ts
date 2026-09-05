@@ -20,7 +20,7 @@ export function executeTool(name: string, input: unknown, sessions: ReturnType<(
         expiresAt: string;
     }>;
     get: (handle: string) => import("@tevm/memory-client").MemoryClient;
-    close: (handle: string) => boolean;
+    close: (handle: string) => Promise<boolean>;
     size: () => number;
 }>): Promise<unknown>;
 //# sourceMappingURL=executeTool.d.ts.map

@@ -1,24 +1,22 @@
 {
-  "name": "tevm-llm-evals",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "eval": "node runner.mjs",
-    "eval:real-projects": "node real-projects/runner.mjs",
-    "rescore": "node rescore.mjs",
-    "check:suite": "node validate-suite.mjs",
-    "check:real-projects": "node real-projects/validate-suite.mjs"
-  },
-  "dependencies": {
-    "@tevm/vite-plugin": "1.0.0-rc.151",
-    "@uniswap/sdk-core": "7.19.0",
-    "@uniswap/v3-sdk": "3.31.1",
-    "solc": "0.8.35",
-    "tevm": "1.0.0-rc.153",
-    "tsx": "4.20.6",
-    "typescript": "5.9.3",
-    "viem": "2.49.3",
-    "vite": "7.3.1",
-    "vitest": "4.1.6"
-  }
+	"name": "tevm-llm-evals",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"eval": "node runner.mjs",
+		"eval:real-projects": "node real-projects/runner.mjs",
+		"rescore": "node rescore.mjs",
+		"check:suite": "node validate-suite.mjs",
+		"check:real-projects": "node real-projects/validate-suite.mjs"
+	},
+	"dependencies": {
+		"@tevm/vite-plugin": "1.0.0-rc.151",
+		"solc": "0.8.35",
+		"tevm": "1.0.0-rc.153",
+		"tsx": "4.20.6",
+		"typescript": "5.9.3",
+		"viem": "2.49.3",
+		"vite": "7.3.1",
+		"vitest": "4.1.6"
+	}
 }

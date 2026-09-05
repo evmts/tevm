@@ -8,11 +8,13 @@
 
 > **Client** = `object`
 
-Defined in: [packages/server/src/Client.ts:5](https://github.com/evmts/tevm/blob/main/packages/server/src/Client.ts#L5)
+Defined in: [Client.ts:3](https://github.com/evmts/tevm/blob/main/packages/server/src/Client.ts#L3)
+
+A client carrying the native engine transport.
 
 ## Properties
 
 | Property | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="transport"></a> `transport` | `object` | [packages/server/src/Client.ts:6](https://github.com/evmts/tevm/blob/main/packages/server/src/Client.ts#L6) |
-| `transport.tevm` | `MemoryClient`\<`any`, `any`\>\[`"transport"`\]\[`"tevm"`\] | [packages/server/src/Client.ts:7](https://github.com/evmts/tevm/blob/main/packages/server/src/Client.ts#L7) |
+| <a id="transport"></a> `transport` | `object` | [Client.ts:3](https://github.com/evmts/tevm/blob/main/packages/server/src/Client.ts#L3) |
+| `transport.tevm` | `ZevmEngine` | [Client.ts:3](https://github.com/evmts/tevm/blob/main/packages/server/src/Client.ts#L3) |

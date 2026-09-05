@@ -12,6 +12,10 @@ import { commonOptionDescriptions } from './action-types.js'
  */
 export function createCommonOptions() {
 	return {
+		local: z
+			.boolean()
+			.default(false)
+			.describe(option({ description: 'Use an isolated native node without a fork' })),
 		// Interactive mode flag
 		run: z
 			.boolean()
@@ -86,131 +90,6 @@ export function createContractOptions() {
 				description: commonOptionDescriptions.abi,
 			}),
 		),
-
-		...createCommonOptions(),
-	}
-}
-
-/**
- * Creates call-specific options
- */
-export function createCallOptions() {
-	return {
-		// Contract address
-		to: z
-			.string()
-			.default(envVar('to') || '0x0000000000000000000000000000000000000000')
-			.describe(
-				option({
-					description: commonOptionDescriptions.to,
-					defaultValueDescription: '0x0000000000000000000000000000000000000000',
-				}),
-			),
-
-		// Basic call parameters
-		data: z
-			.string()
-			.optional()
-			.describe(
-				option({
-					description: commonOptionDescriptions.data,
-				}),
-			),
-
-		from: z
-			.string()
-			.default(envVar('from') || '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266')
-			.describe(
-				option({
-					description: commonOptionDescriptions.from,
-					defaultValueDescription: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-				}),
-			),
-
-		value: z
-			.string()
-			.optional()
-			.describe(
-				option({
-					description: commonOptionDescriptions.value,
-				}),
-			),
-
-		// Contract deployment options
-		code: z
-			.string()
-			.optional()
-			.describe(
-				option({
-					description: commonOptionDescriptions.code,
-				}),
-			),
-
-		deployedBytecode: z
-			.string()
-			.optional()
-			.describe(
-				option({
-					description: commonOptionDescriptions.deployedBytecode,
-				}),
-			),
-
-		// Gas parameters
-		gas: z
-			.string()
-			.optional()
-			.describe(
-				option({
-					description: commonOptionDescriptions.gas,
-				}),
-			),
-
-		gasPrice: z
-			.string()
-			.optional()
-			.describe(
-				option({
-					description: commonOptionDescriptions.gasPrice,
-				}),
-			),
-
-		// Block options
-		blockTag: z
-			.string()
-			.optional()
-			.describe(
-				option({
-					description: commonOptionDescriptions.blockTag,
-				}),
-			),
-
-		skipBalance: z
-			.boolean()
-			.default(envVar('skip_balance') !== 'false')
-			.describe(
-				option({
-					description: 'Allow calls from an unfunded impersonated account (env: TEVM_SKIP_BALANCE)',
-					defaultValueDescription: 'true',
-				}),
-			),
-
-		trace: z
-			.boolean()
-			.default(envVar('trace') === 'true')
-			.describe(
-				option({
-					description: 'Render a readable call tree with gas per frame (env: TEVM_TRACE)',
-				}),
-			),
-
-		abi: z
-			.string()
-			.optional()
-			.describe(
-				option({
-					description: 'ABI JSON or file used to decode traced calls (env: TEVM_ABI)',
-				}),
-			),
 
 		...createCommonOptions(),
 	}

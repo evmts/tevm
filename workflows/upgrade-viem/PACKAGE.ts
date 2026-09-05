@@ -1,5 +1,6 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { Package as root } from '../../PACKAGE.js'
 
 // viem is the peer dependency every published package declares, so a bump

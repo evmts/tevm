@@ -1,5 +1,6 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { Package as factory } from '../../factory/PACKAGE.js'
 
 // Read an issue, normalize it with the deterministic intake script, and write

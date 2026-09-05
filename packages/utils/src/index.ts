@@ -1,15 +1,3 @@
-export type { ReceiptLog as EthjsLog } from '@evmts/zevm/receipt'
-export type {
-	AddressLike,
-	BatchDBOp as BatchDbOp,
-	BigIntLike,
-	BytesLike,
-	DB as Db,
-	DBObject as DbObject,
-	EncodingOpts,
-	JSONRPCWithdrawal as JsonRpcWithdrawal,
-	WithdrawalData,
-} from '@evmts/zevm/util'
 export type {
 	Abi,
 	AbiConstructor,
@@ -39,60 +27,7 @@ export type {
 	Hex,
 	ParseAbi,
 } from './abitype.js'
-export { Bloom } from './Bloom.js'
-export type { CreateMemoryDbFn } from './CreateMemoryDbFn.js'
-export { createMemoryDb } from './createMemoryDb.js'
-export {
-	BIGINT_0,
-	BIGINT_1,
-	bytesToUnprefixedHex,
-	bytesToUtf8,
-	concatBytes,
-	createAccount,
-	createAddressFromString,
-	createWithdrawal,
-	EOA_CODE_7702_AUTHORITY_SIGNING_MAGIC,
-	EthjsAccount,
-	EthjsAddress,
-	ecrecover,
-	eoaCode7702AuthorizationHashedMessageToSign,
-	eoaCode7702AuthorizationListBytesItemToJSON,
-	eoaCode7702AuthorizationListJSONItemToBytes,
-	eoaCode7702AuthorizationMessageToSign,
-	// EIP-7702 EOA Code authorization utilities
-	eoaCode7702RecoverAuthority,
-	eoaCode7702SignAuthorization,
-	equalsBytes,
-	fetchFromProvider,
-	// ecsign was removed in newer versions
-	// zeros was also removed
-	// AsyncEventEmitter was also removed
-	GWEI_TO_WEI,
-	getProvider,
-	isEOACode7702AuthorizationList,
-	KECCAK256_RLP,
-	KECCAK256_RLP_ARRAY,
-	KeyEncoding,
-	// Additional constants needed for EIP-7702 validation
-	MAX_UINT64,
-	randomBytes,
-	SECP256K1_ORDER_DIV_2,
-	setLengthLeft,
-	TypeOutput,
-	toType,
-	ValueEncoding,
-	Withdrawal,
-} from './ethereumjs.js'
-export type { MemoryDb } from './MemoryDb.js'
 export * from './prefundedAccounts.js'
-export {
-	hashMessage,
-	recoverAddress,
-	recoverMessageAddress,
-	recoverPublicKey,
-	signMessage,
-	verifyMessage,
-} from './signature.js'
 export {
 	boolToBytes,
 	boolToHex,
@@ -154,6 +89,9 @@ export type AsyncEventEmitter<T extends Record<string, any> = {}> = {
 	emit<K extends keyof T>(event: K, ...args: Parameters<T[K]>): boolean
 	removeAllListeners<K extends keyof T>(event?: K): void
 }
+
+export { hashMessage, recoverAddress, recoverMessageAddress, recoverPublicKey, verifyMessage } from 'viem'
+export { signMessage } from 'viem/accounts'
 export type { EncodeEventTopicsParameters } from 'viem/utils'
 export * from './invariant.js'
 export type {

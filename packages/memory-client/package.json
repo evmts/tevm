@@ -25,7 +25,7 @@
 		"./package.json": "./package.json",
 		".": {
 			"import": {
-				"types": "./types/index.d.ts",
+				"types": "./dist/index.d.ts",
 				"default": "./dist/index.js"
 			},
 			"require": {
@@ -36,7 +36,7 @@
 	},
 	"main": "dist/index.cjs",
 	"module": "dist/index.js",
-	"types": "types/index.d.ts",
+	"types": "dist/index.d.ts",
 	"files": [
 		"dist",
 		"src",
@@ -63,20 +63,11 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@tevm/actions": "workspace:^",
-		"@tevm/address": "workspace:^",
-		"@tevm/common": "workspace:^",
-		"@tevm/contract": "workspace:^",
-		"@tevm/decorators": "workspace:^",
-		"@tevm/errors": "workspace:^",
 		"@tevm/node": "workspace:^",
-		"@tevm/predeploys": "workspace:^",
-		"@tevm/utils": "workspace:^",
-		"kzg-wasm": "^1.0.0",
-		"vitest": "^4.1.6"
+		"viem": "^2.49.3",
+		"@tevm/actions": "workspace:^"
 	},
 	"devDependencies": {
-		"@evmts/zevm": "workspace:*",
 		"@tevm/test-utils": "workspace:^",
 		"@tevm/tsconfig": "workspace:^",
 		"@tevm/tsupconfig": "workspace:^"

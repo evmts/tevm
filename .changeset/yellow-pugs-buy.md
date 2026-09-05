@@ -1,5 +1,4 @@
 ---
-"@tevm/precompiles": patch
 "tevm": patch
 ---
 

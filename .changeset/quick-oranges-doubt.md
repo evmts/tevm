@@ -14,12 +14,9 @@
 "@tevm/solc": patch
 "@tevm/bun-plugin": patch
 "@tevm/http-client": patch
-"@tevm/blockchain": patch
-"@tevm/decorators": patch
 "@tevm/tsupconfig": patch
 "@tevm/ethers": patch
 "@tevm/actions": patch
-"@tevm/address": patch
 "@tevm/jsonrpc": patch
 "@tevm/viem": patch
 "@tevm/common": patch
@@ -28,14 +25,9 @@
 "@tevm/logger": patch
 "@tevm/server": patch
 "@tevm/test-utils": patch
-"@tevm/state": patch
 "@tevm/utils": patch
 "@tevm/ts-plugin": patch
 "@tevm/node": patch
-"@tevm/evm": patch
-"@tevm/rlp": patch
-"@tevm/tx": patch
-"@tevm/vm": patch
 "@tevm/vscode": patch
 "@tevm/lsp": patch
 "tevm": patch

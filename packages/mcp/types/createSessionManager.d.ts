@@ -20,7 +20,7 @@ export function createSessionManager(options?: {
         expiresAt: string;
     }>;
     get: (handle: string) => import("@tevm/memory-client").MemoryClient;
-    close: (handle: string) => boolean;
+    close: (handle: string) => Promise<boolean>;
     size: () => number;
 };
 //# sourceMappingURL=createSessionManager.d.ts.map

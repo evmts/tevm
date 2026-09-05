@@ -27,7 +27,7 @@
 		"./package.json": "./package.json",
 		".": {
 			"import": {
-				"types": "./types/index.d.ts",
+				"types": "./dist/index.d.ts",
 				"default": "./dist/index.js"
 			},
 			"require": {
@@ -38,7 +38,7 @@
 	},
 	"main": "dist/index.cjs",
 	"module": "dist/index.js",
-	"types": "types/index.d.ts",
+	"types": "dist/index.d.ts",
 	"files": [
 		"dist",
 		"src",
@@ -65,27 +65,14 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@evmts/zevm": "workspace:*",
-		"@tevm/address": "workspace:^",
-		"@tevm/block": "workspace:^",
-		"@tevm/blockchain": "workspace:^",
-		"@tevm/common": "workspace:^",
-		"@tevm/consensus": "workspace:^",
-		"@tevm/contract": "workspace:^",
-		"@tevm/errors": "workspace:^",
-		"@tevm/jsonrpc": "workspace:^",
-		"@tevm/node": "workspace:^",
-		"@tevm/receipt-manager": "workspace:^",
-		"@tevm/state": "workspace:^",
-		"@tevm/utils": "workspace:^",
-		"@tevm/vm": "workspace:^"
+		"@tevm/node": "workspace:^"
 	},
 	"devDependencies": {
-		"@tevm/evm": "workspace:^",
 		"@tevm/test-utils": "workspace:^",
 		"@tevm/tsconfig": "workspace:^",
 		"@tevm/tsupconfig": "workspace:^",
-		"abitype": "^1.2.4"
+		"abitype": "^1.2.4",
+		"@tevm/memory-client": "workspace:^"
 	},
 	"peerDependencies": {
 		"viem": "^2.49.3",

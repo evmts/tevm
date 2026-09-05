@@ -6,41 +6,16 @@
 
 # Function: recoverPublicKey()
 
-> **recoverPublicKey**(`params`): `` `0x${string}` ``
+> **recoverPublicKey**(`__namedParameters`): `Promise`\<`` `0x${string}` ``\>
 
-Defined in: [packages/utils/src/signature.js:33](https://github.com/evmts/tevm/blob/main/packages/utils/src/signature.js#L33)
-
-Recovers the public key from a signature
+Defined in: node\_modules/.pnpm/viem@2.49.3\_bufferutil@4.1.0\_typescript@6.0.3\_utf-8-validate@5.0.10\_zod@4.4.3/node\_modules/viem/\_types/utils/signature/recoverPublicKey.d.ts:11
 
 ## Parameters
 
-| Parameter | Type | Description |
-| ------ | ------ | ------ |
-| `params` | \{ `hash`: `` `0x${string}` ``; `signature`: `Signature`; \} | The parameters |
-| `params.hash` | `` `0x${string}` `` | The message hash |
-| `params.signature` | `Signature` | The signature |
+| Parameter | Type |
+| ------ | ------ |
+| `__namedParameters` | `RecoverPublicKeyParameters` |
 
 ## Returns
 
-`` `0x${string}` ``
-
-The uncompressed public key (65 bytes)
-
-## Throws
-
-If the signature is invalid
-
-## Example
-
-```js
-import { recoverPublicKey } from '@tevm/utils'
-
-const publicKey = recoverPublicKey({
-  hash: '0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28',
-  signature: {
-    r: 0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9n,
-    s: 0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66n,
-    v: 27
-  }
-})
-```
+`Promise`\<`` `0x${string}` ``\>

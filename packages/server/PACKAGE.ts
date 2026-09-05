@@ -1,10 +1,11 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { scopedShell } from '../../factory/scoped-shell.js'
 
 const Shell = scopedShell('packages/server')
 
-// packages/evm/PACKAGE.ts is the exemplar for the common shape; this file
+// packages/contract/PACKAGE.ts is the exemplar for the common shape; this file
 // follows it with one difference: build:types also runs tsc, so there is a
 // declarations target. The manifest's top-level `types` points at
 // types/index.d.ts, so the tsc emit is what npm consumers resolve.

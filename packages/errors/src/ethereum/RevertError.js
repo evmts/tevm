@@ -7,7 +7,7 @@ import { BaseError } from './BaseError.js'
  * @property {string} [docsPath]
  * @property {string} [docsSlug]
  * @property {string[]} [metaMessages]
- * @property {import('@evmts/zevm/evm-error').EVMError|BaseError|Error} [cause]
+ * @property {Error|BaseError|Error} [cause]
  * @property {string} [details]
  * @property {object} [meta]
  * @property {import('viem').Hex} [raw] - The raw data of the revert.

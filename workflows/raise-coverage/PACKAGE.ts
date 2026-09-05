@@ -1,5 +1,6 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { Package as root } from '../../PACKAGE.js'
 
 // Every package's coverage floor is a graph gate (//<dir>:coverageGate) with

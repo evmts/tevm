@@ -1,9 +1,38 @@
 /// <reference path="../smithers.d.ts" />
 /** biome-ignore-all lint/suspicious/noTemplateCurlyInString: GitHub Actions expressions are literal `${{ }}` text. */
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { Package as root } from '../PACKAGE.js'
-import { Package as test } from '../test/PACKAGE.js'
-import { Package as tevm } from '../tevm/PACKAGE.js'
+import '../test/PACKAGE.js'
+import '../tevm/PACKAGE.js'
+
+// Sibling workspaces must exist before pnpm resolves workspace dependencies.
+// Raw steps keep that ordering explicit while the pinned Flows renderer still
+// owns every workflow file and the shared toolchain setup action.
+const nativeSteps = (command: string): NonNullable<Parameters<typeof S.Github.Workflow>[0]['steps']> => [
+	{ uses: 'actions/checkout@v4', with: { 'fetch-depth': '0' } },
+	{ name: 'Checkout pinned native sources', run: 'node scripts/factory/checkout-native.mjs' },
+	{ uses: './.github/actions/setup' },
+	{ run: command },
+]
+const releaseSteps: NonNullable<Parameters<typeof S.Github.Workflow>[0]['steps']> = [
+	...nativeSteps('pnpm exec changeset status'),
+	{
+		name: 'Create version PR or publish approved packages',
+		uses: 'changesets/action@v1',
+		with: { version: 'pnpm release:version', publish: 'pnpm release:publish' },
+		env: {
+			GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}',
+			NPM_TOKEN: '${{ secrets.NPM_TOKEN }}',
+			NODE_AUTH_TOKEN: '${{ secrets.NPM_TOKEN }}',
+		},
+	},
+]
+const rpcEnvironment = {
+	TEVM_RPC_URLS_MAINNET: '${{ secrets.TEVM_RPC_URLS_MAINNET }}',
+	TEVM_RPC_URLS_OPTIMISM: '${{ secrets.TEVM_RPC_URLS_OPTIMISM }}',
+	TEVM_TEST_ALCHEMY_KEY: '${{ secrets.TEVM_TEST_ALCHEMY_KEY }}',
+}
 
 // The workflow files are emitted from the graph, not hand-written: each
 // Workflow maps triggers to targets and the renderer writes the actions
@@ -35,7 +64,8 @@ const ci = S.Github.Workflow({
 	concurrency: { group: 'ci-${{ github.ref }}', cancelInProgress: 'pull_request' },
 	setup,
 	fullHistory: true,
-	run: [root.ci],
+	env: rpcEnvironment,
+	steps: nativeSteps('pnpm exec smthrs target //:ci'),
 })
 
 // release.yml: the changesets release train on the v1 branch. changesets/action
@@ -52,7 +82,8 @@ const release = S.Github.Workflow({
 	concurrency: { group: 'release-${{ github.ref }}', cancelInProgress: false },
 	permissions: { contents: 'write', pullRequests: 'write', idToken: 'write' },
 	setup,
-	run: [root.version, root.publish],
+	env: rpcEnvironment,
+	steps: releaseSteps,
 })
 
 // prerelease.yml: every push to main publishes under the `next` tag with
@@ -63,7 +94,8 @@ const prerelease = S.Github.Workflow({
 	concurrency: { group: 'prerelease-${{ github.ref }}', cancelInProgress: false },
 	permissions: { contents: 'write', pullRequests: 'write', idToken: 'write' },
 	setup,
-	run: [root.prereleaseEnter, root.prerelease],
+	env: rpcEnvironment,
+	steps: releaseSteps,
 })
 
 // prerelease-exit.yml: dispatch with a branch input; the Diff removes
@@ -86,7 +118,7 @@ const prereleaseExit = S.Github.Workflow({
 	},
 	permissions: { contents: 'write' },
 	setup,
-	run: [root.prereleaseExit],
+	steps: nativeSteps('pnpm exec smthrs target //:prereleaseExit --write'),
 })
 
 // snapshot.yml: dispatch-only snapshot publish.
@@ -95,7 +127,8 @@ const snapshot = S.Github.Workflow({
 	on: { workflowDispatch: true },
 	concurrency: { group: 'snapshot-${{ github.ref }}', cancelInProgress: false },
 	setup,
-	run: [root.snapshot],
+	env: rpcEnvironment,
+	steps: nativeSteps('pnpm exec smthrs target //:snapshot'),
 })
 
 // jsr-publish.yml: dispatch with a dry-run switch. //tevm:publishJsr carries
@@ -116,7 +149,7 @@ const jsrPublish = S.Github.Workflow({
 	},
 	permissions: { contents: 'read', idToken: 'write' },
 	setup,
-	run: [tevm.publishJsr],
+	steps: nativeSteps('pnpm exec smthrs target //tevm:publishJsr'),
 })
 
 // wasm-size-check.yml: the byte budget on the napi/wasm artifacts. The yml
@@ -131,7 +164,7 @@ const wasmSize = S.Github.Workflow({
 		workflowDispatch: true,
 	},
 	setup,
-	run: [root.cargoBuilds],
+	steps: nativeSteps('pnpm exec smthrs target //:cargoBuilds'),
 })
 
 // parity-suites.yml: the three parity jobs (RPC fast subset, bounded
@@ -143,7 +176,8 @@ const paritySuites = S.Github.Workflow({
 	name: 'parity-suites',
 	on: { pullRequest: true, workflowDispatch: true },
 	setup,
-	run: [test.parityFast, test.conformanceFast, test.hiveSmoke],
+	env: rpcEnvironment,
+	steps: nativeSteps('pnpm exec smthrs target //test:parityFast //test:conformanceFast //test:hiveSmoke'),
 })
 
 // The //:nightlyConformance Cron renders itself as
@@ -158,7 +192,7 @@ const review = S.Github.Workflow({
 	on: { pullRequest: true },
 	concurrency: { group: 'review-${{ github.ref }}', cancelInProgress: true },
 	setup,
-	run: [root.prReview],
+	steps: nativeSteps('pnpm exec smthrs target //:prReview'),
 })
 
 // The drift-checked renderer. Hand-written workflows without target

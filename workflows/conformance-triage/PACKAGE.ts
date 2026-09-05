@@ -1,14 +1,11 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
-import { Package as evm } from '../../packages/evm/PACKAGE.js'
+const S = Smithers
+
+import { Package as node } from '../../packages/node/PACKAGE.js'
 import { Package as test } from '../../test/PACKAGE.js'
 
-// Nightly conformance failures become typed workflow input instead of a red
-// badge. The agent isolates the failing fixture, diffs the EIP-3155 trace
-// against the reference client, and lands a fix or a minimized failing test
-// in the owning package. gates rerun the fast conformance suite and the evm
-// package's own checks so a fix cannot regress a neighboring hardfork. The
-// no-mocks judgment check runs after the candidate is applied.
+// Native execution belongs to sibling repositories. The TEVM factory may
+// prepare a diagnosis here; it must not pretend to patch a retired JS engine.
 const conformanceTriage = S.Agent.Diff({
 	agent: S.Agents.luna,
 	prompt: S.file('SKILL.md'),
@@ -17,8 +14,8 @@ const conformanceTriage = S.Agent.Diff({
 		suite: S.Input.Optional(S.Input.String('gst or execspec, defaults to gst')),
 	},
 	data: [S.gitDiff(), test.runners, test.traceTools, test.ethereumTests, test.executionSpecTests],
-	changes: ['packages/evm/src/**', 'packages/vm/src/**', 'packages/state/src/**', 'test/**'],
-	gates: [test.conformanceFast, evm.typecheck, evm.test],
+	changes: ['factory/queue/conformance/**'],
+	gates: [node.typecheck, node.test],
 	sandbox: { network: true },
 	maxRounds: 3,
 })

@@ -1,52 +1,38 @@
+import { once } from 'node:events'
+import { createServer } from 'node:http'
 import { createMemoryClient } from '@tevm/memory-client'
-import { beforeEach, describe, expect, it } from 'vitest'
-import { createTestClient as supertest } from '../testUtils/createTestClient.js'
+import { afterEach, describe, expect, it } from 'vitest'
 import { createExpressMiddleware } from './createExpressMiddleware.js'
 
-describe('createExpressMiddleware', () => {
-	let app: ReturnType<typeof createExpressMiddleware>
-
-	beforeEach(() => {
+const close: (() => Promise<unknown>)[] = []
+afterEach(async () => {
+	for (const cleanup of close.splice(0).reverse()) await cleanup()
+})
+describe('createExpressMiddleware native RPC', () => {
+	it.each([
+		['chain ID', '{"jsonrpc":"2.0","id":1,"method":"eth_chainId"}', { jsonrpc: '2.0', id: 1, result: '0x7a69' }],
+		['invalid JSON', '{', { jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } }],
+		[
+			'unknown method',
+			'{"jsonrpc":"2.0","id":1,"method":"invalid_method"}',
+			{ jsonrpc: '2.0', id: 1, error: { code: -32601, message: 'Method not found' } },
+		],
+	])('handles %s', async (_name, body, expected) => {
 		const client = createMemoryClient()
-
-		app = createExpressMiddleware(client)
-	})
-
-	it('should handle valid JSON-RPC request', async () => {
-		const req = {
-			jsonrpc: '2.0',
-			method: 'eth_chainId',
-			params: [],
-			id: 1,
-		} as const
-
-		const res = await supertest(app).post('/').send(req).expect(200).expect('Content-Type', /json/)
-
-		expect(res.body).toEqual({
-			jsonrpc: '2.0',
-			id: 1,
-			method: 'eth_chainId',
-			result: '0x384',
+		close.push(() => client.tevmClose())
+		const handler = createExpressMiddleware(client)
+		const server = createServer((req, res) => {
+			void handler(req as never, res as never, (() => {}) as never)
 		})
-	})
-
-	it('should return 400 for invalid JSON', async () => {
-		const invalidJson = '{ "jsonrpc": "2.0", "method": "eth_chainId", "params": [ ] '
-
-		const res = await supertest(app).post('/').send(invalidJson).expect(400).expect('Content-Type', /json/)
-
-		expect(res.body.error).toBeDefined()
-		expect(res.body.error.code).toBe(-32700)
-		expect(res.body.error.message).toContain(`Expected ',' or '}' after property value in JSON at position 59`)
-	})
-
-	it('should return 400 for invalid JSON-RPC request', async () => {
-		const invalidRpcRequest = { jsonrpc: '2.0', method: 'invalid_method', params: 'invalid_params', id: 1 }
-
-		const res = await supertest(app).post('/').send(invalidRpcRequest).expect(400).expect('Content-Type', /json/)
-
-		expect(res.body.error).toBeDefined()
-		expect(res.body.error.code).toBe(-32601)
-		expect(res.body.error.message).toMatchSnapshot()
+		server.listen(0, '127.0.0.1')
+		await once(server, 'listening')
+		close.push(() => new Promise<void>((resolve) => server.close(() => resolve())))
+		const response = await fetch(`http://127.0.0.1:${(server.address() as { port: number }).port}`, {
+			method: 'POST',
+			body: body as string,
+		})
+		expect(response.status).toBe(200)
+		expect(response.headers.get('content-type')).toContain('application/json')
+		expect(await response.json()).toEqual(expected)
 	})
 })

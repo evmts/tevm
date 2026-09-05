@@ -63,14 +63,12 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@tevm/address": "workspace:1.0.0-rc.151",
 		"@tevm/contract": "workspace:^",
 		"@tevm/memory-client": "workspace:^",
 		"@tevm/utils": "workspace:^",
 		"@tevm/viem": "workspace:^"
 	},
 	"devDependencies": {
-		"@tevm/client-types": "workspace:^",
 		"@tevm/server": "workspace:^",
 		"@tevm/test-utils": "workspace:^",
 		"@tevm/tsconfig": "workspace:^",

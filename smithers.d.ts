@@ -1,6 +1,5 @@
-/**
- * Compatibility anchor for the existing triple-slash references in the
- * declaration files. It intentionally declares no ambient modules: the
- * linked local `@smthrs/targets` package is the only Smithers type authority.
- */
+/** The pinned Flows CLI installs its authoring API before loading the graph. */
+declare global {
+	const Smithers: typeof import('@smthrs/targets').Smithers
+}
 export {}

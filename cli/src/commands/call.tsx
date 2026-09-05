@@ -1,127 +1,32 @@
-import { traceCallHandler } from '@tevm/actions'
+import { toHex } from 'viem'
 import { z } from 'zod'
 import CliAction from '../components/CliAction.js'
 import { useAction } from '../hooks/useAction.js'
-import { CallParams, CallResult } from '../utils/action-types.js'
-import { createCallOptions } from '../utils/options.js'
+import { nativeCallOptions } from '../utils/native-call-options.js'
+import { nativeCallParams } from '../utils/native-call-params.js'
 
-// Add command description for help output
-export const description =
-	'Execute a raw EVM call against a contract or address\nExample: tevm call --to 0x4200000000000000000000000000000000000006 --data 0x06fdde03 --rpc https://mainnet.optimism.io --run'
-
-// Empty args tuple since we're using options for all parameters
+export const description = 'Simulate or submit a native EVM call; --trace returns native opcode steps'
 export const args = z.tuple([])
-
-// Define command options using our utility function
-export const options = z.object(createCallOptions())
-
-type Props = {
-	args: z.infer<typeof args>
-	options: z.infer<typeof options>
-}
+export const options = z.object({ ...nativeCallOptions(), trace: z.boolean().default(false) })
+type Props = { args: z.infer<typeof args>; options: z.infer<typeof options> }
 
 export default function Call({ options }: Props) {
-	// Use the action hook to handle all the complexity
-	const actionResult = useAction<CallParams, CallResult>({
+	const result = useAction({
 		actionName: 'call',
 		options,
-		defaultValues: {
-			to: '0x0000000000000000000000000000000000000000',
-			from: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-			data: '0x',
-			gas: BigInt(10000000),
-			gasPrice: BigInt(1000000000),
-			value: BigInt(0),
-			blockTag: 'latest',
-		},
-		optionDescriptions: {
-			to: 'Contract address to call',
-			data: 'Transaction data (hex encoded)',
-			from: 'Address to send the transaction from',
-			value: 'ETH value to send in wei',
-			code: 'The encoded code to deploy (with constructor args)',
-			deployedBytecode: 'Deployed bytecode to put in state before call',
-			gas: 'Gas limit for the transaction',
-			gasPrice: 'Gas price in wei',
-			blockTag: 'Block tag (latest, pending, etc.) or number',
-			skipBalance: 'Allow calls from an unfunded impersonated account',
-		},
-
-		// Convert options to call parameters
-		createParams: (enhancedOptions: Record<string, any>): CallParams => {
-			const params: Partial<CallParams> = {
-				to: enhancedOptions['to'],
-				from: enhancedOptions['from'],
-				data: enhancedOptions['data'],
-				code: enhancedOptions['code'],
-				deployedBytecode: enhancedOptions['deployedBytecode'],
-				blockTag: enhancedOptions['blockTag'],
-			}
-
-			// Convert string values to BigInt where needed
-			if (enhancedOptions['value']) {
-				params.value = BigInt(enhancedOptions['value'])
-			}
-			if (enhancedOptions['gas']) {
-				params.gas = BigInt(enhancedOptions['gas'])
-			}
-			if (enhancedOptions['gasPrice']) {
-				params.gasPrice = BigInt(enhancedOptions['gasPrice'])
-			}
-			if (enhancedOptions['gasRefund']) {
-				params.gasRefund = BigInt(enhancedOptions['gasRefund'])
-			}
-			if (enhancedOptions['maxFeePerGas']) {
-				params.maxFeePerGas = BigInt(enhancedOptions['maxFeePerGas'])
-			}
-			if (enhancedOptions['maxPriorityFeePerGas']) {
-				params.maxPriorityFeePerGas = BigInt(enhancedOptions['maxPriorityFeePerGas'])
-			}
-
-			// Boolean flags
-			if (enhancedOptions['trace'] || enhancedOptions['createTrace']) {
-				params.createTrace = true
-			}
-			if (enhancedOptions['createAccessList']) {
-				params.createAccessList = true
-			}
-			if (enhancedOptions['skipBalance']) {
-				params.skipBalance = true
-			}
-			if (enhancedOptions['createTransaction']) {
-				params.createTransaction = enhancedOptions['createTransaction']
-			}
-
-			// Filter out undefined values
-			return Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined)) as CallParams
-		},
-
-		// Execute the call against the client
-		executeAction: async (client: any, params: CallParams): Promise<CallResult> => {
-			if (!params.createTrace) {
-				return await client.tevmCall(params)
-			}
-			const trace = await traceCallHandler(client.transport.tevm)({
-				tracer: 'callTracer',
-				to: params.to as `0x${string}`,
-				from: params.from as `0x${string}`,
-				data: params.data as `0x${string}`,
-				gas: params.gas,
-				gasPrice: params.gasPrice,
-				value: params.value,
-				blockTag: params.blockTag as any,
-			})
-			const result = await client.tevmCall({ ...params, createTrace: false })
-			return { ...result, trace } as CallResult
+		defaultValues: {},
+		optionDescriptions: {},
+		createParams: nativeCallParams,
+		executeAction: async (client, params) => {
+			if (!options.trace) return client.tevmCall(params)
+			if (params.addToBlockchain || params.addToMempool) throw new Error('Trace a simulation before submitting it')
+			const tx = Object.fromEntries(
+				Object.entries(params)
+					.filter(([key]) => key !== 'blockTag')
+					.map(([key, value]) => [key, typeof value === 'bigint' ? toHex(value) : value]),
+			)
+			return client.transport.tevm.request({ method: 'debug_traceCall', params: [tx, params.blockTag ?? 'latest'] })
 		},
 	})
-
-	// Render the action UI
-	return (
-		<CliAction
-			{...actionResult}
-			targetName={`call to ${actionResult.options['to']}`}
-			successMessage="Call executed successfully!"
-		/>
-	)
+	return <CliAction {...result} targetName="native call" successMessage="Call completed" />
 }

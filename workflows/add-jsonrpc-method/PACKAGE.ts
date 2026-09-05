@@ -1,5 +1,6 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { Package as actions } from '../../packages/actions/PACKAGE.js'
 import { Package as memoryClient } from '../../packages/memory-client/PACKAGE.js'
 import { Package as tevm } from '../../tevm/PACKAGE.js'

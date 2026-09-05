@@ -7,7 +7,7 @@ import { InternalError } from '../ethereum/InternalErrorError.js'
  * @property {string} [docsPath]
  * @property {string} [docsSlug]
  * @property {string[]} [metaMessages]
- * @property {InternalError|import('@evmts/zevm/evm-error').EVMError} [cause]
+ * @property {InternalError|Error} [cause]
  * @property {string} [details]
  * @property {object} [meta]
  */

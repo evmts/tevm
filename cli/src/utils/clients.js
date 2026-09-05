@@ -47,7 +47,7 @@ export function isViemAction(actionName) {
  * Uses dynamic import with safety checks to avoid bundling issues
  *
  * @param {string} rpcUrl - The RPC endpoint URL
- * @returns {Promise<Object|null>} - A Viem client or null if loading fails
+ * @returns {Promise<import('viem').PublicClient|null>} - A Viem client or null if loading fails
  */
 export const loadViemClient = async (rpcUrl) => {
 	try {

@@ -1,6 +1,5 @@
 ---
 "@tevm/memory-client": minor
-"@tevm/state": minor
 ---
 
 Improved performance by persisting fork cache across VM instances:

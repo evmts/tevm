@@ -152,24 +152,7 @@ export default function GetStorageAt({ options }: Props) {
 
 		// Execute the action
 		executeAction: async (client: any, params: any): Promise<any> => {
-			const rpcValue = await client.getStorageAt(params)
-			if (!client.tevmGetAccount) {
-				return rpcValue
-			}
-			const account = await client.tevmGetAccount({
-				address: params.address,
-				returnStorage: true,
-				...(params.blockNumber !== undefined
-					? { blockTag: params.blockNumber }
-					: params.blockTag
-						? { blockTag: params.blockTag }
-						: {}),
-			})
-			const value = account.storage?.[params.slot]
-			if (typeof value !== 'string' || !value.startsWith('0x')) {
-				return rpcValue
-			}
-			return `0x${value.slice(2).padStart(64, '0')}`
+			return client.getStorageAt(params)
 		},
 	})
 

@@ -1,13 +1,16 @@
-# Deprecated! Viem compatability is now built into the core library
-
 # @tevm/viem
 
-Viem client for tevm. For an ethers client see [@tevm/ethers](https://github.com/evmts/tevm/tree/main/extensions/ethers) and for a lightweight fetch based client see [@tevm/client](https://github.com/evmts/tevm/tree/main/packages/vm/client)
+TEVM actions over native ZEVM JSON-RPC. `createMemoryClient` already includes these actions. Use `tevmViemExtension` to attach them to another viem client.
 
-## Visit [Docs](https://tevm.sh/) for docs, guides, API and more!
+```js
+import { tevmViemExtension } from '@tevm/viem'
+import { createPublicClient, http } from 'viem'
 
-## See [Tevm Beta project board](https://github.com/orgs/tevm/projects/1) for progress on the upcoming beta release
+const client = createPublicClient({
+  transport: http('http://127.0.0.1:8545'),
+}).extend(tevmViemExtension())
+await client.tevmMine({ blocks: 1 })
+console.log(await client.getBlockNumber())
+```
 
-## License 📄
-
-<a href="./LICENSE"><img src="https://user-images.githubusercontent.com/35039927/231030761-66f5ce58-a4e9-4695-b1fe-255b1bceac92.png" width="200" /></a>
+`createTevmTransport` from `@tevm/memory-client` creates an embedded native transport in Node.js. Browser applications should connect to a running native server with viem's HTTP transport.

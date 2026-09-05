@@ -1,497 +1,340 @@
 {
-  "name": "tevm",
-  "version": "1.0.0-rc.153",
-  "private": false,
-  "description": "A typesafe Ethereum Virtual Machine (EVM) toolkit written in TypeScript",
-  "keywords": [
-    "solidity",
-    "tevm",
-    "evm",
-    "sol",
-    "typescript",
-    "web3",
-    "blockchain"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/evmts/tevm.git",
-    "directory": "tevm"
-  },
-  "license": "MIT",
-  "contributors": [
-    "Will Cory <willcory10@gmail.com>"
-  ],
-  "sideEffects": false,
-  "type": "module",
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "import": {
-        "types": "./index.d.ts",
-        "default": "./index.js"
-      },
-      "require": {
-        "types": "./index.d.cts",
-        "default": "./index.cjs"
-      }
-    },
-    "./actions": {
-      "import": {
-        "types": "./actions/index.d.ts",
-        "default": "./actions/index.js"
-      },
-      "require": {
-        "types": "./actions/index.d.cts",
-        "default": "./actions/index.cjs"
-      }
-    },
-    "./common": {
-      "import": {
-        "types": "./common/index.d.ts",
-        "default": "./common/index.js"
-      },
-      "require": {
-        "types": "./common/index.d.cts",
-        "default": "./common/index.cjs"
-      }
-    },
-    "./contract": {
-      "import": {
-        "types": "./contract/index.d.ts",
-        "default": "./contract/index.js"
-      },
-      "require": {
-        "types": "./contract/index.d.cts",
-        "default": "./contract/index.cjs"
-      }
-    },
-    "./errors": {
-      "import": {
-        "types": "./errors/index.d.ts",
-        "default": "./errors/index.js"
-      },
-      "require": {
-        "types": "./errors/index.d.cts",
-        "default": "./errors/index.cjs"
-      }
-    },
-    "./memory-client": {
-      "import": {
-        "types": "./memory-client/index.d.ts",
-        "default": "./memory-client/index.js"
-      },
-      "require": {
-        "types": "./memory-client/index.d.cts",
-        "default": "./memory-client/index.cjs"
-      }
-    },
-    "./address": {
-      "import": {
-        "types": "./address/index.d.ts",
-        "default": "./address/index.js"
-      },
-      "require": {
-        "types": "./address/index.d.cts",
-        "default": "./address/index.cjs"
-      }
-    },
-    "./decorators": {
-      "import": {
-        "types": "./decorators/index.d.ts",
-        "default": "./decorators/index.js"
-      },
-      "require": {
-        "types": "./decorators/index.d.cts",
-        "default": "./decorators/index.cjs"
-      }
-    },
-    "./node": {
-      "import": {
-        "types": "./node/index.d.ts",
-        "default": "./node/index.js"
-      },
-      "require": {
-        "types": "./node/index.d.cts",
-        "default": "./node/index.cjs"
-      }
-    },
-    "./predeploys": {
-      "import": {
-        "types": "./predeploys/index.d.ts",
-        "default": "./predeploys/index.js"
-      },
-      "require": {
-        "types": "./predeploys/index.d.cts",
-        "default": "./predeploys/index.cjs"
-      }
-    },
-    "./precompiles": {
-      "import": {
-        "types": "./precompiles/index.d.ts",
-        "default": "./precompiles/index.js"
-      },
-      "require": {
-        "types": "./precompiles/index.d.cts",
-        "default": "./precompiles/index.cjs"
-      }
-    },
-    "./http-client": {
-      "import": {
-        "types": "./http-client/index.d.ts",
-        "default": "./http-client/index.js"
-      },
-      "require": {
-        "types": "./http-client/index.d.cts",
-        "default": "./http-client/index.cjs"
-      }
-    },
-    "./utils": {
-      "import": {
-        "types": "./utils/index.d.ts",
-        "default": "./utils/index.js"
-      },
-      "require": {
-        "types": "./utils/index.d.cts",
-        "default": "./utils/index.cjs"
-      }
-    },
-    "./block": {
-      "import": {
-        "types": "./block/index.d.ts",
-        "default": "./block/index.js"
-      },
-      "require": {
-        "types": "./block/index.d.cts",
-        "default": "./block/index.cjs"
-      }
-    },
-    "./blockchain": {
-      "import": {
-        "types": "./blockchain/index.d.ts",
-        "default": "./blockchain/index.js"
-      },
-      "require": {
-        "types": "./blockchain/index.d.cts",
-        "default": "./blockchain/index.cjs"
-      }
-    },
-    "./evm": {
-      "import": {
-        "types": "./evm/index.d.ts",
-        "default": "./evm/index.js"
-      },
-      "require": {
-        "types": "./evm/index.d.cts",
-        "default": "./evm/index.cjs"
-      }
-    },
-    "./receipt-manager": {
-      "import": {
-        "types": "./receipt-manager/index.d.ts",
-        "default": "./receipt-manager/index.js"
-      },
-      "require": {
-        "types": "./receipt-manager/index.d.cts",
-        "default": "./receipt-manager/index.cjs"
-      }
-    },
-    "./tx": {
-      "import": {
-        "types": "./tx/index.d.ts",
-        "default": "./tx/index.js"
-      },
-      "require": {
-        "types": "./tx/index.d.cts",
-        "default": "./tx/index.cjs"
-      }
-    },
-    "./txpool": {
-      "import": {
-        "types": "./txpool/index.d.ts",
-        "default": "./txpool/index.js"
-      },
-      "require": {
-        "types": "./txpool/index.d.cts",
-        "default": "./txpool/index.cjs"
-      }
-    },
-    "./vm": {
-      "import": {
-        "types": "./vm/index.d.ts",
-        "default": "./vm/index.js"
-      },
-      "require": {
-        "types": "./vm/index.d.cts",
-        "default": "./vm/index.cjs"
-      }
-    },
-    "./server": {
-      "import": {
-        "types": "./server/index.d.ts",
-        "default": "./server/index.js"
-      },
-      "require": {
-        "types": "./server/index.d.cts",
-        "default": "./server/index.cjs"
-      }
-    },
-    "./state": {
-      "import": {
-        "types": "./state/index.d.ts",
-        "default": "./state/index.js"
-      },
-      "require": {
-        "types": "./state/index.d.cts",
-        "default": "./state/index.cjs"
-      }
-    },
-    "./sync-storage-persister": {
-      "import": {
-        "types": "./sync-storage-persister/index.d.ts",
-        "default": "./sync-storage-persister/index.js"
-      },
-      "require": {
-        "types": "./sync-storage-persister/index.d.cts",
-        "default": "./sync-storage-persister/index.cjs"
-      }
-    },
-    "./bundler": {
-      "import": {
-        "types": "./bundler/index.d.ts",
-        "default": "./bundler/index.js"
-      },
-      "require": {
-        "types": "./bundler/index.d.cts",
-        "default": "./bundler/index.cjs"
-      }
-    },
-    "./bundler/base-bundler": {
-      "import": {
-        "types": "./bundler/base-bundler/index.d.ts",
-        "default": "./bundler/base-bundler/index.js"
-      },
-      "require": {
-        "types": "./bundler/base-bundler/index.d.cts",
-        "default": "./bundler/base-bundler/index.cjs"
-      }
-    },
-    "./bundler/bun-plugin": {
-      "import": {
-        "types": "./bundler/bun-plugin/index.d.ts",
-        "default": "./bundler/bun-plugin/index.js"
-      },
-      "require": {
-        "types": "./bundler/bun-plugin/index.d.cts",
-        "default": "./bundler/bun-plugin/index.cjs"
-      }
-    },
-    "./bundler/esbuild-plugin": {
-      "import": {
-        "types": "./bundler/esbuild-plugin/index.d.ts",
-        "default": "./bundler/esbuild-plugin/index.js"
-      },
-      "require": {
-        "types": "./bundler/esbuild-plugin/index.d.cts",
-        "default": "./bundler/esbuild-plugin/index.cjs"
-      }
-    },
-    "./bundler/rollup-plugin": {
-      "import": {
-        "types": "./bundler/rollup-plugin/index.d.ts",
-        "default": "./bundler/rollup-plugin/index.js"
-      },
-      "require": {
-        "types": "./bundler/rollup-plugin/index.d.cts",
-        "default": "./bundler/rollup-plugin/index.cjs"
-      }
-    },
-    "./bundler/rspack-plugin": {
-      "import": {
-        "types": "./bundler/rspack-plugin/index.d.ts",
-        "default": "./bundler/rspack-plugin/index.js"
-      },
-      "require": {
-        "types": "./bundler/rspack-plugin/index.d.cts",
-        "default": "./bundler/rspack-plugin/index.cjs"
-      }
-    },
-    "./bundler/vite-plugin": {
-      "import": {
-        "types": "./bundler/vite-plugin/index.d.ts",
-        "default": "./bundler/vite-plugin/index.js"
-      },
-      "require": {
-        "types": "./bundler/vite-plugin/index.d.cts",
-        "default": "./bundler/vite-plugin/index.cjs"
-      }
-    },
-    "./bundler/webpack-plugin": {
-      "import": {
-        "types": "./bundler/webpack-plugin/index.d.ts",
-        "default": "./bundler/webpack-plugin/index.js"
-      },
-      "require": {
-        "types": "./bundler/webpack-plugin/index.d.cts",
-        "default": "./bundler/webpack-plugin/index.cjs"
-      }
-    },
-    "./bundler/compiler": {
-      "import": {
-        "types": "./bundler/compiler/index.d.ts",
-        "default": "./bundler/compiler/index.js"
-      },
-      "require": {
-        "types": "./bundler/compiler/index.d.cts",
-        "default": "./bundler/compiler/index.cjs"
-      }
-    },
-    "./bundler/config": {
-      "import": {
-        "types": "./bundler/config/index.d.ts",
-        "default": "./bundler/config/index.js"
-      },
-      "require": {
-        "types": "./bundler/config/index.d.cts",
-        "default": "./bundler/config/index.cjs"
-      }
-    },
-    "./bundler/solc": {
-      "import": {
-        "types": "./bundler/solc/index.d.ts",
-        "default": "./bundler/solc/index.js"
-      },
-      "require": {
-        "types": "./bundler/solc/index.d.cts",
-        "default": "./bundler/solc/index.cjs"
-      }
-    },
-    "./consensus": {
-      "import": {
-        "types": "./consensus/index.d.ts",
-        "default": "./consensus/index.js"
-      },
-      "require": {
-        "types": "./consensus/index.d.cts",
-        "default": "./consensus/index.cjs"
-      }
-    }
-  },
-  "main": "index.cjs",
-  "module": "index.js",
-  "types": "index.d.ts",
-  "bin": {
-    "tevm": "./cli.js"
-  },
-  "files": [
-    "index*",
-    "cli.js",
-    "actions",
-    "address",
-    "node",
-    "block",
-    "blockchain",
-    "evm",
-    "receipt-manager",
-    "contract",
-    "common",
-    "consensus",
-    "tx",
-    "vm",
-    "txpool",
-    "decorators",
-    "errors",
-    "memory-client",
-    "predeploys",
-    "precompiles",
-    "http-client",
-    "server",
-    "utils",
-    "state",
-    "sync-storage-persister",
-    "bundler/index*",
-    "bundler/base-bundler",
-    "bundler/bun-plugin",
-    "bundler/compiler",
-    "bundler/config",
-    "bundler/solc",
-    "bundler/esbuild-plugin",
-    "bundler/rollup-plugin",
-    "bundler/rspack-plugin",
-    "bundler/vite-plugin",
-    "bundler/webpack-plugin",
-    "JSR.md",
-    "jsr.json"
-  ],
-  "scripts": {
-    "all": "bun run generate && bun run generate:docs && bun run lint:deps && bun run lint:package",
-    "build": "nx run-many --targets=build:dist,build:types --projects=tevm",
-    "build:dist": "bun run generate:dist && git status --porcelain",
-    "build:types": "bun run generate:types && git status --porcelain",
-    "clean": "rm -rf node_modules artifacts dist cache && find . -name '*.js' -not -name 'tsup.config.js' -not -path './node_modules/*' -delete && rm -f **/*.d.ts **/*.d.cts **/*.cjs **/*.cjs.map",
-    "generate": "nx run-many --targets=generate:dist,generate:types --projects=tevm && bun generate:docs",
-    "generate:dist": "tsup",
-    "generate:docs": "typedoc",
-    "generate:types": "tsup --dts-only",
-    "lint:deps": "bunx depcheck",
-    "lint:package": "bunx publint --strict && attw --pack",
-    "publish:jsr": "jsr publish --allow-slow-types",
-    "publish:jsr:dry": "jsr publish --dry-run --allow-slow-types",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@tevm/actions": "workspace:^",
-    "@tevm/address": "workspace:^",
-    "@tevm/base-bundler": "workspace:^",
-    "@tevm/block": "workspace:^",
-    "@tevm/blockchain": "workspace:^",
-    "@tevm/bun-plugin": "workspace:^",
-    "@tevm/bundler-cache": "workspace:^",
-    "@tevm/cli": "workspace:^",
-    "@tevm/client-types": "workspace:^",
-    "@tevm/common": "workspace:^",
-    "@tevm/compiler": "workspace:^",
-    "@tevm/config": "workspace:^",
-    "@tevm/consensus": "workspace:^",
-    "@tevm/contract": "workspace:^",
-    "@tevm/decorators": "workspace:^",
-    "@tevm/errors": "workspace:^",
-    "@tevm/esbuild-plugin": "workspace:^",
-    "@tevm/evm": "workspace:^",
-    "@tevm/http-client": "workspace:^",
-    "@tevm/jsonrpc": "workspace:^",
-    "@tevm/memory-client": "workspace:^",
-    "@tevm/node": "workspace:^",
-    "@tevm/precompiles": "workspace:^",
-    "@tevm/predeploys": "workspace:^",
-    "@tevm/receipt-manager": "workspace:^",
-    "@tevm/rollup-plugin": "workspace:^",
-    "@tevm/rspack-plugin": "workspace:^",
-    "@tevm/server": "workspace:^",
-    "@tevm/solc": "workspace:^",
-    "@tevm/state": "workspace:^",
-    "@tevm/sync-storage-persister": "workspace:^",
-    "@tevm/ts-plugin": "workspace:^",
-    "@tevm/tx": "workspace:^",
-    "@tevm/txpool": "workspace:^",
-    "@tevm/utils": "workspace:^",
-    "@tevm/viem": "workspace:^",
-    "@tevm/vite-plugin": "workspace:^",
-    "@tevm/vm": "workspace:^",
-    "@tevm/webpack-plugin": "workspace:^",
-    "commander": "^14.0.3",
-    "effect": "3.21.2",
-    "glob": "^13.0.6",
-    "solc": "^0.8.35"
-  },
-  "devDependencies": {
-    "@tevm/tsconfig": "workspace:^",
-    "@tevm/tsupconfig": "workspace:^"
-  },
-  "peerDependencies": {
-    "@tevm/ts-plugin": "workspace:^",
-    "viem": "^2.49.3"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "tevm",
+	"version": "1.0.0-rc.153",
+	"private": false,
+	"description": "Ethereum development toolkit powered by the native ZEVM engine",
+	"keywords": [
+		"solidity",
+		"tevm",
+		"evm",
+		"sol",
+		"typescript",
+		"web3",
+		"blockchain"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/evmts/tevm.git",
+		"directory": "tevm"
+	},
+	"license": "MIT",
+	"contributors": [
+		"Will Cory <willcory10@gmail.com>"
+	],
+	"sideEffects": false,
+	"type": "module",
+	"exports": {
+		"./package.json": "./package.json",
+		".": {
+			"import": {
+				"types": "./index.d.ts",
+				"default": "./index.js"
+			},
+			"require": {
+				"types": "./index.d.cts",
+				"default": "./index.cjs"
+			}
+		},
+		"./actions": {
+			"import": {
+				"types": "./actions/index.d.ts",
+				"default": "./actions/index.js"
+			},
+			"require": {
+				"types": "./actions/index.d.cts",
+				"default": "./actions/index.cjs"
+			}
+		},
+		"./common": {
+			"import": {
+				"types": "./common/index.d.ts",
+				"default": "./common/index.js"
+			},
+			"require": {
+				"types": "./common/index.d.cts",
+				"default": "./common/index.cjs"
+			}
+		},
+		"./contract": {
+			"import": {
+				"types": "./contract/index.d.ts",
+				"default": "./contract/index.js"
+			},
+			"require": {
+				"types": "./contract/index.d.cts",
+				"default": "./contract/index.cjs"
+			}
+		},
+		"./errors": {
+			"import": {
+				"types": "./errors/index.d.ts",
+				"default": "./errors/index.js"
+			},
+			"require": {
+				"types": "./errors/index.d.cts",
+				"default": "./errors/index.cjs"
+			}
+		},
+		"./memory-client": {
+			"import": {
+				"types": "./memory-client/index.d.ts",
+				"default": "./memory-client/index.js"
+			},
+			"require": {
+				"types": "./memory-client/index.d.cts",
+				"default": "./memory-client/index.cjs"
+			}
+		},
+		"./node": {
+			"import": {
+				"types": "./node/index.d.ts",
+				"default": "./node/index.js"
+			},
+			"require": {
+				"types": "./node/index.d.cts",
+				"default": "./node/index.cjs"
+			}
+		},
+		"./predeploys": {
+			"import": {
+				"types": "./predeploys/index.d.ts",
+				"default": "./predeploys/index.js"
+			},
+			"require": {
+				"types": "./predeploys/index.d.cts",
+				"default": "./predeploys/index.cjs"
+			}
+		},
+		"./http-client": {
+			"import": {
+				"types": "./http-client/index.d.ts",
+				"default": "./http-client/index.js"
+			},
+			"require": {
+				"types": "./http-client/index.d.cts",
+				"default": "./http-client/index.cjs"
+			}
+		},
+		"./utils": {
+			"import": {
+				"types": "./utils/index.d.ts",
+				"default": "./utils/index.js"
+			},
+			"require": {
+				"types": "./utils/index.d.cts",
+				"default": "./utils/index.cjs"
+			}
+		},
+		"./server": {
+			"import": {
+				"types": "./server/index.d.ts",
+				"default": "./server/index.js"
+			},
+			"require": {
+				"types": "./server/index.d.cts",
+				"default": "./server/index.cjs"
+			}
+		},
+		"./bundler": {
+			"import": {
+				"types": "./bundler/index.d.ts",
+				"default": "./bundler/index.js"
+			},
+			"require": {
+				"types": "./bundler/index.d.cts",
+				"default": "./bundler/index.cjs"
+			}
+		},
+		"./bundler/base-bundler": {
+			"import": {
+				"types": "./bundler/base-bundler/index.d.ts",
+				"default": "./bundler/base-bundler/index.js"
+			},
+			"require": {
+				"types": "./bundler/base-bundler/index.d.cts",
+				"default": "./bundler/base-bundler/index.cjs"
+			}
+		},
+		"./bundler/bun-plugin": {
+			"import": {
+				"types": "./bundler/bun-plugin/index.d.ts",
+				"default": "./bundler/bun-plugin/index.js"
+			},
+			"require": {
+				"types": "./bundler/bun-plugin/index.d.cts",
+				"default": "./bundler/bun-plugin/index.cjs"
+			}
+		},
+		"./bundler/esbuild-plugin": {
+			"import": {
+				"types": "./bundler/esbuild-plugin/index.d.ts",
+				"default": "./bundler/esbuild-plugin/index.js"
+			},
+			"require": {
+				"types": "./bundler/esbuild-plugin/index.d.cts",
+				"default": "./bundler/esbuild-plugin/index.cjs"
+			}
+		},
+		"./bundler/rollup-plugin": {
+			"import": {
+				"types": "./bundler/rollup-plugin/index.d.ts",
+				"default": "./bundler/rollup-plugin/index.js"
+			},
+			"require": {
+				"types": "./bundler/rollup-plugin/index.d.cts",
+				"default": "./bundler/rollup-plugin/index.cjs"
+			}
+		},
+		"./bundler/rspack-plugin": {
+			"import": {
+				"types": "./bundler/rspack-plugin/index.d.ts",
+				"default": "./bundler/rspack-plugin/index.js"
+			},
+			"require": {
+				"types": "./bundler/rspack-plugin/index.d.cts",
+				"default": "./bundler/rspack-plugin/index.cjs"
+			}
+		},
+		"./bundler/vite-plugin": {
+			"import": {
+				"types": "./bundler/vite-plugin/index.d.ts",
+				"default": "./bundler/vite-plugin/index.js"
+			},
+			"require": {
+				"types": "./bundler/vite-plugin/index.d.cts",
+				"default": "./bundler/vite-plugin/index.cjs"
+			}
+		},
+		"./bundler/webpack-plugin": {
+			"import": {
+				"types": "./bundler/webpack-plugin/index.d.ts",
+				"default": "./bundler/webpack-plugin/index.js"
+			},
+			"require": {
+				"types": "./bundler/webpack-plugin/index.d.cts",
+				"default": "./bundler/webpack-plugin/index.cjs"
+			}
+		},
+		"./bundler/compiler": {
+			"import": {
+				"types": "./bundler/compiler/index.d.ts",
+				"default": "./bundler/compiler/index.js"
+			},
+			"require": {
+				"types": "./bundler/compiler/index.d.cts",
+				"default": "./bundler/compiler/index.cjs"
+			}
+		},
+		"./bundler/config": {
+			"import": {
+				"types": "./bundler/config/index.d.ts",
+				"default": "./bundler/config/index.js"
+			},
+			"require": {
+				"types": "./bundler/config/index.d.cts",
+				"default": "./bundler/config/index.cjs"
+			}
+		},
+		"./bundler/solc": {
+			"import": {
+				"types": "./bundler/solc/index.d.ts",
+				"default": "./bundler/solc/index.js"
+			},
+			"require": {
+				"types": "./bundler/solc/index.d.cts",
+				"default": "./bundler/solc/index.cjs"
+			}
+		}
+	},
+	"main": "index.cjs",
+	"module": "index.js",
+	"types": "index.d.ts",
+	"bin": {
+		"tevm": "./cli.js"
+	},
+	"files": [
+		"index*",
+		"cli.js",
+		"actions",
+		"node",
+		"contract",
+		"common",
+		"errors",
+		"memory-client",
+		"predeploys",
+		"http-client",
+		"server",
+		"utils",
+		"bundler/index*",
+		"bundler/base-bundler",
+		"bundler/bun-plugin",
+		"bundler/compiler",
+		"bundler/config",
+		"bundler/solc",
+		"bundler/esbuild-plugin",
+		"bundler/rollup-plugin",
+		"bundler/rspack-plugin",
+		"bundler/vite-plugin",
+		"bundler/webpack-plugin",
+		"JSR.md",
+		"jsr.json"
+	],
+	"scripts": {
+		"all": "bun run generate && bun run generate:docs && bun run lint:deps && bun run lint:package",
+		"build": "nx run-many --targets=build:dist,build:types --projects=tevm",
+		"build:dist": "bun run generate:dist && git status --porcelain",
+		"build:types": "bun run generate:types && git status --porcelain",
+		"clean": "rm -rf node_modules artifacts dist cache && find . -name '*.js' -not -name 'tsup.config.js' -not -path './node_modules/*' -delete && rm -f **/*.d.ts **/*.d.cts **/*.cjs **/*.cjs.map",
+		"generate": "nx run-many --targets=generate:dist,generate:types --projects=tevm && bun generate:docs",
+		"generate:dist": "tsup",
+		"generate:docs": "typedoc",
+		"generate:types": "tsup --dts-only",
+		"lint:deps": "bunx depcheck",
+		"lint:package": "bunx publint --strict && attw --pack",
+		"publish:jsr": "jsr publish --allow-slow-types",
+		"publish:jsr:dry": "jsr publish --dry-run --allow-slow-types",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@tevm/actions": "workspace:^",
+		"@tevm/base-bundler": "workspace:^",
+		"@tevm/bun-plugin": "workspace:^",
+		"@tevm/bundler-cache": "workspace:^",
+		"@tevm/cli": "workspace:^",
+		"@tevm/common": "workspace:^",
+		"@tevm/compiler": "workspace:^",
+		"@tevm/config": "workspace:^",
+		"@tevm/contract": "workspace:^",
+		"@tevm/errors": "workspace:^",
+		"@tevm/esbuild-plugin": "workspace:^",
+		"@tevm/http-client": "workspace:^",
+		"@tevm/jsonrpc": "workspace:^",
+		"@tevm/memory-client": "workspace:^",
+		"@tevm/node": "workspace:^",
+		"@tevm/predeploys": "workspace:^",
+		"@tevm/rollup-plugin": "workspace:^",
+		"@tevm/rspack-plugin": "workspace:^",
+		"@tevm/server": "workspace:^",
+		"@tevm/solc": "workspace:^",
+		"@tevm/ts-plugin": "workspace:^",
+		"@tevm/utils": "workspace:^",
+		"@tevm/viem": "workspace:^",
+		"@tevm/vite-plugin": "workspace:^",
+		"@tevm/webpack-plugin": "workspace:^",
+		"commander": "^14.0.3",
+		"effect": "3.21.2",
+		"glob": "^13.0.6",
+		"solc": "^0.8.35"
+	},
+	"devDependencies": {
+		"@tevm/tsconfig": "workspace:^",
+		"@tevm/tsupconfig": "workspace:^"
+	},
+	"peerDependencies": {
+		"@tevm/ts-plugin": "workspace:^",
+		"viem": "^2.49.3"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

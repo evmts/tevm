@@ -20,7 +20,7 @@ Defined in: node\_modules/.pnpm/viem@2.49.3\_bufferutil@4.1.0\_typescript@6.0.3\
 
 | Parameter | Type |
 | ------ | ------ |
-| `value` | `ByteArray` \| `` `0x${string}` `` |
+| `value` | `` `0x${string}` `` \| `ByteArray` |
 | `to_?` | `to` |
 
 ## Returns

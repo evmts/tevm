@@ -6,22 +6,23 @@
 
 ## Type Aliases
 
-- [CreateMemoryClientFn](type-aliases/CreateMemoryClientFn.md)
+- [BoundTevmContract](type-aliases/BoundTevmContract.md)
+- [CallParams](type-aliases/CallParams.md)
+- [CallResult](type-aliases/CallResult.md)
+- [DeployParams](type-aliases/DeployParams.md)
+- [GetAccountParams](type-aliases/GetAccountParams.md)
+- [GetAccountResult](type-aliases/GetAccountResult.md)
 - [MemoryClient](type-aliases/MemoryClient.md)
 - [MemoryClientOptions](type-aliases/MemoryClientOptions.md)
-- [TevmActions](type-aliases/TevmActions.md)
+- [MineParams](type-aliases/MineParams.md)
+- [RpcClient](type-aliases/RpcClient.md)
+- [SetAccountParams](type-aliases/SetAccountParams.md)
 - [TevmContract](type-aliases/TevmContract.md)
-- [TevmRpcSchema](type-aliases/TevmRpcSchema.md)
-- [TevmTransport](type-aliases/TevmTransport.md)
-- [TevmViemActionsApi](type-aliases/TevmViemActionsApi.md)
-
-## Variables
-
-- [createMemoryClient](variables/createMemoryClient.md)
 
 ## Functions
 
 - [createClient](functions/createClient.md)
+- [createMemoryClient](functions/createMemoryClient.md)
 - [createTevmTransport](functions/createTevmTransport.md)
 - [publicActions](functions/publicActions.md)
 - [testActions](functions/testActions.md)

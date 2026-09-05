@@ -1,12 +1,13 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { scopedShell } from '../../factory/scoped-shell.js'
 
 const Shell = scopedShell('extensions/viem')
 
 // Exemplar for the extensions/* shape (ethers, test-matchers, test-node follow
 // this file): adapters between tevm and a third-party client library, tested
-// against that library as a real dependency. It is the packages/evm/PACKAGE.ts
+// against that library as a real dependency. It is the packages/contract/PACKAGE.ts
 // library shape plus the tsc declaration emit, minus a coverage gate: this
 // vitest.config.ts declares no thresholds.
 const packageJson = S.file('package.json')
@@ -54,23 +55,17 @@ const typecheck = Shell.Test({
 	data: [srcs, deps, tsconfig],
 })
 
-// Five spec files (the tevmTransport and optimistic-result cases) fork
-// optimism through the shared test-utils transports and share files with
-// hermetic cases, so the run carries the secrets and the network sandbox.
+// The native extension regression uses an isolated local engine.
 const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
-	secrets: [S.Secret('TEVM_TEST_ALCHEMY_KEY'), S.Secret('TEVM_RPC_URLS_MAINNET'), S.Secret('TEVM_RPC_URLS_OPTIMISM')],
-	sandbox: { network: true },
 })
 
 const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
-	secrets: [S.Secret('TEVM_TEST_ALCHEMY_KEY'), S.Secret('TEVM_RPC_URLS_MAINNET'), S.Secret('TEVM_RPC_URLS_OPTIMISM')],
-	sandbox: { network: true },
 })
 
 const docs = Shell.Build({

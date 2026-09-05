@@ -44,10 +44,6 @@ Additional parameters for the BaseError.
 
 - [`BaseError`](BaseError.md)
 
-## Extended by
-
-- [`EvmRevertError`](EvmRevertError.md)
-
 ## Constructors
 
 ### Constructor

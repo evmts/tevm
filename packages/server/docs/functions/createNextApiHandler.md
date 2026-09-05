@@ -8,7 +8,7 @@
 
 > **createNextApiHandler**(`client`): `NextApiHandler`\<`any`\>
 
-Defined in: [packages/server/src/adapters/createNextApiHandler.js:16](https://github.com/evmts/tevm/blob/main/packages/server/src/adapters/createNextApiHandler.js#L16)
+Defined in: [adapters/createNextApiHandler.js:16](https://github.com/evmts/tevm/blob/main/packages/server/src/adapters/createNextApiHandler.js#L16)
 
 Creates a Next.js API handler for a Tevm JSON-RPC server
 

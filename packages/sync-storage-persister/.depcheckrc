@@ -1,4 +1,0 @@
-ignores: [
-  "@tevm/errors"
-]
-skip-missing: true

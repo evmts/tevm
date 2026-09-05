@@ -1,5 +1,4 @@
 ---
-"@tevm/procedures": patch
 "@tevm/memory-client": patch
 ---
 

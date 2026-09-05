@@ -1,10 +1,11 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { scopedShell } from '../../factory/scoped-shell.js'
 
 const Shell = scopedShell('packages/memory-client')
 
-// packages/evm/PACKAGE.ts is the exemplar for the packages/* shape. This
+// packages/contract/PACKAGE.ts is the exemplar for the packages/* shape. This
 // package sits near the top of the workspace graph, so its WorkspaceDeps
 // closure is most of packages/*; the value of the topological data edge shows
 // here, where nx previously rebuilt the world on any change. It adds the tsc
@@ -59,7 +60,7 @@ const test = Shell.Test({
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
 })
 
-// vitest.config.ts sets `autoUpdate: true`; see packages/evm/PACKAGE.ts for
+// vitest.config.ts sets `autoUpdate: true`; see packages/contract/PACKAGE.ts for
 // why the graph treats the config as input only.
 const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),

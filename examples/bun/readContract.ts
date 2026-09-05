@@ -1,5 +1,4 @@
 import { ERC20 } from 'tevm/contract'
-import { http } from 'tevm/jsonrpc'
 import { createMemoryClient } from 'tevm/memory-client'
 
 // Default values that can be overridden
@@ -10,7 +9,7 @@ const defaultRpcUrl = 'http://localhost:8545'
 // Create a TEVM client with fork from specified RPC
 export const client = createMemoryClient({
 	fork: {
-		transport: http(process.env.RPC_URL || defaultRpcUrl),
+		url: process.env.RPC_URL || defaultRpcUrl,
 	},
 })
 
@@ -41,4 +40,5 @@ if (import.meta.main) {
 	readContract()
 		.then((result) => console.log(JSON.stringify(result, null, 2)))
 		.catch((error) => console.error('Error:', error))
+		.finally(() => client.tevmClose())
 }

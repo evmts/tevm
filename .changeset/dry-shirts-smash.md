@@ -10,7 +10,6 @@
 "@tevm/memory-client": patch
 "@tevm/solc": patch
 "@tevm/bun-plugin": patch
-"@tevm/precompiles": patch
 "@tevm/tsupconfig": patch
 "@tevm/actions": patch
 "@tevm/jsonrpc": patch
@@ -19,11 +18,8 @@
 "@tevm/logger": patch
 "@tevm/server": patch
 "@tevm/test-utils": patch
-"@tevm/state": patch
 "@tevm/utils": patch
 "@tevm/ts-plugin": patch
-"@tevm/evm": patch
-"@tevm/vm": patch
 "@tevm/vscode": patch
 "@tevm/lsp": patch
 "tevm": patch

@@ -4,73 +4,20 @@
 
 [@tevm/actions](../globals.md) / SetAccountParams
 
-# Type Alias: SetAccountParams\<TThrowOnFail\>
+# Type Alias: SetAccountParams
 
-> **SetAccountParams**\<`TThrowOnFail`\> = [`BaseParams`](BaseParams.md)\<`TThrowOnFail`\> & `object`
+> **SetAccountParams** = `object`
 
-Defined in: [packages/actions/src/SetAccount/SetAccountParams.ts:16](https://github.com/evmts/tevm/blob/main/packages/actions/src/SetAccount/SetAccountParams.ts#L16)
+Defined in: TevmActions.ts:25
 
-Tevm params to set an account in the vm state
-all fields are optional except address
+Account fields to update in native state. Unspecified fields are preserved.
 
-## Type Declaration
+## Properties
 
-### address
-
-> `readonly` **address**: `Address`
-
-Address of account
-
-### balance?
-
-> `readonly` `optional` **balance?**: `bigint`
-
-Balance to set account to
-
-### deployedBytecode?
-
-> `readonly` `optional` **deployedBytecode?**: `Hex`
-
-Contract bytecode to set account to
-
-### nonce?
-
-> `readonly` `optional` **nonce?**: `bigint`
-
-Nonce to set account to
-
-### state?
-
-> `readonly` `optional` **state?**: `Record`\<`Hex`, `Hex`\>
-
-key-value mapping to override all slots in the account storage before executing the calls
-
-### stateDiff?
-
-> `readonly` `optional` **stateDiff?**: `Record`\<`Hex`, `Hex`\>
-
-key-value mapping to override individual slots in the account storage before executing the calls
-
-### storageRoot?
-
-> `readonly` `optional` **storageRoot?**: `Hex`
-
-Storage root to set account to
-
-## Type Parameters
-
-| Type Parameter | Default type |
-| ------ | ------ |
-| `TThrowOnFail` *extends* `boolean` | `boolean` |
-
-## Example
-
-```ts
-const accountParams: import('tevm/api').SetAccountParams = {
-  account: '0x...',
-  nonce: 5n,
-  balance: 9000000000000n,
-  storageRoot: '0x....',
-  deployedBytecode: '0x....'
-}
-```
+| Property | Type | Defined in |
+| ------ | ------ | ------ |
+| <a id="address"></a> `address` | `Address` | TevmActions.ts:26 |
+| <a id="balance"></a> `balance?` | `bigint` | TevmActions.ts:27 |
+| <a id="deployedbytecode"></a> `deployedBytecode?` | `Hex` | TevmActions.ts:29 |
+| <a id="nonce"></a> `nonce?` | `bigint` | TevmActions.ts:28 |
+| <a id="storage"></a> `storage?` | `Record`\<`Hex`, `Hex`\> | TevmActions.ts:30 |

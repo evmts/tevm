@@ -1,5 +1,4 @@
 ---
-"@tevm/blockchain": patch
 "@tevm/actions": patch
 ---
 

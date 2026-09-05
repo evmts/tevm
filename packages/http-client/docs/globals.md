@@ -4,14 +4,11 @@
 
 # @tevm/http-client
 
-## Interfaces
-
-- [~~HttpClient~~](interfaces/HttpClient.md)
-
 ## Type Aliases
 
+- [HttpClient](type-aliases/HttpClient.md)
 - [~~HttpClientOptions~~](type-aliases/HttpClientOptions.md)
 
 ## Functions
 
-- [~~createHttpClient~~](functions/createHttpClient.md)
+- [createHttpClient](functions/createHttpClient.md)

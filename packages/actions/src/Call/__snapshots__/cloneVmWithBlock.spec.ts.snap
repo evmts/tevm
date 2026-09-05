@@ -1,9 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`cloneVmWithBfockTag > should handle errors during VM cloning 1`] = `
-[InternalError: deepCopy error
-
-Docs: https://tevm.sh/reference/tevm/errors/classes/internalerror/
-Details: deepCopy error
-Version: 1.0.0-next.148]
-`;

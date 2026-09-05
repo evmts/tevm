@@ -1,14 +1,16 @@
-export { createClient, publicActions, testActions, walletActions } from './createClient.js'
+export {
+	tevmCall,
+	tevmContract,
+	tevmDeal,
+	tevmDeploy,
+	tevmDumpState,
+	tevmGetAccount,
+	tevmLoadState,
+	tevmMine,
+	tevmSetAccount,
+} from '@tevm/actions'
+export { createClient, publicActions, testActions, walletActions } from 'viem'
 export { createMemoryClient } from './createMemoryClient.js'
 export { createTevmTransport } from './createTevmTransport.js'
-export { tevmCall } from './tevmCall.js'
-export { tevmContract } from './tevmContract.js'
-export { tevmDeal } from './tevmDeal.js'
-export { tevmDeploy } from './tevmDeploy.js'
-export { tevmDumpState } from './tevmDumpState.js'
-export { tevmGetAccount } from './tevmGetAccount.js'
-export { tevmLoadState } from './tevmLoadState.js'
-export { tevmMine } from './tevmMine.js'
 export { tevmReady } from './tevmReady.js'
-export { tevmSetAccount } from './tevmSetAccount.js'
 export { tevmViemActions } from './tevmViemActions.js'

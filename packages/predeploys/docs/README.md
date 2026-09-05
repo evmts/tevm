@@ -2,34 +2,24 @@
 
 ***
 
-<p align="center">
-  <a href="https://tevm.sh/">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/35039927/218812217-92f0f784-cb85-43b9-9ca6-e2b9effd9eb2.png">
-      <img alt="wagmi logo" src="https://user-images.githubusercontent.com/35039927/218812217-92f0f784-cb85-43b9-9ca6-e2b9effd9eb2.png" width="auto" height="300">
-    </picture>
-  </a>
-</p>
-
-<p align="center">
-  Execute solidity scripts in browser
-<p>
-
-[![CI](https://github.com/evmts/tevm/actions/workflows/e2e.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/e2e.yml)
-[![CI](https://github.com/evmts/tevm/actions/workflows/unit.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/unit.yml)
-<a href="https://www.npmjs.com/package/@tevm/runtime" target="\_parent">
-<img alt="" src="https://img.shields.io/npm/dm/@tevm/runtime.svg" />
-</a>
-<a href="https://bundlephobia.com/package/@tevm/runtime@latest" target="\_parent">
-<img alt="" src="https://badgen.net/bundlephobia/minzip/@tevm/runtime" />
-</a>
-
 # @tevm/predeploys
 
-## Visit [Docs](https://tevm.sh/) for docs, guides, API and more!
+`definePredeploy` associates a contract definition with a checksummed address. Install runtime bytecode explicitly in native ZEVM state; JavaScript precompile callbacks are no longer supported.
 
-## See [Tevm Beta project board](https://github.com/orgs/tevm/projects/1) for progress on the upcoming beta release
+```js
+import { createMemoryClient } from '@tevm/memory-client'
 
-## License 📄
+const client = createMemoryClient()
+try {
+  const address = '0x0000000000000000000000000000000000000123'
+  await client.tevmSetAccount({
+    address,
+    deployedBytecode: '0x602a60005260206000f3',
+  })
+  console.log(await client.tevmCall({ to: address }))
+} finally {
+  await client.tevmClose()
+}
+```
 
-<a href="_media/LICENSE"><img src="https://user-images.githubusercontent.com/35039927/231030761-66f5ce58-a4e9-4695-b1fe-255b1bceac92.png" width="200" /></a>
+Custom native precompiles belong in Guillotine Mini or Voltaire.

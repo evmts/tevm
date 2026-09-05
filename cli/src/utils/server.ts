@@ -1,6 +1,5 @@
 import type { Server as HttpServer } from 'node:http'
 import {
-	anvil,
 	arbitrum,
 	arbitrumSepolia,
 	avalanche,
@@ -19,23 +18,15 @@ import {
 	tevmDefault,
 	zksync,
 } from '@tevm/common'
-import { http } from '@tevm/jsonrpc'
 import { createMemoryClient, type MemoryClient } from '@tevm/memory-client'
 import { createServer } from '@tevm/server'
-import type { BlockTag } from '@tevm/utils'
 import { createLoggingRequestProxy } from '../stores/logStore.js'
 
-const blockTags = new Set<BlockTag>(['earliest', 'finalized', 'latest', 'pending', 'safe'])
-
-const parseForkBlock = (forkBlockNumber: string): bigint | BlockTag => {
-	try {
-		return BigInt(forkBlockNumber)
-	} catch (_e) {
-		if (blockTags.has(forkBlockNumber as BlockTag)) {
-			return forkBlockNumber as BlockTag
-		}
-		throw new Error(`Invalid fork block number or tag: ${forkBlockNumber}`)
-	}
+const parseForkBlock = (value: string): number => {
+	const block = Number(value)
+	if (!Number.isSafeInteger(block) || block < 0)
+		throw new Error('Fork block must be a non-negative safe integer; omit it for latest')
+	return block
 }
 
 export async function initializeServer({
@@ -45,7 +36,6 @@ export async function initializeServer({
 	verbose,
 	fork,
 	forkBlockNumber,
-	loggingLevel,
 }: {
 	port: number
 	host: string
@@ -71,28 +61,28 @@ export async function initializeServer({
 		[zksync.id]: zksync,
 		[gnosis.id]: gnosis,
 		[moonbeam.id]: moonbeam,
-		[anvil.id]: anvil,
 		[blast.id]: blast,
 		[scroll.id]: scroll,
 	}
 
-	const chain = chains[parseInt(chainId, 10)]
-
-	if (!chain) {
-		throw new Error(
-			`Unknown chain id: ${chainId}. Valid chain ids are ${Object.entries(chains)
-				.map(([id, chain]) => `${id} (${chain.name})`)
-				.join(', ')}`,
-		)
-	}
+	const id = Number(chainId)
+	if (!Number.isSafeInteger(id) || id < 0) throw new Error('Chain ID must be an unsigned safe integer')
+	const chain = chains[id] ?? { ...tevmDefault, id, name: `ZEVM ${id}` }
 
 	const client = createMemoryClient({
 		common: chain,
-		loggingLevel: loggingLevel as any,
 		...(fork?.length
-			? { fork: { transport: http(fork), ...(forkBlockNumber ? { blockTag: parseForkBlock(forkBlockNumber) } : {}) } }
+			? {
+					fork: {
+						url: fork,
+						...(forkBlockNumber && forkBlockNumber !== 'latest'
+							? { blockNumber: parseForkBlock(forkBlockNumber) }
+							: {}),
+					},
+				}
 			: {}),
-	}) as unknown as MemoryClient
+	})
+	await client.tevmReady()
 
 	// Add request logging if verbose mode is enabled
 	if (verbose) {
@@ -102,12 +92,13 @@ export async function initializeServer({
 	}
 
 	// Create and start the server
-	const server = createServer(client as any) as unknown as HttpServer
+	const server = createServer(client)
 
 	// Handle graceful shutdown
 	const handleShutdown = () => {
-		server.close()
-		process.exit(0)
+		server.close(() => {
+			void client.tevmClose()
+		})
 	}
 
 	process.on('SIGINT', handleShutdown)

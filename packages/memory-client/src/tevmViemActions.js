@@ -1,45 +1,40 @@
-import { tevmActions } from '@tevm/decorators'
+import {
+	tevmCall,
+	tevmContract,
+	tevmDeal,
+	tevmDeploy,
+	tevmDumpState,
+	tevmGetAccount,
+	tevmLoadState,
+	tevmMine,
+	tevmSetAccount,
+} from '@tevm/actions'
+import { tevmReady } from './tevmReady.js'
 
-/**
- * Viem extension that attaches the full set of TEVM actions to a viem client built with
- * {@link createTevmTransport}. Prefer the tree-shakeable actions directly in frontend bundles.
- *
- * @returns {(client: import('viem').Client<import('./TevmTransport.js').TevmTransport<string>>) => import('./TevmViemActionsApi.js').TevmViemActionsApi} viem extension function.
- * @throws {Error} If the client doesn't have a TEVM transport configured.
- *
- * @example
- * ```typescript
- * import { createClient } from 'viem'
- * import { createTevmTransport, tevmViemActions } from 'tevm'
- *
- * const client = createClient({ transport: createTevmTransport() })
- * const tevmClient = client.extend(tevmViemActions())
- * await tevmClient.tevmReady()
- * ```
- *
- * @see [TEVM Actions Guide](https://tevm.sh/learn/actions/)
- */
-export const tevmViemActions = () => {
-	/**
-	 * @param {import('viem').Client<import('./TevmTransport.js').TevmTransport<string>>} client
-	 * @returns {import('./TevmViemActionsApi.js').TevmViemActionsApi}
-	 * @private
-	 */
-	const extension = (client) => {
-		const { call, contract, deploy, mine, loadState, dumpState, setAccount, getAccount, ready, deal } =
-			client.transport.tevm.extend(tevmActions())
+/** Attach native TEVM actions to a viem client using createTevmTransport. */
+export function tevmViemActions() {
+	/** @param {import('viem').Client<import('viem').Transport<'tevm', {tevm: import('@tevm/node').ZevmEngine}>>} client */
+	return (client) => {
+		const rpc = client.transport.tevm
 		return {
-			tevmReady: ready,
-			tevmCall: call,
-			tevmContract: contract,
-			tevmDeploy: deploy,
-			tevmMine: mine,
-			tevmLoadState: loadState,
-			tevmDumpState: dumpState,
-			tevmSetAccount: setAccount,
-			tevmGetAccount: getAccount,
-			tevmDeal: deal,
+			tevmReady: () => tevmReady(client),
+			tevmClose: () => client.transport.tevm.close(),
+			/** @param {import('@tevm/actions').CallParams} params */
+			tevmCall: (params) => tevmCall(rpc, params),
+			tevmContract: /** @type {import('@tevm/actions').BoundTevmContract} */ ((params) => tevmContract(rpc, params)),
+			/** @param {import('@tevm/actions').DeployParams} params */
+			tevmDeploy: (params) => tevmDeploy(rpc, params),
+			/** @param {import('@tevm/actions').SetAccountParams} params */
+			tevmSetAccount: (params) => tevmSetAccount(rpc, params),
+			/** @param {import('@tevm/actions').GetAccountParams} params */
+			tevmGetAccount: (params) => tevmGetAccount(rpc, params),
+			/** @param {import('@tevm/actions').MineParams} [params] */
+			tevmMine: (params) => tevmMine(rpc, params),
+			tevmDumpState: () => tevmDumpState(rpc),
+			/** @param {import('viem').Hex} state */
+			tevmLoadState: (state) => tevmLoadState(rpc, state),
+			/** @param {{address: import('viem').Address; amount: bigint}} params */
+			tevmDeal: (params) => tevmDeal(rpc, params),
 		}
 	}
-	return extension
 }

@@ -1,3 +1,4 @@
+import { StringDecoder } from 'node:string_decoder'
 import { InvalidRequestError } from '@tevm/errors'
 import { ReadRequestBodyError } from '../errors/ReadRequestBodyError.js'
 
@@ -50,6 +51,7 @@ export const getRequestBody = (req, options = {}) => {
 	// Otherwise, read from the stream
 	return new Promise((resolve) => {
 		let body = ''
+		const decoder = new StringDecoder('utf8')
 		let done = false
 
 		if ('on' in req) {
@@ -75,7 +77,7 @@ export const getRequestBody = (req, options = {}) => {
 				if (done) {
 					return
 				}
-				body += chunk.toString()
+				body += typeof chunk === 'string' ? chunk : decoder.write(chunk)
 				if (Buffer.byteLength(body, 'utf8') > maxBodySize) {
 					if (typeof req.pause === 'function') {
 						req.pause()
@@ -84,7 +86,7 @@ export const getRequestBody = (req, options = {}) => {
 				}
 			}
 			const onEnd = () => {
-				finish(body)
+				finish(body + decoder.end())
 			}
 
 			req.on('error', onError)

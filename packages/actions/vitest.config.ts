@@ -6,7 +6,6 @@ export default defineConfig({
 		include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
 		environment: 'node',
 		testTimeout: 20_000,
-		setupFiles: ['../../test/vitest-matchers/utils.ts', './test/setup.ts'],
 		coverage: {
 			reportOnFailure: true,
 			include: ['src/**/*.js'],

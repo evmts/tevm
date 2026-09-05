@@ -64,19 +64,13 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@tevm/actions": "workspace:^",
-		"@tevm/client-types": "workspace:^",
-		"@tevm/common": "workspace:1.0.0-rc.151",
-		"@tevm/contract": "workspace:^",
-		"@tevm/decorators": "workspace:^",
-		"@tevm/node": "workspace:^",
-		"@tevm/utils": "workspace:^"
+		"@tevm/memory-client": "workspace:^"
 	},
 	"devDependencies": {
 		"@tevm/tsconfig": "workspace:^",
 		"@tevm/tsupconfig": "workspace:^",
-		"@tevm/tx": "workspace:^",
-		"ethers": "^6.16.0"
+		"ethers": "^6.16.0",
+		"@tevm/contract": "workspace:^"
 	},
 	"peerDependencies": {
 		"ethers": ">6.0.0"

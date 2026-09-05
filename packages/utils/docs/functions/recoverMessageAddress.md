@@ -6,41 +6,16 @@
 
 # Function: recoverMessageAddress()
 
-> **recoverMessageAddress**(`params`): `` `0x${string}` ``
+> **recoverMessageAddress**(`__namedParameters`): `Promise`\<`` `0x${string}` ``\>
 
-Defined in: [packages/utils/src/signature.js:136](https://github.com/evmts/tevm/blob/main/packages/utils/src/signature.js#L136)
-
-Recovers the address from a signed message
+Defined in: node\_modules/.pnpm/viem@2.49.3\_bufferutil@4.1.0\_typescript@6.0.3\_utf-8-validate@5.0.10\_zod@4.4.3/node\_modules/viem/\_types/utils/signature/recoverMessageAddress.d.ts:12
 
 ## Parameters
 
-| Parameter | Type | Description |
-| ------ | ------ | ------ |
-| `params` | \{ `message`: `string`; `signature`: `Signature`; \} | The parameters |
-| `params.message` | `string` | The original message |
-| `params.signature` | `Signature` | The signature |
+| Parameter | Type |
+| ------ | ------ |
+| `__namedParameters` | `RecoverMessageAddressParameters` |
 
 ## Returns
 
-`` `0x${string}` ``
-
-The recovered address
-
-## Throws
-
-If the signature is invalid
-
-## Example
-
-```js
-import { recoverMessageAddress } from '@tevm/utils'
-
-const address = recoverMessageAddress({
-  message: 'Hello world',
-  signature: {
-    r: 0x...,
-    s: 0x...,
-    v: 27
-  }
-})
-```
+`Promise`\<`` `0x${string}` ``\>

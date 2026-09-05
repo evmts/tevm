@@ -64,22 +64,7 @@
 	},
 	"dependencies": {
 		"@evmts/zevm": "workspace:*",
-		"@tevm/address": "workspace:^",
-		"@tevm/block": "workspace:^",
-		"@tevm/blockchain": "workspace:^",
-		"@tevm/common": "workspace:^",
-		"@tevm/consensus": "workspace:^",
-		"@tevm/evm": "workspace:^",
-		"@tevm/jsonrpc": "workspace:^",
-		"@tevm/logger": "workspace:^",
-		"@tevm/precompiles": "workspace:^",
-		"@tevm/predeploys": "workspace:^",
-		"@tevm/receipt-manager": "workspace:^",
-		"@tevm/state": "workspace:^",
-		"@tevm/sync-storage-persister": "workspace:^",
-		"@tevm/txpool": "workspace:^",
-		"@tevm/utils": "workspace:^",
-		"@tevm/vm": "workspace:^"
+		"@tevm/errors": "workspace:^"
 	},
 	"devDependencies": {
 		"@tevm/test-utils": "workspace:^",

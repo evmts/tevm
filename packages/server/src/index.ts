@@ -1,11 +1,6 @@
-export {
-	createExpressMiddleware,
-	createNextApiHandler,
-} from './adapters/index.js'
-export * from './Client.js'
+export { createExpressMiddleware, createNextApiHandler } from './adapters/index.js'
+export type { Client } from './Client.js'
 export { createHttpHandler } from './createHttpHandler.js'
 export { createIpcServer } from './createIpcServer.js'
 export { createServer } from './createServer.js'
 export { createWebSocketServer } from './createWebSocketServer.js'
-export * from './errors/InvalidJsonError.js'
-export * from './errors/ReadRequestBodyError.js'

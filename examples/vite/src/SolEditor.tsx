@@ -63,7 +63,7 @@ contract AddNumbers {
 	)
 	const worker = useMemo(
 		() =>
-			new Worker(new URL('./solcWorker.ts', import.meta.url), {
+			new Worker(new URL('./SolcWorker.ts', import.meta.url), {
 				type: 'module',
 			}),
 		[],

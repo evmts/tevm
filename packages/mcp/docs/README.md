@@ -4,7 +4,7 @@
 
 # @tevm/mcp
 
-Give an AI agent an isolated, in-process EVM through the Model Context Protocol. The server can fork a public chain, compile Solidity, deploy and call contracts, alter account state, mine blocks, inspect the txpool, and return bounded execution traces. It does not start a node or container.
+Give an AI agent an isolated, in-process EVM through the Model Context Protocol. The server can fork a public chain, compile Solidity, deploy and call contracts, alter account state, mine blocks, inspect the txpool, and return bounded execution traces. Each session owns a native ZEVM node using Voltaire state and Guillotine Mini execution; no external node process or container is needed.
 
 ## Install and run
 
@@ -104,11 +104,11 @@ This design prevents unrelated agents and tasks from sharing one implicit mutabl
 
 Integers that may exceed JSON precision use base-10 strings. Byte data uses even-length `0x` hex strings. Contract calls accept either a JSON ABI plus `functionName`, or one human-readable signature such as `balanceOf(address) view returns (uint256)`.
 
-`evm_send_transaction` and `evm_deploy_contract` put transactions in the session txpool. Call `evm_mine` to commit them. The call result already includes decoded output, gas use, logs, and the transaction hash.
+`evm_send_transaction` and `evm_deploy_contract` put transactions in the session txpool. Call `evm_mine` to commit them. Submission returns a transaction hash and gas estimate (deployment returns its gas limit and predicted address). Read the mined receipt for status, actual gas use, logs, and confirmed creation. Read-only calls return decoded output and a gas estimate.
 
 `evm_trace_call` defaults to at most 200 opcode steps and accepts up to 2,000. When a trace is longer, it keeps the first 70 percent and final 30 percent, reports the omitted middle count, and preserves failure status, gas use, and return data.
 
-`evm_trace_call` never throws on a failing call. A revert or an out-of-gas returns `failed: true` alongside `errors`, a decoded `revertReason` when the payload is a standard or ABI-declared error, and the steps that ran, because a failing call is the case worth tracing. The other tools surface a failure as an MCP tool error.
+`evm_trace_call` returns traces for EVM execution failures; invalid parameters and transport failures still surface as tool errors. A revert or an out-of-gas returns `failed: true` alongside `errors`, a decoded `revertReason` when the payload is a standard or ABI-declared error, and the steps that ran, because a failing call is the case worth tracing. The other tools surface a failure as an MCP tool error.
 
 ## Minimal agent flow
 
@@ -120,3 +120,7 @@ Integers that may exceed JSON precision use base-10 strings. Byte data uses even
 6. Call `evm_close_session`.
 
 Fork URLs are provided by the caller. Public endpoints work without an API key, while private endpoints can be used when their historical range or rate limits are preferable.
+
+Forking imports upstream account, code, and storage state into a new local chain. Local block numbering starts at zero; upstream block history is not imported. Supply a block number for stable upstream reads.
+
+See [native engine setup](_media/native-engine-migration.md) for the required sibling checkouts and addon build.

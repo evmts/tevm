@@ -21,7 +21,7 @@ Defined in: node\_modules/.pnpm/viem@2.49.3\_bufferutil@4.1.0\_typescript@6.0.3\
 | Parameter | Type |
 | ------ | ------ |
 | `params` | `params` |
-| `data` | `ByteArray` \| `` `0x${string}` `` |
+| `data` | `` `0x${string}` `` \| `ByteArray` |
 
 ## Returns
 

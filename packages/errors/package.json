@@ -63,7 +63,6 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@evmts/zevm": "workspace:*",
 		"viem": "^2.49.3"
 	},
 	"devDependencies": {

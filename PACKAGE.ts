@@ -1,5 +1,6 @@
 /// <reference path="./smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { Package as compiler } from './bundler-packages/compiler/PACKAGE.js'
 import { Package as cli } from './cli/PACKAGE.js'
 import { Package as viem } from './extensions/viem/PACKAGE.js'
@@ -54,24 +55,22 @@ const tree = S.Filegroup({
 })
 
 // vendor/flows (the Smithers build source the @smthrs/* link: dependencies
-// resolve through) and vendor/zevm (the @evmts/zevm pnpm workspace member)
+// resolve through)
 // are gitlinks the repository index pins. This target materializes them at
 // their pinned commits and refuses a worktree that drifted from its gitlink;
 // CI checks them out with the tree because the graph declares it.
 const vendor = S.Git.Submodules({
 	config: S.file('//.gitmodules'),
-	paths: ['vendor/*'],
+	paths: ['vendor/flows'],
 })
 
-// The vendored EVM's npm build. Every @tevm package imports @evmts/zevm
-// types from its dist, so the build is a declared artifact inside the
-// workspace now that the checkout is: the gitlink keys it, and the aggregate
-// Nx fan-outs below take it as a data edge so nothing typechecks before it.
+// ZEVM's native build uses the maintained sibling Zig sources. Zig owns the
+// dependency cache; the local addon is staged for @evmts/zevm's loader.
 const zevm = S.Shell.Build({
-	bin: S.PackageManager.bin,
-	args: ['--filter', '@evmts/zevm', 'build'],
-	data: [vendor, workspaceConfig, lockfile],
-	outDirs: ['vendor/zevm/npm/zevm/dist'],
+	bin: S.Runtime.bin,
+	args: ['scripts/factory/build-native.mjs'],
+	data: [workspaceConfig, lockfile, S.file('//scripts/factory/build-native.mjs'), S.file('//mise.toml')],
+	outDirs: ['.cache/zevm'],
 })
 
 // The first half of the root `lint` script: biome over the root-level files.

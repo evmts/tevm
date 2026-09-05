@@ -1,5 +1,6 @@
 /// <reference path="../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { scopedShell } from '../factory/scoped-shell.js'
 
 const Shell = scopedShell('cli')
@@ -31,17 +32,8 @@ const compile = Shell.Build({
 	outDirs: ['dist'],
 })
 
-// build:app, second half: the pinned bun lockfile the generated projects
-// ship with is copied into dist. A first-class target so the compile stays a
-// pure tsc invocation.
-const lockfileStamp = S.Copy({
-	from: S.file('src/utils/bun.lockb'),
-	to: 'dist/utils/bun.lockb',
-})
-
-const build = S.Filegroup({
-	srcs: [compile, lockfileStamp],
-})
+// Editor projects link to this installed native host; no registry lockfile is copied.
+const build = S.Filegroup({ srcs: [compile] })
 
 const dev = Shell.Run({
 	bin: S.NodeModule.Bin('tsx'),

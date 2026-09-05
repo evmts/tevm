@@ -20,32 +20,6 @@ export interface BaseActionParams {
 }
 
 /**
- * Parameters specific to call actions
- */
-export interface CallParams extends BaseActionParams {
-	accessList?: any[]
-	code?: string
-	deployedBytecode?: string
-	salt?: string
-	gasRefund?: bigint
-	caller?: string
-	origin?: string
-	depth?: number
-	skipBalance?: boolean
-	createTrace?: boolean
-	createAccessList?: boolean
-	createTransaction?: 'on-success' | 'always' | 'never'
-}
-
-/**
- * Basic result interface for call actions
- */
-export interface CallResult {
-	data: string
-	[key: string]: any
-}
-
-/**
  * Parameters specific to read contract actions
  */
 export interface ReadContractParams extends BaseActionParams {
@@ -89,26 +63,4 @@ export const commonOptionDescriptions = {
 	functionName: 'Function name to call on the contract (env: TEVM_FUNCTION_NAME)',
 	args: 'Function arguments as JSON array (env: TEVM_ARGS)',
 	trace: 'Return a complete trace with the call (env: TEVM_TRACE)',
-}
-
-/**
- * Default values for common action parameters
- */
-export const defaultActionValues: Record<string, any> = {
-	to: '0x0000000000000000000000000000000000000000',
-	from: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-	data: '0x',
-	depth: 0,
-	gas: BigInt(10000000), // 10 million gas
-	gasPrice: BigInt(1000000000), // 1 gwei
-	maxFeePerGas: BigInt(2000000000), // 2 gwei
-	maxPriorityFeePerGas: BigInt(1000000000), // 1 gwei
-	gasRefund: BigInt(0),
-	createTrace: false,
-	createAccessList: false,
-	skipBalance: false,
-	createTransaction: 'never',
-	rpc: 'http://localhost:8545',
-	value: BigInt(0), // 0 ETH
-	blockTag: 'latest', // Latest block
 }

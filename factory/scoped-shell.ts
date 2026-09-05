@@ -1,4 +1,4 @@
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
 
 type BuildAttrs = Parameters<typeof S.Shell.Build>[0]
 type TestAttrs = Parameters<typeof S.Shell.Test>[0]

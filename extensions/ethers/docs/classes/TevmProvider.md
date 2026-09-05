@@ -6,109 +6,9 @@
 
 # Class: TevmProvider
 
-Defined in: [extensions/ethers/src/TevmProvider.js:108](https://github.com/evmts/tevm/blob/main/extensions/ethers/src/TevmProvider.js#L108)
+Defined in: [extensions/ethers/src/TevmProvider.js:5](https://github.com/evmts/tevm/blob/main/extensions/ethers/src/TevmProvider.js#L5)
 
-An [ethers JsonRpcApiProvider](https://docs.ethers.org/v6/api/providers/jsonrpc/#JsonRpcApiProvider) using a tevm MemoryClient as it's backend
-
-## TevmProvider
-
-The TevmProvider class is an instance of an ethers provider using Tevm as it's backend. The `createMemoryProvider` method can be used to create an in memory instance of tevm using a [memoryClient](../clients/) as it's backend.
-
-## Examples
-
-```typescript
-import {TevmProvider} from '@tevm/ethers'
-
-const provider = await TevmProvider.createMemoryProvider({
-  fork: {
-    transport: http('https://mainnet.optimism.io')({}),
-  },
-})
-```
-
-## Using with an http client
-
-The constructor takes any instance of tevm including the `httpClient`.
-
-```typescript
-import {createHttpClient} from '@tevm/http-client'
-const provider = new TevmProvider(createHttpClient({url: 'https://localhost:8080'}))
-```
-
-## Ethers provider support
-
-You can use all the normal ethers apis to interact with tevm.
-
-```typescript
-const provider = await TevmProvider.createMemoryProvider({
-  fork: {
-    transport: http('https://mainnet.optimism.io')({}),
-  },
-})
-
-console.log(
-  await provider.getBlockNumber()
-) // 10
-```
-
-## Tevm actions support
-
-The entire [tevm api](../clients/) exists on the `tevm` property. For example the `tevm.script` method can be used to run an arbitrary script.
-
-```typescript
-import {TevmProvider} from '@tevm/ethers'
-import {createContract} from 'tevm'
-
-const provider = await TevmProvider.createMemoryProvider({
-  fork: {
-    transport: http('https://mainnet.optimism.io')({}),
-  },
-})
-
-const addContract = createContract({
-  name: 'AddContract',
-  humanReadableAbi: [
-    'function add(uint256 a, uint256 b) public pure returns (uint256)',
-  ],
-  deployedBytecode: '0x608060405234801561000f575f80fd5b5060043610610029575f3560e01c8063771602f71461002d575b5f80fd5b610047600480360381019061004291906100a9565b61005d565b60405161005491906100f6565b60405180910390f35b5f818361006a919061013c565b905092915050565b5f80fd5b5f819050919050565b61008881610076565b8114610092575f80fd5b50565b5f813590506100a38161007f565b92915050565b5f80604083850312156100bf576100be610072565b5b5f6100cc85828601610095565b92505060206100dd85828601610095565b9150509250929050565b6100f081610076565b82525050565b5f6020820190506101095f8301846100e7565b92915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601160045260245ffd5b5f61014682610076565b915061015183610076565b92508282019050808211156101695761016861010f565b5b9291505056fea2646970667358221220a8f4b7187c62760aefc097c1827799c61a6df322acc9d7575862a525f9aa59a364736f6c63430008170033',
-  bytecode: '0x608060405234801561000f575f80fd5b506101a58061001d5f395ff3fe608060405234801561000f575f80fd5b5060043610610029575f3560e01c8063771602f71461002d575b5f80fd5b610047600480360381019061004291906100a9565b61005d565b60405161005491906100f6565b60405180910390f35b5f818361006a919061013c565b905092915050565b5f80fd5b5f819050919050565b61008881610076565b8114610092575f80fd5b50565b5f813590506100a38161007f565b92915050565b5f80604083850312156100bf576100be610072565b5b5f6100cc85828601610095565b92505060206100dd85828601610095565b9150509250929050565b6100f081610076565b82525050565b5f6020820190506101095f8301846100e7565b92915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601160045260245ffd5b5f61014682610076565b915061015183610076565b92508282019050808211156101695761016861010f565b5b9291505056fea2646970667358221220a8f4b7187c62760aefc097c1827799c61a6df322acc9d7575862a525f9aa59a364736f6c63430008170033',
-} as const)
-
-const result = await provider.tevm.script(addContract.read.add(390n, 30n))
-
-console.log(result)
-//  createdAddresses: new Set(),
-//  data: 420n,
-//  executionGasUsed: 927n,
-//  gas: 16776288n,
-//  logs: [],
-//  rawData: '0x00000000000000000000000000000000000000000000000000000000000001a4',
-//  selfdestruct: new Set(),
-```
-
-## Tevm JSON-RPC support
-
-An ethers TevmProvider supports the tevm [JSON-RPC methods](../json-rpc). For example you can use `tevm_account` to set account
-
-```typescript
-await provider.send('tevm_setAccount', [{
-  address: `0x${'69'.repeat(20)}`,
-  nonce: toHex(1n),
-  balance: toHex(420n),
-}]),
-console.log(await provider.send('tevm_getAccount', [{
-  address: `0x${'69'.repeat(20)}`,
-}]))
-//	address: '0x6969696969696969696969696969696969696969',
-//	balance: toHex(420n),
-//	deployedBytecode: '0x00',
-//	nonce: toHex(1n),
-//	storageRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-```
-
-## See
-
-[Tevm Clients Docs](https://tevm.sh/learn/clients/)
+Ethers provider over the native ZEVM JSON-RPC engine.
 
 ## Extends
 
@@ -120,13 +20,13 @@ console.log(await provider.send('tevm_getAccount', [{
 
 > **new TevmProvider**(`client`): `TevmProvider`
 
-Defined in: [extensions/ethers/src/TevmProvider.js:173](https://github.com/evmts/tevm/blob/main/extensions/ethers/src/TevmProvider.js#L173)
+Defined in: [extensions/ethers/src/TevmProvider.js:13](https://github.com/evmts/tevm/blob/main/extensions/ethers/src/TevmProvider.js#L13)
 
 #### Parameters
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `client` | `TevmSendApi` & `TevmActionsApi` \| \{ `tevm`: `TevmSendApi` & `TevmActionsApi`; \} | An instance of a tevm Memory client or TevmNode with TevmSendApi |
+| `client` | `MemoryClient` | - |
 
 #### Returns
 
@@ -138,9 +38,9 @@ Defined in: [extensions/ethers/src/TevmProvider.js:173](https://github.com/evmts
 
 ## Properties
 
-| Property | Type | Description | Defined in |
-| ------ | ------ | ------ | ------ |
-| <a id="tevm"></a> `tevm` | `TevmSendApi` & `TevmActionsApi` | An instance of the TevmClient interface. **See** [Tevm Client reference](https://tevm.sh/reference/tevm/client-types/type-aliases/tevmclient/) **Example** `import {TevmProvider} from '@tevm/ethers' import {createContract} from 'tevm' const provider = await TevmProvider.createMemoryProvider({ fork: { transport: http('https://mainnet.optimism.io')({}), }, }) const addContract = createContract({ name: 'AddContract', humanReadableAbi: [ 'function add(uint256 a, uint256 b) public pure returns (uint256)', ], deployedBytecode: '0x608060405234801561000f575f80fd5b5060043610610029575f3560e01c8063771602f71461002d575b5f80fd5b610047600480360381019061004291906100a9565b61005d565b60405161005491906100f6565b60405180910390f35b5f818361006a919061013c565b905092915050565b5f80fd5b5f819050919050565b61008881610076565b8114610092575f80fd5b50565b5f813590506100a38161007f565b92915050565b5f80604083850312156100bf576100be610072565b5b5f6100cc85828601610095565b92505060206100dd85828601610095565b9150509250929050565b6100f081610076565b82525050565b5f6020820190506101095f8301846100e7565b92915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601160045260245ffd5b5f61014682610076565b915061015183610076565b92508282019050808211156101695761016861010f565b5b9291505056fea2646970667358221220a8f4b7187c62760aefc097c1827799c61a6df322acc9d7575862a525f9aa59a364736f6c63430008170033', bytecode: '0x608060405234801561000f575f80fd5b506101a58061001d5f395ff3fe608060405234801561000f575f80fd5b5060043610610029575f3560e01c8063771602f71461002d575b5f80fd5b610047600480360381019061004291906100a9565b61005d565b60405161005491906100f6565b60405180910390f35b5f818361006a919061013c565b905092915050565b5f80fd5b5f819050919050565b61008881610076565b8114610092575f80fd5b50565b5f813590506100a38161007f565b92915050565b5f80604083850312156100bf576100be610072565b5b5f6100cc85828601610095565b92505060206100dd85828601610095565b9150509250929050565b6100f081610076565b82525050565b5f6020820190506101095f8301846100e7565b92915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601160045260245ffd5b5f61014682610076565b915061015183610076565b92508282019050808211156101695761016861010f565b5b9291505056fea2646970667358221220a8f4b7187c62760aefc097c1827799c61a6df322acc9d7575862a525f9aa59a364736f6c63430008170033', } as const) const result = await provider.tevm.script(addContract.read.add(390n, 30n)) console.log(result) // createdAddresses: new Set(), // data: 420n, // executionGasUsed: 927n, // gas: 16776288n, // logs: [], // rawData: '0x00000000000000000000000000000000000000000000000000000000000001a4', // selfdestruct: new Set(),` | [extensions/ethers/src/TevmProvider.js:168](https://github.com/evmts/tevm/blob/main/extensions/ethers/src/TevmProvider.js#L168) |
+| Property | Type | Defined in |
+| ------ | ------ | ------ |
+| <a id="tevm"></a> `tevm` | `MemoryClient` | [extensions/ethers/src/TevmProvider.js:15](https://github.com/evmts/tevm/blob/main/extensions/ethers/src/TevmProvider.js#L15) |
 
 ## Accessors
 
@@ -665,15 +565,13 @@ If a [[Subscriber]] fails and needs to replace itself, this
 
 > **\_send**(`payload`): `Promise`\<(`JsonRpcResult` \| `JsonRpcError`)[]\>
 
-Defined in: [extensions/ethers/src/TevmProvider.js:188](https://github.com/evmts/tevm/blob/main/extensions/ethers/src/TevmProvider.js#L188)
-
-Sends a JSON-RPC %%payload%% (or a batch) to the underlying tevm instance.
+Defined in: [extensions/ethers/src/TevmProvider.js:21](https://github.com/evmts/tevm/blob/main/extensions/ethers/src/TevmProvider.js#L21)
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `payload` | `JsonRpcPayload` \| `JsonRpcPayload`[] |
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `payload` | `JsonRpcPayload` \| `JsonRpcPayload`[] | - |
 
 #### Returns
 
@@ -995,18 +893,15 @@ Resolves to the data for executing the CCIP-read operations.
 
 > **destroy**(): `void`
 
-Defined in: node\_modules/.pnpm/ethers@6.16.0\_bufferutil@4.1.0\_utf-8-validate@5.0.10/node\_modules/ethers/lib.esm/providers/provider-jsonrpc.d.ts:331
+Defined in: [extensions/ethers/src/TevmProvider.js:28](https://github.com/evmts/tevm/blob/main/extensions/ethers/src/TevmProvider.js#L28)
 
-Sub-classes may use this to shutdown any sockets or release their
- resources and reject any pending requests.
-
- Sub-classes **must** call ``super.destroy()``.
+Stop ethers polling and release the native engine.
 
 #### Returns
 
 `void`
 
-#### Inherited from
+#### Overrides
 
 `JsonRpcApiProvider.destroy`
 
@@ -1943,34 +1838,16 @@ Waits until the transaction %%hash%% is mined and has %%confirms%%
 
 ### createMemoryProvider()
 
-> `readonly` `static` **createMemoryProvider**(`options`): `Promise`\<`TevmProvider`\>
+> `static` **createMemoryProvider**(`options?`): `Promise`\<`TevmProvider`\>
 
-Defined in: [extensions/ethers/src/TevmProvider.js:124](https://github.com/evmts/tevm/blob/main/extensions/ethers/src/TevmProvider.js#L124)
-
-Creates a new TevmProvider instance with a TevmMemoryClient.
+Defined in: [extensions/ethers/src/TevmProvider.js:7](https://github.com/evmts/tevm/blob/main/extensions/ethers/src/TevmProvider.js#L7)
 
 #### Parameters
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `options` | `TevmNodeOptions`\<\{ `blockExplorers?`: \{\[`key`: `string`\]: `ChainBlockExplorer`; `default`: `ChainBlockExplorer`; \}; `blockTime?`: `number`; `contracts?`: \{\[`key`: `string`\]: `ChainContract` \| \{\[`sourceId`: `number`\]: `ChainContract` \| `undefined`; \} \| `undefined`; `ensRegistry?`: `ChainContract`; `ensUniversalResolver?`: `ChainContract`; `erc6492Verifier?`: `ChainContract`; `multicall3?`: `ChainContract`; \}; `copy`: () => `object`; `custom?`: `Record`\<`string`, `unknown`\>; `ensTlds?`: readonly `string`[]; `ethjsCommon`: `Common`; `experimental_preconfirmationTime?`: `number`; `extendSchema?`: `Record`\<`string`, `unknown`\>; `fees?`: `ChainFees`\<`ChainFormatters` \| `undefined`\>; `formatters?`: `ChainFormatters`; `id`: `number`; `name`: `string`; `nativeCurrency`: `ChainNativeCurrency`; `prepareTransactionRequest?`: `PrepareTransactionRequestFn` \| \[`PrepareTransactionRequestFn`, `object`\]; `rpcUrls`: \{\[`key`: `string`\]: `ChainRpcUrls`; `default`: `ChainRpcUrls`; \}; `serializers?`: `ChainSerializers`\<`ChainFormatters` \| `undefined`, `TransactionSerializable`\>; `sourceId?`: `number`; `testnet?`: `boolean`; `verifyHash?`: `ChainVerifyHashFn`; \}\> | Options to create a new TevmProvider. |
+| `options?` | `MemoryClientOptions` | - |
 
 #### Returns
 
 `Promise`\<`TevmProvider`\>
-
-A new TevmProvider instance.
-
-#### See
-
-[Tevm Clients Docs](https://tevm.sh/learn/clients/)
-
-#### Example
-
-```ts
-import { TevmProvider } from '@tevm/ethers'
-
-const provider = await TevmProvider.createMemoryProvider()
-
-const blockNumber = await provider.getBlockNumber()
-```

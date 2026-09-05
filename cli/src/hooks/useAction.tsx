@@ -3,7 +3,6 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { http } from '@tevm/jsonrpc'
 import { createMemoryClient } from '@tevm/memory-client'
 import JSONBig from 'json-bigint'
 import React from 'react'
@@ -12,7 +11,7 @@ import { isViemAction, loadViemClient } from '../utils/clients.js'
 import { cleanupProject, createEditorProject, executeTsFile, openEditor, waitForDependencies } from '../utils/editor.js'
 import { shouldRunDirectly } from '../utils/global-options.js'
 import { formatHumanResult, formatJsonFailure, formatJsonSuccess } from '../utils/output.js'
-import { normalizeSessionState, readSession, restoreSessionBlockNumber, writeSession } from '../utils/session.js'
+import { readSession, restoreSessionBlockNumber, writeSession } from '../utils/session.js'
 
 // Configure JSON BigInt for handling large numbers
 const JSON_BIG = JSONBig({
@@ -156,8 +155,8 @@ export function useAction<TParams, TResult>({
 	const { isLoading: isActionLoading, data: actionOutcome } = useQuery({
 		queryKey: [actionName, JSON_BIG.stringify(baseOptions)],
 		queryFn: async () => {
+			let client
 			try {
-				let client
 				const sessionName =
 					typeof baseOptions['session'] === 'string' && baseOptions['session'].length > 0
 						? baseOptions['session']
@@ -171,29 +170,30 @@ export function useAction<TParams, TResult>({
 				let forkBlock = session?.forkBlock
 
 				// Create the appropriate client based on action type
-				if (isViemAction(actionName) && !sessionName) {
+				if (isViemAction(actionName) && !sessionName && !local) {
 					client = await loadViemClient(rpcUrl || 'http://localhost:8545')
 					if (!client) {
 						throw new Error('Failed to create Viem client')
 					}
 				} else {
+					if (sessionName && rpcUrl && !forkBlock) {
+						const upstream = await loadViemClient(rpcUrl)
+						if (!upstream) throw new Error('Failed to load fork upstream')
+						forkBlock = (await upstream.getBlockNumber()).toString()
+					}
 					client = createMemoryClient(
 						rpcUrl
 							? {
-									loggingLevel: 'fatal',
 									fork: {
-										transport: http(rpcUrl),
-										...(session?.forkBlock ? { blockTag: BigInt(session.forkBlock) } : {}),
+										url: rpcUrl,
+										...(forkBlock ? { blockNumber: Number(forkBlock) } : {}),
 									},
 								}
-							: { loggingLevel: 'fatal' },
+							: {},
 					)
 					await client.tevmReady()
-					if (sessionName && rpcUrl && !forkBlock) {
-						forkBlock = (await client.getBlockNumber()).toString()
-					}
 					if (session?.state) {
-						await client.tevmLoadState(normalizeSessionState(session.state) as any)
+						await client.tevmLoadState(session.state)
 					}
 					if (session) {
 						await restoreSessionBlockNumber(client, session)
@@ -208,13 +208,13 @@ export function useAction<TParams, TResult>({
 					const state = await sessionClient.tevmDumpState()
 					const blockNumber = (await sessionClient.getBlockNumber()).toString()
 					writeSession({
-						version: 1,
+						version: 2,
 						name: sessionName,
 						...(rpcUrl ? { forkUrl: rpcUrl } : {}),
 						...(forkBlock ? { forkBlock } : {}),
 						blockNumber,
 						updatedAt: new Date().toISOString(),
-						state: state as unknown as Record<string, unknown>,
+						state,
 					})
 				}
 				return { result: (actionResult === undefined ? {} : actionResult) as TResult }
@@ -226,6 +226,8 @@ export function useAction<TParams, TResult>({
 								error && typeof error === 'object' && 'message' in error ? String(error.message) : String(error),
 							)
 				return { error: normalizedError }
+			} finally {
+				if (client && 'tevmClose' in client && typeof client.tevmClose === 'function') await client.tevmClose()
 			}
 		},
 		enabled: runDirectly,

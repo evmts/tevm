@@ -128,7 +128,6 @@ type Props = {
 // COMPREHENSIVE DEFAULTS
 const defaultValues: Record<string, any> = {
 	contracts: '[]', // Empty array as default
-	multicallAddress: '0xcA11bde05977b3631167028862bE2a173976CA11',
 	allowFailure: true,
 	blockTag: 'latest',
 	rpc: 'http://localhost:8545',
@@ -225,7 +224,7 @@ export default function Multicall({ options }: Props) {
 
 		// Execute the action
 		executeAction: async (client: any, params: any): Promise<any> => {
-			return await client.multicall(params)
+			return await client.multicall({ ...params, deployless: !params.multicallAddress })
 		},
 	})
 

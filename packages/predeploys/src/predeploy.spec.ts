@@ -1,10 +1,10 @@
 import { createContract } from '@tevm/contract'
-import { createAddressFromString, formatAbi } from '@tevm/utils'
+import { formatAbi, getAddress } from '@tevm/utils'
 import { expect, test } from 'vitest'
 import { definePredeploy } from './definePredeploy.js'
 import { DaiContract } from './test/DaiContract.sol.js'
 
-// There is a more complete usage example in the @tevm/vm package
+// Address values cross the native RPC boundary as canonical hex strings.
 test('definePredeploy should define a predeploy', async () => {
 	const { abi, deployedBytecode } = DaiContract
 	const formatted = formatAbi(abi)
@@ -20,7 +20,7 @@ test('definePredeploy should define a predeploy', async () => {
 	const predeploy = definePredeploy(contract)
 
 	expect(predeploy.contract.address).toEqual(predeployAddress)
-	expect(predeploy.predeploy().address).toEqual(createAddressFromString(predeployAddress))
+	expect(predeploy.predeploy().address).toEqual(getAddress(predeployAddress))
 	expect(predeploy.contract).toMatchInlineSnapshot(`
 		{
 		  "abi": [

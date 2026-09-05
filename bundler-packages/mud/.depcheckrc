@@ -1,4 +1,0 @@
-ignores: [
-  "@tevm/config"
-]
-skip-missing: true

@@ -20,9 +20,8 @@
 			"revision": "9a0b718b891faf0f95c807934a7687d284602afc"
 		},
 		"zevm": {
-			"localPath": "vendor/zevm",
-			"repository": "https://github.com/evmts/zevm.git",
-			"revision": "014f3f2b8dba45a983853af303bc52620fcfb111"
+			"localPath": "../zevm",
+			"repository": "https://github.com/evmts/zevm.git"
 		}
 	},
 	"issues": {

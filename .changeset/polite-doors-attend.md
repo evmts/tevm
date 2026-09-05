@@ -1,15 +1,8 @@
 ---
-"@tevm/test-matchers": patch
 "@tevm/memory-client": patch
-"@tevm/mud": patch
-"@tevm/precompiles": patch
 "@tevm/actions": patch
-"@tevm/txpool": patch
-"@tevm/state": patch
 "@tevm/utils": patch
 "@tevm/node": patch
-"@tevm/tx": patch
-"@tevm/vm": patch
 "tevm": patch
 "@tevm/base-bundler": patch
 "@tevm/bun-plugin": patch
@@ -55,31 +48,19 @@
 "@tevm/tsconfig": patch
 "@tevm/tsupconfig": patch
 "@tevm/ethers": patch
-"@tevm/test-node": patch
 "@tevm/viem": patch
 "@tevm/lsp": patch
 "@tevm/ts-plugin": patch
 "@tevm/vscode": patch
-"@tevm/address": patch
-"@tevm/block": patch
-"@tevm/blockchain": patch
-"@tevm/client-types": patch
 "@tevm/common": patch
 "@tevm/contract": patch
-"@tevm/decorators": patch
 "@tevm/effect": patch
 "@tevm/errors": patch
-"@tevm/evm": patch
 "@tevm/http-client": patch
 "@tevm/jsonrpc": patch
 "@tevm/logger": patch
 "@tevm/predeploys": patch
-"@tevm/procedures": patch
-"@tevm/receipt-manager": patch
-"@tevm/rlp": patch
 "@tevm/server": patch
-"@tevm/sync-storage-persister": patch
-"@tevm/trie": patch
 "@tevm/test-utils": patch
 ---
 

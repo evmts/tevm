@@ -11,7 +11,7 @@ const getVersion = () => '1.0.0-next.148'
  * @property {string} [docsPath]
  * @property {string} [docsSlug]
  * @property {string[]} [metaMessages]
- * @property {BaseError|Error|import('@evmts/zevm/evm-error').EVMError|unknown} [cause]
+ * @property {BaseError|Error|Error|unknown} [cause]
  * @property {string} [details]
  */
 

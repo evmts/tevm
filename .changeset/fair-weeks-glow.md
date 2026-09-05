@@ -1,7 +1,6 @@
 ---
 "@tevm/memory-client": patch
 "@tevm/node": patch
-"@tevm/state": patch
 ---
 
 Made minor improvements to tevm performance

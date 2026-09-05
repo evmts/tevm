@@ -1,5 +1,4 @@
 ---
-"@tevm/decorators": minor
 "tevm": minor
 ---
 

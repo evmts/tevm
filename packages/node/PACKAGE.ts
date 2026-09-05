@@ -1,10 +1,11 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { scopedShell } from '../../factory/scoped-shell.js'
 
 const Shell = scopedShell('packages/node')
 
-// packages/evm/PACKAGE.ts is the exemplar for the common shape; this file
+// packages/contract/PACKAGE.ts is the exemplar for the common shape; this file
 // follows it target-for-target. Scripts with no target: `all` and `build`
 // are nx aggregates the check suite and the graph replace, `test` is
 // `vitest --watch` (interactive), `format`/`format:check` run

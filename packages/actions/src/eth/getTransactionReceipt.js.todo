@@ -1,7 +1,0 @@
-/**
- * @param {import('@tevm/blockchain').Chain} blockchain
- * @returns {import('@tevm/actions').EthBlockNumberHandler}
- */
-export const blockNumberHandler = (blockchain) => async () => {
-	return blockchain.getCanonicalHeadBlock().then((block) => block.header.number)
-}

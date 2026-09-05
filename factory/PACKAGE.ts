@@ -1,5 +1,5 @@
 /// <reference path="../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
 
 const policy = S.Filegroup({
 	srcs: S.glob(['policy.json', 'policy.schema.json', 'schemas/**']),
@@ -81,8 +81,7 @@ const declarationsTypecheck = S.Shell.Test({
 })
 
 const shellScopeLint = S.Shell.Test({
-	bin: S.Runtime.bin,
-	args: ['scripts/factory/scope-declarations.mjs'],
+	command: 'node --test scripts/factory/scope-declarations.test.mjs && node scripts/factory/scope-declarations.mjs',
 	data: [declarations, scripts],
 })
 

@@ -1,5 +1,4 @@
 ---
-"@tevm/txpool": minor
 "tevm": minor
 ---
 

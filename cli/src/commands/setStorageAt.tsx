@@ -134,7 +134,7 @@ export default function SetStorageAt({ options }: Props) {
 		executeAction: async (client: any, params: any): Promise<any> => {
 			return await client.tevmSetAccount({
 				address: params.address,
-				stateDiff: {
+				storage: {
 					[params.index]: params.value,
 				},
 			})

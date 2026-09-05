@@ -19,13 +19,9 @@
 "@tevm/logger": patch
 "@tevm/server": patch
 "@tevm/test-utils": patch
-"@tevm/state": patch
 "@tevm/utils": patch
 "@tevm/ts-plugin": patch
 "@tevm/node": patch
-"@tevm/evm": patch
-"@tevm/tx": patch
-"@tevm/vm": patch
 "@tevm/vscode": patch
 "@tevm/lsp": patch
 "tevm": patch
@@ -36,23 +32,11 @@
 "@tevm/vite-plugin": patch
 "@tevm/webpack-plugin": patch
 "@tevm/tsconfig": patch
-"@tevm/address": patch
-"@tevm/block": patch
-"@tevm/blockchain": patch
-"@tevm/client-types": patch
 "@tevm/contract": patch
-"@tevm/decorators": patch
 "@tevm/errors": patch
 "@tevm/http-client": patch
 "@tevm/memory-client": patch
-"@tevm/precompiles": patch
 "@tevm/predeploys": patch
-"@tevm/procedures": patch
-"@tevm/receipt-manager": patch
-"@tevm/rlp": patch
-"@tevm/sync-storage-persister": patch
-"@tevm/trie": patch
-"@tevm/txpool": patch
 ---
 
 Updated all package dependencies in Tevm to latest"

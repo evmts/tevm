@@ -1,6 +1,6 @@
 import { ERC20 } from '@tevm/contract'
 import { type ethers } from 'ethers'
-import { assertType, describe, expect, expectTypeOf, test } from 'vitest'
+import { afterEach, assertType, describe, expect, expectTypeOf, test } from 'vitest'
 import { TevmProvider } from '../TevmProvider.js'
 import { Contract } from './Contract.js'
 
@@ -249,9 +249,20 @@ const abi = [
 
 const addresses = { 10: `0x${'da'.repeat(20)}` } as const
 
+const providers: TevmProvider[] = []
+afterEach(async () => {
+	for (const p of providers.splice(0)) {
+		p.destroy()
+		await p.tevm.tevmClose()
+	}
+})
 const createErc20Contract = async () => {
 	const provider = await TevmProvider.createMemoryProvider({})
-	const deployResult = await provider.tevm.deploy({ ...ERC20.deploy('Dai Stablecoin', 'DAI'), addToBlockchain: true })
+	providers.push(provider)
+	const deployResult = await provider.tevm.tevmDeploy({
+		...ERC20.deploy('Dai Stablecoin', 'DAI'),
+		addToBlockchain: true,
+	})
 	if (!deployResult.createdAddress) {
 		throw new Error('contract never deployed')
 	}

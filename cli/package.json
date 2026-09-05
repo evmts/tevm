@@ -25,7 +25,7 @@
 	},
 	"scripts": {
 		"build": "pnpm run build:app",
-		"build:app": "tsc --skipLibCheck && mkdir -p dist/utils && cp src/utils/bun.lockb dist/utils/",
+		"build:app": "tsc --skipLibCheck",
 		"dev": "tsx src/cli.tsx",
 		"format": "biome format . --write",
 		"lint": "biome check . --write --unsafe",
@@ -66,7 +66,8 @@
 		"solc": "^0.8.35",
 		"viem": "^2.49.3",
 		"zod": "^4.4.3",
-		"zustand": "^5.0.13"
+		"zustand": "^5.0.13",
+		"@tevm/contract": "workspace:^"
 	},
 	"devDependencies": {
 		"@sindresorhus/tsconfig": "^8.1.0",

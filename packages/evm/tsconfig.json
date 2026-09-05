@@ -1,9 +1,0 @@
-{
-	"extends": "@tevm/tsconfig/base.json",
-	"compilerOptions": {
-		"skipLibCheck": true,
-		"types": ["bun-types"]
-	},
-	"include": ["src/*.js", "src/*.ts"],
-	"exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"]
-}

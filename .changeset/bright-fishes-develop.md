@@ -1,5 +1,4 @@
 ---
-"@tevm/procedures": patch
 "@tevm/ethers": patch
 "@tevm/viem": patch
 ---

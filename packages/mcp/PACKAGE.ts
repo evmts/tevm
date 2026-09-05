@@ -1,10 +1,11 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
+
 import { scopedShell } from '../../factory/scoped-shell.js'
 
 const Shell = scopedShell('packages/mcp')
 
-// Follows the packages/evm/PACKAGE.ts exemplar with a reduced script set: no
+// Follows the packages/contract/PACKAGE.ts exemplar with a reduced script set: no
 // lint:deps, lint:package, or clean scripts, so the depsLint, pack,
 // packageLint, apiCompat, and clean targets are absent. fork.spec.ts forks a
 // live network, so the fork test is split out of test the way
@@ -64,7 +65,7 @@ const typecheck = Shell.Test({
 const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--exclude', '**/fork.spec.ts'],
-	data: [srcs, tests, deps, vitestConfig, tsconfig],
+	data: [srcs, tests, deps, vitestConfig, tsconfig, S.file('//packages/node/fixtures/fork-server.cjs')],
 })
 
 // fork.spec.ts forks live mainnet through the configured archive endpoint,
@@ -73,16 +74,15 @@ const test = Shell.Test({
 const testFork = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', 'src/fork.spec.ts'],
-	data: [srcs, tests, deps, vitestConfig, tsconfig],
-	sandbox: { network: true },
-	secrets: [S.Secret('TEVM_RPC_URLS_MAINNET')],
+	data: [srcs, tests, deps, vitestConfig, tsconfig, S.file('//packages/node/fixtures/fork-server.cjs')],
+	sandbox: { network: 'loopback' },
 })
 
 // test:coverage. The config declares no thresholds, so there is no gate.
 const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
-	args: ['run', '--coverage', '--exclude', '**/fork.spec.ts'],
-	data: [srcs, tests, deps, vitestConfig, tsconfig],
+	args: ['run', '--coverage'],
+	data: [srcs, tests, deps, vitestConfig, tsconfig, S.file('//packages/node/fixtures/fork-server.cjs')],
 })
 
 // generate:docs.

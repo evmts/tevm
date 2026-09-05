@@ -16,7 +16,6 @@
 "@tevm/viem": patch
 "@tevm/contract": patch
 "@tevm/effect": patch
-"@tevm/state": patch
 "@tevm/memory-client": patch
 ---
 

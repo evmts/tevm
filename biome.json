@@ -40,7 +40,6 @@
 			"!**/evmone",
 			"!**/revm",
 			"!**/go-ethereum",
-			"!**/ethereumjs-monorepo",
 			"!**/reth",
 			"!**/erigon",
 			"!**/execution-specs",

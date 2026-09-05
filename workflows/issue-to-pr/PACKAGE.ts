@@ -1,7 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
-import { Package as root } from '../../PACKAGE.js'
+const S = Smithers
+
 import { Package as factory } from '../../factory/PACKAGE.js'
+import { Package as root } from '../../PACKAGE.js'
 
 // The governed implementation lane produces and applies a local candidate.
 // PR settlement is deliberately separate: the current package-mode Flows

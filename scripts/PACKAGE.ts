@@ -1,5 +1,5 @@
 /// <reference path="../smithers.d.ts" />
-import { Smithers as S } from '@smthrs/targets'
+const S = Smithers
 
 // Monorepo maintenance scripts as targets. The manifest's only script,
 // `test`, is an `echo ... && exit 1` placeholder and is not declared.

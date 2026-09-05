@@ -1,3 +1,4 @@
+import { PassThrough } from 'node:stream'
 import { describe, expect, it } from 'vitest'
 import { ReadRequestBodyError } from '../errors/ReadRequestBodyError.js'
 import { getRequestBody } from './getRequestBody.js'
@@ -52,4 +53,29 @@ describe('getRequestBody', () => {
 			expect(result.message).toContain('Request object is not a valid stream')
 		}
 	})
+})
+
+it('normalizes parsed framework bodies without losing JSON wire values', async () => {
+	expect(await getRequestBody({ body: Buffer.from('{"id":null}') })).toBe('{"id":null}')
+	expect(await getRequestBody({ body: { id: null } })).toBe('{"id":null}')
+	expect(await getRequestBody({ body: 1n })).toBeInstanceOf(Error)
+	expect(await getRequestBody({ body: () => {} })).toBeInstanceOf(Error)
+	expect(await getRequestBody({ body: 'é' }, { maxBodySize: 1 })).toBeInstanceOf(ReadRequestBodyError)
+})
+
+it('preserves UTF-8 split across stream chunks', async () => {
+	const stream = new PassThrough()
+	const result = getRequestBody(stream as never)
+	const bytes = Buffer.from('{"id":"€"}')
+	stream.write(bytes.subarray(0, 8))
+	stream.end(bytes.subarray(8))
+	expect(await result).toBe('{"id":"€"}')
+})
+
+it('reads streams that already decode text', async () => {
+	const stream = new PassThrough()
+	stream.setEncoding('utf8')
+	const result = getRequestBody(stream as never)
+	stream.end('null')
+	expect(await result).toBe('null')
 })

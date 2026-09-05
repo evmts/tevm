@@ -4,13 +4,12 @@
  * module map (this is a playground, not a bundler), then the remaining body
  * runs as an async function with console output captured.
  */
-import * as tevm from 'tevm'
-import * as tevmCommon from 'tevm/common'
+
 import * as viem from 'viem'
+import * as chains from 'viem/chains'
 
 const moduleMap: Record<string, Record<string, unknown>> = {
-	tevm: tevm as never,
-	'tevm/common': tevmCommon as never,
+	'viem/chains': chains as never,
 	viem: viem as never,
 }
 
@@ -32,16 +31,13 @@ const stringify = (v: unknown): string => {
 
 const IMPORT_RE = /^import\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"];?\s*$/gm
 
-export async function runCode(
-	code: string,
-	onLine: (line: RunLine) => void,
-	timeoutMs = 90_000,
-): Promise<void> {
+export async function runCode(code: string, onLine: (line: RunLine) => void, timeoutMs = 90_000): Promise<void> {
 	const names: string[] = []
 	const values: unknown[] = []
 	const body = code.replace(IMPORT_RE, (_m, imports: string, mod: string) => {
 		const source = moduleMap[mod]
-		if (!source) throw new Error(`This playground can only import from: ${Object.keys(moduleMap).join(', ')} (got '${mod}')`)
+		if (!source)
+			throw new Error(`This playground can only import from: ${Object.keys(moduleMap).join(', ')} (got '${mod}')`)
 		for (const part of imports.split(',')) {
 			const spec = part.trim()
 			if (!spec) continue
@@ -58,9 +54,18 @@ export async function runCode(
 	const js = body.replace(/([\w)\]])!(?=[.,)\s;[])/g, '$1').replace(/\s+as\s+const\b/g, '')
 
 	const capture = { log: console.log, error: console.error, warn: console.warn }
-	console.log = (...a: unknown[]) => { capture.log(...a); onLine({ kind: 'log', text: a.map(stringify).join(' ') }) }
-	console.error = (...a: unknown[]) => { capture.error(...a); onLine({ kind: 'error', text: a.map(stringify).join(' ') }) }
-	console.warn = (...a: unknown[]) => { capture.warn(...a); onLine({ kind: 'info', text: a.map(stringify).join(' ') }) }
+	console.log = (...a: unknown[]) => {
+		capture.log(...a)
+		onLine({ kind: 'log', text: a.map(stringify).join(' ') })
+	}
+	console.error = (...a: unknown[]) => {
+		capture.error(...a)
+		onLine({ kind: 'error', text: a.map(stringify).join(' ') })
+	}
+	console.warn = (...a: unknown[]) => {
+		capture.warn(...a)
+		onLine({ kind: 'info', text: a.map(stringify).join(' ') })
+	}
 
 	try {
 		const fn = new Function(...names, `return (async () => {\n${js}\n})()`)
@@ -68,7 +73,12 @@ export async function runCode(
 			fn(...values),
 			new Promise((_r, reject) =>
 				setTimeout(
-					() => reject(new Error(`Timed out after ${timeoutMs / 1000}s. If this example forks mainnet, the public RPC may be rate-limiting — try again or swap in your own RPC_URL.`)),
+					() =>
+						reject(
+							new Error(
+								`Timed out after ${timeoutMs / 1000}s. If this example forks mainnet, the public RPC may be rate-limiting — try again or swap in your own RPC_URL.`,
+							),
+						),
 					timeoutMs,
 				),
 			),

@@ -6,45 +6,21 @@
 
 # Function: tevmDeal()
 
-> **tevmDeal**(`node`): `AnvilDealHandler`
+> **tevmDeal**(`client`, `params`): `Promise`\<`JsonValue`\>
 
-Defined in: [packages/memory-client/src/tevmDeal.ts:34](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/tevmDeal.ts#L34)
+Defined in: packages/actions/dist/index.d.ts:105
 
-Creates a tevmDeal action for the client that lets you deal tokens to an account
-
-Supports two modes:
-1. For native ETH: When no `erc20` address is provided, it sets the account balance
-2. For ERC20 tokens: When an `erc20` address is provided, it finds and updates the correct storage slot
+Set an account's native token balance.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `node` | `TevmNode` |
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `client` | [`RpcClient`](../type-aliases/RpcClient.md) | - |
+| `params` | \{ `address`: `` `0x${string}` ``; `amount`: `bigint`; \} | - |
+| `params.address` | `` `0x${string}` `` | - |
+| `params.amount` | `bigint` | - |
 
 ## Returns
 
-`AnvilDealHandler`
-
-## Examples
-
-```typescript
-import { createMemoryClient } from 'tevm'
-
-const client = createMemoryClient()
-await client.tevmDeal({
-  account: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-  amount: 1000000000000000000n // 1 ETH
-})
-```
-
-```typescript
-import { createMemoryClient } from 'tevm'
-
-const client = createMemoryClient()
-await client.tevmDeal({
-  erc20: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC address
-  account: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-  amount: 1000000n // 1 USDC (6 decimals)
-})
-```
+`Promise`\<`JsonValue`\>

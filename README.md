@@ -1,237 +1,103 @@
-<p align="center">
-  <a href="https://node.tevm.sh">
-    <img src="https://github.com/user-attachments/assets/880d8f54-8063-4018-8777-98ba383433ee" width="400" alt="Tevm Logo" />
-  </a>
-</p>
+# TEVM
 
-<h1 align="center">Tevm</h1>
+TEVM embeds the native ZEVM node in Node.js and exposes it through viem clients, an event emitter, and HTTP, WebSocket, and IPC JSON-RPC servers. ZEVM owns execution, mining, transaction admission, receipts, filters, snapshots, and fork state. It uses Voltaire primitives/state and Guillotine Mini bytecode execution.
 
-<p align="center">
-  <b>JavaScript-native Ethereum runtime for TypeScript apps, tests, and tools.</b>
-</p>
+This checkout contains a breaking native-engine migration. Previously published JavaScript-engine releases do not implement this API. See [the migration guide](docs/native-engine-migration.md).
 
-<p align="center">
-  <a href="https://github.com/evmts/tevm/actions/workflows/ci.yml">
-    <img src="https://github.com/evmts/tevm/actions/workflows/ci.yml/badge.svg" alt="CI Status" />
-  </a>
-  <a href="https://www.npmjs.com/package/tevm?activeTab=versions">
-    <img src="https://img.shields.io/npm/v/tevm/rc?label=rc" alt="NPM RC Version" />
-  </a>
-  <a href="https://www.npmjs.com/package/tevm">
-    <img src="https://img.shields.io/npm/dm/tevm.svg" alt="Tevm Downloads" />
-  </a>
-  <a href="https://bundlephobia.com/package/tevm">
-    <img src="https://badgen.net/bundlephobia/minzip/tevm" alt="Minzipped Size" />
-  </a>
-  <a href="https://t.me/+ANThR9bHDLAwMjUx">
-    <img alt="Telegram" src="https://img.shields.io/badge/chat-telegram-blue.svg">
-  </a>
-  <a href="https://deepwiki.com/evmts/tevm">
-    <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki">
-  </a>
-</p>
+## Local setup
 
----
+Keep these repositories beside each other:
 
-## Tevm 1.0 Release Candidate
-
-The documentation and examples in this repository target `tevm@1.0.0-rc.151`, published on the npm `rc` dist-tag.
-
-```bash
-npm install tevm@1.0.0-rc.151 viem
+```text
+~/tevm-monorepo
+~/zevm
+~/voltaire
+~/guillotine-mini
 ```
 
-This release candidate includes the block, mining, receipt, txpool, JSON-RPC, tracing, and viem-compatible client APIs documented below. Use the pinned version when reproducing these examples; `tevm@rc` currently resolves to the same build.
+Use Node from `.nvmrc`, pnpm from `package.json`, and tools from `mise.toml`:
 
-## What Is Tevm?
+```sh
+nvm use
+mise install
+pnpm install
+pnpm factory:preflight
+pnpm build:host
+```
 
-Tevm runs an Ethereum execution environment inside JavaScript. Use it as an in-memory devnet, a forked-chain simulator, an EIP-1193 provider, a viem-compatible client, or a lower-level EVM toolkit.
+The install build compiles ZEVM's Node-API addon from the sibling Zig sources. `build:host` builds the native client, RPC servers, adapters, and MCP packages with clean declarations. To rebuild the addon after native changes:
 
-It runs in Node, Bun, browsers, serverless functions, edge runtimes, and desktop apps without Docker or a background chain process.
+```sh
+mise exec -- node scripts/factory/build-native.mjs
+```
 
-## Why Use It?
+There is no alternate engine fallback. Local builds use the sibling source; published clients require ZEVM native platform packages. A missing native addon is an error.
 
-- **Fork EVM state locally**: run calls against mainnet, L2s, L3s, or appchains while overriding accounts, storage, and block context.
-- **Use viem actions directly**: `createMemoryClient` includes viem public, wallet, and Anvil-style test actions.
-- **Control mining behavior**: choose automatic, manual, or interval mining and decide when pending transactions become canonical blocks.
-- **Inspect real execution**: collect traces, receipts, logs, access lists, created addresses, and block-level results from local execution.
-- **Import Solidity in TypeScript**: use Tevm bundler plugins to import Solidity contracts with ABI, bytecode, and type-safe helpers.
-- **Run in the browser**: build local-first dapps, optimistic UIs, demos, and tests where a separate RPC node would be too heavy.
-- **Extend the EVM**: add custom precompiles, predeploys, decorators, and low-level runtime packages when you need direct control.
+## In-memory client
 
-## Quick Start
+```js
+import { createMemoryClient } from '@tevm/memory-client'
+import { parseAbi } from 'viem'
 
-Create a local in-memory chain, add a transaction to the mempool, mine it, and read the receipt.
-
-```typescript
-import { createMemoryClient, parseEther } from "tevm";
-
-const client = createMemoryClient({
-  miningConfig: { type: "manual" },
-});
-
-await client.tevmReady();
-
-const alice = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266";
-const bob = "0x1111111111111111111111111111111111111111";
-
-await client.tevmSetAccount({
-  address: alice,
-  balance: parseEther("1"),
-});
-
-const { txHash } = await client.tevmCall({
-  from: alice,
-  to: bob,
-  value: parseEther("0.1"),
-  addToMempool: true,
-});
-
-if (!txHash) {
-  throw new Error("Transaction was not added to the mempool");
+const client = createMemoryClient()
+try {
+  const deployed = await client.tevmDeploy({
+    bytecode: '0x600a600c600039600a6000f3602a60005260206000f3',
+  })
+  const result = await client.tevmContract({
+    address: deployed.createdAddress,
+    abi: parseAbi(['function answer() view returns (uint256)']),
+    functionName: 'answer',
+  })
+  console.log(result.data) // 42n
+} finally {
+  await client.tevmClose()
 }
-
-await client.tevmMine({ blockCount: 1 });
-
-const receipt = await client.getTransactionReceipt({ hash: txHash });
-const balance = await client.getBalance({ address: bob });
-
-console.log(receipt.status, balance);
 ```
 
-## Fork Mainnet Or An L2
+Viem public, wallet, and test actions are attached to the client. Calls use the native JSON-RPC implementation; supported methods and error behavior follow ZEVM. The default chain ID is 31337. Each client creates isolated native state unless given an existing engine.
 
-Tevm can fork through any EIP-1193 or viem transport. Set `common` when you know the chain to avoid an extra chain-id lookup.
+## Engine and events
 
-```typescript
-import { createMemoryClient, http, parseAbi } from "tevm";
-import { optimism } from "tevm/common";
+```js
+import { createZevmEngine } from '@tevm/node'
 
-const client = createMemoryClient({
-  common: optimism,
-  fork: {
-    transport: http("https://mainnet.optimism.io")({}),
-    blockTag: "latest",
-  },
-  miningConfig: { type: "manual" },
-});
-
-await client.tevmReady();
-
-const abi = parseAbi(["function balanceOf(address) view returns (uint256)"]);
-
-const balance = await client.readContract({
-  address: "0x4200000000000000000000000000000000000042",
-  abi,
-  functionName: "balanceOf",
-  args: ["0x0000000000000000000000000000000000000000"],
-});
-
-console.log(balance);
+const engine = createZevmEngine({ mining: { auto: false } })
+engine.events.on('block', (block) => console.log(block.number))
+try {
+  await engine.request({ method: 'evm_mine' })
+  console.log(await engine.rpc('{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber"}'))
+} finally {
+  await engine.close()
+}
 ```
 
-## New In The 1.0 RC
+`request` returns a JSON result and throws `NativeRpcError` with the native `code` and `data`. `rpc` returns the exact response JSON, or `null` for notifications. Requests are serialized. The wrapper emits `request`, `response`, `block`, and `close`; block listeners also observe native interval mining.
 
-- **Blocks and canonical chain state**: Tevm now mines blocks instead of only mutating state snapshots. Calls that create transactions are pending until mined; cheat methods such as `tevmSetAccount` still update canonical state immediately.
-- **Mining modes**: configure `miningConfig` with `manual`, `auto`, or `interval` behavior. Use `client.tevmMine()` or viem's Anvil-compatible `client.mine()` to advance the chain.
-- **Txpool and receipts**: transactions can enter the mempool, be mined into blocks, and then be queried through viem actions or JSON-RPC methods such as `eth_getTransactionReceipt`.
-- **Historical block tags**: `blockTag` works for forked history and locally mined Tevm blocks.
-- **State and block overrides**: `tevmCall`, `tevmContract`, `tevmDeploy`, and `eth_call` can run with temporary account, storage, and block overrides.
-- **Execution tracing**: use `createTrace` on calls and `traceConfig` on debug APIs to inspect EVM execution for tests, debuggers, and profilers.
-- **Synchronous client creation**: `createMemoryClient()` and `createTevmNode()` return synchronously; `client.tevmReady()` and `node.ready()` are available when you want to eagerly wait for initialization.
-- **EIP-1193 request support**: `request` now follows the EIP-1193 shape. The previous low-level request helpers are available as `send` and `sendBulk`.
-- **Stable decorators**: extend `TevmNode` with `tevmActions`, `ethActions`, `tevmSend`, and `requestEip1193`.
-- **Broader JSON-RPC compatibility**: Tevm supports more Ethereum, Anvil, Ganache, and Hardhat-compatible RPC methods for viem test-client workflows.
-- **State persistence**: persist and hydrate in-memory client state with synchronous storage using `createSyncStoragePersister`.
-- **Runtime packages**: the monorepo now includes Tevm-native block, blockchain, tx, txpool, receipt-manager, state, VM, and utility packages.
+## JSON-RPC server
 
-## API Surface
-
-### Memory Client
-
-`createMemoryClient` is the easiest entry point. It returns a viem client with Tevm actions and Anvil-style test actions already installed.
-
-```typescript
-import { createMemoryClient } from "tevm";
-
-const client = createMemoryClient({
-  miningConfig: { type: "auto" },
-});
-
-await client.tevmReady();
-await client.tevmSetAccount({ address: "0x0000000000000000000000000000000000000001", balance: 1n });
-await client.getBlockNumber();
+```sh
+pnpm native:server
 ```
 
-### Tevm Node
+This starts HTTP and WebSocket on `127.0.0.1:8545`. Browsers connect to this server with viem's `http` or `webSocket` transport. The native addon is not a browser WASM engine.
 
-`createTevmNode` gives lower-level access to the runtime and decorator model.
+```js
+import { createMemoryClient } from '@tevm/memory-client'
+import { createServer, createIpcServer } from '@tevm/server'
 
-```typescript
-import { createTevmNode } from "tevm";
-import { requestEip1193, tevmActions } from "tevm/decorators";
-
-const node = createTevmNode({ miningConfig: { type: "manual" } })
-  .extend(tevmActions())
-  .extend(requestEip1193());
-
-await node.ready();
-
-const chainId = await node.request({ method: "eth_chainId" });
+const client = createMemoryClient()
+await client.tevmReady()
+const server = createServer(client)
+server.listen(8545, '127.0.0.1')
+const ipc = createIpcServer(client)
+ipc.listen('/tmp/tevm.sock')
+process.once('SIGINT', () => {
+  ipc.close()
+  server.close(() => { void client.tevmClose() })
+})
 ```
 
-### Solidity Imports
+WebSocket and IPC subscriptions use native block, log, and pending-transaction filters. HTTP passes batches, notifications, and JSON-RPC errors through the native dispatcher.
 
-Tevm bundler plugins let TypeScript import Solidity modules directly.
-
-```typescript
-import { createMemoryClient } from "tevm";
-import { ERC20 } from "@openzeppelin/contracts/token/ERC20.sol";
-
-const client = createMemoryClient();
-const token = ERC20.withAddress("0x0000000000000000000000000000000000000000");
-
-const balance = await client.tevmContract(
-  token.read.balanceOf("0x0000000000000000000000000000000000000001"),
-);
-```
-
-`tevm.json` is optional in the RC series. Use package-specific bundler docs for Vite, Webpack, Bun, esbuild, rspack, and other integrations.
-
-## Packages
-
-The `tevm` package re-exports the most common runtime APIs. Individual packages remain available when you want smaller imports or lower-level control.
-
-| Package | Purpose |
-| --- | --- |
-| `tevm` | Main batteries-included package |
-| `@tevm/memory-client` | viem-compatible in-memory Ethereum client |
-| `@tevm/node` | Low-level Tevm node and decorator runtime |
-| `@tevm/actions` | Tevm actions, JSON-RPC handlers, and debug APIs |
-| `@tevm/decorators` | Client extensions for actions, EIP-1193, and events |
-| `@tevm/block`, `@tevm/blockchain`, `@tevm/tx`, `@tevm/txpool` | Chain, block, transaction, and mempool internals |
-| `@tevm/receipt-manager` | Receipt storage and lookup |
-| `@tevm/state`, `@tevm/vm`, `@tevm/evm` | State manager and execution internals |
-| `@tevm/sync-storage-persister` | Synchronous persistence for browser or embedded storage |
-
-## Learn More
-
-- [Getting Started](https://node.tevm.sh/getting-started/overview)
-- [Viem Integration](https://node.tevm.sh/getting-started/viem)
-- [Ethers Integration](https://node.tevm.sh/getting-started/ethers)
-- [Bundler Quickstart](https://node.tevm.sh/getting-started/bundler)
-- [API Reference](https://node.tevm.sh/api/packages)
-- [Examples](https://github.com/evmts/tevm/tree/main/examples)
-
-## Community
-
-- [Telegram](https://t.me/+ANThR9bHDLAwMjUx)
-- [GitHub Discussions](https://github.com/evmts/tevm/discussions)
-
-## Contributing
-
-Contributions are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for local setup, testing, and pull-request guidance.
-
-## License
-
-Tevm is MIT licensed. See [LICENSE](./LICENSE) for details.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for repository gates and [AGENTS.md](AGENTS.md) for the contributor contract.

@@ -100,7 +100,15 @@ const checkoutProbe = async (name, declaration, required) => {
 }
 
 await checkoutProbe('vendor/flows submodule', policy.toolchain.flows, true)
-await checkoutProbe('vendor/zevm submodule', policy.toolchain.zevm, requireFull)
+for (const sibling of ['zevm', 'voltaire', 'guillotine-mini']) {
+	const path = resolve(repositoryRoot, '..', sibling, 'build.zig')
+	try {
+		await access(path)
+		add(`${sibling} native source`, true, path, requireFull)
+	} catch {
+		add(`${sibling} native source`, false, `missing ${path}`, requireFull)
+	}
+}
 
 try {
 	const executable = await realpath(

@@ -17,8 +17,8 @@ packages:
   - src/ui
   - tevm
   - test/*
-  - vendor/zevm/npm/zevm
-  - vendor/zevm/npm/platforms/*
+  - ../zevm/npm/zevm
+  - ../zevm/npm/platforms/*
 # The vendored @evmts/zevm declares one optional platform package per target.
 # Record every one of them, so the lockfile is the same bytes on a macOS
 # developer host and a Linux runner and --frozen-lockfile agrees on both.

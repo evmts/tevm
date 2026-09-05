@@ -18,7 +18,7 @@ const issueWorkflow = await readFile(resolve(repositoryRoot, '.github/workflows/
 
 assert(policy.schemaVersion === 1, 'factory/policy.json must use schemaVersion 1')
 assert(/^[0-9a-f]{40}$/.test(policy.toolchain.flows.revision), 'Flows revision must be a full Git SHA')
-assert(/^[0-9a-f]{40}$/.test(policy.toolchain.zevm.revision), 'Zevm revision must be a full Git SHA')
+assert(policy.toolchain.zevm.localPath === '../zevm', 'ZEVM must resolve to the maintained sibling repository')
 assert(packageJson.packageManager === `pnpm@${policy.toolchain.pnpm}`, 'policy pnpm version must match packageManager')
 assert(
 	packageJson.devDependencies?.['@smthrs/build-cli'] === `link:${policy.toolchain.flows.localPath}/packages/build-cli`,
@@ -36,7 +36,7 @@ assert(
 	workspace.includes("S.Mise({ config: S.file('//mise.toml') })"),
 	'WORKSPACE.ts must declare mise.toml as the S.Mise layer',
 )
-for (const tool of ['bun', 'foundry']) {
+for (const tool of ['bun', 'foundry', 'zig']) {
 	assert(new RegExp(`^${tool}\\s*=\\s*"[^"]+"`, 'm').test(miseConfig), `mise.toml must pin ${tool}`)
 }
 assert(
@@ -48,7 +48,7 @@ assert(!smithersTypes.includes('declare module'), 'smithers.d.ts must not mask t
 // The repository index pins each vendored checkout; policy.json restates the
 // SHA so the factory can name it without git. The two must agree, and the
 // submodule must point at the repository policy names.
-for (const checkout of [policy.toolchain.flows, policy.toolchain.zevm]) {
+for (const checkout of [policy.toolchain.flows]) {
 	assert(
 		gitmodules.includes(`path = ${checkout.localPath}\n\turl = ${checkout.repository}`),
 		`${checkout.localPath} must be a .gitmodules entry for ${checkout.repository}`,

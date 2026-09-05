@@ -2,7 +2,6 @@
 "@tevm/errors": patch
 "@tevm/server": patch
 "@tevm/utils": patch
-"@tevm/trie": patch
 "tevm": patch
 ---
 

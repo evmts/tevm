@@ -1,6 +1,5 @@
 ---
 "@tevm/memory-client": minor
-"@tevm/procedures": minor
 "tevm": minor
 ---
 

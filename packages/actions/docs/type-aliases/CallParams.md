@@ -4,157 +4,28 @@
 
 [@tevm/actions](../globals.md) / CallParams
 
-# Type Alias: CallParams\<TThrowOnFail\>
+# Type Alias: CallParams
 
-> **CallParams**\<`TThrowOnFail`\> = [`BaseCallParams`](BaseCallParams.md)\<`TThrowOnFail`\> & `object`
+> **CallParams** = `object`
 
-Defined in: [packages/actions/src/Call/CallParams.ts:31](https://github.com/evmts/tevm/blob/main/packages/actions/src/Call/CallParams.ts#L31)
+Defined in: TevmActions.ts:7
 
-TEVM parameters to execute a call on the VM.
-`Call` is the lowest level method to interact with the VM, and other methods such as `contract` and `script` use `call` under the hood.
+Native call parameters. State overrides use the standard eth_call wire shape.
 
-## Type Declaration
+## Properties
 
-### code?
-
-> `readonly` `optional` **code?**: [`Hex`](Hex.md)
-
-The encoded code to deploy with for a deployless call. Code is encoded with constructor arguments, unlike `deployedBytecode`.
-
-#### Examples
-
-```typescript
-import { createClient } from 'viem'
-import { createTevmTransport, tevmCall, encodeDeployData } from 'tevm'
-import { optimism } from 'tevm/common'
-
-const client = createClient({
-  transport: createTevmTransport({}),
-  chain: optimism,
-})
-
-const callParams = {
-  createTransaction: true,
-  data: encodeDeployData({
-    bytecode: '0x...',
-    data: '0x...',
-    abi: [{...}],
-    args: [1, 2, 3],
-  })
-}
-
-await tevmCall(client, callParams)
-```
-Code is also automatically created if using TEVM contracts via the `script` method.
-
-```typescript
-import { createClient } from 'viem'
-import { createTevmTransport, tevmContract } from 'tevm'
-import { optimism } from 'tevm/common'
-import { SimpleContract } from 'tevm/contracts'
-
-const client = createClient({
-  transport: createTevmTransport({}),
-  chain: optimism,
-})
-
-const script = SimpleContract.script({ constructorArgs: [420n] })
-
-await tevmContract(client, script.read.get()) // 420n
-```
-
-### data?
-
-> `readonly` `optional` **data?**: [`Hex`](Hex.md)
-
-The input data for the call.
-
-### deployedBytecode?
-
-> `readonly` `optional` **deployedBytecode?**: [`Hex`](Hex.md)
-
-The code to put into the state before executing the call. If you wish to call the constructor, use `code` instead.
-
-#### Example
-
-```typescript
-import { createClient } from 'viem'
-import { createTevmTransport, tevmCall } from 'tevm'
-import { optimism } from 'tevm/common'
-
-const client = createClient({
-  transport: createTevmTransport({}),
-  chain: optimism,
-})
-
-const callParams = {
-  data: '0x...',
-  deployedBytecode: '0x...',
-}
-
-await tevmCall(client, callParams)
-```
-
-### salt?
-
-> `readonly` `optional` **salt?**: [`Hex`](Hex.md)
-
-An optional CREATE2 salt.
-
-#### Example
-
-```typescript
-import { createClient } from 'viem'
-import { createTevmTransport, tevmCall } from 'tevm'
-import { optimism } from 'tevm/common'
-
-const client = createClient({
-  transport: createTevmTransport({}),
-  chain: optimism,
-})
-
-const callParams = {
-  data: '0x...',
-  bytecode: '0x...',
-  gasLimit: 420n,
-  salt: '0x1234...',
-}
-
-await tevmCall(client, callParams)
-```
-
-#### See
-
-[CREATE2](https://eips.ethereum.org/EIPS/eip-1014)
-
-## Type Parameters
-
-| Type Parameter | Default type |
-| ------ | ------ |
-| `TThrowOnFail` *extends* `boolean` | `boolean` |
-
-## Example
-
-```typescript
-import { createClient } from 'viem'
-import { createTevmTransport, tevmCall } from 'tevm'
-import { optimism } from 'tevm/common'
-
-const client = createClient({
-  transport: createTevmTransport({}),
-  chain: optimism,
-})
-
-const callParams = {
-  data: '0x...',
-  bytecode: '0x...',
-  gasLimit: 420n,
-}
-
-await tevmCall(client, callParams)
-```
-
-## See
-
- - [BaseCallParams](https://tevm.sh/reference/tevm/actions/type-aliases/basecallparams-1/)
- - [tevmCall](https://tevm.sh/reference/tevm/memory-client/functions/tevmCall/)
+| Property | Type | Defined in |
+| ------ | ------ | ------ |
+| <a id="addtoblockchain"></a> `addToBlockchain?` | `boolean` | TevmActions.ts:20 |
+| <a id="addtomempool"></a> `addToMempool?` | `boolean` | TevmActions.ts:19 |
+| <a id="blocktag"></a> `blockTag?` | `string` | TevmActions.ts:17 |
+| <a id="data"></a> `data?` | `Hex` | TevmActions.ts:10 |
+| <a id="from"></a> `from?` | `Address` | TevmActions.ts:9 |
+| <a id="gas"></a> `gas?` | `bigint` | TevmActions.ts:12 |
+| <a id="gasprice"></a> `gasPrice?` | `bigint` | TevmActions.ts:13 |
+| <a id="maxfeepergas"></a> `maxFeePerGas?` | `bigint` | TevmActions.ts:14 |
+| <a id="maxpriorityfeepergas"></a> `maxPriorityFeePerGas?` | `bigint` | TevmActions.ts:15 |
+| <a id="nonce"></a> `nonce?` | `bigint` | TevmActions.ts:16 |
+| <a id="stateoverride"></a> `stateOverride?` | `Record`\<`string`, `JsonValue`\> | TevmActions.ts:18 |
+| <a id="to"></a> `to?` | `Address` | TevmActions.ts:8 |
+| <a id="value"></a> `value?` | `bigint` | TevmActions.ts:11 |

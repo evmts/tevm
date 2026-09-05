@@ -1,14 +1,9 @@
 ---
 "@tevm/memory-client": patch
 "@tevm/node": patch
-"@tevm/blockchain": patch
-"@tevm/procedures": patch
 "@tevm/ethers": patch
 "@tevm/actions": patch
 "@tevm/common": patch
-"@tevm/block": patch
-"@tevm/evm": patch
-"@tevm/vm": patch
 "tevm": patch
 ---
 

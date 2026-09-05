@@ -2,19 +2,13 @@ import { vitePluginTevm } from '@tevm/vite-plugin'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
-import topLevelAwait from 'vite-plugin-top-level-await'
-import vitePluginWasm from 'vite-plugin-wasm'
 
 // https://vitejs.dev/config/
 export default defineConfig({
 	define: {
 		global: 'globalThis',
 	},
-	build: {
-		rollupOptions: {
-			external: ['@safe-globalThis/safe-apps-provider', '@safe-globalThis/safe-apps-sdk'],
-		},
-	},
+	build: { target: 'es2022' },
 	plugins: [
 		nodePolyfills({
 			include: ['stream'],
@@ -26,7 +20,5 @@ export default defineConfig({
 		}),
 		react(),
 		vitePluginTevm({}) as any,
-		topLevelAwait(),
-		vitePluginWasm(),
 	],
 })

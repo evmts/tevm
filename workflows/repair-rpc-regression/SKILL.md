@@ -7,8 +7,8 @@ This lane repairs a regression; it does not add unrelated methods or refactor a
 namespace. Work in this order:
 
 1. Locate the nearest public boundary that reproduces the report: the JSON-RPC
-   procedure, HTTP/WebSocket/IPC server, or memory client. Trace inward through
-   the response type, procedure, handler, and conversion helper. Read the
+   dispatcher, HTTP/WebSocket/IPC server, or memory client. Trace inward through
+   the response type, native engine request, and conversion helper. Read the
    equivalent neighboring method before editing.
 2. Write the smallest focused test first and run it against the unmodified
    implementation. Record that it fails for the reported reason. Use real
@@ -21,7 +21,7 @@ namespace. Work in this order:
 4. Make the minimum implementation change. Review the complete contract matrix
    for this method even when only one conversion changes:
    request/params type, result/response type, handler, procedure, namespace
-   unions, dispatch table, `rpcMethodMatrix`, memory-client/decorator exposure,
+   unions, native dispatch table, memory-client exposure,
    named barrels, and `tevm` facade.
 5. Assert the wire shape exactly and prove `JSON.stringify(response)` succeeds.
    JSON-RPC outputs contain no `Promise`, `bigint`, typed array, `Error`, or
@@ -40,3 +40,5 @@ namespace. Work in this order:
 Do not update snapshots until the focused semantic assertions pass. Never turn
 an unexpected error snapshot into the new expected behavior merely to make the
 suite green.
+
+Execution and state belong to sibling ZEVM, Voltaire, and Guillotine Mini repositories. This action may fix TEVM host adapters. If the regression requires a native patch, identify the owning files and required regression in the result; do not recreate a JavaScript engine or edit outside the candidate write set.

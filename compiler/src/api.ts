@@ -105,5 +105,5 @@ const { sources } = await compiler.fetchVerifiedSource(contractAddress, { chainI
 const { contract } = compiler.compileSourcesWithShadow(sources, `shadow methods`)
 const ShadowContract = contract.withAddress(contractAddress)
 
-const client = createMemoryClient({ fork: { transport: http() } })
+const client = createMemoryClient({ fork: { url: 'http://127.0.0.1:8545' } })
 const res = await client.tevmContract(ShadowContract.read.someShadowFunction())

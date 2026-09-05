@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createSessionManager } from './createSessionManager.js'
 import { executeTool } from './executeTool.js'
 import { toolDefinitions } from './toolDefinitions.js'
@@ -37,6 +37,9 @@ describe('Tevm MCP tools', () => {
 	let contractAddress = ''
 	let transactionHash = ''
 	let artifact: any
+	afterAll(async () => {
+		await sessions.close(session)
+	})
 
 	beforeAll(async () => {
 		const created: any = await executeTool('evm_create_session', {}, sessions)
@@ -82,7 +85,7 @@ describe('Tevm MCP tools', () => {
 		contractAddress = deployed.contractAddress
 		transactionHash = deployed.transactionHash
 		expect(contractAddress).toMatch(/^0x[0-9a-f]{40}$/i)
-		expect(BigInt(deployed.gasUsed)).toBeGreaterThan(0n)
+		expect(BigInt(deployed.gasLimit)).toBeGreaterThan(0n)
 
 		const txpoolBeforeMine: any = await executeTool('evm_get_txpool', { session }, sessions)
 		expect(txpoolBeforeMine.status.pending).toBe('0x1')
@@ -100,7 +103,7 @@ describe('Tevm MCP tools', () => {
 			sessions,
 		)
 		expect(read.decodedOutput).toBe('7')
-		expect(BigInt(read.gasUsed)).toBeGreaterThan(0n)
+		expect(BigInt(read.estimatedGas)).toBeGreaterThan(0n)
 
 		const sent: any = await executeTool(
 			'evm_send_transaction',
@@ -108,11 +111,16 @@ describe('Tevm MCP tools', () => {
 			sessions,
 		)
 		expect(sent.txHash).toMatch(/^0x[0-9a-f]{64}$/i)
-		expect(sent.logs).toHaveLength(1)
 
 		const txpoolAfterWrite: any = await executeTool('evm_get_txpool', { session }, sessions)
 		expect(txpoolAfterWrite.status.pending).toBe('0x1')
 		await executeTool('evm_mine', { session }, sessions)
+		const sentReceipt: any = await executeTool(
+			'evm_get_transaction_receipt',
+			{ session, transactionHash: sent.txHash },
+			sessions,
+		)
+		expect(sentReceipt.logs).toHaveLength(1)
 
 		const changed: any = await executeTool(
 			'evm_call_contract',

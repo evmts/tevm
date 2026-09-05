@@ -1,22 +1,8 @@
-# Triage a conformance failure
+# Diagnose a native conformance failure
 
-Input: a failing test id from the ethereum/tests or execution-spec-tests
-suites, for example gst-frontier-upstream-state-root.
+Input: a failing Guillotine Mini fixture identifier and optional suite.
 
-A conformance run reported this test failing. Find the divergence and land
-a fix or a precise repro.
-
-1. Isolate the test with the runner's --isolate flag and capture an
-   EIP-3155 trace (--trace-out).
-2. Compare against the reference trace (--trace-compare,
-   --trace-reference). The first divergent step names the opcode or state
-   transition at fault.
-3. Locate the implementation in packages/evm, packages/vm, or
-   packages/state and identify the deviation from the yellow paper or the
-   relevant EIP.
-4. If the fix is contained, apply it and add a focused unit test in the
-   owning package. Otherwise commit the isolate artifacts and a failing
-   unit test that reproduces the divergence without the full suite, marked
-   as skipped, with a comment naming the suspected opcode or transition.
-
-Keep the diff minimal. Do not touch unrelated hardforks.
+1. Locate the native fixture in `../guillotine-mini` and reproduce it with the pinned Zig target. Do not regenerate unrelated fixtures.
+2. Compare its native trace with the fixture's named reference. Identify whether the failure belongs to Guillotine Mini execution, Voltaire state/primitives, ZEVM RPC, or TEVM transport.
+3. Write a diagnosis and concrete regression/fix plan under `factory/queue/conformance/`. Include the exact fixture, command, observed mismatch, owning repository, and files that need changes.
+4. Do not change sibling repositories from this factory action. Their patches need a candidate with an explicit write set in the owning repository. Do not commit, publish, or mark a failing assertion skipped.
