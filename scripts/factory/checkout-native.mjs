@@ -16,7 +16,18 @@ for (const name of ['voltaire', 'guillotine-mini', 'zevm']) {
 		git('remote', 'add', 'origin', `https://github.com/evmts/${name}.git`)
 		git('fetch', '--depth', '1', 'origin', revision)
 		git('checkout', '--detach', 'FETCH_HEAD')
-		git('submodule', 'update', '--init', '--recursive')
+		// Fetch build inputs; Voltaire's optional skills submodule requires SSH credentials.
+		if (name === 'voltaire')
+			git(
+				'submodule',
+				'update',
+				'--init',
+				'--recursive',
+				'--',
+				'packages/voltaire-zig/lib/libwally-core',
+				'vendor/execution-apis',
+			)
+		else git('submodule', 'update', '--init', '--recursive')
 	}
 	if (git('rev-parse', 'HEAD') !== revision)
 		throw new Error(`${name} does not match its release pin; checkout preserved`)

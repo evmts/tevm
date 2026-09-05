@@ -17,4 +17,4 @@ jobs:
       - name: Checkout pinned native sources
         run: node scripts/factory/checkout-native.mjs
       - uses: "./.github/actions/setup"
-      - run: pnpm exec smthrs target //test:parityFast //test:conformanceFast //test:hiveSmoke
+      - run: "pnpm exec smthrs target //test:parityFast && pnpm exec smthrs target //test:conformanceFast && pnpm exec smthrs target //test:hiveSmoke"

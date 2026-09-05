@@ -180,13 +180,9 @@ const parityFull = S.Shell.Test({
 	sandbox: 'none',
 })
 
-// The nightly full-conformance schedule; //.github:github projects every
-// labeled Cron into workflows/cron-nightlyConformance.yml with the shared
-// setup action.
-const nightlyConformance = S.Cron({
-	schedule: '0 3 * * *',
-	run: [conformanceAll],
-})
+// The explicit generated workflow in //.github bootstraps sibling native sources
+// before installation. Keep this suite as the manual nightly target.
+const nightlyConformance = S.Suite({ tests: [conformanceAll] })
 
 // Everything the runners write under artifacts/.
 const clean = S.Clean({

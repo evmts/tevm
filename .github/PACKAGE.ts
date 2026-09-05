@@ -177,14 +177,18 @@ const paritySuites = S.Github.Workflow({
 	on: { pullRequest: true, workflowDispatch: true },
 	setup,
 	env: rpcEnvironment,
-	steps: nativeSteps('pnpm exec smthrs target //test:parityFast //test:conformanceFast //test:hiveSmoke'),
+	steps: nativeSteps(
+		'pnpm exec smthrs target //test:parityFast && pnpm exec smthrs target //test:conformanceFast && pnpm exec smthrs target //test:hiveSmoke',
+	),
 })
 
-// The //:nightlyConformance Cron renders itself as
-// workflows/cron-nightlyConformance.yml: every labeled Cron in the graph is
-// projected, so a second explicit schedule here would run the suite twice.
-// Manual runs go through parity-suites.yml's workflow_dispatch, which also
-// runs //test:conformanceFast.
+// Native sibling sources must exist before the shared pnpm installation.
+const nightlyConformance = S.Github.Workflow({
+	name: 'cron-nightlyConformance',
+	on: { schedule: ['0 3 * * *'], workflowDispatch: true },
+	setup,
+	steps: nativeSteps('pnpm exec smthrs target //test:nightlyConformance'),
+})
 
 // claude-code-review.yml's checklist runs as //:prReview on every PR.
 const review = S.Github.Workflow({
@@ -204,7 +208,18 @@ const review = S.Github.Workflow({
 // hand-written because they use a two-job approval/artifact boundary the
 // current renderer cannot express.
 const github = S.Github.CiGen({
-	workflows: [ci, release, prerelease, prereleaseExit, snapshot, jsrPublish, wasmSize, paritySuites, review],
+	workflows: [
+		ci,
+		release,
+		prerelease,
+		prereleaseExit,
+		snapshot,
+		jsrPublish,
+		wasmSize,
+		paritySuites,
+		nightlyConformance,
+		review,
+	],
 	preserve: [
 		'workflows/claude.yml',
 		'workflows/claude-auto-update.yml',
@@ -231,6 +246,7 @@ export const Package = S.Package({
 		github,
 		jsrPublish,
 		paritySuites,
+		nightlyConformance,
 		pr,
 		prerelease,
 		prereleaseExit,

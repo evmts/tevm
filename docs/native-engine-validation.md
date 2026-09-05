@@ -26,8 +26,8 @@ The integration tests execute the compiled native addon. They cover deployment,
 ABI calls, signed transactions, receipts, account/storage edits, mining,
 snapshots, state dumps, loopback fork reads, native tracing, HTTP batches and
 notifications, WebSocket/IPC subscriptions, malformed connections, and lifecycle
-cleanup. Network-dependent tests using configured external credentials were not
-run. Server coverage is 98.8% statements, 90.5% branches, 100% functions, and
+cleanup. The original focused runs excluded external network cases. The subsequent
+pre-push integration gate passed the configured compiler, viem, MCP fork, and CLI targets. Server coverage is 98.8% statements, 90.5% branches, 100% functions, and
 99.12% lines; memory-client coverage is 100% in every category.
 
 The TEVM dependency lockfile and retained runtime sources contain no EthereumJS
@@ -54,6 +54,19 @@ parent frame with the native EVM.
 removed; active package entries remain. Native source revisions are recorded in
 `factory/native-dependencies.json`; generated CI checks them out before pnpm
 installation. Release workflows use Changesets to create version PRs and publish.
+
+The complete `//:prePush` gate passed before the first TEVM branch push,
+including `//:mechanicalPrePush` and external integration targets. Its agent
+lints had no uncommitted migration diff; the earlier full-diff review limitation
+below still applies. The runner regression additionally passes all nine tests
+under the pinned Bun version.
+
+Voltaire's native Swift build and 63 Swift tests pass. ZEVM's Linux x64 GNU
+cross build now links the target Rust archive; inspection confirms no unresolved
+crypto symbols. This is build/link evidence, not Linux execution qualification.
+Guillotine Mini's broader `zig build test` run reports storage mismatches and
+missing reference traces. The run was stopped after repeated failures; its
+assertions remain in place and that gate is not green.
 
 ## Unresolved release gates
 
