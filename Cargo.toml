@@ -6,6 +6,9 @@ members = [
 	'bundler-packages/runtime-rs',
 	'bundler-packages/solc-rs',
 ]
+exclude = [
+	'fuzz',
+]
 
 [profile.release]
 lto = true

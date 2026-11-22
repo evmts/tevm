@@ -2,6 +2,7 @@
 const S = Smithers
 
 import { scopedShell } from '../../factory/scoped-shell.js'
+import { cargoBench } from '../../factory/bench.js'
 
 const Shell = scopedShell('bundler-packages/resolutions-rs')
 
@@ -15,6 +16,10 @@ const packageJson = S.file('package.json')
 
 const srcs = S.Filegroup({
 	srcs: S.glob(['src/**', 'Cargo.toml', 'build.rs']),
+})
+
+const benches = S.Filegroup({
+	srcs: S.glob(['examples/bench_json.rs']),
 })
 
 // The JS surface napi generates against: the loader (index.js), its
@@ -118,8 +123,15 @@ const check = S.Suite({
 	tests: [testRust, testNode, wasmSize, packageLint],
 })
 
+const bench = cargoBench('bundler-packages/resolutions-rs', {
+	cargoPackage: 'tevm_resolutions_rs',
+	data: [srcs, benches],
+})
+
 export const Package = S.Package({
 	targets: {
+		bench,
+		benches,
 		bindings,
 		build,
 		buildDebug,

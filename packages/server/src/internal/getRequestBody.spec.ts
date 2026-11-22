@@ -79,3 +79,10 @@ it('reads streams that already decode text', async () => {
 	stream.end('null')
 	expect(await result).toBe('null')
 })
+
+it('enforces maxBodySize when trailing incomplete UTF-8 bytes flush on stream end', async () => {
+	const stream = new PassThrough()
+	const result = getRequestBody(stream as never, { maxBodySize: 0 })
+	stream.end(Buffer.from([0xc0]))
+	expect(await result).toBeInstanceOf(ReadRequestBodyError)
+})

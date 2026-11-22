@@ -1,7 +1,9 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
+import { cargoBench } from '../../factory/bench.js'
 import { scopedShell } from '../../factory/scoped-shell.js'
+import { Package as solcRs } from '../solc-rs/PACKAGE.js'
 
 const Shell = scopedShell('bundler-packages/runtime-rs')
 
@@ -15,6 +17,10 @@ const packageJson = S.file('package.json')
 
 const srcs = S.Filegroup({
 	srcs: S.glob(['src/**', 'Cargo.toml', 'build.rs']),
+})
+
+const benches = S.Filegroup({
+	srcs: S.glob(['examples/bench_json.rs']),
 })
 
 // build (cargo build --release).
@@ -54,6 +60,13 @@ const wasmSize = Shell.Test({
 	data: [napi, S.file('//scripts/check-file-size.mjs')],
 })
 
+const bench = cargoBench('bundler-packages/runtime-rs', {
+	cargoPackage: 'tevm_runtime_rs',
+	data: [srcs, benches, solcRs.srcs],
+})
+
 export const Package = S.Package({
-	targets: { build, buildDebug, napi, srcs, testRust, wasmSize },
+	targets: {
+		bench,
+		benches, build, buildDebug, napi, srcs, testRust, wasmSize },
 })

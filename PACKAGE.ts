@@ -1,11 +1,48 @@
 /// <reference path="./smithers.d.ts" />
 const S = Smithers
 
+import { Package as baseBundler } from './bundler-packages/base-bundler/PACKAGE.js'
+import { Package as bunPlugin } from './bundler-packages/bun/PACKAGE.js'
+import { Package as bundlerCache } from './bundler-packages/bundler-cache/PACKAGE.js'
 import { Package as compiler } from './bundler-packages/compiler/PACKAGE.js'
+import { Package as config } from './bundler-packages/config/PACKAGE.js'
+import { Package as esbuildPlugin } from './bundler-packages/esbuild/PACKAGE.js'
+import { Package as requirejsPlugin } from './bundler-packages/requirejs/PACKAGE.js'
+import { Package as resolutions } from './bundler-packages/resolutions/PACKAGE.js'
+import { Package as resolutionsRs } from './bundler-packages/resolutions-rs/PACKAGE.js'
+import { Package as rollupPlugin } from './bundler-packages/rollup/PACKAGE.js'
+import { Package as rspackPlugin } from './bundler-packages/rspack/PACKAGE.js'
+import { Package as runtime } from './bundler-packages/runtime/PACKAGE.js'
+import { Package as runtimeRs } from './bundler-packages/runtime-rs/PACKAGE.js'
+import { Package as solcPkg } from './bundler-packages/solc/PACKAGE.js'
+import { Package as solcRs } from './bundler-packages/solc-rs/PACKAGE.js'
+import { Package as tevmRun } from './bundler-packages/tevm-run/PACKAGE.js'
+import { Package as unplugin } from './bundler-packages/unplugin/PACKAGE.js'
+import { Package as vitePlugin } from './bundler-packages/vite/PACKAGE.js'
+import { Package as webpackPlugin } from './bundler-packages/webpack/PACKAGE.js'
+import { Package as whatsabi } from './bundler-packages/whatsabi/PACKAGE.js'
 import { Package as cli } from './cli/PACKAGE.js'
+import { Package as ethersExt } from './extensions/ethers/PACKAGE.js'
 import { Package as viem } from './extensions/viem/PACKAGE.js'
 import { Package as factory } from './factory/PACKAGE.js'
+import { Package as lsp } from './lsp/lsp/PACKAGE.js'
+import { Package as tsPlugin } from './lsp/ts-plugin/PACKAGE.js'
+import { Package as vscodeExt } from './lsp/vscode/PACKAGE.js'
+import { Package as actions } from './packages/actions/PACKAGE.js'
+import { Package as common } from './packages/common/PACKAGE.js'
+import { Package as contract } from './packages/contract/PACKAGE.js'
+import { Package as effectPkg } from './packages/effect/PACKAGE.js'
+import { Package as errors } from './packages/errors/PACKAGE.js'
+import { Package as httpClient } from './packages/http-client/PACKAGE.js'
+import { Package as jsonrpc } from './packages/jsonrpc/PACKAGE.js'
+import { Package as logger } from './packages/logger/PACKAGE.js'
 import { Package as mcp } from './packages/mcp/PACKAGE.js'
+import { Package as memoryClient } from './packages/memory-client/PACKAGE.js'
+import { Package as nodePkg } from './packages/node/PACKAGE.js'
+import { Package as predeploys } from './packages/predeploys/PACKAGE.js'
+import { Package as server } from './packages/server/PACKAGE.js'
+import { Package as utils } from './packages/utils/PACKAGE.js'
+import { Package as tevmFacade } from './tevm/PACKAGE.js'
 
 // PACKAGE.ts files are discovered automatically: the CLI globs the tree and
 // indexes each file's Package export under path-derived labels
@@ -633,6 +670,139 @@ const pr = S.Git.Pr({
 	sandbox: { network: true },
 })
 
+// Incremental performance benchmarks across every workspace package. Each
+// package's `:bench` target is a content-cached Shell.Build capturing
+// `artifacts/bench.json` and keyed on its sources, benchmarks, and transitive
+// workspace dependencies, so `smthrs target //:bench` only re-runs benchmarks
+// affected by a change while restoring unchanged packages from cache.
+const benchBaselineFile = S.file('//benchmarks/baseline.json')
+const benchReportScript = S.file('//scripts/bench/report.mjs')
+const benchShowScript = S.file('//scripts/bench/show-report.mjs')
+const benchUpdateBaselineScript = S.file('//scripts/bench/update-baseline.mjs')
+
+const coreBenchSpecs = [
+	['packages/actions/artifacts/bench.json', actions.bench],
+	['packages/common/artifacts/bench.json', common.bench],
+	['packages/contract/artifacts/bench.json', contract.bench],
+	['packages/effect/artifacts/bench.json', effectPkg.bench],
+	['packages/errors/artifacts/bench.json', errors.bench],
+	['packages/http-client/artifacts/bench.json', httpClient.bench],
+	['packages/jsonrpc/artifacts/bench.json', jsonrpc.bench],
+	['packages/logger/artifacts/bench.json', logger.bench],
+	['packages/mcp/artifacts/bench.json', mcp.bench],
+	['packages/memory-client/artifacts/bench.json', memoryClient.bench],
+	['packages/node/artifacts/bench.json', nodePkg.bench],
+	['packages/predeploys/artifacts/bench.json', predeploys.bench],
+	['packages/server/artifacts/bench.json', server.bench],
+	['packages/utils/artifacts/bench.json', utils.bench],
+	['extensions/ethers/artifacts/bench.json', ethersExt.bench],
+	['extensions/viem/artifacts/bench.json', viem.bench],
+] as const
+
+const bundlerBenchSpecs = [
+	['bundler-packages/base-bundler/artifacts/bench.json', baseBundler.bench],
+	['bundler-packages/bun/artifacts/bench.json', bunPlugin.bench],
+	['bundler-packages/bundler-cache/artifacts/bench.json', bundlerCache.bench],
+	['bundler-packages/compiler/artifacts/bench.json', compiler.bench],
+	['bundler-packages/config/artifacts/bench.json', config.bench],
+	['bundler-packages/esbuild/artifacts/bench.json', esbuildPlugin.bench],
+	['bundler-packages/requirejs/artifacts/bench.json', requirejsPlugin.bench],
+	['bundler-packages/resolutions/artifacts/bench.json', resolutions.bench],
+	['bundler-packages/rollup/artifacts/bench.json', rollupPlugin.bench],
+	['bundler-packages/rspack/artifacts/bench.json', rspackPlugin.bench],
+	['bundler-packages/runtime/artifacts/bench.json', runtime.bench],
+	['bundler-packages/solc/artifacts/bench.json', solcPkg.bench],
+	['bundler-packages/tevm-run/artifacts/bench.json', tevmRun.bench],
+	['bundler-packages/unplugin/artifacts/bench.json', unplugin.bench],
+	['bundler-packages/vite/artifacts/bench.json', vitePlugin.bench],
+	['bundler-packages/webpack/artifacts/bench.json', webpackPlugin.bench],
+	['bundler-packages/whatsabi/artifacts/bench.json', whatsabi.bench],
+] as const
+
+const rustBenchSpecs = [
+	['bundler-packages/resolutions-rs/artifacts/bench.json', resolutionsRs.bench],
+	['bundler-packages/runtime-rs/artifacts/bench.json', runtimeRs.bench],
+	['bundler-packages/solc-rs/artifacts/bench.json', solcRs.bench],
+] as const
+
+const toolingBenchSpecs = [
+	['lsp/lsp/artifacts/bench.json', lsp.bench],
+	['lsp/ts-plugin/artifacts/bench.json', tsPlugin.bench],
+	['lsp/vscode/artifacts/bench.json', vscodeExt.bench],
+	['cli/artifacts/bench.json', cli.bench],
+	['tevm/artifacts/bench.json', tevmFacade.bench],
+] as const
+
+const allBenchSpecs = [...coreBenchSpecs, ...bundlerBenchSpecs, ...rustBenchSpecs, ...toolingBenchSpecs] as const
+
+const benchReport = S.Shell.Build({
+	bin: S.Runtime.bin,
+	args: ['scripts/bench/report.mjs', ...allBenchSpecs.map(([path]) => path)],
+	data: [...allBenchSpecs.map(([, target]) => target), benchReportScript, benchBaselineFile],
+	outFiles: [
+		'artifacts/benchmarks/report.json',
+		'artifacts/benchmarks/summary.md',
+		'artifacts/benchmarks/report.html',
+	],
+})
+
+const bench = S.Shell.Run({
+	bin: S.Runtime.bin,
+	args: ['scripts/bench/show-report.mjs'],
+	data: [benchReport, benchShowScript],
+})
+
+const benchCore = S.Shell.Build({
+	bin: S.Runtime.bin,
+	args: ['scripts/bench/report.mjs', ...coreBenchSpecs.map(([path]) => path)],
+	data: [...coreBenchSpecs.map(([, target]) => target), benchReportScript, benchBaselineFile],
+	outFiles: [
+		'artifacts/benchmarks/report.json',
+		'artifacts/benchmarks/summary.md',
+		'artifacts/benchmarks/report.html',
+	],
+})
+
+const benchBundlers = S.Shell.Build({
+	bin: S.Runtime.bin,
+	args: ['scripts/bench/report.mjs', ...bundlerBenchSpecs.map(([path]) => path)],
+	data: [...bundlerBenchSpecs.map(([, target]) => target), benchReportScript, benchBaselineFile],
+	outFiles: [
+		'artifacts/benchmarks/report.json',
+		'artifacts/benchmarks/summary.md',
+		'artifacts/benchmarks/report.html',
+	],
+})
+
+const benchRust = S.Shell.Build({
+	bin: S.Runtime.bin,
+	args: ['scripts/bench/report.mjs', ...rustBenchSpecs.map(([path]) => path)],
+	data: [...rustBenchSpecs.map(([, target]) => target), benchReportScript, benchBaselineFile],
+	outFiles: [
+		'artifacts/benchmarks/report.json',
+		'artifacts/benchmarks/summary.md',
+		'artifacts/benchmarks/report.html',
+	],
+})
+
+const benchTooling = S.Shell.Build({
+	bin: S.Runtime.bin,
+	args: ['scripts/bench/report.mjs', ...toolingBenchSpecs.map(([path]) => path)],
+	data: [...toolingBenchSpecs.map(([, target]) => target), benchReportScript, benchBaselineFile],
+	outFiles: [
+		'artifacts/benchmarks/report.json',
+		'artifacts/benchmarks/summary.md',
+		'artifacts/benchmarks/report.html',
+	],
+})
+
+const benchBaseline = S.Shell.Diff({
+	bin: S.Runtime.bin,
+	args: ['scripts/bench/update-baseline.mjs'],
+	data: [benchReport, benchUpdateBaselineScript, benchBaselineFile],
+	changes: ['benchmarks/baseline.json'],
+})
+
 // The root `clean` script: nx reset, every package's clean, node_modules.
 // The nx cache is gone; per-package cleans are `smthrs '//**:clean'`; the
 // workspace install layer owns node_modules. What remains is the tree-level
@@ -659,6 +829,13 @@ export const Package = S.Package({
 		allTypechecks,
 		allTypes,
 		barrelExportsLint,
+		bench,
+		benchBaseline,
+		benchBundlers,
+		benchCore,
+		benchReport,
+		benchRust,
+		benchTooling,
 		cargoBuilds,
 		cargoCheck,
 		cargoTests,

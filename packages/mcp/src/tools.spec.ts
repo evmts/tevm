@@ -234,6 +234,8 @@ describe('Tevm MCP tools', () => {
 	it('rejects bad input at the schema boundary', async () => {
 		await expect(executeTool('evm_mine', { session, blockCount: 0 }, sessions)).rejects.toThrow()
 		await expect(executeTool('evm_get_account', { session, address: 'not-an-address' }, sessions)).rejects.toThrow()
+		await expect(executeTool('__proto__', {}, sessions)).rejects.toThrow('Unknown tool: __proto__')
+		await expect(executeTool('constructor', {}, sessions)).rejects.toThrow('Unknown tool: constructor')
 	})
 
 	it('closes an isolated session', async () => {

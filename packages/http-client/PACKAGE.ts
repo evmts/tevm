@@ -2,6 +2,10 @@
 const S = Smithers
 
 import { scopedShell } from '../../factory/scoped-shell.js'
+import { vitestBench } from '../../factory/bench.js'
+import { Package as pkg_memory_client } from '../memory-client/PACKAGE.js'
+import { Package as pkg_server } from '../server/PACKAGE.js'
+import { Package as pkg_viem } from '../../extensions/viem/PACKAGE.js'
 
 const Shell = scopedShell('packages/http-client')
 
@@ -23,7 +27,11 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
 })
 
-const deps = S.Filegroup({ srcs: [packageJson] })
+const benches = S.Filegroup({
+	srcs: S.glob(['bench/**']),
+})
+
+const deps = S.Filegroup({ srcs: [packageJson, pkg_memory_client.build, pkg_server.build, pkg_viem.build] })
 
 // build:dist.
 const build = Shell.Build({
@@ -132,8 +140,15 @@ const check = S.Suite({
 // nx aggregate the build, types, and declarations targets replace; `format`
 // and `format:check` are the format-only half of lint and lint:check; `test`
 // is vitest in watch mode; `package:up` is an interactive installer.
+const bench = vitestBench('packages/http-client', {
+	data: [srcs, benches, deps, tsconfig],
+	sandbox: { network: 'loopback' },
+})
+
 export const Package = S.Package({
 	targets: {
+		bench,
+		benches,
 		apiCompat,
 		build,
 		check,

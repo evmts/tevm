@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "package": "@tevm/rspack-plugin",
+  "dir": "bundler-packages/rspack",
+  "runner": "vitest",
+  "nodeVersion": "v24.12.0",
+  "platform": "darwin-arm64",
+  "cpu": "Apple M3 Max",
+  "benchmarks": [
+    {
+      "suite": "@tevm/rspack-plugin",
+      "name": "rspackPluginTevm() instantiation",
+      "hz": 13437436.84,
+      "meanMs": 0.000074,
+      "medianMs": 0.000083,
+      "p75Ms": 0.000083,
+      "p99Ms": 0.000125,
+      "minMs": 0,
+      "maxMs": 9.513166,
+      "rme": 11.58,
+      "samples": 2687488
+    }
+  ]
+}

@@ -2,6 +2,9 @@
 const S = Smithers
 
 import { scopedShell } from '../../factory/scoped-shell.js'
+import { vitestBench } from '../../factory/bench.js'
+import { Package as pkg_actions } from '../actions/PACKAGE.js'
+import { Package as pkg_node } from '../node/PACKAGE.js'
 
 const Shell = scopedShell('packages/memory-client')
 
@@ -26,7 +29,11 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
 })
 
-const deps = S.Filegroup({ srcs: [packageJson] })
+const benches = S.Filegroup({
+	srcs: S.glob(['bench/**']),
+})
+
+const deps = S.Filegroup({ srcs: [packageJson, pkg_actions.build, pkg_node.build] })
 
 const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
@@ -122,8 +129,14 @@ const check = S.Suite({
 	tests: [lint, typecheck, coverageGate, depsLint, packageLint],
 })
 
+const bench = vitestBench('packages/memory-client', {
+	data: [srcs, benches, deps, tsconfig],
+})
+
 export const Package = S.Package({
 	targets: {
+		bench,
+		benches,
 		apiCompat,
 		build,
 		check,

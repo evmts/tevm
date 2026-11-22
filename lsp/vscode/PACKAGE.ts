@@ -2,6 +2,8 @@
 const S = Smithers
 
 import { scopedShell } from '../../factory/scoped-shell.js'
+import { vitestBench } from '../../factory/bench.js'
+import { Package as pkg_lsp } from '../lsp/PACKAGE.js'
 
 const Shell = scopedShell('lsp/vscode')
 
@@ -23,7 +25,11 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts']),
 })
 
-const deps = S.Filegroup({ srcs: [packageJson] })
+const benches = S.Filegroup({
+	srcs: S.glob(['bench/**']),
+})
+
+const deps = S.Filegroup({ srcs: [packageJson, pkg_lsp.srcs] })
 
 // build. The `--` forwards --minify to the esbuild context in the script.
 const build = Shell.Build({
@@ -80,6 +86,12 @@ const clean = S.Clean({
 	paths: ['dist', 'coverage'],
 })
 
+const bench = vitestBench('lsp/vscode', {
+	data: [srcs, benches, deps, tsconfig],
+})
+
 export const Package = S.Package({
-	targets: { build, clean, coverageGate, pack, release, srcs, testCoverage, tests, watch },
+	targets: {
+		bench,
+		benches, build, clean, coverageGate, pack, release, srcs, testCoverage, tests, watch },
 })

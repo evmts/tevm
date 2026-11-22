@@ -32,6 +32,7 @@ supportedArchitectures:
   libc: [current, glibc, musl]
 onlyBuiltDependencies:
   - "@biomejs/biome"
+  - "@jazzer.js/fuzzer"
   - "@swc/core"
   - bufferutil
   - bun

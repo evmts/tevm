@@ -113,7 +113,7 @@ const decodeRevertReason = (returnValue, abi = []) => {
  * ```
  */
 export const executeTool = async (name, input, sessions) => {
-	const schema = toolSchemas[name]
+	const schema = Object.hasOwn(toolSchemas, name) ? toolSchemas[name] : undefined
 	if (!schema) {
 		throw new Error(`Unknown tool: ${name}`)
 	}
@@ -299,7 +299,9 @@ export const executeTool = async (name, input, sessions) => {
 			const headCount = Math.ceil(args.maxSteps * 0.7)
 			const tailCount = args.maxSteps - headCount
 			const selectedSteps =
-				steps.length <= args.maxSteps ? steps : [...steps.slice(0, headCount), ...steps.slice(-tailCount)]
+				steps.length <= args.maxSteps
+					? steps
+					: [...steps.slice(0, headCount), ...(tailCount > 0 ? steps.slice(-tailCount) : [])]
 			const returnValue = result.returnValue.startsWith('0x') ? result.returnValue : `0x${result.returnValue}`
 			return toJsonValue({
 				failed: result.failed || errors.length > 0,

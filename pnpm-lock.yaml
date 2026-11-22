@@ -404,7 +404,7 @@ importers:
     devDependencies:
       '@napi-rs/cli':
         specifier: ^3.6.2
-        version: 3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.1)
+        version: 3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.1)(node-addon-api@8.9.2)
 
   bundler-packages/resolutions-rs/npm/darwin-arm64: {}
 
@@ -485,7 +485,7 @@ importers:
     devDependencies:
       '@napi-rs/cli':
         specifier: ^3.6.2
-        version: 3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.1)
+        version: 3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.1)(node-addon-api@8.9.2)
 
   bundler-packages/runtime-rs/npm/darwin-arm64: {}
 
@@ -533,7 +533,7 @@ importers:
     devDependencies:
       '@napi-rs/cli':
         specifier: ^3.6.2
-        version: 3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.1)
+        version: 3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.1)(node-addon-api@8.9.2)
 
   bundler-packages/tevm-run:
     dependencies:
@@ -1318,10 +1318,10 @@ importers:
         version: 1.0.0-next.12(viem@2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3))
       '@evmts/ts-plugin':
         specifier: 1.0.0-next.18
-        version: 1.0.0-next.18(bufferutil@4.1.0)(fast-check@3.23.2)(typescript@6.0.3)(utf-8-validate@5.0.10)
+        version: 1.0.0-next.18(bufferutil@4.1.0)(fast-check@4.11.0)(typescript@6.0.3)(utf-8-validate@5.0.10)
       '@evmts/vite-plugin':
         specifier: 1.0.0-next.19
-        version: 1.0.0-next.19(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+        version: 1.0.0-next.19(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
       '@tevm/tsconfig':
         specifier: workspace:^
         version: link:../../configs/tsconfig
@@ -1675,6 +1675,105 @@ importers:
       react:
         specifier: ^19
         version: 19.2.6
+
+  test/fuzz:
+    devDependencies:
+      '@jazzer.js/core':
+        specifier: ^4.0.0
+        version: 4.0.0
+      '@smthrs/fuzz':
+        specifier: 1.0.0-rc.18
+        version: 1.0.0-rc.18(effect@4.1.1)
+      '@tevm/actions':
+        specifier: workspace:*
+        version: link:../../packages/actions
+      '@tevm/bundler-cache':
+        specifier: workspace:*
+        version: link:../../bundler-packages/bundler-cache
+      '@tevm/common':
+        specifier: workspace:*
+        version: link:../../packages/common
+      '@tevm/config':
+        specifier: workspace:*
+        version: link:../../bundler-packages/config
+      '@tevm/contract':
+        specifier: workspace:*
+        version: link:../../packages/contract
+      '@tevm/effect':
+        specifier: workspace:*
+        version: link:../../packages/effect
+      '@tevm/errors':
+        specifier: workspace:*
+        version: link:../../packages/errors
+      '@tevm/ethers':
+        specifier: workspace:*
+        version: link:../../extensions/ethers
+      '@tevm/http-client':
+        specifier: workspace:*
+        version: link:../../packages/http-client
+      '@tevm/jsonrpc':
+        specifier: workspace:*
+        version: link:../../packages/jsonrpc
+      '@tevm/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
+      '@tevm/mcp':
+        specifier: workspace:*
+        version: link:../../packages/mcp
+      '@tevm/memory-client':
+        specifier: workspace:*
+        version: link:../../packages/memory-client
+      '@tevm/node':
+        specifier: workspace:*
+        version: link:../../packages/node
+      '@tevm/predeploys':
+        specifier: workspace:*
+        version: link:../../packages/predeploys
+      '@tevm/resolutions':
+        specifier: workspace:*
+        version: link:../../bundler-packages/resolutions
+      '@tevm/runtime':
+        specifier: workspace:*
+        version: link:../../bundler-packages/runtime
+      '@tevm/server':
+        specifier: workspace:*
+        version: link:../../packages/server
+      '@tevm/tsconfig':
+        specifier: workspace:*
+        version: link:../../configs/tsconfig
+      '@tevm/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@tevm/viem':
+        specifier: workspace:*
+        version: link:../../extensions/viem
+      '@tevm/whatsabi':
+        specifier: workspace:*
+        version: link:../../bundler-packages/whatsabi
+      '@types/node':
+        specifier: ^24.12.4
+        version: 24.12.4
+      effect:
+        specifier: 4.1.1
+        version: 4.1.1
+      ethers:
+        specifier: ^6.13.4
+        version: 6.16.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      fast-check:
+        specifier: ^4.11.0
+        version: 4.11.0
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      viem:
+        specifier: ^2.49.3
+        version: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+      vitest:
+        specifier: ^4.1.6
+        version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@24.12.4)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@24.12.4)(typescript@6.0.3))(vite@8.0.13(@types/node@24.12.4)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))
+      ws:
+        specifier: ^8.20.1
+        version: 8.20.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
 
   test/test-utils:
     dependencies:
@@ -3711,6 +3810,31 @@ packages:
   '@isaacs/fs-minipass@4.0.1':
     resolution: {integrity: sha512-wgm9Ehl2jpeqP3zw/7mo3kRHFp5MEDhqAdwy1fTGkHAwnkGOVsgpvQhL8B5n1qlb01jV3n/bI0ZfZp5lWA1k4w==}
     engines: {node: '>=18.0.0'}
+
+  '@istanbuljs/schema@0.1.6':
+    resolution: {integrity: sha512-+Sg6GCR/wy1oSmQDFq4LQDAhm3ETKnorxN+y5nbLULOR3P0c14f2Wurzj3/xqPXtasLFfHd5iRFQ7AJt4KH2cw==}
+    engines: {node: '>=8'}
+
+  '@jazzer.js/bug-detectors@4.0.0':
+    resolution: {integrity: sha512-piWVM3/96pFqyRkld75C++qP1shlTKXW3WymPTyyxcnjwNmh+6Mqz37OiCZ+yfsgHzl65yrhdEsuRGf1p6a/eQ==}
+    engines: {node: '>= 14.0.0', npm: '>= 7.0.0'}
+
+  '@jazzer.js/core@4.0.0':
+    resolution: {integrity: sha512-w90xGs5qMOE9KA5AV7OrosTWIOvMaeH5YSSnMr14FNAg2n0kalkurZMwlboz9G3+SccMp4n6QkKExq3b7r1VAQ==}
+    engines: {node: '>= 14.0.0', npm: '>= 7.0.0'}
+    hasBin: true
+
+  '@jazzer.js/fuzzer@4.0.0':
+    resolution: {integrity: sha512-o79aZFwIGA2HLYlubdBiPKq1LHva/w+hT/M6W2qvhu20GACYn5EX19EGjf+D1+9orBov0Nnlpb5ullphGa0N/Q==}
+    engines: {node: '>= 14.0.0', npm: '>= 7.0.0'}
+
+  '@jazzer.js/hooking@4.0.0':
+    resolution: {integrity: sha512-Zq9aTNVwnbndSiYa60+gnoMgNNnR9ASHdUUDYKI4gu1VdFe5h+L2kqPdYtb3YPT4IgpCorYe7nxP+b7I4GOp9w==}
+    engines: {node: '>= 14.0.0', npm: '>= 7.0.0'}
+
+  '@jazzer.js/instrumentor@4.0.0':
+    resolution: {integrity: sha512-qyvKSg/24ZTZyD1rnIPOuwXAh2SuNH0f334ilfgJtEKswWZr0KX508L4nNzFzop9RD5CgsfBDd5C22BdQfwFCA==}
+    engines: {node: '>= 14.0.0', npm: '>= 7.0.0'}
 
   '@jest/diff-sequences@30.0.1':
     resolution: {integrity: sha512-n5H8QLDJ47QqbCNn5SuFjCRDrOLEZ0h8vAHCK5RL9Ls7Xa8AQLa/YxAc9UjFqoEDM48muwtBGjtMY5cr0PLDCw==}
@@ -6563,6 +6687,12 @@ packages:
     resolution: {integrity: sha512-R8Rdn8Hy72KKcebgLiv8jQcQkXoLMOGGv5uI1/k0l+snqkOzQ1R0ChUBCxWMlBsFMekWjq0wRudIweFs7sKT5A==}
     engines: {node: '>=14.0.0'}
 
+  '@smthrs/fuzz@1.0.0-rc.18':
+    resolution: {integrity: sha512-3ECJP2B+/0JUSc4lwvmHCheeNbbOFHFqWft9FgRZWsYAe25s5kqP967vgXExhpmDeWApoHmHP/3rzl/j19M5Tw==}
+    engines: {node: '>=22.19.0'}
+    peerDependencies:
+      effect: 4.1.1
+
   '@smthrs/ui-styleguide@0.33.0':
     resolution: {integrity: sha512-Abttww3uxtcjFUeai35j+ytQmXLRvDffyAFO051zKQQuV2NNywsjpmbowEyeINU0+xqKWxx9qkl89Dj5mRKkDw==}
 
@@ -7861,6 +7991,10 @@ packages:
     resolution: {integrity: sha512-FCAJojipPn0bXjuEpjOOOMN8FZDkxfWWp4JGN9mifU2IhxvKyXZYqpzPHdnTSUpmPDy+tsslB6Z1g+Vg6nVbYA==}
     engines: {node: '>=8'}
 
+  append-transform@2.0.0:
+    resolution: {integrity: sha512-7yeyCEurROLQJFv5Xj4lEGTy0borxepjFv1g22oAdqFu//SrAlDl1O1Nxx15SH1RoliUml6p8dwJW9jvZughhg==}
+    engines: {node: '>=8'}
+
   arch@2.2.0:
     resolution: {integrity: sha512-Of/R0wqp83cgHozfIYLbBMnej79U/SVGOOyuB3VVFv1NRM/PSFMK12x9KVtiYzJqmnU5WR2qp0Z5rHb7sWGnFQ==}
 
@@ -8541,6 +8675,11 @@ packages:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
 
+  cmake-js@8.0.0:
+    resolution: {integrity: sha512-YbUP88RDwCvoQkZhRtGURYm9RIpWdtvZuhT87fKNoLjk8kIFIFeARpKfuZQGdwfH99GZpUmqSfcDrK62X7lTgg==}
+    engines: {node: ^20.17.0 || >=22.9.0}
+    hasBin: true
+
   code-excerpt@4.0.0:
     resolution: {integrity: sha512-xxodCmBen3iy2i0WtAK8FlFNrRzjUqjRsMfho58xT/wvZU1YTM3fCnRjcy1gJPMepaRlgm/0e6w8SpWHpn3/cA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
@@ -9080,6 +9219,10 @@ packages:
     resolution: {integrity: sha512-H9LMLr5zwIbSxrmvikGuI/5KGhZ8E2zH3stkMgM5LpOWDutGM2JZaj460Udnf1a+946zc7YBgrqEWwbk7zHvGw==}
     engines: {node: '>=18'}
 
+  default-require-extensions@3.0.1:
+    resolution: {integrity: sha512-eXTJmRbm2TIt9MgWTsOH1wEuhew6XGZcMeGKCtLedIg/NCsg1iBePXkceTdK4Fii7pzmN9tGsZhKzZ4h7O/fxw==}
+    engines: {node: '>=8'}
+
   defaults@1.0.4:
     resolution: {integrity: sha512-eFuaLoy/Rxalv2kr+lqMlUnrDWV+3j4pljOIJgLIhI058IQfWJ7vXhyEIHu+HtC738klGALYxOKDO0bQP3tg8A==}
 
@@ -9266,7 +9409,7 @@ packages:
     engines: {node: '>=10'}
 
   ds-test@https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0}
+    resolution: {gitHosted: true, integrity: sha512-cTKz9+PTVIvBARdhqEpjgxSzvzYPj5vV5gAcJWnh4pfkIywTbZdBbvagyBjjnd6AzdW8i7NIFG7YyPd8sHiR2g==, tarball: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0}
     version: 1.0.0
 
   dset@3.1.4:
@@ -9291,6 +9434,9 @@ packages:
 
   effect@3.21.2:
     resolution: {integrity: sha512-rXd2FGDM8KdjSIrc+mqEELo7ScW7xTVxEf1iInmPSpIde9/nyGuFM710cjTo7/EreGXiUX2MOonPpprbz2XHCg==}
+
+  effect@4.1.1:
+    resolution: {integrity: sha512-XYu65BrcmNqu5i7PPvP4dqL+R5ma37zIsfuSPjcn78mog+6e5PkilNg7Xo+pBpjXJYlWEIpH4j91tMrfW05CMw==}
 
   ejs@5.0.1:
     resolution: {integrity: sha512-COqBPFMxuPTPspXl2DkVYaDS3HtrD1GpzOGkNTJ1IYkifq/r9h8SVEFrjA3D9/VJGOEoMQcrlhpntcSUrM8k6A==}
@@ -9823,6 +9969,10 @@ packages:
     resolution: {integrity: sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A==}
     engines: {node: '>=8.0.0'}
 
+  fast-check@4.11.0:
+    resolution: {integrity: sha512-V4Uc238rhQOdQlc+Gz7JG6SGBtrWnWL8d/6RyiBeCMcNKMhF6DZ0KkAVHJSyNV5r4lA0PmIpZ6iRpTVoz4qjoA==}
+    engines: {node: '>=12.17.0'}
+
   fast-content-type-parse@3.0.0:
     resolution: {integrity: sha512-ZvLdcY8P+N8mGQJahJV5G4U88CSvT1rP8ApL6uETe88MBXrBHAkZlSEySdUlyztF7ccb+Znos3TFqaepHxdhBg==}
 
@@ -9996,7 +10146,7 @@ packages:
     hasBin: true
 
   forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/886b4f8b63409ef474542de6394d25a9b5908ed3:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/886b4f8b63409ef474542de6394d25a9b5908ed3}
+    resolution: {gitHosted: true, integrity: sha512-5CJo9sHKhW9G2Ezs/3rG16KvjEDb4x6sCfXzM/BJys17u2BE1B9waeQtA+G55GsdkTMgY8X0SOpRPRC1qhC4Lg==, tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/886b4f8b63409ef474542de6394d25a9b5908ed3}
     version: 1.16.2
 
   form-data@4.0.5:
@@ -10955,6 +11105,10 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
+  isexe@4.0.0:
+    resolution: {integrity: sha512-FFUtZMpoZ8RqHS3XeXEmHWLA4thH+ZxCv2lOiPIn1Xc7CxrqhWzNSDzD+/chS/zbYezmiwWLdQC09JdQKmthOw==}
+    engines: {node: '>=20'}
+
   isobject@2.1.0:
     resolution: {integrity: sha512-+OUdGJlgjOBZDfxnDjYYG6zp487z0JGNQq3cYQYg5f5hKR+syHMsaztzGeml/4kGG55CSpKSpWTY+jYGgsHLgA==}
     engines: {node: '>=0.10.0'}
@@ -10983,6 +11137,14 @@ packages:
   istanbul-lib-coverage@3.2.2:
     resolution: {integrity: sha512-O8dpsF+r0WV/8MNRKfnmrtCWhuKjxrq2w+jpzBL5UZKTi2LeVWnWOmWRxFlesJONmc+wLAGvKQZEOanko0LFTg==}
     engines: {node: '>=8'}
+
+  istanbul-lib-hook@3.0.0:
+    resolution: {integrity: sha512-Pt/uge1Q9s+5VAZ+pCo16TYMWPBIl+oaNIjgLQxcX0itS6ueeaA+pEfThZpH8WxhFgCiEb8sAJY6MdUKgiIWaQ==}
+    engines: {node: '>=8'}
+
+  istanbul-lib-instrument@6.0.3:
+    resolution: {integrity: sha512-Vtgk7L/R2JHyyGW07spoFlB8/lpjiOLTjMdms6AFMraYt3BaJauod/NGrfnVG/y4Ix1JEuMRPDPEj2ua+zz1/Q==}
+    engines: {node: '>=10'}
 
   istanbul-lib-report@3.0.1:
     resolution: {integrity: sha512-GCfE1mtsHGOELCU8e/Z7YWzpmybrx/+dSTfLrvY8qRmaY6zXTKWn6WQIjaAFw069icm6GVMNkgu0NzI4iPZUNw==}
@@ -12002,6 +12164,13 @@ packages:
   node-addon-api@4.3.0:
     resolution: {integrity: sha512-73sE9+3UaLYYFmDsFZnqCInzPyh3MqIwZO9cw58yIqAZhONrrabrYyYe3TuIqtIiOuTXVhsGau8hcrhhwSsDIQ==}
 
+  node-addon-api@8.9.2:
+    resolution: {integrity: sha512-VijLXbi3UACN69I0JVXJsX4tjACjNoQDgv2gTF6sx2wWEi8tkSg2eX8p5gSIFi8z2+DL3oHmY6OyKce38SDolg==}
+    engines: {node: ^18 || ^20 || >= 21}
+
+  node-api-headers@1.9.0:
+    resolution: {integrity: sha512-2oNILP4jXwRB4ywnYKjVk1YyJ96n2D4EOVJO6S3oYZ5PtbJrw3Yt9TpAuX3nBLMuzn74rnfGQrv13pS9vC+YiA==}
+
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
@@ -12720,6 +12889,9 @@ packages:
   prop-types@15.8.1:
     resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
 
+  proper-lockfile@4.1.2:
+    resolution: {integrity: sha512-TjNPblN4BwAWMXU8s9AEz4JmQxnD1NNL7bNOY/AKUzyamc379FWASUhc/K1pL2noVb+XmZKLL68cjzLsiOAMaA==}
+
   property-information@6.5.0:
     resolution: {integrity: sha512-PgTgs/BlvHxOu8QuEN7wi5A0OmXaBcHpmCSTehcs6Uuu9IkDIEo13Hy7n898RHfrQ49vKCoGeWZSaAK01nwVig==}
 
@@ -12838,6 +13010,9 @@ packages:
 
   pure-rand@6.1.0:
     resolution: {integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==}
+
+  pure-rand@8.4.2:
+    resolution: {integrity: sha512-vvuOGgcuPJAirlHvuQw1TrOiw7ptaIXXmIbNuiNOY6lNGJJH49PQ1Kj4nd783nPdQhQdicgOjVI2yI/9BD6/Ng==}
 
   qs@6.15.2:
     resolution: {integrity: sha512-Rzq0KEyX/w/tEybncDgdkZrJgVUsUMk3xjh3t5bv3S1HTAtg+uOYt72+ZfwiQwKdysThkTBdL/rTi6HDmX9Ddw==}
@@ -13318,6 +13493,10 @@ packages:
 
   retext@9.0.0:
     resolution: {integrity: sha512-sbMDcpHCNjvlheSgMfEcVrZko3cDzdbe1x/e7G66dFp0Ff7Mldvi2uv6JkJQzdRcvLYE8CA8Oe8siQx8ZOgTcA==}
+
+  retry@0.12.0:
+    resolution: {integrity: sha512-9LkiTwjUh6rT555DtE9rTX+BKByPfrMzEAtnlEtdEwr3Nkffwiihqe2bWADg+OQRjt9gl6ICdmB/ZFDCGAtSow==}
+    engines: {node: '>= 4'}
 
   retry@0.13.1:
     resolution: {integrity: sha512-XQBQ3I8W1Cge0Seh+6gjj03LbmRFWuoszgK9ooCpwYIrhhoO80pfq4cUkU5DkknwfOfFteRwlZ56PYOGYyFWdg==}
@@ -13859,6 +14038,10 @@ packages:
   strip-bom@3.0.0:
     resolution: {integrity: sha512-vavAMRXOgBVNF6nyEEmL3DBK19iRpDcoIwW+swQ+CbGiu7lju6t+JklA1MHweoWtadgt4ISVUsXLyDq34ddcwA==}
     engines: {node: '>=4'}
+
+  strip-bom@4.0.0:
+    resolution: {integrity: sha512-3xurFv5tEgii33Zi8Jtp55wEIILR9eh34FAW00PZf+JnSsTmV/ioewSgQl97JHvgjoRGwPShsWm+IdrxB35d0w==}
+    engines: {node: '>=8'}
 
   strip-final-newline@2.0.0:
     resolution: {integrity: sha512-BrpvfNAE3dcvq7ll3xVumzjKjZQ5tI1sEUIKr3Uoks0XUl45St3FlatVqef9prk4jRDzhW6WZg+3bk93y6pLjA==}
@@ -15106,6 +15289,11 @@ packages:
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
     engines: {node: '>= 8'}
+    hasBin: true
+
+  which@6.0.1:
+    resolution: {integrity: sha512-oGLe46MIrCRqX7ytPUf66EAYvdeMIZYn3WaocqqKZAxrBpkqHfL/qvTyJ/bTk5+AqHCjXmrv3CEWgy368zhRUg==}
+    engines: {node: ^20.17.0 || >=22.9.0}
     hasBin: true
 
   why-is-node-running@2.3.0:
@@ -16456,10 +16644,10 @@ snapshots:
 
   '@ctrl/tinycolor@4.2.0': {}
 
-  '@effect/schema@0.47.7(effect@2.0.0-next.54)(fast-check@3.23.2)':
+  '@effect/schema@0.47.7(effect@2.0.0-next.54)(fast-check@4.11.0)':
     dependencies:
       effect: 2.0.0-next.54
-      fast-check: 3.23.2
+      fast-check: 4.11.0
 
   '@effect/schema@0.75.5(effect@3.21.2)':
     dependencies:
@@ -16891,11 +17079,11 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
-  '@evmts/base@1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@3.23.2)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@evmts/base@1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@4.11.0)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      '@evmts/config': 1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@3.23.2)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@evmts/config': 1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@4.11.0)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@evmts/runtime': 1.0.0-next.13
-      '@evmts/solc': 1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@3.23.2)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@evmts/solc': 1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@4.11.0)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@evmts/tsconfig': 1.0.0-next.5
       '@types/node': 20.19.41
       '@types/resolve': 1.20.6
@@ -16913,10 +17101,10 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@evmts/config@1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@3.23.2)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@evmts/config@1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@4.11.0)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      '@effect/schema': 0.47.7(effect@2.0.0-next.54)(fast-check@3.23.2)
-      '@evmts/effect': 1.0.0-next.9(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@3.23.2)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@effect/schema': 0.47.7(effect@2.0.0-next.54)(fast-check@4.11.0)
+      '@evmts/effect': 1.0.0-next.9(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@4.11.0)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@types/node': 20.19.41
       bundle-require: 4.2.1(esbuild@0.19.5)
       effect: 2.0.0-next.54
@@ -16931,10 +17119,10 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@evmts/config@1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)':
+  '@evmts/config@1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)':
     dependencies:
-      '@effect/schema': 0.47.7(effect@2.0.0-next.54)(fast-check@3.23.2)
-      '@evmts/effect': 1.0.0-next.9(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+      '@effect/schema': 0.47.7(effect@2.0.0-next.54)(fast-check@4.11.0)
+      '@evmts/effect': 1.0.0-next.9(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
       '@types/node': 20.19.41
       bundle-require: 4.2.1(esbuild@0.28.0)
       effect: 2.0.0-next.54
@@ -16953,9 +17141,9 @@ snapshots:
     dependencies:
       viem: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
 
-  '@evmts/effect@1.0.0-next.9(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@3.23.2)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@evmts/effect@1.0.0-next.9(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@4.11.0)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      '@effect/schema': 0.47.7(effect@2.0.0-next.54)(fast-check@3.23.2)
+      '@effect/schema': 0.47.7(effect@2.0.0-next.54)(fast-check@4.11.0)
       bundle-require: 4.2.1(esbuild@0.19.5)
       effect: 2.0.0-next.54
       jsonc-parser: 3.3.1
@@ -16970,9 +17158,9 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@evmts/effect@1.0.0-next.9(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)':
+  '@evmts/effect@1.0.0-next.9(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)':
     dependencies:
-      '@effect/schema': 0.47.7(effect@2.0.0-next.54)(fast-check@3.23.2)
+      '@effect/schema': 0.47.7(effect@2.0.0-next.54)(fast-check@4.11.0)
       bundle-require: 4.2.1(esbuild@0.28.0)
       effect: 2.0.0-next.54
       jsonc-parser: 3.3.1
@@ -16987,10 +17175,10 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@evmts/resolutions@1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@3.23.2)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@evmts/resolutions@1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@4.11.0)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      '@evmts/config': 1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@3.23.2)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-      '@evmts/effect': 1.0.0-next.9(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@3.23.2)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@evmts/config': 1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@4.11.0)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@evmts/effect': 1.0.0-next.9(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@4.11.0)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@evmts/tsconfig': 1.0.0-next.5
       '@types/node': 20.19.41
       '@types/resolve': 1.20.6
@@ -17008,10 +17196,10 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@evmts/resolutions@1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)':
+  '@evmts/resolutions@1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)':
     dependencies:
-      '@evmts/config': 1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
-      '@evmts/effect': 1.0.0-next.9(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+      '@evmts/config': 1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+      '@evmts/effect': 1.0.0-next.9(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
       '@evmts/tsconfig': 1.0.0-next.5
       '@types/node': 20.19.41
       '@types/resolve': 1.20.6
@@ -17034,10 +17222,10 @@ snapshots:
       '@evmts/tsconfig': 1.0.0-next.5
       effect: 2.0.0-next.54
 
-  '@evmts/solc@1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@3.23.2)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@evmts/solc@1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@4.11.0)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      '@evmts/config': 1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@3.23.2)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-      '@evmts/resolutions': 1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@3.23.2)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@evmts/config': 1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@4.11.0)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@evmts/resolutions': 1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@4.11.0)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@evmts/tsconfig': 1.0.0-next.5
       '@types/node': 20.19.41
       '@types/resolve': 1.20.6
@@ -17055,10 +17243,10 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@evmts/solc@1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)':
+  '@evmts/solc@1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)':
     dependencies:
-      '@evmts/config': 1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
-      '@evmts/resolutions': 1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+      '@evmts/config': 1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+      '@evmts/resolutions': 1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
       '@evmts/tsconfig': 1.0.0-next.5
       '@types/node': 20.19.41
       '@types/resolve': 1.20.6
@@ -17076,9 +17264,9 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@evmts/ts-plugin@1.0.0-next.18(bufferutil@4.1.0)(fast-check@3.23.2)(typescript@6.0.3)(utf-8-validate@5.0.10)':
+  '@evmts/ts-plugin@1.0.0-next.18(bufferutil@4.1.0)(fast-check@4.11.0)(typescript@6.0.3)(utf-8-validate@5.0.10)':
     dependencies:
-      '@evmts/base': 1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@3.23.2)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@evmts/base': 1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.19.5)(fast-check@4.11.0)(solc@0.8.23-fixed)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       effect: 2.0.0-next.54
       esbuild: 0.19.5
       glob: 10.5.0
@@ -17094,11 +17282,11 @@ snapshots:
 
   '@evmts/tsconfig@1.0.0-next.5': {}
 
-  '@evmts/unplugin@1.0.0-next.19(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)':
+  '@evmts/unplugin@1.0.0-next.19(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)':
     dependencies:
-      '@evmts/config': 1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+      '@evmts/config': 1.0.0-next.17(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
       '@evmts/runtime': 1.0.0-next.13
-      '@evmts/solc': 1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+      '@evmts/solc': 1.0.0-next.18(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(solc@0.8.22)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
       '@evmts/tsconfig': 1.0.0-next.5
       '@types/node': 20.19.41
       '@types/resolve': 1.20.6
@@ -17117,9 +17305,9 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@evmts/vite-plugin@1.0.0-next.19(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)':
+  '@evmts/vite-plugin@1.0.0-next.19(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)':
     dependencies:
-      '@evmts/unplugin': 1.0.0-next.19(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@3.23.2)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+      '@evmts/unplugin': 1.0.0-next.19(bufferutil@4.1.0)(esbuild@0.28.0)(fast-check@4.11.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -17601,6 +17789,52 @@ snapshots:
   '@isaacs/fs-minipass@4.0.1':
     dependencies:
       minipass: 7.1.3
+
+  '@istanbuljs/schema@0.1.6': {}
+
+  '@jazzer.js/bug-detectors@4.0.0':
+    dependencies:
+      '@jazzer.js/core': 4.0.0
+      '@jazzer.js/hooking': 4.0.0
+    transitivePeerDependencies:
+      - supports-color
+
+  '@jazzer.js/core@4.0.0':
+    dependencies:
+      '@jazzer.js/bug-detectors': 4.0.0
+      '@jazzer.js/fuzzer': 4.0.0
+      '@jazzer.js/hooking': 4.0.0
+      '@jazzer.js/instrumentor': 4.0.0
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-reports: 3.2.0
+      tmp: 0.2.5
+      yargs: 17.7.2
+    transitivePeerDependencies:
+      - supports-color
+
+  '@jazzer.js/fuzzer@4.0.0':
+    dependencies:
+      bindings: 1.5.0
+      cmake-js: 8.0.0
+      node-addon-api: 8.9.2
+    transitivePeerDependencies:
+      - supports-color
+
+  '@jazzer.js/hooking@4.0.0': {}
+
+  '@jazzer.js/instrumentor@4.0.0':
+    dependencies:
+      '@babel/core': 7.29.0
+      '@babel/generator': 7.29.1
+      '@jazzer.js/fuzzer': 4.0.0
+      '@jazzer.js/hooking': 4.0.0
+      istanbul-lib-hook: 3.0.0
+      istanbul-lib-instrument: 6.0.3
+      proper-lockfile: 4.1.2
+      source-map-support: 0.5.21
+    transitivePeerDependencies:
+      - supports-color
 
   '@jest/diff-sequences@30.0.1': {}
 
@@ -18231,7 +18465,7 @@ snapshots:
       strict-event-emitter: 0.5.1
     optional: true
 
-  '@napi-rs/cli@3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.1)':
+  '@napi-rs/cli@3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.1)(node-addon-api@8.9.2)':
     dependencies:
       '@inquirer/prompts': 8.4.3(@types/node@25.9.1)
       '@napi-rs/cross-toolchain': 1.0.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
@@ -18239,7 +18473,7 @@ snapshots:
       '@octokit/rest': 22.0.1
       clipanion: 4.0.0-rc.4(typanion@3.14.0)
       colorette: 2.0.20
-      emnapi: 1.10.0
+      emnapi: 1.10.0(node-addon-api@8.9.2)
       es-toolkit: 1.46.1
       js-yaml: 4.1.1
       obug: 2.1.1
@@ -20716,6 +20950,10 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
+  '@smthrs/fuzz@1.0.0-rc.18(effect@4.1.1)':
+    dependencies:
+      effect: 4.1.1
+
   '@smthrs/ui-styleguide@0.33.0': {}
 
   '@smthrs/ui@0.33.0(@codemirror/language@6.12.4)(@codemirror/state@6.7.1)(@codemirror/view@6.43.9)(@shikijs/themes@3.23.0)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-view@1.42.3)(react-dom@19.2.6(react@19.2.6))(react-is@17.0.2)(react@19.2.6)(redux@5.0.1)(typescript@6.0.3)':
@@ -21085,7 +21323,7 @@ snapshots:
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 25.9.1
+      '@types/node': 24.12.4
 
   '@types/chai@5.2.3':
     dependencies:
@@ -21094,7 +21332,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 24.12.4
 
   '@types/cookie@0.6.0': {}
 
@@ -21243,7 +21481,7 @@ snapshots:
 
   '@types/express-serve-static-core@5.1.1':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 24.12.4
       '@types/qs': 6.15.1
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.1
@@ -21354,16 +21592,16 @@ snapshots:
 
   '@types/sax@1.2.7':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 24.12.4
 
   '@types/send@1.2.1':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 24.12.4
 
   '@types/serve-static@2.2.0':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 25.9.1
+      '@types/node': 24.12.4
 
   '@types/statuses@2.0.6':
     optional: true
@@ -21774,6 +22012,15 @@ snapshots:
     optionalDependencies:
       msw: 2.8.4(@types/node@24.12.4)(typescript@6.0.3)
       vite: 8.0.13(@types/node@24.12.4)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0)
+
+  '@vitest/mocker@4.1.6(msw@2.8.4(@types/node@24.12.4)(typescript@6.0.3))(vite@8.0.13(@types/node@24.12.4)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))':
+    dependencies:
+      '@vitest/spy': 4.1.6
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      msw: 2.8.4(@types/node@24.12.4)(typescript@6.0.3)
+      vite: 8.0.13(@types/node@24.12.4)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0)
 
   '@vitest/mocker@4.1.6(msw@2.8.4(@types/node@25.9.1)(typescript@5.9.3))(vite@7.3.1(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.20.6)(yaml@2.9.0))':
     dependencies:
@@ -22230,6 +22477,10 @@ snapshots:
       unix-crypt-td-js: 1.1.4
 
   apache-md5@1.1.8: {}
+
+  append-transform@2.0.0:
+    dependencies:
+      default-require-extensions: 3.0.1
 
   arch@2.2.0: {}
 
@@ -23128,6 +23379,20 @@ snapshots:
 
   clsx@2.1.1: {}
 
+  cmake-js@8.0.0:
+    dependencies:
+      debug: 4.4.3
+      fs-extra: 11.3.5
+      node-api-headers: 1.9.0
+      rc: 1.2.8
+      semver: 7.8.0
+      tar: 7.5.15
+      url-join: 4.0.1
+      which: 6.0.1
+      yargs: 17.7.2
+    transitivePeerDependencies:
+      - supports-color
+
   code-excerpt@4.0.0:
     dependencies:
       convert-to-spaces: 2.0.1
@@ -23702,6 +23967,10 @@ snapshots:
       bundle-name: 4.1.0
       default-browser-id: 5.0.1
 
+  default-require-extensions@3.0.1:
+    dependencies:
+      strip-bom: 4.0.0
+
   defaults@1.0.4:
     dependencies:
       clone: 1.0.4
@@ -23907,6 +24176,8 @@ snapshots:
       '@standard-schema/spec': 1.1.0
       fast-check: 3.23.2
 
+  effect@4.1.1: {}
+
   ejs@5.0.1: {}
 
   electron-to-chromium@1.5.228: {}
@@ -23930,7 +24201,9 @@ snapshots:
       '@emmetio/abbreviation': 2.3.3
       '@emmetio/css-abbreviation': 2.1.8
 
-  emnapi@1.10.0: {}
+  emnapi@1.10.0(node-addon-api@8.9.2):
+    optionalDependencies:
+      node-addon-api: 8.9.2
 
   emoji-regex-xs@1.0.0: {}
 
@@ -24582,7 +24855,7 @@ snapshots:
 
   eval@0.1.8:
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 24.12.4
       require-like: 0.1.2
 
   event-stream@3.3.4:
@@ -24748,6 +25021,10 @@ snapshots:
   fast-check@3.23.2:
     dependencies:
       pure-rand: 6.1.0
+
+  fast-check@4.11.0:
+    dependencies:
+      pure-rand: 8.4.2
 
   fast-content-type-parse@3.0.0: {}
 
@@ -26048,6 +26325,8 @@ snapshots:
 
   isexe@2.0.0: {}
 
+  isexe@4.0.0: {}
+
   isobject@2.1.0:
     dependencies:
       isarray: 1.0.0
@@ -26072,6 +26351,20 @@ snapshots:
       ws: 8.18.3(bufferutil@4.1.0)(utf-8-validate@5.0.10)
 
   istanbul-lib-coverage@3.2.2: {}
+
+  istanbul-lib-hook@3.0.0:
+    dependencies:
+      append-transform: 2.0.0
+
+  istanbul-lib-instrument@6.0.3:
+    dependencies:
+      '@babel/core': 7.29.0
+      '@babel/parser': 7.29.8
+      '@istanbuljs/schema': 0.1.6
+      istanbul-lib-coverage: 3.2.2
+      semver: 7.8.0
+    transitivePeerDependencies:
+      - supports-color
 
   istanbul-lib-report@3.0.1:
     dependencies:
@@ -26103,7 +26396,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 24.12.4
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -27424,6 +27717,10 @@ snapshots:
 
   node-addon-api@4.3.0: {}
 
+  node-addon-api@8.9.2: {}
+
+  node-api-headers@1.9.0: {}
+
   node-domexception@1.0.0: {}
 
   node-emoji@2.2.0:
@@ -28373,6 +28670,12 @@ snapshots:
       object-assign: 4.1.1
       react-is: 16.13.1
 
+  proper-lockfile@4.1.2:
+    dependencies:
+      graceful-fs: 4.2.11
+      retry: 0.12.0
+      signal-exit: 3.0.7
+
   property-information@6.5.0: {}
 
   property-information@7.1.0: {}
@@ -28532,6 +28835,8 @@ snapshots:
       escape-goat: 4.0.0
 
   pure-rand@6.1.0: {}
+
+  pure-rand@8.4.2: {}
 
   qs@6.15.2:
     dependencies:
@@ -29253,6 +29558,8 @@ snapshots:
       retext-latin: 4.0.0
       retext-stringify: 4.0.0
       unified: 11.0.5
+
+  retry@0.12.0: {}
 
   retry@0.13.1: {}
 
@@ -30062,6 +30369,8 @@ snapshots:
       ansi-regex: 6.2.2
 
   strip-bom@3.0.0: {}
+
+  strip-bom@4.0.0: {}
 
   strip-final-newline@2.0.0: {}
 
@@ -31112,6 +31421,22 @@ snapshots:
       tsx: 4.22.2
       yaml: 2.9.0
 
+  vite@8.0.13(@types/node@24.12.4)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0):
+    dependencies:
+      lightningcss: 1.32.0
+      picomatch: 4.0.4
+      postcss: 8.5.14
+      rolldown: 1.0.1
+      tinyglobby: 0.2.16
+    optionalDependencies:
+      '@types/node': 24.12.4
+      esbuild: 0.28.0
+      fsevents: 2.3.3
+      jiti: 2.7.0
+      terser: 5.47.1
+      tsx: 4.22.2
+      yaml: 2.9.0
+
   vite@8.0.13(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0):
     dependencies:
       lightningcss: 1.32.0
@@ -31157,6 +31482,37 @@ snapshots:
       tinyglobby: 0.2.16
       tinyrainbow: 3.1.0
       vite: 8.0.13(@types/node@24.12.4)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@opentelemetry/api': 1.9.1
+      '@types/node': 24.12.4
+      '@vitest/coverage-v8': 4.1.6(vitest@4.1.6)
+      '@vitest/ui': 4.1.6(vitest@4.1.6)
+      jsdom: 29.1.1(@noble/hashes@2.2.0)
+    transitivePeerDependencies:
+      - msw
+
+  vitest@4.1.6(@opentelemetry/api@1.9.1)(@types/node@24.12.4)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.8.4(@types/node@24.12.4)(typescript@6.0.3))(vite@8.0.13(@types/node@24.12.4)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0)):
+    dependencies:
+      '@vitest/expect': 4.1.6
+      '@vitest/mocker': 4.1.6(msw@2.8.4(@types/node@24.12.4)(typescript@6.0.3))(vite@8.0.13(@types/node@24.12.4)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0))
+      '@vitest/pretty-format': 4.1.6
+      '@vitest/runner': 4.1.6
+      '@vitest/snapshot': 4.1.6
+      '@vitest/spy': 4.1.6
+      '@vitest/utils': 4.1.6
+      es-module-lexer: 2.1.0
+      expect-type: 1.3.0
+      magic-string: 0.30.21
+      obug: 2.1.1
+      pathe: 2.0.3
+      picomatch: 4.0.4
+      std-env: 4.1.0
+      tinybench: 2.9.0
+      tinyexec: 1.1.2
+      tinyglobby: 0.2.16
+      tinyrainbow: 3.1.0
+      vite: 8.0.13(@types/node@24.12.4)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
@@ -31617,6 +31973,10 @@ snapshots:
   which@2.0.2:
     dependencies:
       isexe: 2.0.0
+
+  which@6.0.1:
+    dependencies:
+      isexe: 4.0.0
 
   why-is-node-running@2.3.0:
     dependencies:

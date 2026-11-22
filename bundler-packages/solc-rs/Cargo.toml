@@ -24,6 +24,9 @@ libc = "0.2.172"
 [build-dependencies]
 napi-build = "2.0.1"
 
+[dev-dependencies]
+proptest = "1.6"
+
 [lib]
 crate-type = [
     'cdylib',

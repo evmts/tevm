@@ -86,7 +86,12 @@ export const getRequestBody = (req, options = {}) => {
 				}
 			}
 			const onEnd = () => {
-				finish(body + decoder.end())
+				const finalBody = body + decoder.end()
+				if (Buffer.byteLength(finalBody, 'utf8') > maxBodySize) {
+					finish(new ReadRequestBodyError(bodySizeErrorMessage))
+					return
+				}
+				finish(finalBody)
 			}
 
 			req.on('error', onError)

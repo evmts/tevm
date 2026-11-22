@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use strum::EnumString;
 use strum_macros::Display;
+#[cfg(test)]
+mod fuzz_proptest;
 
 #[napi]
 #[derive(Debug, EnumString, Display)]

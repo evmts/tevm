@@ -2,6 +2,11 @@
 const S = Smithers
 
 import { scopedShell } from '../../factory/scoped-shell.js'
+import { Package as pkg_base_bundler } from '../base-bundler/PACKAGE.js'
+import { Package as pkg_bundler_cache } from '../bundler-cache/PACKAGE.js'
+import { Package as pkg_config } from '../config/PACKAGE.js'
+import { Package as pkg_contract } from '../../packages/contract/PACKAGE.js'
+import { Package as pkg_solc } from '../solc/PACKAGE.js'
 
 const Shell = scopedShell('bundler-packages/bun')
 
@@ -30,7 +35,11 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
 })
 
-const deps = S.Filegroup({ srcs: [packageJson] })
+const benches = S.Filegroup({
+	srcs: S.glob(['bench/**']),
+})
+
+const deps = S.Filegroup({ srcs: [packageJson, pkg_base_bundler.build, pkg_bundler_cache.build, pkg_config.build, pkg_contract.build, pkg_solc.build] })
 
 // build:dist.
 const build = Shell.Build({
@@ -138,8 +147,17 @@ const check = S.Suite({
 	tests: [lint, typecheck, test, coverageGate, depsLint, packageLint],
 })
 
+const bench = Shell.Build({
+	bin: S.Mise.bin('bun'),
+	args: ['run', 'bench/bun.bench.ts'],
+	data: [srcs, benches, deps, tsconfig],
+	outFiles: ['artifacts/bench.json'],
+})
+
 export const Package = S.Package({
 	targets: {
+		bench,
+		benches,
 		apiCompat,
 		build,
 		check,

@@ -2,6 +2,9 @@
 const S = Smithers
 
 import { scopedShell } from '../../factory/scoped-shell.js'
+import { vitestBench } from '../../factory/bench.js'
+import { Package as pkg_bun } from '../bun/PACKAGE.js'
+import { Package as pkg_tevm } from '../../tevm/PACKAGE.js'
 
 const Shell = scopedShell('bundler-packages/tevm-run')
 
@@ -31,12 +34,16 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
 })
 
+const benches = S.Filegroup({
+	srcs: S.glob(['bench/**']),
+})
+
 // The example the dev target pipes through src/tevm-run.js.
 const example = S.Filegroup({
 	srcs: S.glob(['example/**']),
 })
 
-const deps = S.Filegroup({ srcs: [packageJson] })
+const deps = S.Filegroup({ srcs: [packageJson, pkg_bun.build, pkg_tevm.srcs] })
 
 // typecheck. tsconfig has no include, so tsc checks every script in the
 // package, src, example, and plugins.js alike.
@@ -95,8 +102,14 @@ const check = S.Suite({
 	tests: [lint, typecheck, test, testCoverage],
 })
 
+const bench = vitestBench('bundler-packages/tevm-run', {
+	data: [srcs, benches, deps, tsconfig],
+})
+
 export const Package = S.Package({
 	targets: {
+		bench,
+		benches,
 		check,
 		dev,
 		format,

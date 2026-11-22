@@ -201,6 +201,22 @@ const review = S.Github.Workflow({
 	steps: nativeSteps('pnpm exec smthrs target //:prReview'),
 })
 
+// benchmarks.yml: incremental Smithers performance benchmarks on every PR and
+// push to main. Unchanged packages hit the remote cache in milliseconds so only
+// packages affected by a change re-execute, and the summary appends to the job
+// step summary.
+const benchmarks = S.Github.Workflow({
+	name: 'benchmarks',
+	on: {
+		push: { branches: ['main'] },
+		pullRequest: true,
+		workflowDispatch: true,
+	},
+	concurrency: { group: 'benchmarks-${{ github.ref }}', cancelInProgress: 'pull_request' },
+	setup,
+	steps: nativeSteps('pnpm exec smthrs target //:bench'),
+})
+
 // The drift-checked renderer. Hand-written workflows without target
 // equivalents are preserved: claude.yml (the @claude mention bot, driven by
 // GitHub issue and review events, not tree checks), claude-auto-update.yml
@@ -211,6 +227,7 @@ const review = S.Github.Workflow({
 // current renderer cannot express.
 const github = S.Github.CiGen({
 	workflows: [
+		benchmarks,
 		ci,
 		release,
 		prerelease,
@@ -244,6 +261,7 @@ const pr = S.Github.Pr({
 
 export const Package = S.Package({
 	targets: {
+		benchmarks,
 		ci,
 		github,
 		jsrPublish,

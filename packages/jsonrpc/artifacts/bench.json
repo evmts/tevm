@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "package": "@tevm/jsonrpc",
+  "dir": "packages/jsonrpc",
+  "runner": "vitest",
+  "nodeVersion": "v24.12.0",
+  "platform": "darwin-arm64",
+  "cpu": "Apple M3 Max",
+  "benchmarks": [
+    {
+      "suite": "@tevm/jsonrpc",
+      "name": "createJsonRpcFetcher instantiation",
+      "hz": 13902927.15,
+      "meanMs": 0.000072,
+      "medianMs": 0.000042,
+      "p75Ms": 0.000083,
+      "p99Ms": 0.000125,
+      "minMs": 0,
+      "maxMs": 17.8395,
+      "rme": 18.12,
+      "samples": 2780586
+    },
+    {
+      "suite": "@tevm/jsonrpc",
+      "name": "request (success envelope)",
+      "hz": 4105743.99,
+      "meanMs": 0.000244,
+      "medianMs": 0.00025,
+      "p75Ms": 0.00025,
+      "p99Ms": 0.000375,
+      "minMs": 0.000166,
+      "maxMs": 0.665125,
+      "rme": 0.76,
+      "samples": 821149
+    },
+    {
+      "suite": "@tevm/jsonrpc",
+      "name": "request (error envelope formatting)",
+      "hz": 201647.98,
+      "meanMs": 0.004959,
+      "medianMs": 0.004875,
+      "p75Ms": 0.004958,
+      "p99Ms": 0.006042,
+      "minMs": 0.0045,
+      "maxMs": 0.269542,
+      "rme": 0.36,
+      "samples": 40330
+    },
+    {
+      "suite": "@tevm/jsonrpc",
+      "name": "10 concurrent requests",
+      "hz": 489409.73,
+      "meanMs": 0.002043,
+      "medianMs": 0.001959,
+      "p75Ms": 0.002,
+      "p99Ms": 0.002584,
+      "minMs": 0.001833,
+      "maxMs": 0.240875,
+      "rme": 0.63,
+      "samples": 97882
+    }
+  ]
+}

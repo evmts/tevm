@@ -2,6 +2,7 @@
 const S = Smithers
 
 import { scopedShell } from '../../factory/scoped-shell.js'
+import { vitestBench } from '../../factory/bench.js'
 
 const Shell = scopedShell('packages/effect')
 
@@ -22,6 +23,10 @@ const srcs = S.Filegroup({
 
 const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
+})
+
+const benches = S.Filegroup({
+	srcs: S.glob(['bench/**']),
 })
 
 const deps = S.Filegroup({ srcs: [packageJson] })
@@ -129,8 +134,14 @@ const check = S.Suite({
 // nx aggregate the build, types, and declarations targets replace; `format`
 // and `format:check` are the format-only half of lint and lint:check; `test`
 // is vitest in watch mode with coverage; `test:ui` is the vitest UI.
+const bench = vitestBench('packages/effect', {
+	data: [srcs, benches, deps, tsconfig],
+})
+
 export const Package = S.Package({
 	targets: {
+		bench,
+		benches,
 		apiCompat,
 		build,
 		check,

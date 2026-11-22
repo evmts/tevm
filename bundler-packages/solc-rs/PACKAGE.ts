@@ -1,6 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
+import { cargoBench } from '../../factory/bench.js'
+
 // bundler-packages/resolutions-rs/PACKAGE.ts is the exemplar for the Rust
 // crates in the cargo workspace. This crate is private and ships no napi
 // bindings, so there are no napi or wasmSize targets. Targets are keyed on
@@ -9,6 +11,10 @@ const S = Smithers
 // repeats build verbatim.
 const srcs = S.Filegroup({
 	srcs: S.glob(['src/**', 'Cargo.toml', 'build.rs']),
+})
+
+const benches = S.Filegroup({
+	srcs: S.glob(['examples/bench_json.rs']),
 })
 
 // build (cargo build --release).
@@ -31,6 +37,13 @@ const testRust = S.Cargo.Test({
 	data: [srcs],
 })
 
+const bench = cargoBench('bundler-packages/solc-rs', {
+	cargoPackage: 'tevm_solc_rs',
+	data: [srcs, benches],
+})
+
 export const Package = S.Package({
-	targets: { build, buildDebug, srcs, testRust },
+	targets: {
+		bench,
+		benches, build, buildDebug, srcs, testRust },
 })

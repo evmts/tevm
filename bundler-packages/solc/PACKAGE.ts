@@ -2,6 +2,7 @@
 const S = Smithers
 
 import { scopedShell } from '../../factory/scoped-shell.js'
+import { vitestBench } from '../../factory/bench.js'
 
 const Shell = scopedShell('bundler-packages/solc')
 
@@ -29,6 +30,10 @@ const srcs = S.Filegroup({
 
 const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
+})
+
+const benches = S.Filegroup({
+	srcs: S.glob(['bench/**']),
 })
 
 // The solc:version helper script. Not part of the library sources.
@@ -149,8 +154,14 @@ const check = S.Suite({
 	tests: [lint, typecheck, test, testCoverage, depsLint, packageLint],
 })
 
+const bench = vitestBench('bundler-packages/solc', {
+	data: [srcs, benches, deps, tsconfig],
+})
+
 export const Package = S.Package({
 	targets: {
+		bench,
+		benches,
 		apiCompat,
 		build,
 		check,

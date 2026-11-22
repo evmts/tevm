@@ -1,6 +1,7 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
+import { vitestBench } from '../../factory/bench.js'
 import { scopedShell } from '../../factory/scoped-shell.js'
 
 const Shell = scopedShell('packages/errors')
@@ -23,6 +24,10 @@ const srcs = S.Filegroup({
 
 const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
+})
+
+const benches = S.Filegroup({
+	srcs: S.glob(['bench/**']),
 })
 
 const deps = S.Filegroup({ srcs: [packageJson] })
@@ -64,6 +69,10 @@ const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
 	data: [srcs, tests, deps, vitestConfig, tsconfig],
+})
+
+const bench = vitestBench('packages/errors', {
+	data: [srcs, benches, deps, tsconfig],
 })
 
 // Error classes are small and fully exercised; functions is held at 100.
@@ -110,7 +119,7 @@ const format = Shell.Diff({
 })
 
 const clean = S.Clean({
-	targets: [build, types, declarations, testCoverage, docs],
+	targets: [build, types, declarations, testCoverage, docs, bench],
 	paths: ['dist', 'types', 'coverage', 'docs', 'artifacts', 'cache'],
 })
 
@@ -121,6 +130,8 @@ const check = S.Suite({
 export const Package = S.Package({
 	targets: {
 		apiCompat,
+		bench,
+		benches,
 		build,
 		check,
 		clean,

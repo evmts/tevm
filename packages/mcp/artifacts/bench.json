@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "package": "@tevm/mcp",
+  "dir": "packages/mcp",
+  "runner": "vitest",
+  "nodeVersion": "v24.12.0",
+  "platform": "darwin-arm64",
+  "cpu": "Apple M3 Max",
+  "benchmarks": [
+    {
+      "suite": "@tevm/mcp",
+      "name": "toJsonValue (nested bigint/Uint8Array/Set/object)",
+      "hz": 175559.2,
+      "meanMs": 0.005696,
+      "medianMs": 0.002666,
+      "p75Ms": 0.003,
+      "p99Ms": 0.004375,
+      "minMs": 0.002416,
+      "maxMs": 31.190584,
+      "rme": 33.1,
+      "samples": 43890
+    },
+    {
+      "suite": "@tevm/mcp",
+      "name": "executeTool(\"evm_get_account\")",
+      "hz": 6451.66,
+      "meanMs": 0.154999,
+      "medianMs": 0.018875,
+      "p75Ms": 0.021875,
+      "p99Ms": 0.169667,
+      "minMs": 0.015458,
+      "maxMs": 66.570709,
+      "rme": 65.79,
+      "samples": 1613
+    },
+    {
+      "suite": "@tevm/mcp",
+      "name": "executeTool(\"evm_mine\")",
+      "hz": 1448.03,
+      "meanMs": 0.690595,
+      "medianMs": 0.640416,
+      "p75Ms": 0.807333,
+      "p99Ms": 1.106583,
+      "minMs": 0.322542,
+      "maxMs": 10.687417,
+      "rme": 8.87,
+      "samples": 363
+    }
+  ]
+}

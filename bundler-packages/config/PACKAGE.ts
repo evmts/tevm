@@ -2,6 +2,8 @@
 const S = Smithers
 
 import { scopedShell } from '../../factory/scoped-shell.js'
+import { vitestBench } from '../../factory/bench.js'
+import { Package as pkg_effect } from '../../packages/effect/PACKAGE.js'
 
 const Shell = scopedShell('bundler-packages/config')
 
@@ -32,13 +34,17 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
 })
 
+const benches = S.Filegroup({
+	srcs: S.glob(['bench/**']),
+})
+
 // The fixture harness lives outside src so the published tarball's files
 // allowlist does not ship it; it is data for the dev and fixtures targets.
 const scripts = S.Filegroup({
 	srcs: S.glob(['scripts/**']),
 })
 
-const deps = S.Filegroup({ srcs: [packageJson] })
+const deps = S.Filegroup({ srcs: [packageJson, pkg_effect.build] })
 
 // build:dist.
 const build = Shell.Build({
@@ -169,8 +175,14 @@ const check = S.Suite({
 	tests: [lint, typecheck, test, coverageGate, depsLint, packageLint, fixtures],
 })
 
+const bench = vitestBench('bundler-packages/config', {
+	data: [srcs, benches, deps, tsconfig],
+})
+
 export const Package = S.Package({
 	targets: {
+		bench,
+		benches,
 		apiCompat,
 		build,
 		check,

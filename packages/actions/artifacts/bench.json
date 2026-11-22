@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "package": "@tevm/actions",
+  "dir": "packages/actions",
+  "runner": "vitest",
+  "nodeVersion": "v24.12.0",
+  "platform": "darwin-arm64",
+  "cpu": "Apple M3 Max",
+  "benchmarks": [
+    {
+      "suite": "@tevm/actions",
+      "name": "tevmCall (pure eth_call)",
+      "hz": 24120.24,
+      "meanMs": 0.041459,
+      "medianMs": 0.024166,
+      "p75Ms": 0.028084,
+      "p99Ms": 0.083542,
+      "minMs": 0.016167,
+      "maxMs": 40.087458,
+      "rme": 33.69,
+      "samples": 6135
+    },
+    {
+      "suite": "@tevm/actions",
+      "name": "tevmContract (ABI encode + eth_call + ABI decode)",
+      "hz": 11779.36,
+      "meanMs": 0.084894,
+      "medianMs": 0.035,
+      "p75Ms": 0.045667,
+      "p99Ms": 0.443916,
+      "minMs": 0.027042,
+      "maxMs": 22.964833,
+      "rme": 30.66,
+      "samples": 2945
+    },
+    {
+      "suite": "@tevm/actions",
+      "name": "tevmGetAccount",
+      "hz": 35926.46,
+      "meanMs": 0.027835,
+      "medianMs": 0.007875,
+      "p75Ms": 0.008,
+      "p99Ms": 0.009792,
+      "minMs": 0.0065,
+      "maxMs": 102.50225,
+      "rme": 73.24,
+      "samples": 10618
+    },
+    {
+      "suite": "@tevm/actions",
+      "name": "tevmSetAccount (balance + nonce)",
+      "hz": 57954.85,
+      "meanMs": 0.017255,
+      "medianMs": 0.013292,
+      "p75Ms": 0.015666,
+      "p99Ms": 0.041791,
+      "minMs": 0.011,
+      "maxMs": 4.27125,
+      "rme": 6.97,
+      "samples": 14489
+    },
+    {
+      "suite": "@tevm/actions",
+      "name": "tevmDeal (balance set)",
+      "hz": 106631.76,
+      "meanMs": 0.009378,
+      "medianMs": 0.0065,
+      "p75Ms": 0.00675,
+      "p99Ms": 0.0105,
+      "minMs": 0.004875,
+      "maxMs": 13.555,
+      "rme": 16.43,
+      "samples": 26658
+    },
+    {
+      "suite": "@tevm/actions",
+      "name": "tevmMine (1 block)",
+      "hz": 1078.82,
+      "meanMs": 0.926942,
+      "medianMs": 0.818209,
+      "p75Ms": 0.9365,
+      "p99Ms": 3.787083,
+      "minMs": 0.503375,
+      "maxMs": 8.63075,
+      "rme": 8.3,
+      "samples": 270
+    },
+    {
+      "suite": "@tevm/actions",
+      "name": "tevmDumpState + tevmLoadState",
+      "hz": 9335.07,
+      "meanMs": 0.107123,
+      "medianMs": 0.09375,
+      "p75Ms": 0.095834,
+      "p99Ms": 0.235042,
+      "minMs": 0.079958,
+      "maxMs": 6.394542,
+      "rme": 7.67,
+      "samples": 2334
+    }
+  ]
+}

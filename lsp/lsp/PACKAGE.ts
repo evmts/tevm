@@ -2,6 +2,10 @@
 const S = Smithers
 
 import { scopedShell } from '../../factory/scoped-shell.js'
+import { vitestBench } from '../../factory/bench.js'
+import { Package as pkg_base_bundler } from '../../bundler-packages/base-bundler/PACKAGE.js'
+import { Package as pkg_bundler_cache } from '../../bundler-packages/bundler-cache/PACKAGE.js'
+import { Package as pkg_config } from '../../bundler-packages/config/PACKAGE.js'
 
 const Shell = scopedShell('lsp/lsp')
 
@@ -23,12 +27,16 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts']),
 })
 
+const benches = S.Filegroup({
+	srcs: S.glob(['bench/**']),
+})
+
 // The tevm.json fixture the language tests load.
 const testFixtures = S.Filegroup({
 	srcs: S.glob(['fixtures/**']),
 })
 
-const deps = S.Filegroup({ srcs: [packageJson] })
+const deps = S.Filegroup({ srcs: [packageJson, pkg_base_bundler.build, pkg_bundler_cache.build, pkg_config.build] })
 
 // test:coverage. This is also the package's only test entry point: there is
 // no plain test:run script.
@@ -42,6 +50,12 @@ const testCoverage = Shell.Test({
 // on any report; it exists so the floors are explicit when they are raised.
 const coverageGate = S.Alias(testCoverage)
 
+const bench = vitestBench('lsp/lsp', {
+	data: [srcs, benches, deps, tsconfig],
+})
+
 export const Package = S.Package({
-	targets: { coverageGate, srcs, testCoverage, tests },
+	targets: {
+		bench,
+		benches, coverageGate, srcs, testCoverage, tests },
 })

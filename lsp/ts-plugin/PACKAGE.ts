@@ -2,6 +2,11 @@
 const S = Smithers
 
 import { scopedShell } from '../../factory/scoped-shell.js'
+import { vitestBench } from '../../factory/bench.js'
+import { Package as pkg_base_bundler } from '../../bundler-packages/base-bundler/PACKAGE.js'
+import { Package as pkg_bundler_cache } from '../../bundler-packages/bundler-cache/PACKAGE.js'
+import { Package as pkg_config } from '../../bundler-packages/config/PACKAGE.js'
+import { Package as pkg_contract } from '../../packages/contract/PACKAGE.js'
 
 const Shell = scopedShell('lsp/ts-plugin')
 
@@ -30,7 +35,11 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
 })
 
-const deps = S.Filegroup({ srcs: [packageJson] })
+const benches = S.Filegroup({
+	srcs: S.glob(['bench/**']),
+})
+
+const deps = S.Filegroup({ srcs: [packageJson, pkg_base_bundler.build, pkg_bundler_cache.build, pkg_config.build, pkg_contract.build] })
 
 // build:dist. tsup reads @tevm/tsupconfig through the config file; the
 // preset is a workspace dependency, so deps already covers it.
@@ -153,8 +162,14 @@ const check = S.Suite({
 	tests: [lint, typecheck, test, coverageGate, depsLint, packageLint],
 })
 
+const bench = vitestBench('lsp/ts-plugin', {
+	data: [srcs, benches, deps, tsconfig],
+})
+
 export const Package = S.Package({
 	targets: {
+		bench,
+		benches,
 		apiCompat,
 		build,
 		check,

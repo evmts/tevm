@@ -9,6 +9,8 @@ pub mod read_file;
 pub mod resolve_import_path;
 pub mod resolve_imports;
 pub mod state;
+#[cfg(test)]
+mod fuzz_proptest;
 
 pub use config::Config;
 pub use models::{ModuleInfo, ResolvedImport};

@@ -4,6 +4,8 @@ pub mod error;
 pub mod napi;
 #[cfg(feature = "examples")]
 pub mod examples;
+#[cfg(test)]
+mod fuzz_proptest;
 
 // Re-export the main functions and types for easier access
 pub use models::{

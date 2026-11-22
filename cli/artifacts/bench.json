@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "package": "@tevm/cli",
+  "dir": "cli",
+  "runner": "vitest",
+  "nodeVersion": "v24.12.0",
+  "platform": "darwin-arm64",
+  "cpu": "Apple M3 Max",
+  "benchmarks": [
+    {
+      "suite": "@tevm/cli",
+      "name": "parseCliAbi (inline JSON ABI)",
+      "hz": 581962.42,
+      "meanMs": 0.001718,
+      "medianMs": 0.001583,
+      "p75Ms": 0.001625,
+      "p99Ms": 0.00275,
+      "minMs": 0.001458,
+      "maxMs": 4.171792,
+      "rme": 4.11,
+      "samples": 116393
+    },
+    {
+      "suite": "@tevm/cli",
+      "name": "generateRandomName()",
+      "hz": 12425309.57,
+      "meanMs": 0.00008,
+      "medianMs": 0.000083,
+      "p75Ms": 0.000084,
+      "p99Ms": 0.000167,
+      "minMs": 0,
+      "maxMs": 0.174041,
+      "rme": 0.4,
+      "samples": 2485062
+    }
+  ]
+}

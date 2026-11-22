@@ -2,6 +2,32 @@
 const S = Smithers
 
 import { scopedShell } from '../factory/scoped-shell.js'
+import { vitestBench } from '../factory/bench.js'
+import { Package as pkg_actions } from '../packages/actions/PACKAGE.js'
+import { Package as pkg_base_bundler } from '../bundler-packages/base-bundler/PACKAGE.js'
+import { Package as pkg_bun } from '../bundler-packages/bun/PACKAGE.js'
+import { Package as pkg_bundler_cache } from '../bundler-packages/bundler-cache/PACKAGE.js'
+import { Package as pkg_cli } from '../cli/PACKAGE.js'
+import { Package as pkg_common } from '../packages/common/PACKAGE.js'
+import { Package as pkg_compiler } from '../bundler-packages/compiler/PACKAGE.js'
+import { Package as pkg_config } from '../bundler-packages/config/PACKAGE.js'
+import { Package as pkg_contract } from '../packages/contract/PACKAGE.js'
+import { Package as pkg_errors } from '../packages/errors/PACKAGE.js'
+import { Package as pkg_esbuild } from '../bundler-packages/esbuild/PACKAGE.js'
+import { Package as pkg_http_client } from '../packages/http-client/PACKAGE.js'
+import { Package as pkg_jsonrpc } from '../packages/jsonrpc/PACKAGE.js'
+import { Package as pkg_memory_client } from '../packages/memory-client/PACKAGE.js'
+import { Package as pkg_node } from '../packages/node/PACKAGE.js'
+import { Package as pkg_predeploys } from '../packages/predeploys/PACKAGE.js'
+import { Package as pkg_rollup } from '../bundler-packages/rollup/PACKAGE.js'
+import { Package as pkg_rspack } from '../bundler-packages/rspack/PACKAGE.js'
+import { Package as pkg_server } from '../packages/server/PACKAGE.js'
+import { Package as pkg_solc } from '../bundler-packages/solc/PACKAGE.js'
+import { Package as pkg_ts_plugin } from '../lsp/ts-plugin/PACKAGE.js'
+import { Package as pkg_utils } from '../packages/utils/PACKAGE.js'
+import { Package as pkg_viem } from '../extensions/viem/PACKAGE.js'
+import { Package as pkg_vite } from '../bundler-packages/vite/PACKAGE.js'
+import { Package as pkg_webpack } from '../bundler-packages/webpack/PACKAGE.js'
 
 const Shell = scopedShell('tevm')
 
@@ -23,7 +49,11 @@ const srcs = S.Filegroup({
 	srcs: S.glob(['**/index.ts', 'cli.js', '!**/*.d.ts', '!node_modules/**', '!docs/**']),
 })
 
-const deps = S.Filegroup({ srcs: [packageJson] })
+const benches = S.Filegroup({
+	srcs: S.glob(['bench/**']),
+})
+
+const deps = S.Filegroup({ srcs: [packageJson, pkg_actions.build, pkg_base_bundler.build, pkg_bun.build, pkg_bundler_cache.build, pkg_cli.build, pkg_common.build, pkg_compiler.build, pkg_config.build, pkg_contract.build, pkg_errors.build, pkg_esbuild.build, pkg_http_client.build, pkg_jsonrpc.build, pkg_memory_client.build, pkg_node.build, pkg_predeploys.build, pkg_rollup.build, pkg_rspack.build, pkg_server.build, pkg_solc.build, pkg_ts_plugin.build, pkg_utils.build, pkg_viem.build, pkg_vite.build, pkg_webpack.build] })
 
 // generate:dist and build:dist. The emit is committed generated output.
 // Upstream, build:dist runs tsup and then `git status --porcelain` to fail on
@@ -148,8 +178,14 @@ const check = S.Suite({
 	tests: [lint, typecheck, dist, types, depsLint, packageLint],
 })
 
+const bench = vitestBench('tevm', {
+	data: [srcs, benches, deps, tsconfig, packageJson],
+})
+
 export const Package = S.Package({
 	targets: {
+		bench,
+		benches,
 		apiCompat,
 		check,
 		clean,

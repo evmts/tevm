@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "package": "@tevm/esbuild-plugin",
+  "dir": "bundler-packages/esbuild",
+  "runner": "vitest",
+  "nodeVersion": "v24.12.0",
+  "platform": "darwin-arm64",
+  "cpu": "Apple M3 Max",
+  "benchmarks": [
+    {
+      "suite": "@tevm/esbuild-plugin",
+      "name": "esbuildPluginTevm() instantiation",
+      "hz": 2998859.85,
+      "meanMs": 0.000333,
+      "medianMs": 0.000166,
+      "p75Ms": 0.000167,
+      "p99Ms": 0.000625,
+      "minMs": 0.000083,
+      "maxMs": 37.532209,
+      "rme": 45.83,
+      "samples": 599772
+    }
+  ]
+}

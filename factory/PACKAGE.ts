@@ -22,6 +22,7 @@ const declarations = S.Filegroup({
 		'//WORKSPACE.ts',
 		'//PACKAGE.ts',
 		'//**/PACKAGE.ts',
+		'//factory/bench.ts',
 		'//factory/scoped-shell.ts',
 		'//smithers.d.ts',
 		'//tsconfig.factory.json',

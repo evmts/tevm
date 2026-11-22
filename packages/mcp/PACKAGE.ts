@@ -2,6 +2,9 @@
 const S = Smithers
 
 import { scopedShell } from '../../factory/scoped-shell.js'
+import { vitestBench } from '../../factory/bench.js'
+import { Package as pkg_common } from '../common/PACKAGE.js'
+import { Package as pkg_memory_client } from '../memory-client/PACKAGE.js'
 
 const Shell = scopedShell('packages/mcp')
 
@@ -24,7 +27,11 @@ const tests = S.Filegroup({
 	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**']),
 })
 
-const deps = S.Filegroup({ srcs: [packageJson] })
+const benches = S.Filegroup({
+	srcs: S.glob(['bench/**']),
+})
+
+const deps = S.Filegroup({ srcs: [packageJson, pkg_common.build, pkg_memory_client.build] })
 
 // build:dist. tsup builds both entries from tsup.config.js: the library and
 // the tevm-mcp CLI the manifest's bin points at.
@@ -130,8 +137,15 @@ const check = S.Suite({
 // and `format:check` are the format-only half of lint and lint:check; `test`
 // is vitest in watch mode. The scratch-*.mjs files at the package root are
 // manual debugging scripts, not package scripts.
+const bench = vitestBench('packages/mcp', {
+	data: [srcs, benches, deps, tsconfig],
+	sandbox: { network: 'loopback' },
+})
+
 export const Package = S.Package({
 	targets: {
+		bench,
+		benches,
 		build,
 		check,
 		declarations,

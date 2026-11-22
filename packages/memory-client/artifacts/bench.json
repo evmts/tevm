@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "package": "@tevm/memory-client",
+  "dir": "packages/memory-client",
+  "runner": "vitest",
+  "nodeVersion": "v24.12.0",
+  "platform": "darwin-arm64",
+  "cpu": "Apple M3 Max",
+  "benchmarks": [
+    {
+      "suite": "@tevm/memory-client",
+      "name": "createMemoryClient + tevmReady + tevmClose",
+      "hz": 13554.66,
+      "meanMs": 0.073775,
+      "medianMs": 0.056958,
+      "p75Ms": 0.06575,
+      "p99Ms": 0.221875,
+      "minMs": 0.046083,
+      "maxMs": 6.606375,
+      "rme": 9.36,
+      "samples": 3419
+    },
+    {
+      "suite": "@tevm/memory-client",
+      "name": "viem getBlockNumber()",
+      "hz": 155845.03,
+      "meanMs": 0.006417,
+      "medianMs": 0.005833,
+      "p75Ms": 0.006,
+      "p99Ms": 0.009583,
+      "minMs": 0.004541,
+      "maxMs": 3.678458,
+      "rme": 3.87,
+      "samples": 38962
+    },
+    {
+      "suite": "@tevm/memory-client",
+      "name": "viem getBalance()",
+      "hz": 157418.17,
+      "meanMs": 0.006353,
+      "medianMs": 0.005333,
+      "p75Ms": 0.005542,
+      "p99Ms": 0.011583,
+      "minMs": 0.004833,
+      "maxMs": 3.733791,
+      "rme": 3.76,
+      "samples": 39355
+    },
+    {
+      "suite": "@tevm/memory-client",
+      "name": "viem readContract()",
+      "hz": 25702.2,
+      "meanMs": 0.038907,
+      "medianMs": 0.034625,
+      "p75Ms": 0.039333,
+      "p99Ms": 0.100959,
+      "minMs": 0.029292,
+      "maxMs": 4.228292,
+      "rme": 3.52,
+      "samples": 6426
+    },
+    {
+      "suite": "@tevm/memory-client",
+      "name": "tevmContract() read",
+      "hz": 24807.4,
+      "meanMs": 0.040311,
+      "medianMs": 0.036292,
+      "p75Ms": 0.037291,
+      "p99Ms": 0.108458,
+      "minMs": 0.02825,
+      "maxMs": 9.379583,
+      "rme": 7.96,
+      "samples": 6202
+    },
+    {
+      "suite": "@tevm/memory-client",
+      "name": "tevmCall() + addToBlockchain (ETH transfer)",
+      "hz": 58.01,
+      "meanMs": 17.238397,
+      "medianMs": 15.864166,
+      "p75Ms": 16.428875,
+      "p99Ms": 34.968,
+      "minMs": 14.244959,
+      "maxMs": 34.968,
+      "rme": 17.17,
+      "samples": 15
+    }
+  ]
+}

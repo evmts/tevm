@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "package": "@tevm/vscode",
+  "dir": "lsp/vscode",
+  "runner": "vitest",
+  "nodeVersion": "v24.12.0",
+  "platform": "darwin-arm64",
+  "cpu": "Apple M3 Max",
+  "benchmarks": [
+    {
+      "suite": "@tevm/vscode",
+      "name": "activateExtension() wiring",
+      "hz": 2543079.45,
+      "meanMs": 0.000393,
+      "medianMs": 0.000333,
+      "p75Ms": 0.000334,
+      "p99Ms": 0.000792,
+      "minMs": 0.00025,
+      "maxMs": 6.116625,
+      "rme": 6.04,
+      "samples": 508785
+    }
+  ]
+}

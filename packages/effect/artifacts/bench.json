@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "package": "@tevm/effect",
+  "dir": "packages/effect",
+  "runner": "vitest",
+  "nodeVersion": "v24.12.0",
+  "platform": "darwin-arm64",
+  "cpu": "Apple M3 Max",
+  "benchmarks": [
+    {
+      "suite": "@tevm/effect",
+      "name": "parseJson (small JSON-RPC payload)",
+      "hz": 290721.55,
+      "meanMs": 0.00344,
+      "medianMs": 0.003208,
+      "p75Ms": 0.003292,
+      "p99Ms": 0.0055,
+      "minMs": 0.00275,
+      "maxMs": 0.748334,
+      "rme": 1.25,
+      "samples": 58145
+    },
+    {
+      "suite": "@tevm/effect",
+      "name": "parseJson (50-contract ABI manifest)",
+      "hz": 2957.83,
+      "meanMs": 0.338085,
+      "medianMs": 0.342958,
+      "p75Ms": 0.35225,
+      "p99Ms": 0.588917,
+      "minMs": 0.300041,
+      "maxMs": 0.731958,
+      "rme": 1.22,
+      "samples": 592
+    },
+    {
+      "suite": "@tevm/effect",
+      "name": "fileExists (existing file)",
+      "hz": 37129.61,
+      "meanMs": 0.026933,
+      "medianMs": 0.022709,
+      "p75Ms": 0.027541,
+      "p99Ms": 0.089667,
+      "minMs": 0.011708,
+      "maxMs": 3.029541,
+      "rme": 5,
+      "samples": 7426
+    }
+  ]
+}

@@ -102,6 +102,7 @@ execution-specs/
 # Smithers runtime artifacts
 /.worktrees/
 /artifacts/
+**/artifacts/bench*.json
 /smithers.db*
 
 g/
