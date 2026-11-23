@@ -15,3 +15,5 @@ try {
 ```
 
 `createTevmTransport` attaches the engine at `client.transport.tevm`. Account helpers, ABI calls, deployment, mining, dump/load and snapshots operate on native state. See the [migration guide](../../docs/native-engine-migration.md).
+
+When you supply a backend or engine, `client.chain` is undefined unless you also supply `common` or `chainId`. Use `await client.getChainId()` to read the engine’s chain ID.

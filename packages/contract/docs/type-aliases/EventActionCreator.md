@@ -4,11 +4,11 @@
 
 [@tevm/contract](../globals.md) / EventActionCreator
 
-# Type Alias: EventActionCreator\<THumanReadableAbi, TBytecode, TDeployedBytecode, TAddress, TAddressArgs\>
+# Type Alias: EventActionCreator\<TSourceAbi, TBytecode, TDeployedBytecode, TAddress, TAddressArgs, TAbi\>
 
-> **EventActionCreator**\<`THumanReadableAbi`, `TBytecode`, `TDeployedBytecode`, `TAddress`, `TAddressArgs`\> = \{ \[TEventName in ExtractAbiEventNames\<ParseAbi\<THumanReadableAbi\>\>\]: (params: Pick\<CreateEventFilterParameters\<ExtractAbiEvent\<ParseAbi\<THumanReadableAbi\>, TEventName\>, ParseAbi\<THumanReadableAbi\>, TStrict, TFromBlock, TToBlock, TEventName, MaybeExtractEventArgsFromAbi\<ParseAbi\<THumanReadableAbi\>, TEventName\>\>, "fromBlock" \| "toBlock" \| "args" \| "strict"\>) =\> CreateEventFilterParameters\<ExtractAbiEvent\<ParseAbi\<THumanReadableAbi\>, TEventName\>, ParseAbi\<THumanReadableAbi\>, TStrict, TFromBlock, TToBlock, TEventName, MaybeExtractEventArgsFromAbi\<ParseAbi\<THumanReadableAbi\>, TEventName\>\> & \{ abi: \[ExtractAbiEvent\<ParseAbi\<THumanReadableAbi\>, TEventName\>\]; bytecode: TBytecode; deployedBytecode: TDeployedBytecode; eventName: TEventName \} & \{ abi: \[ExtractAbiEvent\<ParseAbi\<THumanReadableAbi\>, TEventName\>\]; bytecode: TBytecode; deployedBytecode: TDeployedBytecode; eventName: TEventName; humanReadableAbi: FormatAbi\<\[ExtractAbiEvent\<ParseAbi\<THumanReadableAbi\>, TEventName\>\]\> \} & TAddressArgs \}
+> **EventActionCreator**\<`TSourceAbi`, `TBytecode`, `TDeployedBytecode`, `TAddress`, `TAddressArgs`, `TAbi`\> = \{ \[TEventName in ExtractAbiEventNames\<TAbi\>\]: (params: Pick\<CreateEventFilterParameters\<ExtractAbiEvent\<TAbi, TEventName\>, TAbi, TStrict, TFromBlock, TToBlock, TEventName, MaybeExtractEventArgsFromAbi\<TAbi, TEventName\>\>, "fromBlock" \| "toBlock" \| "args" \| "strict"\>) =\> CreateEventFilterParameters\<ExtractAbiEvent\<TAbi, TEventName\>, TAbi, TStrict, TFromBlock, TToBlock, TEventName, MaybeExtractEventArgsFromAbi\<TAbi, TEventName\>\> & \{ abi: \[ExtractAbiEvent\<TAbi, TEventName\>\]; bytecode: TBytecode; deployedBytecode: TDeployedBytecode; eventName: TEventName \} & \{ abi: \[ExtractAbiEvent\<TAbi, TEventName\>\]; bytecode: TBytecode; deployedBytecode: TDeployedBytecode; eventName: TEventName; humanReadableAbi: FormatAbi\<\[ExtractAbiEvent\<TAbi, TEventName\>\]\> \} & TAddressArgs \}
 
-Defined in: [event/EventActionCreator.ts:56](https://github.com/evmts/tevm/blob/main/packages/contract/src/event/EventActionCreator.ts#L56)
+Defined in: [packages/contract/src/event/EventActionCreator.ts:57](https://github.com/evmts/tevm/blob/main/packages/contract/src/event/EventActionCreator.ts#L57)
 
 A mapping of event names to action creators for events. Can be used to create event filters in a typesafe way.
 
@@ -16,11 +16,12 @@ A mapping of event names to action creators for events. Can be used to create ev
 
 | Type Parameter | Default type | Description |
 | ------ | ------ | ------ |
-| `THumanReadableAbi` *extends* readonly `string`[] | - | The human-readable ABI of the contract. |
+| `TSourceAbi` *extends* `Abi` \| readonly `string`[] | - | The JSON or human-readable ABI of the contract. |
 | `TBytecode` *extends* `Hex` \| `undefined` | - | The bytecode of the contract. |
 | `TDeployedBytecode` *extends* `Hex` \| `undefined` | - | The deployed bytecode of the contract. |
 | `TAddress` *extends* `Address` \| `undefined` | - | The address of the contract. |
 | `TAddressArgs` | `TAddress` *extends* `undefined` ? `object` : `object` | Additional arguments for the address. |
+| `TAbi` *extends* `Abi` | `TSourceAbi` *extends* readonly `string`[] ? `ParseAbi`\<`TSourceAbi`\> : `Extract`\<`TSourceAbi`, `Abi`\> | The JSON ABI used to construct event filters. |
 
 ## Example
 

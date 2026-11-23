@@ -1,5 +1,5 @@
 import { createZevmEngine } from '@tevm/node'
-import { createClient, parseAbi, toHex } from 'viem'
+import { type Chain, createClient, parseAbi, toHex } from 'viem'
 import { foundry } from 'viem/chains'
 import { afterEach, describe, expect, expectTypeOf, it } from 'vitest'
 import { createMemoryClient } from './createMemoryClient.js'
@@ -25,6 +25,7 @@ describe('native memory client', () => {
 		const client = create()
 		await client.tevmReady()
 		expect(await client.getChainId()).toBe(31337)
+		expect(client.chain?.id).toBe(31337)
 		expect(await client.getBlockNumber()).toBe(0n)
 		await client.tevmSetAccount({
 			address,
@@ -117,23 +118,22 @@ describe('native memory client', () => {
 		}
 	})
 
-	it('does not claim chain 31337 for an injected backend that owns another chain ID', async () => {
-		const backend = () => ({
-			rpc: async (json: string) => JSON.stringify({ jsonrpc: '2.0', id: JSON.parse(json).id, result: '0x1' }),
-			close: () => {},
-		})
-		// Without `common` or `chainId` the client has no chain to contradict the backend.
-		const injected = create({ backend: backend() })
+	it.each([
+		'backend',
+		'engine',
+	] as const)('uses chain metadata only when configured for an injected %s', async (kind) => {
+		const options = () => {
+			const engine = createZevmEngine({ chainId: 1 })
+			return kind === 'backend' ? { backend: engine } : { engine }
+		}
+		const injected = create(options())
+		expectTypeOf(injected.chain).toEqualTypeOf<Chain | undefined>()
 		expect(injected.chain).toBeUndefined()
 		expect(await injected.getChainId()).toBe(1)
-		// An explicit chain is still honored, and the engine verifies it against the backend.
-		const explicit = create({ backend: backend(), chainId: 1 })
-		expect(explicit.chain.id).toBe(1)
+		const explicit = create({ ...options(), chainId: 1 })
+		expect(explicit.chain?.id).toBe(1)
 		expect(await explicit.getChainId()).toBe(1)
-		const common = create({ backend: backend(), common: { ...foundry, id: 1 } })
-		expect(common.chain.id).toBe(1)
-		// The default native backend runs Foundry's chain.
-		const native = create()
-		expect(native.chain.id).toBe(await native.getChainId())
+		const common = { ...foundry, id: 1 }
+		expect(create({ ...options(), common }).chain).toBe(common)
 	})
 })

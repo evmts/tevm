@@ -10,7 +10,7 @@
 
 Defined in: [packages/memory-client/src/MemoryClientOptions.ts:5](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/MemoryClientOptions.ts#L5)
 
-Native engine and viem client options. tevmClose also closes a supplied engine.
+ZEVM engine (native or pluggable WASM backend) and viem client options. tevmClose also closes a supplied engine.
 
 ## Type Declaration
 
@@ -21,6 +21,28 @@ Native engine and viem client options. tevmClose also closes a supplied engine.
 ### common?
 
 > `optional` **common?**: `Chain`
+
+Chain reported as `client.chain`. Defaults to Foundry's chain (ID 31337, or `chainId`).
+With an injected `backend` or `engine` and neither `common` nor `chainId`, `client.chain`
+is `undefined`. Read the chain ID with `client.getChainId()`.
+
+### consoleLog?
+
+> `optional` **consoleLog?**: `boolean` \| `ConsoleLogHandler`
+
+Print Hardhat `console.log` output from Solidity. `true` writes each message with
+`console.log`; a function receives each message with its raw calldata and decoded
+arguments. Forwarded to `createZevmEngine`; ignored when `engine` is supplied, so
+configure that engine directly. Decoded messages are also emitted as `consoleLog`
+events on `client.transport.tevm.events`.
+
+#### Example
+
+```ts
+import { createMemoryClient } from '@tevm/memory-client'
+const client = createMemoryClient({ consoleLog: (message) => console.log(`[sol] ${message}`) })
+await client.tevmClose()
+```
 
 ### engine?
 

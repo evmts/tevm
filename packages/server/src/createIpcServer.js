@@ -2,15 +2,18 @@ import { createServer } from 'node:net'
 import { StringDecoder } from 'node:string_decoder'
 import { createRpcConnection } from './internal/createRpcConnection.js'
 import { extractJsonRpcFrames } from './internal/extractJsonRpcFrames.js'
+import { getMaxSubscriptions } from './internal/getMaxSubscriptions.js'
 
 /** Create an IPC server supporting native RPC and connection-scoped subscriptions.
  * @param {import('./Client.js').Client} client
  * @param {import('node:net').ServerOpts} [options]
  * @param {{maxMessageSize?: number; maxSubscriptions?: number}} [limits] `maxSubscriptions` caps live
- * `eth_subscribe` subscriptions per connection (default 256).
+ * `eth_subscribe` subscriptions per connection (default 256, or `Infinity` for no cap).
+ * @throws {RangeError} If the subscription cap is neither a non-negative integer nor `Infinity`.
  * @returns {import('node:net').Server}
  */
 export function createIpcServer(client, options = {}, limits = {}) {
+	const maxSubscriptions = getMaxSubscriptions(limits.maxSubscriptions)
 	return createServer(options, (socket) => {
 		socket.on('error', () => socket.destroy())
 		const decoder = new StringDecoder('utf8')
@@ -21,7 +24,7 @@ export function createIpcServer(client, options = {}, limits = {}) {
 			(json) => {
 				if (!socket.destroyed) socket.write(`${json}\n`)
 			},
-			limits.maxSubscriptions === undefined ? {} : { maxSubscriptions: limits.maxSubscriptions },
+			{ maxSubscriptions },
 		)
 		socket.on('data', (data) => {
 			buffer += decoder.write(data)

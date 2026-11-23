@@ -6,7 +6,7 @@
 
 # Type Alias: MemoryClient
 
-> **MemoryClient** = `Client`\<`Transport`\<`"tevm"`, \{ `tevm`: `ZevmEngine`; \}\>, `Chain`, `Account` \| `undefined`\> & `PublicActions` & `WalletActions`\<`Chain`, `Account` \| `undefined`\> & `TestActions` & `ReturnType`\<`ReturnType`\<*typeof* [`tevmViemActions`](../functions/tevmViemActions.md)\>\>
+> **MemoryClient** = `Client`\<`Transport`\<`"tevm"`, \{ `tevm`: `ZevmEngine`; \}\>, `Chain` \| `undefined`, `Account` \| `undefined`\> & `PublicActions` & `WalletActions`\<`Chain` \| `undefined`, `Account` \| `undefined`\> & `TestActions` & `ReturnType`\<`ReturnType`\<*typeof* [`tevmViemActions`](../functions/tevmViemActions.md)\>\>
 
 Defined in: [packages/memory-client/src/MemoryClient.ts:6](https://github.com/evmts/tevm/blob/main/packages/memory-client/src/MemoryClient.ts#L6)
 

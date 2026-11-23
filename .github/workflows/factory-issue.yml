@@ -265,7 +265,7 @@ jobs:
     needs: [verify-candidate]
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment: factory-pr-settlement
+    environment: factory-approval
     permissions:
       contents: write
       pull-requests: write
@@ -333,7 +333,7 @@ jobs:
           - Candidate kind: \`${candidate_kind}\`
           - Candidate run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
           - Intake body digest: \`$(jq -r '.bodyDigest' "$metadata")\`
-          - Approval: \`factory:ready\` label plus the protected \`factory-pr-settlement\` environment
+          - Approval: \`factory:ready\` label plus the protected \`factory-approval\` environment
 
           The candidate passed its declared mechanical and agentic checks before settlement, then the deterministic settlement gates were rerun against the exact uploaded patch.
           EOF

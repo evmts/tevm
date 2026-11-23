@@ -49,10 +49,9 @@ it(
 				throw new Error(`Process exited with code ${exited}`)
 			}
 
-			// Check for the command with flexible config path matching
-			expect(result).toMatch(
-				/\[tevm-run\] bun run --bun --config=.*bunfig\.toml --install=fallback \.\/example\/example\.ts/,
-			)
+			expect(result.split('\n').filter((line) => line.startsWith('[tevm-run]'))).toEqual([
+				'[tevm-run] ./example/example.ts',
+			])
 			expect(result).toInclude('success')
 			// Native deployment receipts encode addresses as lowercase RPC data.
 			expect(result).toInclude('address:  0x5fbdb2315678afecb367f032d93f642f64180aa3')

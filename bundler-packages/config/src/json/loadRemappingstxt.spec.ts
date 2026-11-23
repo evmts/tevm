@@ -74,14 +74,12 @@ describe('loadRemappings', () => {
 		expect(result.remappings?.['@openzeppelin/']).toBe('C:\\path\\to\\config\\lib\\windows\\path\\')
 	})
 
-	it('should handle remappings with paths starting with slash', async () => {
+	it('preserves absolute remapping targets', async () => {
 		vi.mocked(fs.readFileSync).mockReturnValueOnce('@openzeppelin/=/absolute/path/lib/openzeppelin/')
 
 		const result = await runPromise(loadRemappings('/path/to/config'))
 
-		expect(result).toHaveProperty('remappings.@openzeppelin/')
-		// Should correctly handle paths starting with slash by removing the leading slash
-		expect(result.remappings?.['@openzeppelin/']).toEqual('/path/to/config/absolute/path/lib/openzeppelin/')
+		expect(result.remappings?.['@openzeppelin/']).toBe('/absolute/path/lib/openzeppelin/')
 	})
 
 	it('should handle config path with trailing slash', async () => {

@@ -97,7 +97,7 @@ export type CreateContractFn = <
 	code,
 }: CreateContractParams<TName, TAbi, TAddress, TBytecode, TDeployedBytecode, TCode>) => Contract<
 	TName,
-	THumanReadableAbi,
+	Extract<TAbi[number], { type: 'event'; anonymous: true }> extends never ? THumanReadableAbi : TAbi,
 	TAddress,
 	TBytecode,
 	TDeployedBytecode,

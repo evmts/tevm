@@ -60,6 +60,11 @@ export type ZevmEngineOptions = {
 export type ZevmEngine = {
 	events: EngineEventEmitter<ZevmEngineEvents>
 	ready: () => Promise<void>
+	/**
+	 * Submit a request with the method and parameters it has at call time.
+	 * @param request - The JSON-RPC method and parameters.
+	 * @returns The backend's JSON-RPC result. A successful response event carries the captured request.
+	 */
 	request: (request: EngineRequest) => Promise<JsonValue>
 	rpc: (json: string) => Promise<string | null>
 	close: () => Promise<void>

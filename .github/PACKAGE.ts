@@ -140,6 +140,7 @@ const snapshot = S.Github.Workflow({
 	name: 'snapshot',
 	on: { workflowDispatch: true },
 	concurrency: { group: 'snapshot-${{ github.ref }}', cancelInProgress: false },
+	environment: 'npm-release',
 	setup,
 	permissions: { contents: 'read', idToken: 'write' },
 	env: rpcEnvironment,

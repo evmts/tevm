@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { existsSync } from 'node:fs'
 import { access, readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { assert, command, readJson, readPolicy, repositoryRoot } from './lib.mjs'
@@ -53,9 +54,13 @@ for (const checkout of [policy.toolchain.flows]) {
 		gitmodules.includes(`path = ${checkout.localPath}\n\turl = ${checkout.repository}`),
 		`${checkout.localPath} must be a .gitmodules entry for ${checkout.repository}`,
 	)
-	const gitlink = /^160000 ([0-9a-f]{40}) 0\t/.exec(
-		command('git', ['ls-files', '--stage', '--', checkout.localPath]),
-	)?.[1]
+	// A non-colocated jj workspace has a working-copy tree and no Git index.
+	const gitlink =
+		existsSync(resolve(repositoryRoot, '.jj')) && !existsSync(resolve(repositoryRoot, '.git'))
+			? /: Ok\(Resolved\(Some\(GitSubmodule\(CommitId\("([0-9a-f]{40})"/.exec(
+					command('jj', ['debug', 'tree', '--', checkout.localPath]),
+				)?.[1]
+			: /^160000 ([0-9a-f]{40}) 0\t/.exec(command('git', ['ls-files', '--stage', '--', checkout.localPath]))?.[1]
 	assert(
 		gitlink === checkout.revision,
 		`${checkout.localPath} gitlink ${gitlink} drifted from policy ${checkout.revision}`,
@@ -74,8 +79,14 @@ assert(
 )
 assert(configureWorkflow.includes('issues: write'), 'label configuration needs explicit issues write permission')
 
-const [candidateWorkflow, settlementWorkflow] = issueWorkflow.split('\n  settle:')
-assert(settlementWorkflow, 'factory issue workflow must retain a distinct settlement job')
+const job = (name) => {
+	const body = issueWorkflow.split(`\n  ${name}:\n`)[1]?.split(/\n {2}\S/)[0]
+	assert(body, `factory issue workflow must retain the ${name} job`)
+	return body
+}
+const candidateWorkflow = job('candidate')
+const verificationWorkflow = job('verify-candidate')
+const settlementWorkflow = job('open-pr')
 assert(
 	candidateWorkflow.includes('environment: factory-candidate'),
 	'candidate must use the factory-candidate environment',
@@ -99,12 +110,44 @@ assert(
 	'factory workflow must retain plan-first routes',
 )
 assert(candidateWorkflow.includes('//workflows/issue-triage:triageIssue'), 'plan-first routes must use governed triage')
+assert(/^ {4}permissions:\n {6}contents: read\n {4}\S/m.test(verificationWorkflow), 'verification must be read-only')
+const checkouts = verificationWorkflow.split('\n      - ').filter((step) => step.includes('uses: actions/checkout@'))
 assert(
-	settlementWorkflow.includes('environment: factory-approval'),
+	checkouts.length > 0 && checkouts.every((step) => /^ {10}persist-credentials: false$/m.test(step)),
+	'verification checkouts must not persist repository credentials',
+)
+assert(/^ {4}needs: \[verify-candidate\]$/m.test(settlementWorkflow), 'settlement must depend on verification')
+assert(
+	/^ {4}environment: factory-approval$/m.test(settlementWorkflow),
 	'settlement must use the protected approval environment',
 )
 assert(settlementWorkflow.includes('contents: write'), 'settlement needs explicit contents write permission')
 assert(settlementWorkflow.includes('pull-requests: write'), 'settlement needs explicit pull-request write permission')
+assert(
+	settlementWorkflow.includes('ref: main') &&
+		// biome-ignore lint/suspicious/noTemplateCurlyInString: literal Actions expression
+		settlementWorkflow.includes('artifact-ids: ${{ needs.verify-candidate.outputs.artifact }}') &&
+		!/^\s*(?:- )?(?:uses: \.\/|(?:run: )?(?:pnpm|npm|bun)\s)/m.test(settlementWorkflow),
+	'settlement must use the trusted base and verified artifact without running candidate build steps',
+)
+// Only the trusted checkout runs here. After staging the patch, permit only settlement commands.
+const applyCommands = settlementWorkflow.match(/\bgit apply\b[^\n]*/g) ?? []
+assert(
+	applyCommands.length === 1 && applyCommands[0] === 'git apply --cached "$patch"',
+	'settlement must apply the verified patch only to the index',
+)
+assert(
+	settlementWorkflow.trimEnd().endsWith(
+		[
+			'git apply --cached "$patch"',
+			// biome-ignore lint/suspicious/noTemplateCurlyInString: literal shell command
+			'git -c core.hooksPath=/dev/null commit -m "🤖 ${commit_subject}"',
+			'git push origin "HEAD:refs/heads/$branch"',
+			'gh pr create --base main --head "$branch" --title "$pr_title" --body-file "$body"',
+		].join('\n          '),
+	),
+	'settlement must only commit, push and open the PR after staging the verified patch',
+)
 
 const uniqueTypes = new Set(policy.issues.types)
 assert(uniqueTypes.size === policy.issues.types.length, 'issue types must be unique')

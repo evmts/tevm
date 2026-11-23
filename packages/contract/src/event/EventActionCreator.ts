@@ -34,11 +34,12 @@ export type ValueOf<T> = T[keyof T]
 
 /**
  * A mapping of event names to action creators for events. Can be used to create event filters in a typesafe way.
- * @template THumanReadableAbi - The human-readable ABI of the contract.
+ * @template TSourceAbi - The JSON or human-readable ABI of the contract.
  * @template TBytecode - The bytecode of the contract.
  * @template TDeployedBytecode - The deployed bytecode of the contract.
  * @template TAddress - The address of the contract.
  * @template TAddressArgs - Additional arguments for the address.
+ * @template TAbi - The JSON ABI used to construct event filters.
  *
  * @example
  * ```typescript
@@ -54,13 +55,14 @@ export type ValueOf<T> = T[keyof T]
  * ```
  */
 export type EventActionCreator<
-	THumanReadableAbi extends readonly string[],
+	TSourceAbi extends Abi | readonly string[],
 	TBytecode extends Hex | undefined,
 	TDeployedBytecode extends Hex | undefined,
 	TAddress extends Address | undefined,
 	TAddressArgs = TAddress extends undefined ? {} : { address: TAddress },
+	TAbi extends Abi = TSourceAbi extends readonly string[] ? ParseAbi<TSourceAbi> : Extract<TSourceAbi, Abi>,
 > = {
-	[TEventName in ExtractAbiEventNames<ParseAbi<THumanReadableAbi>>]: (<
+	[TEventName in ExtractAbiEventNames<TAbi>]: (<
 		TStrict extends boolean = false,
 		TFromBlock extends BlockNumber | BlockTag | undefined = undefined,
 		TToBlock extends BlockNumber | BlockTag | undefined = undefined,
@@ -70,36 +72,36 @@ export type EventActionCreator<
 			// we are taking the subset that aren't implied already from Contract.event.eventName specification
 			// such as abi, eventName etc.
 			CreateEventFilterParameters<
-				ExtractAbiEvent<ParseAbi<THumanReadableAbi>, TEventName>,
-				ParseAbi<THumanReadableAbi>,
+				ExtractAbiEvent<TAbi, TEventName>,
+				TAbi,
 				TStrict,
 				TFromBlock,
 				TToBlock,
 				TEventName,
-				MaybeExtractEventArgsFromAbi<ParseAbi<THumanReadableAbi>, TEventName>
+				MaybeExtractEventArgsFromAbi<TAbi, TEventName>
 			>,
 			'fromBlock' | 'toBlock' | 'args' | 'strict'
 		>,
 		// Return the following parameters. It merges the supplied parameters with the event name and abi etc.
 	) => CreateEventFilterParameters<
-		ExtractAbiEvent<ParseAbi<THumanReadableAbi>, TEventName>,
-		ParseAbi<THumanReadableAbi>,
+		ExtractAbiEvent<TAbi, TEventName>,
+		TAbi,
 		TStrict,
 		TFromBlock,
 		TToBlock,
 		TEventName,
-		MaybeExtractEventArgsFromAbi<ParseAbi<THumanReadableAbi>, TEventName>
+		MaybeExtractEventArgsFromAbi<TAbi, TEventName>
 	> & {
 		eventName: TEventName
-		abi: [ExtractAbiEvent<ParseAbi<THumanReadableAbi>, TEventName>]
+		abi: [ExtractAbiEvent<TAbi, TEventName>]
 		bytecode: TBytecode
 		deployedBytecode: TDeployedBytecode
 		// if you use the action creator without supplying arguments it's the same shape but missing args
 		// can be useful for lazily evaluating
 	}) & {
 		eventName: TEventName
-		humanReadableAbi: FormatAbi<[ExtractAbiEvent<ParseAbi<THumanReadableAbi>, TEventName>]>
-		abi: [ExtractAbiEvent<ParseAbi<THumanReadableAbi>, TEventName>]
+		humanReadableAbi: FormatAbi<[ExtractAbiEvent<TAbi, TEventName>]>
+		abi: [ExtractAbiEvent<TAbi, TEventName>]
 		bytecode: TBytecode
 		deployedBytecode: TDeployedBytecode
 	} & TAddressArgs

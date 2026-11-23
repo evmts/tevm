@@ -1,14 +1,17 @@
 import { WebSocket, WebSocketServer } from 'ws'
 import { createRpcConnection } from './internal/createRpcConnection.js'
+import { getMaxSubscriptions } from './internal/getMaxSubscriptions.js'
 
 /** Attach native JSON-RPC and subscriptions to an HTTP server.
  * @param {import('./Client.js').Client} client
  * @param {import('node:http').Server} server
  * @param {{maxPayload?: number; path?: string; maxSubscriptions?: number}} [options] `maxSubscriptions` caps live
- * `eth_subscribe` subscriptions per connection (default 256).
+ * `eth_subscribe` subscriptions per connection (default 256, or `Infinity` for no cap).
+ * @throws {RangeError} If the subscription cap is neither a non-negative integer nor `Infinity`.
  * @returns {WebSocketServer}
  */
 export function createWebSocketServer(client, server, options = {}) {
+	const maxSubscriptions = getMaxSubscriptions(options.maxSubscriptions)
 	const wss = new WebSocketServer({
 		server,
 		maxPayload: options.maxPayload ?? 1024 * 1024,
@@ -25,7 +28,7 @@ export function createWebSocketServer(client, server, options = {}) {
 			(json) => {
 				if (socket.readyState === WebSocket.OPEN) socket.send(json)
 			},
-			options.maxSubscriptions === undefined ? {} : { maxSubscriptions: options.maxSubscriptions },
+			{ maxSubscriptions },
 		)
 		let queue = Promise.resolve()
 		socket.on('message', (data) => {

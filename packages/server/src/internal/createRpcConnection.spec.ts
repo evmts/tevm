@@ -155,10 +155,8 @@ it('defaults the subscription cap to 256 and validates maxSubscriptions', async 
 	} finally {
 		await conn.close()
 	}
-	for (const maxSubscriptions of [-1, 1.5, Number.NaN, '2' as never])
-		expect(() => createRpcConnection(engine, () => {}, { maxSubscriptions })).toThrow(
-			new TypeError('maxSubscriptions must be an unsigned safe integer'),
-		)
+	for (const maxSubscriptions of [-1, 1.5, Number.NaN, -Infinity, '2' as never])
+		expect(() => createRpcConnection(engine, () => {}, { maxSubscriptions })).toThrow(RangeError)
 	const none = createRpcConnection(engine, (json) => sent.push(JSON.parse(json)), { maxSubscriptions: 0 })
 	await none.rpc(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_subscribe', params: ['newHeads'] }))
 	expect(sent.at(-1).error.code).toBe(-32005)

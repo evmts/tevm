@@ -228,6 +228,39 @@ describe('block polling', () => {
 })
 
 describe('observers cannot change a request, a result, or crash the process', () => {
+	it('uses the submitted request for dispatch, response events and console draining', async () => {
+		// The identity precompile returns the input bytes on the real EVM.
+		const call = { to: '0x0000000000000000000000000000000000000004', data: '0xab' }
+		const request = { method: 'eth_call', params: [call, 'latest'] }
+		const expected = structuredClone(request)
+		const native = createZevmEngine()
+		const engine = createZevmEngine({ backend: native, consoleLog: true })
+		engines.push(engine)
+		const requests: unknown[] = []
+		const responses: unknown[] = []
+		const errors: unknown[] = []
+		engine.events.on('error', (error) => errors.push(error))
+		engine.events.on('request', (submitted) => {
+			requests.push(submitted)
+			queueMicrotask(() => {
+				request.method = 'eth_blockNumber'
+				call.data = '0xff'
+			})
+		})
+		engine.events.on('response', (response) => {
+			responses.push(response)
+			// Closing here makes the subsequent drain observable even on addons without console capture.
+			return native.close()
+		})
+		const pending = engine.request(request)
+		request.method = 'eth_estimateGas'
+		call.data = '0xcd'
+		await expect(pending).resolves.toBe('0xab')
+		expect(requests).toEqual([expected])
+		expect(responses).toEqual([{ request: expected, result: '0xab' }])
+		expect(errors).toEqual([expect.objectContaining({ constructor: Error, message: 'engine is closed' })])
+	})
+
 	it('dispatches the request as issued and returns the backend result when listeners mutate their payloads', async () => {
 		const backendResult = { number: '0x1', transactions: ['0xaa'] }
 		const { engine, chain, errors } = harness(({ method }) =>

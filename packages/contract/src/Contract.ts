@@ -1,7 +1,10 @@
-import type { Address, EncodeDeployDataParameters, Hex, ParseAbi } from '@tevm/utils'
+import type { Abi, Address, EncodeDeployDataParameters, FormatAbi, Hex, ParseAbi } from '@tevm/utils'
 import type { EventActionCreator } from './event/EventActionCreator.js'
 import type { ReadActionCreator } from './read/ReadActionCreator.js'
 import type { WriteActionCreator } from './write/WriteActionCreator.js'
+
+type HumanReadableAbi<TAbi extends Abi | readonly string[]> = TAbi extends readonly string[] ? TAbi : FormatAbi<TAbi>
+type JsonAbi<TAbi extends Abi | readonly string[]> = TAbi extends readonly string[] ? ParseAbi<TAbi> : TAbi
 
 /**
  * Represents a specific contract with its ABI and optional bytecode.
@@ -9,7 +12,7 @@ import type { WriteActionCreator } from './write/WriteActionCreator.js'
  * including read and write methods, event filtering, and deployment.
  *
  * @template TName - The name of the contract
- * @template THumanReadableAbi - The human-readable ABI of the contract
+ * @template TAbi - The JSON or human-readable ABI of the contract
  * @template TAddress - The address of the contract (optional)
  * @template TBytecode - The creation bytecode of the contract (optional)
  * @template TDeployedBytecode - The deployed bytecode of the contract (optional)
@@ -61,7 +64,7 @@ import type { WriteActionCreator } from './write/WriteActionCreator.js'
  */
 export type Contract<
 	TName extends string,
-	THumanReadableAbi extends ReadonlyArray<string>,
+	TAbi extends Abi | readonly string[],
 	TAddress extends undefined | Address = undefined,
 	TBytecode extends undefined | Hex = undefined,
 	TDeployedBytecode extends undefined | Hex = undefined,
@@ -81,7 +84,7 @@ export type Contract<
 	 * // [{name: 'balanceOf', inputs: [...], outputs: [...], ...}]
 	 * ```
 	 */
-	abi: ParseAbi<THumanReadableAbi>
+	abi: JsonAbi<TAbi>
 
 	/**
 	 * The runtime bytecode of the contract, encoded with constructor arguments.
@@ -106,7 +109,7 @@ export type Contract<
 	 * // ['function balanceOf(address): uint256', ...]
 	 * ```
 	 */
-	humanReadableAbi: THumanReadableAbi
+	humanReadableAbi: HumanReadableAbi<TAbi>
 
 	/**
 	 * The name of the contract. If imported, this will match the name of the contract import.
@@ -121,7 +124,7 @@ export type Contract<
 	 * const logs = await tevm.eth.getLogs(transferFilter)
 	 * ```
 	 */
-	events: EventActionCreator<THumanReadableAbi, TBytecode, TDeployedBytecode, TAddress>
+	events: EventActionCreator<TAbi, TBytecode, TDeployedBytecode, TAddress>
 
 	/**
 	 * Action creators for contract view and pure functions.
@@ -131,7 +134,7 @@ export type Contract<
 	 * const balance = await tevm.contract(balanceAction)
 	 * ```
 	 */
-	read: ReadActionCreator<THumanReadableAbi, TAddress, TCode>
+	read: ReadActionCreator<HumanReadableAbi<TAbi>, TAddress, TCode>
 
 	/**
 	 * Action creators for contract payable and nonpayable functions.
@@ -141,7 +144,7 @@ export type Contract<
 	 * const result = await tevm.contract(transferAction)
 	 * ```
 	 */
-	write: WriteActionCreator<THumanReadableAbi, TAddress, TCode>
+	write: WriteActionCreator<HumanReadableAbi<TAbi>, TAddress, TCode>
 
 	/**
 	 * Action creator for deploying the contract.
@@ -152,12 +155,12 @@ export type Contract<
 	 * ```
 	 */
 	deploy: (
-		...args: EncodeDeployDataParameters<ParseAbi<THumanReadableAbi>> extends { args: infer TArgs }
+		...args: EncodeDeployDataParameters<JsonAbi<TAbi>> extends { args: infer TArgs }
 			? TArgs extends ReadonlyArray<any>
 				? TArgs
 				: []
 			: []
-	) => EncodeDeployDataParameters<ParseAbi<THumanReadableAbi>>
+	) => EncodeDeployDataParameters<JsonAbi<TAbi>>
 
 	/**
 	 * Adds an address to the contract. All action creators will include
@@ -170,7 +173,7 @@ export type Contract<
 	 */
 	withAddress: <TNewAddress extends Address>(
 		address: TNewAddress,
-	) => Contract<TName, THumanReadableAbi, TNewAddress, TBytecode, TDeployedBytecode, TCode>
+	) => Contract<TName, TAbi, TNewAddress, TBytecode, TDeployedBytecode, TCode>
 
 	/**
 	 * Updates the bytecode of the contract.
@@ -199,5 +202,5 @@ export type Contract<
 	 * })
 	 * ```
 	 */
-	withCode: (encodedBytecode: Hex) => Contract<TName, THumanReadableAbi, TAddress, TBytecode, TDeployedBytecode, Hex>
+	withCode: (encodedBytecode: Hex) => Contract<TName, TAbi, TAddress, TBytecode, TDeployedBytecode, Hex>
 }

@@ -563,6 +563,8 @@ const evaluate = (code: string, moduleType: Exclude<ModuleType, 'dts'>, tevmPack
 
 const jsonClone = <T>(value: T): T => JSON.parse(JSON.stringify(value))
 
+const hasAnonymousEvent = (abi: AbiItem[]) => abi.some((item) => item.type === 'event' && item.anonymous === true)
+
 const expectedContract = (name: string, artifact: Artifact, includeBytecode: boolean) => {
 	const bytecode = (artifact.evm?.['bytecode'] as { object?: string } | undefined)?.object
 	const deployedBytecode = (artifact.evm?.['deployedBytecode'] as { object?: string } | undefined)?.object
@@ -570,7 +572,9 @@ const expectedContract = (name: string, artifact: Artifact, includeBytecode: boo
 		created: true,
 		params: {
 			name,
-			humanReadableAbi: [...formatAbi(artifact.abi as never)],
+			...(hasAnonymousEvent(artifact.abi)
+				? { abi: artifact.abi }
+				: { humanReadableAbi: formatAbi(artifact.abi as never) }),
 			...(includeBytecode && bytecode ? { bytecode: `0x${bytecode}` } : {}),
 			...(includeBytecode && deployedBytecode ? { deployedBytecode: `0x${deployedBytecode}` } : {}),
 		},
@@ -694,7 +698,9 @@ describe('runtime codegen fuzz', { timeout: 60_000 }, () => {
 					const abiType = declarations.get(`_abi${name}`)?.type
 					expect(abiType && ts.isTypeOperatorNode(abiType)).toBe(true)
 					const abiTuple = (abiType as ts.TypeOperatorNode).type.getText(sourceFile)
-					expect(JSON.parse(abiTuple)).toEqual([...formatAbi(artifact.abi as never)])
+					expect(JSON.parse(abiTuple)).toEqual(
+						hasAnonymousEvent(artifact.abi) ? artifact.abi : formatAbi(artifact.abi as never),
+					)
 
 					const contractType = declarations.get(aliases.get(name) ?? name)?.type
 					expect(contractType && ts.isTypeReferenceNode(contractType)).toBe(true)

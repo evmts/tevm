@@ -1,3 +1,5 @@
+import { getMaxSubscriptions } from './getMaxSubscriptions.js'
+
 /** @typedef {{jsonrpc: '2.0'; id: unknown; method: 'eth_subscribe' | 'eth_unsubscribe'; params?: import('@tevm/node').JsonValue[]}} SubscriptionRequest */
 
 /** @param {unknown} value @returns {value is SubscriptionRequest} */
@@ -9,9 +11,6 @@ const isSubscriptionRequest = (value) =>
 	'id' in value &&
 	'method' in value &&
 	(value.method === 'eth_subscribe' || value.method === 'eth_unsubscribe')
-
-/** Default cap on live `eth_subscribe` subscriptions per connection. */
-const DEFAULT_MAX_SUBSCRIPTIONS = 256
 
 /**
  * A backend that has dropped a filter answers `eth_getFilterChanges` with "filter not found".
@@ -34,9 +33,7 @@ const isFilterNotFound = (error) => {
  * @returns {{rpc: (json: string) => Promise<void>; close: () => Promise<void>}}
  */
 export function createRpcConnection(engine, send, options = {}) {
-	const maxSubscriptions = options.maxSubscriptions ?? DEFAULT_MAX_SUBSCRIPTIONS
-	if (!Number.isSafeInteger(maxSubscriptions) || maxSubscriptions < 0)
-		throw new TypeError('maxSubscriptions must be an unsigned safe integer')
+	const maxSubscriptions = getMaxSubscriptions(options.maxSubscriptions)
 	// Subscriptions whose filter is still being installed. They count toward the cap.
 	let installing = 0
 	/** @type {Map<string, {kind: string; filter?: string; last?: string}>} */

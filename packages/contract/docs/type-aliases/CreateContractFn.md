@@ -12,9 +12,9 @@
 	bytecode,
 	deployedBytecode,
 	code,
-}`) => [`Contract`](Contract.md)\<`TName`, `THumanReadableAbi`, `TAddress`, `TBytecode`, `TDeployedBytecode`, `TCode`\>
+}`) => [`Contract`](Contract.md)\<`TName`, `Extract`\<`TAbi`\[`number`\], \{ `anonymous`: `true`; `type`: `"event"`; \}\> *extends* `never` ? `THumanReadableAbi` : `TAbi`, `TAddress`, `TBytecode`, `TDeployedBytecode`, `TCode`\>
 
-Defined in: [CreateContractFn.ts:77](https://github.com/evmts/tevm/blob/main/packages/contract/src/CreateContractFn.ts#L77)
+Defined in: [packages/contract/src/CreateContractFn.ts:77](https://github.com/evmts/tevm/blob/main/packages/contract/src/CreateContractFn.ts#L77)
 
 Type of `createContract` factory function.
 Creates a tevm Contract instance from a human readable ABI or JSON ABI.
@@ -39,7 +39,7 @@ Creates a tevm Contract instance from a human readable ABI or JSON ABI.
 
 ## Returns
 
-[`Contract`](Contract.md)\<`TName`, `THumanReadableAbi`, `TAddress`, `TBytecode`, `TDeployedBytecode`, `TCode`\>
+[`Contract`](Contract.md)\<`TName`, `Extract`\<`TAbi`\[`number`\], \{ `anonymous`: `true`; `type`: `"event"`; \}\> *extends* `never` ? `THumanReadableAbi` : `TAbi`, `TAddress`, `TBytecode`, `TDeployedBytecode`, `TCode`\>
 
 ## Examples
 

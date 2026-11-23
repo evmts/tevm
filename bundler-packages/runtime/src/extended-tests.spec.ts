@@ -375,9 +375,9 @@ describe('Advanced Code Generation Tests', () => {
 		})
 
 		const result = runSync(generateTevmBody(anonymousEventsArtifact, 'ts', true))
-		expect(result).toContain('"name": "EventsContract"')
-		expect(result).toContain('event StandardEvent(address indexed from, uint256 value)')
-		expect(result).toContain('event AnonymousEvent(address indexed user, string action)')
+		const config = JSON.parse(result.slice('const _EventsContract = '.length, result.indexOf(' as const')))
+		expect(config.name).toBe('EventsContract')
+		expect(config.abi).toEqual(anonymousEventsArtifact['EventsContract']!.abi)
 		expect(result).toContain('* Contract with anonymous events')
 	})
 

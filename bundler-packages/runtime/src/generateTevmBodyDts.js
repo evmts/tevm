@@ -51,11 +51,8 @@ export const generateDtsBody = (artifacts, includeBytecode) => {
 					)
 					const nameType = locals['_name']
 					const abiType = locals['_abi']
-					// Create contract metadata
-					const contract = {
-						name: contractName,
-						humanReadableAbi: formatAbi(abi),
-					}
+					// Human-readable signatures omit the anonymous flag, just as in the runtime generator.
+					const abiLiteral = abi.some((item) => item.type === 'event' && item.anonymous) ? abi : formatAbi(abi)
 
 					// Generate JSDoc from NatSpec comments
 					const natspec = Object.entries(userdoc.methods ?? {}).map(
@@ -84,7 +81,7 @@ export const generateDtsBody = (artifacts, includeBytecode) => {
 						return [
 							// Define constants for name and ABI with const assertions for type safety
 							`declare const ${nameType}: ${JSON.stringify(contractName, null, 2)};`,
-							`declare const ${abiType}: readonly ${JSON.stringify(contract.humanReadableAbi, null, 2)};`,
+							`declare const ${abiType}: readonly ${JSON.stringify(abiLiteral, null, 2)};`,
 
 							// JSDoc comments for the contract
 							'/**',
@@ -109,7 +106,7 @@ export const generateDtsBody = (artifacts, includeBytecode) => {
 					// Generate type declaration for interface-only contracts (no bytecode)
 					return [
 						// Define constants for ABI and name with const assertions
-						`declare const ${abiType}: readonly ${JSON.stringify(contract.humanReadableAbi)};`,
+						`declare const ${abiType}: readonly ${JSON.stringify(abiLiteral)};`,
 						`declare const ${nameType}: ${JSON.stringify(contractName)};`,
 
 						// JSDoc comments for the contract

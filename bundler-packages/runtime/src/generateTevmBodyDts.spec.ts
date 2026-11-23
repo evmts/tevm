@@ -56,6 +56,17 @@ describe('generateDtsBody', () => {
 		},
 	} as const
 
+	it.each([false, true])('preserves anonymous events in the ABI type with includeBytecode=%s', (includeBytecode) => {
+		const abi = [{ type: 'event', name: 'Hidden', anonymous: true, inputs: [{ type: 'address', indexed: true }] }]
+		const result = runSync(generateDtsBody(createTestArtifacts({ HiddenEvents: { abi } }), includeBytecode))
+		expect(result).toContain(
+			`declare const _abiHiddenEvents: readonly ${JSON.stringify(abi, null, includeBytecode ? 2 : 0)};`,
+		)
+		expect(result).toMatch(
+			/export const HiddenEvents: Contract<\s*typeof _nameHiddenEvents,\s*typeof _abiHiddenEvents,/,
+		)
+	})
+
 	it('should generate correct body without bytecode', () => {
 		expect(runSync(generateDtsBody(artifacts, false))).toMatchInlineSnapshot(`
 			"

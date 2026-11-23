@@ -3,8 +3,8 @@ import type { Account, Chain, Client, PublicActions, TestActions, Transport, Wal
 import type { tevmViemActions } from './tevmViemActions.js'
 
 /** Viem client whose transport delegates all execution to a native ZEVM node. */
-export type MemoryClient = Client<Transport<'tevm', { tevm: ZevmEngine }>, Chain, Account | undefined> &
+export type MemoryClient = Client<Transport<'tevm', { tevm: ZevmEngine }>, Chain | undefined, Account | undefined> &
 	PublicActions &
-	WalletActions<Chain, Account | undefined> &
+	WalletActions<Chain | undefined, Account | undefined> &
 	TestActions &
 	ReturnType<ReturnType<typeof tevmViemActions>>

@@ -6,8 +6,8 @@ export type MemoryClientOptions = ZevmEngineOptions & {
 	engine?: ZevmEngine
 	/**
 	 * Chain reported as `client.chain`. Defaults to Foundry's chain (ID 31337, or `chainId`).
-	 * With an injected `backend` and neither `common` nor `chainId`, `client.chain` is
-	 * `undefined`, because the backend owns its chain ID: read it with `client.getChainId()`.
+	 * With an injected `backend` or `engine` and neither `common` nor `chainId`, `client.chain`
+	 * is `undefined`. Read the chain ID with `client.getChainId()`.
 	 */
 	common?: Chain
 	account?: Account | Hex

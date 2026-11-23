@@ -48,7 +48,7 @@ const contributorDataInputs = S.Filegroup({
 const policyLint = S.Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['scripts/factory/check-policy.mjs'],
-	data: [policy, issueForms, conventions, scripts],
+	data: [policy, issueForms, conventions, scripts, S.file('//.github/workflows/factory-issue.yml')],
 })
 
 const queueLint = S.Shell.Test({

@@ -401,16 +401,18 @@ export function createZevmEngine(options = {}) {
 		ready: () => ready,
 		// Enqueue synchronously so calls run in the order they were issued, including
 		// relative to close(). Initialization is first in the queue and has settled by then.
-		request: (request) => {
-			if (!request || typeof request !== 'object' || typeof request.method !== 'string')
-				return Promise.reject(new TypeError('invalid request: expected an object with a string `method`'))
+		request: async (request) => {
+			const method = request?.method
+			if (!request || typeof request !== 'object' || typeof method !== 'string')
+				throw new TypeError('invalid request: expected an object with a string `method`')
+			const submitted = snapshot({ ...request, method })
 			return enqueue(async () => {
 				await ready
 				if (closed) throw new Error('engine is closed')
 				// Serialize before any observer runs: a listener cannot change the dispatched request.
 				const requestId = ++id
-				const json = JSON.stringify({ ...request, jsonrpc: '2.0', id: requestId })
-				if (events.listenerCount('request') > 0) notify(() => events.emit('request', snapshot(request)))
+				const json = JSON.stringify({ ...submitted, jsonrpc: '2.0', id: requestId })
+				if (events.listenerCount('request') > 0) notify(() => events.emit('request', snapshot(submitted)))
 				// Drain even when execution fails: Hardhat prints logs emitted before a revert.
 				// Observer work in `finally` never throws, so it cannot replace the result or mask the error.
 				try {
@@ -419,10 +421,10 @@ export function createZevmEngine(options = {}) {
 					const result = parseResponse(response, requestId)
 					// Listeners receive copies, so they cannot change the result returned to the caller.
 					if (events.listenerCount('response') > 0)
-						notify(() => events.emit('response', { request: snapshot(request), result: snapshot(result) }))
+						notify(() => events.emit('response', { request: submitted, result: snapshot(result) }))
 					return result
 				} finally {
-					if (CONSOLE_LOG_METHODS.has(request.method)) await observe(drainConsoleLogs)
+					if (CONSOLE_LOG_METHODS.has(method)) await observe(drainConsoleLogs)
 				}
 			})
 		},
