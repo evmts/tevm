@@ -3,10 +3,17 @@ import { configPath } from './configPath.js'
 import { parseArgs } from './parseArgs.js'
 
 /**
+ * Type guard for Bun shell execution errors.
+ * @param {unknown} err
+ * @returns {err is { stdout: { toString(): string }, stderr: { toString(): string }, exitCode: number }}
+ */
+const isShellError = (err) =>
+	typeof err === 'object' && err !== null && 'stdout' in err && 'stderr' in err && 'exitCode' in err
+
+/**
  * Executes the provided script using Bun with the specified configuration.
- * @param {string} scriptPath - The path to the script to execute.
- * @param {...string} positionals - The positional arguments to pass to the script.
- * @returns {Promise<void>}
+ * @param {string[]} [args] - Positional arguments (`[scriptPath, ...positionals]`) to pass to the script.
+ * @returns {Promise<import('bun').$.ShellOutput>}
  */
 export const run = async ([scriptPath, ...positionals] = parseArgs(process.argv).positionals) => {
 	try {
@@ -14,6 +21,7 @@ export const run = async ([scriptPath, ...positionals] = parseArgs(process.argv)
 		console.log(command)
 		return await $`bun run --config=${configPath} --install=fallback ${scriptPath} ${positionals}`
 	} catch (err) {
+		if (!isShellError(err)) throw err
 		// Changed 'error' to 'err' to match usage below
 		console.log('error')
 		console.log(err.stdout.toString())

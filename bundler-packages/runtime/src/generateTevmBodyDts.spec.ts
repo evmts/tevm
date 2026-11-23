@@ -402,6 +402,7 @@ describe('generateDtsBody', () => {
 		expect(resultWithBytecode).toContain('* EmptyAbiContract Contract (with bytecode)')
 		expect(resultWithBytecode).toContain('* @notice A contract with no functions')
 		expect(resultWithBytecode).toContain('export const EmptyAbiContract: Contract<')
+		// biome-ignore lint/suspicious/noTemplateCurlyInString: asserting generated TypeScript template literal type
 		expect(resultWithBytecode).toContain('`0x${string}`')
 
 		const resultWithoutBytecode = runSync(generateDtsBody(emptyAbiArtifact, false))

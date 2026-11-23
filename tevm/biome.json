@@ -1,9 +1,18 @@
 {
-	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"$schema": "../node_modules/@biomejs/biome/configuration_schema.json",
 	"extends": "//",
 	"files": {
 		"includes": [
-			"src/**"
+			"**",
+			"!index.js",
+			"!index.cjs",
+			"!index.d.ts",
+			"!index.d.cts",
+			"!**/index.js",
+			"!**/index.cjs",
+			"!**/index.d.ts",
+			"!**/index.d.cts",
+			"!docs"
 		]
 	}
 }

@@ -30,7 +30,7 @@
 		"format": "biome format . --write",
 		"lint": "biome check . --write --unsafe",
 		"lint:check": "biome check . --verbose",
-		"lint:deps": "bunx depcheck",
+		"lint:deps": "bunx depcheck --ignores=@tevm/contract",
 		"test": "prettier --check . && xo && ava",
 		"test:coverage": "pnpm run build:app && vitest run --coverage",
 		"test:run": "vitest run"
@@ -45,7 +45,6 @@
 		"@tevm/bundler-cache": "workspace:^",
 		"@tevm/common": "workspace:^",
 		"@tevm/config": "workspace:^",
-		"@tevm/jsonrpc": "workspace:^",
 		"@tevm/memory-client": "workspace:^",
 		"@tevm/server": "workspace:^",
 		"@tevm/utils": "workspace:^",
@@ -99,5 +98,6 @@
 			"react/prop-types": "off"
 		}
 	},
-	"prettier": "@vdemedes/prettier-config"
+	"prettier": "@vdemedes/prettier-config",
+	"description": "Command-line interface for native Tevm nodes, sessions, and JSON-RPC servers"
 }

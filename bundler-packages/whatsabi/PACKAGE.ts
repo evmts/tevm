@@ -7,9 +7,7 @@ const Shell = scopedShell('bundler-packages/whatsabi')
 
 // packages/evm/PACKAGE.ts is the exemplar for this shape. This package adds
 // the `declarations` target because build:types also runs tsc into the
-// tsconfig outDir (types/). Several scripts are commented out in
-// package.json (`//` keys): lint:package, test, test:run, and test:ui are
-// disabled, so the only runnable suite is test:coverage. Skipped scripts:
+// tsconfig outDir (types/). Skipped scripts:
 // `all` is an aggregate the check suite replaces, `build` is the nx
 // run-many wrapper, and `format`/`format:check` run only biome's formatter,
 // which the lint and format targets cover through biome check.
@@ -87,11 +85,15 @@ const docs = Shell.Build({
 	outDirs: ['docs'],
 })
 
-// The publishable tarball over the manifest's files allowlist. lint:package
-// is commented out, so there is no packageLint target.
+// The publishable tarball over the manifest's files allowlist.
 const pack = S.Npm.Pack({
 	manifest: packageJson,
 	data: [build, types, declarations, srcs],
+})
+
+const packageLint = Shell.Test({
+	command: 'pnpm exec publint --strict . && pnpm exec attw --pack .',
+	data: [pack],
 })
 
 // Semver gate against the last published @tevm/whatsabi declarations.
@@ -130,7 +132,7 @@ const clean = S.Clean({
 
 // Every check ci.yml runs for this package, as one suite.
 const check = S.Suite({
-	tests: [lint, typecheck, coverageGate, depsLint],
+	tests: [lint, typecheck, coverageGate, depsLint, packageLint],
 })
 
 export const Package = S.Package({
@@ -146,6 +148,7 @@ export const Package = S.Package({
 		format,
 		lint,
 		pack,
+		packageLint,
 		srcs,
 		testCoverage,
 		tests,

@@ -113,3 +113,22 @@ it('preserves overrides, explicit transaction fields, and structured failures', 
 		await engine.close()
 	}
 })
+
+it('falls back cleanly when eth_accounts returns an empty list', async () => {
+	const requests: Array<{ method: string; params?: unknown[] }> = []
+	const fakeHash = `0x${'aa'.repeat(32)}`
+	const client = {
+		request: async (req: { method: string; params?: unknown[] }) => {
+			requests.push(req)
+			if (req.method === 'eth_accounts') return []
+			if (req.method === 'eth_sendTransaction') return fakeHash
+			return null
+		},
+	}
+	const result = await tevmCall(client, { to: address, addToMempool: true })
+	expect(result.txHash).toBe(fakeHash)
+	expect(requests[1]).toEqual({
+		method: 'eth_sendTransaction',
+		params: [{ to: address, from: '' }],
+	})
+})

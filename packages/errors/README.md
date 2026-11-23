@@ -1,38 +1,28 @@
-<p align="center">
-  @tevm/errors
-<p>
-
-[![CI](https://github.com/evmts/tevm/actions/workflows/e2e.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/e2e.yml)
-[![CI](https://github.com/evmts/tevm/actions/workflows/unit.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/unit.yml)
-<a href="https://www.npmjs.com/package/@tevm/errors" target="\_parent">
-<img alt="" src="https://img.shields.io/npm/dm/@tevm/errors.svg" />
-</a>
-<a href="https://bundlephobia.com/package/@tevm/errors@latest" target="\_parent">
-<img alt="" src="https://badgen.net/bundlephobia/minzip/@tevm/errors" />
-</a>
-
 # @tevm/errors
 
-`@tevm/errors` is the official tevm actions api spec represented as TypeScript types
-
-**This package has no javascript only typescript types.**
-
-The first implementation of this spec is [@tevm/actions](https://github.com/evmts/tevm/tree/main/packages/actions), backed by Tevm's ZEVM-based runtime packages.
+Structured JSON-RPC, EVM, input validation, and client error classes for Tevm, all extending `BaseError`.
 
 ## Installation
 
-This package is available in the main `tevm` package
-
-```typescript
-import {ScriptHandler} from 'tevm/errors'
-```
-
-But can also be installed as a standalone package.
+Available via `tevm/errors` or as a standalone package:
 
 ```bash
-npm install --save-dev @tevm/errors
+pnpm add @tevm/errors
 ```
 
-## License 📄
+## Usage
 
-<a href="./LICENSE"><img src="https://user-images.githubusercontent.com/35039927/231030761-66f5ce58-a4e9-4695-b1fe-255b1bceac92.png" width="200" /></a>
+```ts
+import { BaseError, NoSignerAvailableError } from '@tevm/errors'
+
+const error = new NoSignerAvailableError('No unlocked signer available for transaction')
+console.log(error instanceof BaseError, error.code, error.name)
+```
+
+## Documentation
+
+Visit [tevm.sh](https://tevm.sh/) for full documentation.
+
+## License
+
+[MIT](./LICENSE)

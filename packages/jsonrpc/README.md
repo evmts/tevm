@@ -1,33 +1,30 @@
-<p align="center">
-  <a href="https://tevm.sh/">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/35039927/218812217-92f0f784-cb85-43b9-9ca6-e2b9effd9eb2.png">
-      <img alt="wagmi logo" src="https://user-images.githubusercontent.com/35039927/218812217-92f0f784-cb85-43b9-9ca6-e2b9effd9eb2.png" width="auto" height="300">
-    </picture>
-  </a>
-</p>
-
-<p align="center">
-  Execute solidity scripts in browser
-<p>
-
-[![CI](https://github.com/evmts/tevm/actions/workflows/e2e.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/e2e.yml)
-[![CI](https://github.com/evmts/tevm/actions/workflows/unit.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/unit.yml)
-<a href="https://www.npmjs.com/package/@tevm/jsonrpc" target="\_parent">
-<img alt="" src="https://img.shields.io/npm/dm/@tevm/jsonrpc.svg" />
-</a>
-<a href="https://bundlephobia.com/package/@tevm/jsonrpc@latest" target="\_parent">
-<img alt="" src="https://badgen.net/bundlephobia/minzip/@tevm/jsonrpc" />
-</a>
-
 # @tevm/jsonrpc
 
-[Simple lightweight client](./src/jsonrpc.js) for interacting with a jsonrpc api
+Lightweight JSON-RPC 2.0 request/response types and client adapter utilities for Tevm.
 
-## Visit [Docs](https://tevm.sh/) for docs, guides, API and more!
+## Installation
 
-## See [Tevm Beta project board](https://github.com/orgs/tevm/projects/1) for progress on the upcoming beta release
+```bash
+pnpm add @tevm/jsonrpc
+```
 
-## License 📄
+## Usage
 
-<a href="./LICENSE"><img src="https://user-images.githubusercontent.com/35039927/231030761-66f5ce58-a4e9-4695-b1fe-255b1bceac92.png" width="200" /></a>
+```ts
+import { createJsonRpcFetcher } from '@tevm/jsonrpc'
+
+const fetcher = createJsonRpcFetcher({
+  request: async ({ method }) => (method === 'eth_chainId' ? '0x7a69' : null),
+})
+
+const response = await fetcher.request({ method: 'eth_chainId', id: 1 })
+console.log(response) // { jsonrpc: '2.0', method: 'eth_chainId', result: '0x7a69', id: 1 }
+```
+
+## Documentation
+
+Visit [tevm.sh](https://tevm.sh/) for full documentation.
+
+## License
+
+[MIT](./LICENSE)

@@ -671,9 +671,6 @@ importers:
       '@tevm/contract':
         specifier: workspace:^
         version: link:../packages/contract
-      '@tevm/jsonrpc':
-        specifier: workspace:^
-        version: link:../packages/jsonrpc
       '@tevm/memory-client':
         specifier: workspace:^
         version: link:../packages/memory-client
@@ -1128,33 +1125,15 @@ importers:
         specifier: ^2.49.3
         version: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     devDependencies:
-      '@tevm/common':
-        specifier: workspace:^
-        version: link:../../packages/common
-      '@tevm/contract':
-        specifier: workspace:^
-        version: link:../../packages/contract
       '@tevm/memory-client':
         specifier: workspace:^
         version: link:../../packages/memory-client
-      '@tevm/server':
-        specifier: workspace:^
-        version: link:../../packages/server
-      '@tevm/test-utils':
-        specifier: workspace:^
-        version: link:../../test/test-utils
       '@tevm/tsconfig':
         specifier: workspace:^
         version: link:../../configs/tsconfig
       '@tevm/tsupconfig':
         specifier: workspace:^
         version: link:../../configs/tsupconfig
-      '@tevm/utils':
-        specifier: workspace:^
-        version: link:../../packages/utils
-      abitype:
-        specifier: ^1.2.4
-        version: 1.2.4(typescript@6.0.3)(zod@4.4.3)
 
   lsp/lsp:
     dependencies:
@@ -1311,9 +1290,6 @@ importers:
       '@tevm/tsupconfig':
         specifier: workspace:^
         version: link:../../configs/tsupconfig
-      abitype:
-        specifier: ^1.2.4
-        version: 1.2.4(typescript@6.0.3)(zod@4.4.3)
 
   packages/common:
     dependencies:
@@ -1399,15 +1375,9 @@ importers:
 
   packages/http-client:
     dependencies:
-      '@tevm/contract':
-        specifier: workspace:^
-        version: link:../contract
       '@tevm/memory-client':
         specifier: workspace:^
         version: link:../memory-client
-      '@tevm/utils':
-        specifier: workspace:^
-        version: link:../utils
       '@tevm/viem':
         specifier: workspace:^
         version: link:../../extensions/viem
@@ -1418,9 +1388,6 @@ importers:
       '@tevm/server':
         specifier: workspace:^
         version: link:../server
-      '@tevm/test-utils':
-        specifier: workspace:^
-        version: link:../../test/test-utils
       '@tevm/tsconfig':
         specifier: workspace:^
         version: link:../../configs/tsconfig
@@ -1544,9 +1511,6 @@ importers:
 
   packages/server:
     dependencies:
-      '@tevm/common':
-        specifier: workspace:^
-        version: link:../common
       '@tevm/errors':
         specifier: workspace:^
         version: link:../errors
@@ -1559,25 +1523,10 @@ importers:
       '@tevm/node':
         specifier: workspace:^
         version: link:../node
-      '@tevm/utils':
-        specifier: workspace:^
-        version: link:../utils
-      commander:
-        specifier: ^14.0.3
-        version: 14.0.3
       ws:
         specifier: ^8.20.1
         version: 8.20.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
     devDependencies:
-      '@tevm/actions':
-        specifier: workspace:^
-        version: link:../actions
-      '@tevm/test-utils':
-        specifier: workspace:^
-        version: link:../../test/test-utils
       '@tevm/tsconfig':
         specifier: workspace:^
         version: link:../../configs/tsconfig
@@ -6578,6 +6527,9 @@ packages:
   '@smithy/core@3.24.3':
     resolution: {integrity: sha512-Ep/7tPamGY8mgESE3LyLKtxJyy6U52WWAqr/3wial47Sj4u3PiIF73AOGI27UyLy9duTkhZbgzodOfLV4TduZg==}
     engines: {node: '>=18.0.0'}
+    deprecated: |-
+      Deprecated due to a bug in custom logger data redaction. Upgrade to the latest version. If you used a custom logger with this
+        version, review your logs and rotate any credentials or other secrets. See https://github.com/aws/aws-sdk-js-v3/issues/8393.
 
   '@smithy/credential-provider-imds@4.3.3':
     resolution: {integrity: sha512-I2Bti0DKFo2IJyN28ijCsx51BAumEYR4/1yZ1FXyBygy9MqbnMqCev4JPth/MbpRfBSRAX35hITSnAdJRo1u5w==}

@@ -44,8 +44,8 @@ describe('native server transports', () => {
 		expect(await response.json()).toEqual({ jsonrpc: '2.0', id: 1, result: '0x7a69' })
 		const batch = await (
 			await post([
-				request('eth_getCode', ['0x' + '12'.repeat(20), 'latest']),
-				request('eth_getTransactionByHash', ['0x' + '00'.repeat(32)], 2),
+				request('eth_getCode', [`0x${'12'.repeat(20)}`, 'latest']),
+				request('eth_getTransactionByHash', [`0x${'00'.repeat(32)}`], 2),
 			])
 		).json()
 		expect(batch).toEqual([
@@ -233,7 +233,7 @@ describe('native server transports', () => {
 			{ jsonrpc: '2.0', id: 2, result: '0x0' },
 		])
 		const closed = once(socket, 'close')
-		socket.write('{' + ' '.repeat(1024 * 1024))
+		socket.write(`{${' '.repeat(1024 * 1024)}`)
 		await closed
 	})
 })

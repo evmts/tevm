@@ -1,32 +1,32 @@
 {
-  "extends": "@tevm/tsconfig/base.json",
-  "compilerOptions": {
-    "module": "NodeNext",
-    "skipLibCheck": true
-  },
-  "include": [
-    "actions/index.ts",
-    "contract/index.ts",
-    "common/index.ts",
-    "memory-client/index.ts",
-    "predeploys/index.ts",
-    "predeploys/index.ts",
-    "node/index.ts",
-    "utils/index.ts",
-    "http-client/index.ts",
-    "errors/index.ts",
-    "server/index.ts",
-    "index.ts",
-    "bundler/base-bundler/index.ts",
-    "bundler/bun-plugin/**/index.ts",
-    "bundler/compiler/index.ts",
-    "bundler/config/index.ts",
-    "bundler/esbuild-plugin/index.ts",
-    "bundler/rollup-plugin/index.ts",
-    "bundler/rspack-plugin/index.ts",
-    "bundler/solc/index.ts",
-    "bundler/vite-plugin/index.ts",
-    "bundler/webpack-plugin/index.ts",
-    "bundler/index.ts"
-  ]
+	"extends": "@tevm/tsconfig/base.json",
+	"compilerOptions": {
+		"module": "NodeNext",
+		"skipLibCheck": true
+	},
+	"include": [
+		"actions/index.ts",
+		"contract/index.ts",
+		"common/index.ts",
+		"memory-client/index.ts",
+		"predeploys/index.ts",
+		"predeploys/index.ts",
+		"node/index.ts",
+		"utils/index.ts",
+		"http-client/index.ts",
+		"errors/index.ts",
+		"server/index.ts",
+		"index.ts",
+		"bundler/base-bundler/index.ts",
+		"bundler/bun-plugin/**/index.ts",
+		"bundler/compiler/index.ts",
+		"bundler/config/index.ts",
+		"bundler/esbuild-plugin/index.ts",
+		"bundler/rollup-plugin/index.ts",
+		"bundler/rspack-plugin/index.ts",
+		"bundler/solc/index.ts",
+		"bundler/vite-plugin/index.ts",
+		"bundler/webpack-plugin/index.ts",
+		"bundler/index.ts"
+	]
 }

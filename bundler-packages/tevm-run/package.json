@@ -1,6 +1,7 @@
 {
 	"name": "tevm-run",
 	"version": "1.0.0-rc.153",
+	"description": "Run Solidity scripts directly against native Tevm",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/evmts/tevm.git",

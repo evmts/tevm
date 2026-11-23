@@ -6,7 +6,8 @@ const smthrs = (...args) => JSON.parse(command('pnpm', ['--silent', 'exec', 'smt
 
 const graph = smthrs('query', '//...')
 assert(Array.isArray(graph.targets), 'query did not return a target graph')
-assert(graph.targets.length >= 1000, `factory graph unexpectedly contains only ${graph.targets.length} targets`)
+// Native ZEVM migration retired the legacy EthereumJS packages (~200 targets).
+assert(graph.targets.length >= 800, `factory graph unexpectedly contains only ${graph.targets.length} targets`)
 assert(
 	graph.targets.every((target) => target.target !== 'Agent.Pr'),
 	'package-mode Agent.Pr remains in the graph even though settlement is unbound',

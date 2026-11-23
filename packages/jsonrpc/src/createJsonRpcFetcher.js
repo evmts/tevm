@@ -8,12 +8,12 @@
  * @returns {import("./JsonRpcClient.js").JsonRpcClient} the `result` field from the JSON-RPC response
  * @example
  * ```typescript
- * const url = 'https://mainnet.optimism.io'
- * const params = {
- *   method: 'eth_getBlockByNumber',
- *   params: ['latest', false],
- * }
- * const {result: block} = await fetchJsonRpc(url, params)
+ * import { createJsonRpcFetcher } from '@tevm/jsonrpc'
+ *
+ * const fetcher = createJsonRpcFetcher({
+ *   request: async ({ method }) => (method === 'eth_blockNumber' ? '0x0' : null),
+ * })
+ * const response = await fetcher.request({ method: 'eth_blockNumber', id: 1 })
  * ```
  */
 export const createJsonRpcFetcher = (client) => {

@@ -27,10 +27,14 @@
 			"import": {
 				"types": "./types/index.d.ts",
 				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
 			}
 		}
 	},
-	"main": "dist/index.js",
+	"main": "dist/index.cjs",
 	"module": "dist/index.js",
 	"types": "types/index.d.ts",
 	"bin": {
@@ -53,6 +57,8 @@
 		"generate:docs": "typedoc",
 		"lint": "biome check . --write --unsafe",
 		"lint:check": "biome check . --verbose",
+		"lint:deps": "bunx depcheck",
+		"lint:package": "bunx publint --strict && attw --pack",
 		"test": "vitest --watch",
 		"test:coverage": "vitest --coverage --run",
 		"test:run": "vitest run",

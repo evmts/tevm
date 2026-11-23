@@ -90,9 +90,7 @@ const docs = Shell.Build({
 	outDirs: ['docs'],
 })
 
-// The publishable tarball over the manifest's files allowlist. The
-// lint:package script is commented out in package.json; packageLint and
-// apiCompat still apply because the manifest is publishable.
+// The publishable tarball over the manifest's files allowlist.
 const pack = S.Npm.Pack({
 	manifest: packageJson,
 	data: [build, types, declarations, srcs],

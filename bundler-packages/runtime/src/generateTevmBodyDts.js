@@ -62,8 +62,10 @@ export const generateDtsBody = (artifacts, includeBytecode) => {
 
 					// Generate type declaration for contracts with bytecode
 					if (includeBytecode) {
+						// biome-ignore lint/suspicious/noTemplateCurlyInString: generates TypeScript template literal type
 						const bytecodeType = evm?.bytecode?.object && evm.bytecode.object !== '' ? '`0x${string}`' : 'undefined'
 						const deployedBytecodeType =
+							// biome-ignore lint/suspicious/noTemplateCurlyInString: generates TypeScript template literal type
 							evm?.deployedBytecode?.object && evm.deployedBytecode.object !== '' ? '`0x${string}`' : 'undefined'
 						const bytecodeLabel =
 							bytecodeType === 'undefined' && deployedBytecodeType === 'undefined' ? 'no bytecode' : 'with bytecode'

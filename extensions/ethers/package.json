@@ -67,10 +67,10 @@
 		"@tevm/memory-client": "workspace:^"
 	},
 	"devDependencies": {
+		"@tevm/contract": "workspace:^",
 		"@tevm/tsconfig": "workspace:^",
 		"@tevm/tsupconfig": "workspace:^",
-		"ethers": "^6.16.0",
-		"@tevm/contract": "workspace:^"
+		"ethers": "^6.16.0"
 	},
 	"peerDependencies": {
 		"ethers": ">6.0.0"

@@ -1,89 +1,68 @@
-<p align="center">
-  TypeScript programming with the full power of the Ethereum Virtual Machine
-<p>
+# tevm
 
-[![CI](https://github.com/evmts/tevm/actions/workflows/nx.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/nx.yml)
-<a href="https://www.npmjs.com/package/tevm">
-<img src="https://img.shields.io/npm/v/tevm?style=flat" alt="Version">
-</a>
-<a href="https://www.npmjs.com/package/tevm" target="\_parent">
-<img alt="" src="https://img.shields.io/npm/dm/tevm.svg" />
-</a>
-<a href="https://bundlephobia.com/package/tevm@latest" target="\_parent">
-<img alt="" src="https://badgen.net/bundlephobia/minzip/tevm" />
-</a><a href="#badge">
+[![npm version](https://img.shields.io/npm/v/tevm?style=flat)](https://www.npmjs.com/package/tevm)
+[![npm downloads](https://img.shields.io/npm/dm/tevm.svg)](https://www.npmjs.com/package/tevm)
 
-# tevm-monorepo
+Ethereum development toolkit powered by the native [ZEVM](https://github.com/evmts/zevm) engine (with Voltaire primitives/state and Guillotine Mini bytecode execution).
 
-Tevm is an ethereum development toolkit that offers
+- Isolated in-process EVM execution and upstream state forking in Node.js (`>=24`)
+- Full [viem](https://viem.sh) public, wallet, test, and TEVM convenience actions via `createMemoryClient`
+- HTTP, WebSocket, and IPC JSON-RPC server via `tevm/server` (browsers connect to a native server over JSON-RPC)
+- Direct Solidity imports and type generation via `tevm/bundler/*` plugins
 
-- Arbitrary EVM execution and forking akin to [anvil](https://github.com/foundry-rs/foundry/tree/master/crates/anvil)
-- A powerful solidity scripting environment akin to [foundry scripts](https://book.getfoundry.sh/guides/scripting-with-solidity)
-- Build tooling to create a smooth interface between your Solidity scripts and TypeScript code
+## Installation
 
-```typescript
-
+```bash
+pnpm add tevm viem
 ```
 
-Tevm runs in all environments
+## Quick start
 
-- [All modern browsers](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API#browser_compatibility)
-- [Node.js >=18](https://nodejs.org/en)
-- [Bun](https://bun.sh)
+```ts
+import { createMemoryClient } from 'tevm'
+import { parseAbi } from 'viem'
 
-## Try it out
+const client = createMemoryClient()
+try {
+  const address = '0x0000000000000000000000000000000000000123'
+  await client.tevmSetAccount({
+    address,
+    deployedBytecode: '0x602a60005260206000f3',
+  })
 
-Try out our [online frontend example on stackblitz](https://stackblitz.com/~/github.com/evmts/tevm-vite-wagmi-example)
+  const result = await client.tevmContract({
+    address,
+    abi: parseAbi(['function answer() view returns (uint256)']),
+    functionName: 'answer',
+  })
 
-## Visit [Docs](https://tevm.sh/) for docs, guides, API and more! 📄
-
-## Code example
-
-Tevm scripting is a simple yet powerful way to program.
-
-1. Write a solidity script `HelloWorld.s.sol`
-
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity >0.8.0;
-
-contract HelloWorld {
-    function greet(string memory name) public pure returns (string memory) {
-        return string(abi.encodePacked("Hello ", name, "!"));
-    }
+  console.log(result.data) // 42n
+} finally {
+  await client.tevmClose()
 }
 ```
 
-2. Import the solidity file into a JavaScript or TypeScript file. No need to compile it.
+## Subpath exports
 
-```typescript
-import { HelloWorld } from "./HelloWorld.sol";
+- `tevm` — `createMemoryClient`, `createZevmEngine`, `createTevmNode`, `createContract`, utilities
+- `tevm/node` — Native ZEVM Node-API engine wrapper (`createZevmEngine`, `NativeRpcError`)
+- `tevm/memory-client` — Viem client and transport over an embedded native engine
+- `tevm/actions` — Browser-safe JSON-RPC helpers (`tevmCall`, `tevmContract`, `tevmDeploy`, `tevmMine`, `tevmGetAccount`, `tevmSetAccount`, `tevmDeal`, `tevmDumpState`, `tevmLoadState`)
+- `tevm/server` — HTTP, WebSocket, IPC, Express, and Next.js JSON-RPC servers
+- `tevm/http-client` — Remote HTTP JSON-RPC client for a running TEVM server
+- `tevm/common` — Viem chain definitions and `tevmDefault`
+- `tevm/contract` — Type-safe contract action creators
+- `tevm/errors` — Structured JSON-RPC, EVM, and client error classes
+- `tevm/predeploys` — Type-safe predeploy contract definitions
+- `tevm/utils` — Shared ABI, hex, and prefunded-account utilities
+- `tevm/bundler/*` — Solidity bundler plugins (Vite, esbuild, Rollup, Webpack, Rspack, Bun)
 
-console.log(HelloWorld.abi);
-console.log(HelloWorld.bytecode);
-```
+## Documentation
 
-3. Initialize a [Tevm memory client](../packages/memory-client/docs/functions/createMemoryClient.md) and execute your Script using the [`EthGetTransactionReceiptHandler`](../packages/actions/docs/type-aliases/EthGetTransactionReceiptHandler.md) action
+- [Docs](https://tevm.sh/)
+- [Native engine migration guide](../docs/native-engine-migration.md)
+- [Contributing](../CONTRIBUTING.md)
 
-```typescript
-import { HelloWorld } from "./HelloWorld.sol";
-import { createMemoryClient } from "tevm";
+## License
 
-const client = createMemoryClient();
-
-const result = await tevm.script(HelloWorld.read.greate("World"));
-
-console.log(result.data); // Hello world!
-```
-
-This is just a small subset of what Tevm offers. See [docs](https://tevm.sh/) for more information.
-
-## Contributing 💻
-
-Contributions are encouraged, but please open an issue before doing any major changes to make sure your change will be accepted.
-
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for contributing information
-
-## License 📄
-
-<a href="./LICENSE"><img src="https://user-images.githubusercontent.com/35039927/231030761-66f5ce58-a4e9-4695-b1fe-255b1bceac92.png" width="200" /></a>
+[MIT](./LICENSE)

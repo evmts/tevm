@@ -5,9 +5,7 @@ import { scopedShell } from '../../factory/scoped-shell.js'
 
 const Shell = scopedShell('packages/mcp')
 
-// Follows the packages/contract/PACKAGE.ts exemplar with a reduced script set: no
-// lint:deps, lint:package, or clean scripts, so the depsLint, pack,
-// packageLint, apiCompat, and clean targets are absent. fork.spec.ts forks a
+// Follows the packages/contract/PACKAGE.ts exemplar. fork.spec.ts forks a
 // live network, so the fork test is split out of test the way
 // packages/state/PACKAGE.ts does it.
 const packageJson = S.file('package.json')
@@ -108,8 +106,23 @@ const format = Shell.Diff({
 	changes: ['**'],
 })
 
+const pack = S.Npm.Pack({
+	manifest: packageJson,
+	data: [build, types, declarations, srcs],
+})
+
+const packageLint = Shell.Test({
+	command: 'pnpm exec publint --strict . && pnpm exec attw --pack .',
+	data: [pack],
+})
+
+const depsLint = Shell.Test({
+	bin: S.NodeModule.Bin('depcheck'),
+	data: [srcs, tests, packageJson],
+})
+
 const check = S.Suite({
-	tests: [lint, typecheck, test, testFork],
+	tests: [lint, typecheck, test, testFork, depsLint, packageLint],
 })
 
 // Not targets: `all` is a meta script that chains the others; `build` is the
@@ -122,9 +135,12 @@ export const Package = S.Package({
 		build,
 		check,
 		declarations,
+		depsLint,
 		docs,
 		format,
 		lint,
+		pack,
+		packageLint,
 		srcs,
 		test,
 		testCoverage,

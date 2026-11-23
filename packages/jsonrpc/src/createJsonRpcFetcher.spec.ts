@@ -185,4 +185,31 @@ describe('createJsonRpcFetcher', () => {
 
 		expect(mockClient.request).toHaveBeenCalledWith(mockRequest)
 	})
+
+	it('coerces numeric string error codes and falls back to -32000 for non-finite codes', async () => {
+		mockClient.request.mockRejectedValueOnce({ code: '-32602', message: 'Invalid params' })
+		expect(await jsonRpcFetcher.request({ method: 'eth_call', id: 2 })).toEqual({
+			jsonrpc: '2.0',
+			method: 'eth_call',
+			error: { code: -32602, message: 'Invalid params' },
+			id: 2,
+		})
+
+		mockClient.request.mockRejectedValueOnce({ code: 'not-a-number', message: 'Bad code' })
+		expect(await jsonRpcFetcher.request({ method: 'eth_call', id: 3 })).toEqual({
+			jsonrpc: '2.0',
+			method: 'eth_call',
+			error: { code: -32000, message: 'Bad code' },
+			id: 3,
+		})
+	})
+
+	it('handles non-Error primitive rejections cleanly', async () => {
+		mockClient.request.mockRejectedValueOnce('raw failure')
+		expect(await jsonRpcFetcher.request({ method: 'eth_blockNumber' })).toEqual({
+			jsonrpc: '2.0',
+			method: 'eth_blockNumber',
+			error: { code: -32000, message: 'Unknown error in jsonrpc request' },
+		})
+	})
 })

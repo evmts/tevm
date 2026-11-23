@@ -2,7 +2,7 @@
 	"name": "@tevm/contract",
 	"version": "1.0.0-rc.151",
 	"private": false,
-	"description": "A typesafe library for writing forge scripts in typescript",
+	"description": "Type-safe contract action creators and ABI wrappers for Tevm",
 	"keywords": [
 		"solidity",
 		"forge",

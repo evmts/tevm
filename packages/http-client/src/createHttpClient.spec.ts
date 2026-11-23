@@ -38,3 +38,25 @@ it('executes native calls and account/state helpers through a real HTTP server',
 		await local.tevmClose()
 	}
 })
+
+it('supports custom client name, raw calls, and contract deployment', async () => {
+	const local = createMemoryClient()
+	const server = createServer(local)
+	server.listen(0, '127.0.0.1')
+	await once(server, 'listening')
+	const client = createHttpClient({
+		url: `http://127.0.0.1:${(server.address() as { port: number }).port}`,
+		name: 'Custom TEVM Client',
+	})
+	try {
+		expect(client.name).toBe('Custom TEVM Client')
+		const initcode = '0x600a600c600039600a6000f3602a60005260206000f3'
+		const deployed = await client.tevm.deploy({ bytecode: initcode })
+		expect(deployed.createdAddress).toMatch(/^0x[0-9a-f]{40}$/i)
+		const callResult = await client.tevm.call({ to: deployed.createdAddress! })
+		expect(callResult.rawData).toMatch(/2a$/)
+	} finally {
+		await new Promise<void>((resolve) => server.close(() => resolve()))
+		await local.tevmClose()
+	}
+})

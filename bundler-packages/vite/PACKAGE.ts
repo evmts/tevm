@@ -54,9 +54,7 @@ const typecheck = Shell.Test({
 	data: [srcs, deps, tsconfig],
 })
 
-// package.json comments out test, test:run, and test:ui (`//test` keys) and
-// keeps only test:coverage; the plain run is declared so //**:test covers
-// this package the same as the others.
+// test:run.
 const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],

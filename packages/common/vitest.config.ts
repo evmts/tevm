@@ -6,8 +6,8 @@ export default defineConfig({
 		include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
 		environment: 'node',
 		coverage: {
-			include: ['src/**/*.js'],
-			exclude: ['src/presets/__GENERATE_CHAIN_PRESETS__.js'],
+			include: ['src/**/*.{js,ts}'],
+			exclude: ['src/**/*.{test,spec}.{js,ts}'],
 			provider: 'v8',
 			reporter: ['text', 'json-summary', 'json'],
 			thresholds: {

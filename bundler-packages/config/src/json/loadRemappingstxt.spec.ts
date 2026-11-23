@@ -38,11 +38,13 @@ describe('loadRemappings', () => {
 
 		const result = await runPromise(loadRemappings('/path/to/config'))
 
-		// Check that we have both remappings
-		expect(result).toHaveProperty('remappings.@openzeppelin/')
-		expect(result).toHaveProperty('remappings.@solmate/')
-		expect(result.remappings?.['@openzeppelin/']).toContain('/path/to/config/lib/openzeppelin/')
-		expect(result.remappings?.['@solmate/']).toContain('/path/to/config/lib/solmate/src/')
+		// Blank lines must not introduce empty-string keys or undefined values
+		expect(result).toEqual({
+			remappings: {
+				'@openzeppelin/': '/path/to/config/lib/openzeppelin/',
+				'@solmate/': '/path/to/config/lib/solmate/src/',
+			},
+		})
 	})
 
 	it('should throw InvalidRemappingsError for invalid remapping format', async () => {
@@ -69,8 +71,7 @@ describe('loadRemappings', () => {
 		const result = await runPromise(loadRemappings('C:\\path\\to\\config'))
 
 		expect(result).toHaveProperty('remappings.@openzeppelin/')
-		// Windows path handling should be correctly adjusted in the implementation
-		expect(result.remappings?.['@openzeppelin/']).toBeDefined()
+		expect(result.remappings?.['@openzeppelin/']).toBe('C:\\path\\to\\config\\lib\\windows\\path\\')
 	})
 
 	it('should handle remappings with paths starting with slash', async () => {

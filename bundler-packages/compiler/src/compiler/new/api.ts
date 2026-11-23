@@ -15,7 +15,12 @@ await compiler.loadSolc('0.8.30')
 
 /* ------------------------------- Basic usage ------------------------------ */
 // Compile source code directly
-const { compilationResult, errors, solcInput, solcOutput } = compiler.compileSource(
+const {
+	compilationResult: _compilationResult,
+	errors: _errors,
+	solcInput: _solcInput,
+	solcOutput: _solcOutput,
+} = compiler.compileSource(
 	`
     contract Counter { uint256 public count; function increment() public { count++; } }
   `,

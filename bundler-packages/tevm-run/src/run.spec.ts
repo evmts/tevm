@@ -32,6 +32,7 @@ describe(run.name, () => {
 		expect(sourceCode).toContain("console.log('error')")
 		expect(sourceCode).toContain('err.stdout.toString()')
 		expect(sourceCode).toContain('err.stderr.toString()')
+		// biome-ignore lint/suspicious/noTemplateCurlyInString: asserting template literal source text
 		expect(sourceCode).toContain('`Failed with code ${err.exitCode}`')
 	})
 
@@ -41,6 +42,7 @@ describe(run.name, () => {
 
 		// Verify error details are captured
 		expect(sourceCode).toContain(
+			// biome-ignore lint/suspicious/noTemplateCurlyInString: asserting template literal source text
 			'`Error executing the script: ${err instanceof Error ? err.message : err.stderr.toString()}`',
 		)
 		expect(sourceCode).toContain('cause: err')

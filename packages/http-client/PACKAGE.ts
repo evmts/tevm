@@ -56,11 +56,12 @@ const typecheck = Shell.Test({
 	data: [srcs, tests, deps, tsconfig],
 })
 
-// test:run.
+// test:run. Spins up a real local HTTP server on 127.0.0.1.
 const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
 	data: [srcs, tests, deps, tsconfig],
+	sandbox: { network: 'loopback' },
 })
 
 // test:coverage.
@@ -68,6 +69,7 @@ const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
 	data: [srcs, tests, deps, tsconfig],
+	sandbox: { network: 'loopback' },
 })
 
 // generate:docs.

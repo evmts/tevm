@@ -1,19 +1,19 @@
 # Tevm - JSR Edition
 
-Tevm is a typesafe Ethereum Virtual Machine (EVM) toolkit written in TypeScript that works in both browser and Node.js environments.
+Tevm is a type-safe Ethereum development toolkit powered by the native [ZEVM](https://github.com/evmts/zevm) engine (Voltaire primitives/state + Guillotine Mini bytecode execution).
 
 ## Features
 
-- **Import Solidity contracts** directly in JavaScript/TypeScript
-- **Typecheck Solidity contracts** with full type safety
-- **Simulate and debug** EVM execution step-by-step
-- **Fork mainnet** or any EVM chain locally in the browser
+- **In-process native EVM** in Node.js (`>=24`) with upstream state forking
+- **Viem-compatible client** with public, wallet, test, and TEVM convenience actions
+- **HTTP, WebSocket, and IPC JSON-RPC servers** (browsers connect to a running native server over JSON-RPC)
+- **Direct Solidity imports** with full TypeScript types via bundler plugins
 
 ## Installation
 
 ```bash
-# Using npm
-npm install tevm
+# Using npm / pnpm
+pnpm add tevm viem
 
 # Using JSR
 jsr add @tevm/tevm
@@ -22,52 +22,47 @@ jsr add @tevm/tevm
 ## Usage
 
 ```typescript
-import { createMemoryClient, http } from '@tevm/tevm'
+import { createMemoryClient } from '@tevm/tevm'
 import { optimism } from '@tevm/tevm/common'
-import { encodeFunctionData, parseAbi, decodeFunctionResult, parseEther } from 'viem'
+import { parseAbi, parseEther } from 'viem'
 
-// Create a client as a fork of the Optimism mainnet
 const client = createMemoryClient({
+  common: optimism,
   fork: {
-    transport: http('https://mainnet.optimism.io')({}),
-    common: optimism,
+    url: 'https://mainnet.optimism.io',
   },
 })
 
-await client.tevmReady()
+try {
+  await client.tevmReady()
 
-// Mint 1 ETH for our address
-const account = "0x" + "baD60A7".padStart(40, "0")
-await client.setBalance({
-  address: account,
-  value: parseEther("1")
-})
-
-// Interact with a smart contract
-const greeterContractAddress = "0x10ed0b176048c34d69ffc0712de06CbE95730748"
-const greeterAbi = parseAbi([
-  'function greet() view returns (string)',
-  'function setGreeting(string memory _greeting) public'
-])
-
-// Send a transaction
-const txHash = await client.sendTransaction({
-  account,
-  to: greeterContractAddress,
-  data: encodeFunctionData({
-    abi: greeterAbi,
-    functionName: 'setGreeting',
-    args: ["Hello from Tevm!"]
+  const account = '0x000000000000000000000000000000000baD60A7'
+  await client.tevmDeal({
+    address: account,
+    amount: parseEther('1'),
   })
-})
 
-// Mine the transaction
-await client.mine({blocks: 1})
+  await client.tevmSetAccount({
+    address: '0x0000000000000000000000000000000000000123',
+    deployedBytecode: '0x602a60005260206000f3',
+  })
+
+  const result = await client.tevmContract({
+    address: '0x0000000000000000000000000000000000000123',
+    abi: parseAbi(['function answer() view returns (uint256)']),
+    functionName: 'answer',
+  })
+
+  console.log(result.data) // 42n
+  await client.tevmMine({ blocks: 1 })
+} finally {
+  await client.tevmClose()
+}
 ```
 
 ## Documentation
 
-For complete documentation, visit [https://tevm.sh](https://tevm.sh)
+For complete documentation, visit [https://tevm.sh](https://tevm.sh).
 
 ## License
 

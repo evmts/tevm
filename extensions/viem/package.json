@@ -2,7 +2,7 @@
 	"name": "@tevm/viem",
 	"version": "1.0.0-rc.151",
 	"private": false,
-	"description": "A typesafe library for writing forge scripts in typescript",
+	"description": "Viem client extension adding native Tevm JSON-RPC actions",
 	"keywords": [
 		"solidity",
 		"forge",
@@ -68,16 +68,9 @@
 		"@tevm/actions": "workspace:^"
 	},
 	"devDependencies": {
-		"@tevm/actions": "workspace:^",
-		"@tevm/common": "workspace:^",
-		"@tevm/contract": "workspace:^",
 		"@tevm/memory-client": "workspace:^",
-		"@tevm/server": "workspace:^",
-		"@tevm/test-utils": "workspace:^",
 		"@tevm/tsconfig": "workspace:^",
-		"@tevm/tsupconfig": "workspace:^",
-		"@tevm/utils": "workspace:^",
-		"abitype": "^1.2.4"
+		"@tevm/tsupconfig": "workspace:^"
 	},
 	"peerDependencies": {
 		"viem": "^2.49.3"

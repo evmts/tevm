@@ -1,35 +1,30 @@
-<p align="center">
-  <a href="https://tevm.sh/">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/35039927/218812217-92f0f784-cb85-43b9-9ca6-e2b9effd9eb2.png">
-      <img alt="wagmi logo" src="https://user-images.githubusercontent.com/35039927/218812217-92f0f784-cb85-43b9-9ca6-e2b9effd9eb2.png" width="auto" height="300">
-    </picture>
-  </a>
-</p>
+# @tevm/utils
 
-<p align="center">
-  Execute solidity scripts in browser
-<p>
+Shared Ethereum ABI, hex/byte encoding, signature, invariant, and prefunded-account utilities for Tevm.
 
-[![CI](https://github.com/evmts/tevm/actions/workflows/e2e.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/e2e.yml)
-[![CI](https://github.com/evmts/tevm/actions/workflows/unit.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/unit.yml)
-<a href="https://www.npmjs.com/package/@tevm/blockchain" target="\_parent">
-<img alt="" src="https://img.shields.io/npm/dm/@tevm/blockchain.svg" />
-</a>
-<a href="https://bundlephobia.com/package/@tevm/blockchain@latest" target="\_parent">
-<img alt="" src="https://badgen.net/bundlephobia/minzip/@tevm/blockchain" />
-</a>
+## Installation
 
-# @tevm/blockchain
+Available via `tevm/utils` or as a standalone package:
 
-Tevm vm blockchain package for holding tevm blockchain.
+```bash
+pnpm add @tevm/utils viem
+```
 
-Runtime primitives are backed by [`@evmts/zevm`](https://github.com/evmts/zevm). Check source-level notices for any historical per-file attribution.
+## Usage
 
-## Visit [Docs](https://tevm.sh/) for docs, guides, API and more!
+```ts
+import { PREFUNDED_ACCOUNTS, invariant, parseAbi, toHex } from '@tevm/utils'
 
-## See [Tevm Beta project board](https://github.com/orgs/tevm/projects/1) for progress on the upcoming beta release
+invariant(PREFUNDED_ACCOUNTS.length > 0, 'Expected default prefunded accounts')
+console.log(PREFUNDED_ACCOUNTS[0].address)
+console.log(toHex(42n))
+console.log(parseAbi(['function answer() view returns (uint256)']))
+```
 
-## License 📄
+## Documentation
 
-<a href="./LICENSE"><img src="https://user-images.githubusercontent.com/35039927/231030761-66f5ce58-a4e9-4695-b1fe-255b1bceac92.png" width="200" /></a>
+Visit [tevm.sh](https://tevm.sh/) for full documentation.
+
+## License
+
+[MIT](./LICENSE)

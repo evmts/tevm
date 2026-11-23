@@ -16,5 +16,6 @@
 		"allowJs": true,
 		"checkJs": true,
 		"skipLibCheck": true
-	}
+	},
+	"exclude": ["PACKAGE.ts", "example"]
 }

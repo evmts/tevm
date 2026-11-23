@@ -54,14 +54,14 @@
 		"format": "biome format . --write",
 		"format:check": "biome format .",
 		"lint:deps": "bunx depcheck",
-		"// lint:package": "bunx publint --strict && attw --pack",
 		"generate:docs": "typedoc",
 		"lint": "biome check . --write --unsafe",
 		"lint:check": "biome check . --verbose",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest --coverage",
 		"test:coverage": "vitest run --coverage",
-		"test:run": "vitest --run"
+		"test:run": "vitest --run",
+		"lint:package": "bunx publint --strict && attw --pack"
 	},
 	"dependencies": {
 		"@tevm/base-bundler": "workspace:^",

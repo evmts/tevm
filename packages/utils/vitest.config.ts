@@ -6,11 +6,12 @@ export default defineConfig({
 		include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
 		environment: 'node',
 		coverage: {
-			include: ['src/**/*.js'],
+			include: ['src/**/*.{js,ts}'],
+			exclude: ['src/**/*.{test,spec}.{js,ts}', 'src/abitype.ts', 'src/SerializeToJson.ts'],
 			provider: 'v8',
 			reporter: ['text', 'json-summary', 'json'],
 			thresholds: {
-				autoUpdate: true,
+				autoUpdate: false,
 				lines: 100,
 				functions: 100,
 				branches: 100,

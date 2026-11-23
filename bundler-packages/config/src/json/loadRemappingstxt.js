@@ -49,13 +49,14 @@ export const loadRemappings = (configFilePath) => {
 			if (remappings.trim() === '') {
 				return succeed({})
 			}
-			const remappingEntries = remappings.trim().split('\n')
+			const remappingEntries = remappings
+				.trim()
+				.split(/\r?\n/)
+				.map((entry) => entry.trim())
+				.filter((entry) => entry.length > 0)
 
 			// validate remappings
 			for (const remapping of remappingEntries) {
-				if (remapping.trim() === '') {
-					continue
-				}
 				const remappingArr = remapping.split('=')
 				if (remappingArr.length !== 2) {
 					return fail(
@@ -67,18 +68,18 @@ export const loadRemappings = (configFilePath) => {
 			}
 
 			// Turn remappings into a tevm config shape
+			const separator = configFilePath.includes('\\') && !configFilePath.includes('/') ? '\\' : '/'
+			const baseDir =
+				configFilePath.endsWith('/') || configFilePath.endsWith('\\') ? configFilePath : `${configFilePath}${separator}`
 			/**
 			 * @type {import('../types.js').CompilerConfig}
 			 */
 			const config = {
 				remappings: Object.fromEntries(
 					remappingEntries.map((remapping) => {
-						const [from, to] = remapping.trim().split('=')
-						// TODO this line of code won't work on windows
-						return /** @type {[string, string]}*/ ([
-							from,
-							`${configFilePath.endsWith('/') ? configFilePath : `${configFilePath}/`}${to?.startsWith('/') ? to.slice(1) : to}`,
-						])
+						const [from, to = ''] = remapping.split('=')
+						const relativeTarget = to.replace(/^[/\\]+/, '')
+						return /** @type {[string, string]}*/ ([from, `${baseDir}${relativeTarget}`])
 					}),
 				),
 			}

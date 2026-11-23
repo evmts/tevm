@@ -2,7 +2,7 @@
 	"name": "@tevm/server",
 	"version": "1.0.0-rc.153",
 	"private": false,
-	"description": "A typesafe library for writing forge scripts in typescript",
+	"description": "HTTP, WebSocket, and IPC JSON-RPC server for native Tevm nodes",
 	"keywords": [
 		"solidity",
 		"forge",
@@ -65,19 +65,13 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@tevm/common": "workspace:^",
 		"@tevm/errors": "workspace:^",
 		"@tevm/jsonrpc": "workspace:^",
 		"@tevm/memory-client": "workspace:^",
-		"@tevm/utils": "workspace:^",
-		"commander": "^14.0.3",
-		"ws": "^8.20.1",
-		"zod": "^4.4.3",
-		"@tevm/node": "workspace:^"
+		"@tevm/node": "workspace:^",
+		"ws": "^8.20.1"
 	},
 	"devDependencies": {
-		"@tevm/actions": "workspace:^",
-		"@tevm/test-utils": "workspace:^",
 		"@tevm/tsconfig": "workspace:^",
 		"@tevm/tsupconfig": "workspace:^",
 		"@types/express": "^5.0.6",

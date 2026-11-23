@@ -2,7 +2,7 @@
 	"name": "@tevm/predeploys",
 	"version": "1.0.0-rc.151",
 	"private": false,
-	"description": "A typesafe library for writing forge scripts in typescript",
+	"description": "Type-safe predeploy contract definitions for Tevm",
 	"keywords": [
 		"solidity",
 		"forge",

@@ -63,9 +63,9 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@tevm/actions": "workspace:^",
 		"@tevm/node": "workspace:^",
-		"viem": "^2.49.3",
-		"@tevm/actions": "workspace:^"
+		"viem": "^2.49.3"
 	},
 	"devDependencies": {
 		"@tevm/tsconfig": "workspace:^",

@@ -70,7 +70,6 @@ export const tevmUnplugin = (options = {}) => {
 				),
 			)
 			const solcCache = createCache(config.cacheDir, fao, process.cwd())
-			console.log('proces.cwd()', process.cwd())
 			const contractPackage = getContractPath(process.cwd())
 			const versionedSolc =
 				parsedSolcVersion.data === defaultVersion ? defaultSolc : await createSolc(parsedSolcVersion.data)

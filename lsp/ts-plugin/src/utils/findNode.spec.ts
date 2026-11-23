@@ -121,6 +121,7 @@ describe('findNode', () => {
 	it('should handle template literals correctly', () => {
 		const sourceFile = ts.createSourceFile(
 			'test.ts',
+			// biome-ignore lint/suspicious/noTemplateCurlyInString: TypeScript template literal test fixture
 			'const message = `Hello, ${name}!`;',
 			ts.ScriptTarget.ES2015,
 			true,

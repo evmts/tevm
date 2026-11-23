@@ -2,7 +2,7 @@
 	"name": "@tevm/actions",
 	"version": "1.0.0-rc.153",
 	"private": false,
-	"description": "A typesafe library for writing forge scripts in typescript",
+	"description": "Browser-safe Tevm actions over native ZEVM JSON-RPC",
 	"keywords": [
 		"solidity",
 		"forge",
@@ -56,7 +56,7 @@
 		"generate:docs": "bun run typedoc",
 		"lint": "biome check . --write --unsafe",
 		"lint:check": "biome check . --verbose",
-		"lint:deps": "bunx depcheck --ignores=@tevm/consensus",
+		"lint:deps": "bunx depcheck",
 		"lint:package": "bunx publint --strict && pnpm pack --pack-destination /tmp && attw /tmp/tevm-actions-*.tgz && rm /tmp/tevm-actions-*.tgz",
 		"package:up": "pnpm up --latest",
 		"test": "vitest --watch",
@@ -69,8 +69,7 @@
 	},
 	"devDependencies": {
 		"@tevm/tsconfig": "workspace:^",
-		"@tevm/tsupconfig": "workspace:^",
-		"abitype": "^1.2.4"
+		"@tevm/tsupconfig": "workspace:^"
 	},
 	"peerDependencies": {
 		"viem": "^2.49.3",

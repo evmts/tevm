@@ -101,6 +101,7 @@ const format = Shell.Diff({
 
 const depsLint = Shell.Test({
 	bin: S.NodeModule.Bin('depcheck'),
+	args: ['--ignores=@tevm/contract'],
 	data: [srcs, tests, packageJson],
 })
 

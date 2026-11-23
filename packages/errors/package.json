@@ -2,7 +2,7 @@
 	"name": "@tevm/errors",
 	"version": "1.0.0-rc.151",
 	"private": false,
-	"description": "A typesafe library for writing forge scripts in typescript",
+	"description": "Structured JSON-RPC, EVM, and client error classes for Tevm",
 	"keywords": [
 		"solidity",
 		"sol",

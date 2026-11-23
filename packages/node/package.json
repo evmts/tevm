@@ -2,7 +2,7 @@
 	"name": "@tevm/node",
 	"version": "1.0.0-rc.153",
 	"private": false,
-	"description": "Client implementations of Tevm",
+	"description": "Native ZEVM Node-API engine wrapper with serialized JSON-RPC and block events",
 	"keywords": [
 		"solidity",
 		"sol",

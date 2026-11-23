@@ -43,9 +43,6 @@
 		"src"
 	],
 	"scripts": {
-		"//test": "vitest",
-		"//test:run": "vitest run",
-		"//test:ui": "vitest --ui",
 		"build": "nx run-many --targets=build:dist,build:types --projects=@tevm/vite-plugin ",
 		"build:dist": "tsup",
 		"build:types": "tsup --dts-only && tsc --emitDeclarationOnly --declaration",
@@ -57,7 +54,10 @@
 		"lint:check": "biome check . --verbose",
 		"lint:deps": "bunx depcheck",
 		"lint:package": "bunx publint --strict && attw --pack",
-		"test:coverage": "vitest run --coverage"
+		"test": "vitest",
+		"test:coverage": "vitest run --coverage",
+		"test:run": "vitest run",
+		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
 		"@tevm/unplugin": "workspace:^"
