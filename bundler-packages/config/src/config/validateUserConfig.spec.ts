@@ -81,4 +81,20 @@ describe(validateUserConfig.name, () => {
 			),
 		).toThrowErrorMatchingInlineSnapshot('[(FiberFailure) Error: Provided config factory threw an error: ]')
 	})
+
+	// Regression: found by the Lean differential fuzz in specs/lean/host
+	it('should keep a `__proto__` remapping prefix as an own key', () => {
+		const config = JSON.parse('{"remappings":{"__proto__":"lib/proto/","foo":"bar"}}')
+		const validated = runSync(validateUserConfig(() => config))
+		expect(Object.entries(validated.remappings ?? {})).toEqual([
+			['__proto__', 'lib/proto/'],
+			['foo', 'bar'],
+		])
+		expect(Object.getPrototypeOf(validated.remappings)).toBe(Object.prototype)
+	})
+
+	it('should still reject a non-string `__proto__` remapping target', () => {
+		const config = JSON.parse('{"remappings":{"__proto__":5}}')
+		expect(() => runSync(validateUserConfig(() => config))).toThrow('Expected string, actual 5')
+	})
 })

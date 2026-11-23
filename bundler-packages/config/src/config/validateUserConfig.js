@@ -88,7 +88,19 @@ export const validateUserConfig = (untrustedConfigFactory) => {
 			})
 			return match(res, {
 				onLeft: (left) => fail(new InvalidConfigError(formatErrorSync(left), { cause: left })),
-				onRight: (right) => succeed(right),
+				// The schema decoder builds records by assignment, which drops an own `__proto__` key.
+				// Its value is already validated, so rebuild the record from the input's own entries.
+				onRight: (right) =>
+					succeed(
+						right.remappings === undefined
+							? right
+							: {
+									...right,
+									remappings: Object.fromEntries(
+										Object.entries(/** @type {Record<string, string>} */ (unvalidatedConfig.remappings)),
+									),
+								},
+					),
 			})
 		}),
 		tap((validatedConfig) =>

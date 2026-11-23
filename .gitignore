@@ -137,3 +137,6 @@ g/
 
 # Host-local SHA-256 of ../zevm's addon, written by scripts/factory/build-native.mjs
 /factory/native-addon.sha256
+
+# Lean 4 Lake build caches
+.lake/

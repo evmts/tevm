@@ -1,0 +1,10 @@
+name = "engine"
+version = "0.1.0"
+defaultTargets = ["EngineFsmSpec", "engine-spec"]
+
+[[lean_lib]]
+name = "EngineFsmSpec"
+
+[[lean_exe]]
+name = "engine-spec"
+root = "Main"

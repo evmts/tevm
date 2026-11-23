@@ -1,0 +1,10 @@
+name = "host"
+version = "0.1.0"
+defaultTargets = ["host-spec"]
+
+[[lean_lib]]
+name = "HostSpec"
+
+[[lean_exe]]
+name = "host-spec"
+root = "Main"

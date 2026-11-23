@@ -1,0 +1,10 @@
+name = "primitives-spec"
+version = "0.1.0"
+defaultTargets = ["PrimitivesSpec", "primitives-spec"]
+
+[[lean_lib]]
+name = "PrimitivesSpec"
+
+[[lean_exe]]
+name = "primitives-spec"
+root = "Main"

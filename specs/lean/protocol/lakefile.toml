@@ -1,0 +1,13 @@
+name = "protocol-spec"
+version = "0.1.0"
+defaultTargets = ["protocol-spec"]
+
+[[lean_lib]]
+name = "ProtocolSpec"
+
+[[lean_exe]]
+name = "protocol-spec"
+root = "Main"
+# The toolchain's bundled libgmp.a is built for a newer macOS than the default
+# link target; silence that linker note so a clean build prints nothing.
+moreLinkArgs = ["-Wl,-w"]

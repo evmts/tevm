@@ -44,6 +44,12 @@ describe(loadFoundryConfig.name, () => {
 		})
 	})
 
+	it('should keep a `__proto__` remapping prefix as an own key', () => {
+		mockExecFileSync.mockReturnValueOnce(Buffer.from(JSON.stringify({ remappings: ['__proto__=lib/proto/'] })))
+		const res = runSync(loadFoundryConfig(true, foundryFixture))
+		expect(Object.entries(res.remappings ?? {})).toEqual([['__proto__', join(foundryFixture, 'lib/proto/')]])
+	})
+
 	it('should return an empty config if no foundryProject is passed in', () => {
 		expect(runSync(loadFoundryConfig(undefined, foundryFixture))).toEqual({})
 		expect(runSync(loadFoundryConfig(false, join(__dirname, '..', 'fixtures', 'withFoundry')))).toEqual({})

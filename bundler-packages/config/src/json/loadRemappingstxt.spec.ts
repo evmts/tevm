@@ -93,4 +93,16 @@ describe('loadRemappings', () => {
 		// Should not add double slash when config path already has trailing slash
 		expect(result.remappings?.['@openzeppelin/']).toEqual('/path/to/config/lib/openzeppelin/')
 	})
+
+	// Regression: found by the Lean differential fuzz in specs/lean/host
+	it('should keep a `__proto__` prefix instead of silently dropping the remapping', async () => {
+		vi.mocked(fs.readFileSync).mockReturnValueOnce('__proto__=lib/proto/\n@solmate/=lib/solmate/src/')
+
+		const result = await runPromise(loadRemappings('/path/to/config'))
+
+		expect(Object.entries(result.remappings ?? {})).toEqual([
+			['__proto__', '/path/to/config/lib/proto/'],
+			['@solmate/', '/path/to/config/lib/solmate/src/'],
+		])
+	})
 })

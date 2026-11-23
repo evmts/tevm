@@ -1,0 +1,64 @@
+--- a/packages/voltaire-ts/src/primitives/FeeMarket/weiToGwei.js
++++ b/packages/voltaire-ts/src/primitives/FeeMarket/weiToGwei.js
+@@ -1,20 +1,27 @@
+ // @ts-nocheck
++const WEI_PER_GWEI = 1_000_000_000n;
+ 
+ /**
+- * Convert wei to gwei for display
++ * Convert wei to gwei for display, exactly.
++ *
++ * Uses integer division, so every wei amount (including values above
++ * `Number.MAX_SAFE_INTEGER`) renders its exact nine fractional digits.
+  *
+  * @see https://voltaire.tevm.sh/primitives/feemarket for FeeMarket documentation
+  * @since 0.0.0
+  * @param {bigint} wei - Amount in wei
+  * @returns {string} Amount in gwei (formatted with 9 decimal places)
+  * @throws {never}
+  * @example
+  * ```javascript
+  * import * as FeeMarket from './primitives/FeeMarket/index.js';
+  * const gwei = FeeMarket.weiToGwei(1_500_000_000n); // "1.500000000"
+  * ```
+  */
+ export function weiToGwei(wei) {
+-	const gwei = Number(wei) / 1_000_000_000;
+-	return gwei.toFixed(9);
++	const value = BigInt(wei);
++	const magnitude = value < 0n ? -value : value;
++	const whole = magnitude / WEI_PER_GWEI;
++	const fraction = (magnitude % WEI_PER_GWEI).toString().padStart(9, "0");
++	return `${value < 0n ? "-" : ""}${whole}.${fraction}`;
+ }
+--- a/packages/voltaire-ts/src/primitives/FeeMarket/FeeMarket.test.ts
++++ b/packages/voltaire-ts/src/primitives/FeeMarket/FeeMarket.test.ts
+@@ -1177,6 +1177,28 @@
+ 		const gwei = FeeMarket.weiToGwei(7n);
+ 		expect(gwei).toBe("0.000000007");
+ 	});
++
++	// Regression: Number(wei) / 1e9 lost digits from 2^52 wei upward.
++	// Found by the Lean differential fuzz in tevm-monorepo specs/lean/primitives.
++	it("is exact above Number.MAX_SAFE_INTEGER", () => {
++		expect(FeeMarket.weiToGwei(123_456_789_123_456_789n)).toBe(
++			"123456789.123456789",
++		);
++		expect(FeeMarket.weiToGwei(2n ** 64n)).toBe("18446744073.709551616");
++		expect(FeeMarket.weiToGwei(2n ** 256n - 1n)).toBe(
++			"115792089237316195423570985008687907853269984665640564039457584007913.129639935",
++		);
++	});
++
++	it("is exact for safe integers at or above 2^52", () => {
++		expect(FeeMarket.weiToGwei(8_999_999_999_999_999n)).toBe(
++			"8999999.999999999",
++		);
++	});
++
++	it("keeps the sign of negative amounts", () => {
++		expect(FeeMarket.weiToGwei(-5n)).toBe("-0.000000005");
++	});
+ });
+ 
+ describe("FeeMarket.gweiToWei", () => {

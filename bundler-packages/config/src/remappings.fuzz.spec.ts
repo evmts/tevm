@@ -144,8 +144,7 @@ const genPrefix = (rng: Rng) => {
 	const segments = Array.from({ length: rng.int(1, 3) }, () => genSegment(rng))
 	const context = rng.bool(0.1) ? `${genSegment(rng)}:` : ''
 	const prefix = `${context}${rng.bool(0.4) ? '@' : ''}${segments.join('/')}${rng.bool(0.8) ? '/' : ''}`
-	// `__proto__` is not representable as a plain record key through schema validation
-	return prefix === '__proto__' ? '__proto__/' : prefix
+	return prefix
 }
 
 const genTarget = (rng: Rng) => {
@@ -528,7 +527,6 @@ const genCompilerConfig = (rng: Rng) => {
 		for (let i = 0; i < count; i++) {
 			remappings[`${genPrefix(rng)}${genText(rng)}`] = genText(rng)
 		}
-		delete remappings['__proto__']
 		config['remappings'] = remappings
 	}
 	if (rng.bool(0.6)) config['libs'] = Array.from({ length: rng.int(0, 4) }, () => genText(rng))

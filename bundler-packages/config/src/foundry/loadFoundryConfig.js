@@ -101,10 +101,11 @@ export const loadFoundryConfig = (foundryProject, configFilePath) => {
 	}
 
 	/**
-	 * @type {Record<string, string>}
+	 * Entries rather than assignments, so a `__proto__` prefix stays an own key.
+	 * @type {Array<[string, string]>}
 	 * @internal
 	 */
-	const remappings = {}
+	const remappingEntries = []
 	if (forgeConfig.remappings) {
 		for (const remap of forgeConfig.remappings) {
 			const parts = remap.split('=')
@@ -112,14 +113,14 @@ export const loadFoundryConfig = (foundryProject, configFilePath) => {
 				return fail(new InvalidRemappingsError(remap))
 			}
 			const [key, value] = parts
-			remappings[key.trim()] = path.join(configFilePath, value.trim())
+			remappingEntries.push([key.trim(), path.join(configFilePath, value.trim())])
 		}
 	}
 
 	return tap(
 		succeed({
 			libs: forgeConfig?.libs,
-			remappings: remappings,
+			remappings: Object.fromEntries(remappingEntries),
 		}),
 		(config) => {
 			return logDebug(
