@@ -1,287 +1,125 @@
 ---
-title: Managing State
-description: Overview of how to manage accounts, code, and storage in Tevm Node
+title: Accounts, Storage & Snapshots
+description: Inspect and mutate accounts, code, and storage slots, rewind state with snapshots, and serialize portable ZEVM state blobs
 ---
 
-# Managing State
+import { StateRollbackDiagram, WatchOut } from '../../components'
 
-Tevm exposes state management via two layers: a low-level `StateManager` and a high-level viem-style client API.
+# Accounts, storage & snapshots
 
-## State Management Approaches
+Voltaire and ZEVM own all Ethereum state inside the native engine. Tevm exposes three complementary tools for manipulating that state:
 
-:::code-group
+1. **Account and storage helpers** — `tevmGetAccount`, `tevmSetAccount`, `tevmDeal`, plus viem Anvil test actions (`setBalance`, `setCode`, `setNonce`, `setStorageAt`).
+2. **In-process snapshots** — `snapshot()` / `revert({ id })` (`evm_snapshot` / `evm_revert`).
+3. **Portable state blobs** — `tevmDumpState()` / `tevmLoadState(blob)` (`anvil_dumpState` / `anvil_loadState`).
 
-```typescript [Raw API] filename="raw-state-manager.ts"
-import { createTevmNode } from 'tevm'
-import { createAddress } from 'tevm/address'
-import { createAccount } from 'tevm/utils'
+## Reading and writing accounts
 
-const node = createTevmNode()
-const vm = await node.getVm()
-const stateManager = vm.stateManager
+```ts
+import { createMemoryClient, toHex } from 'tevm'
 
-// Read account state
-const address = createAddress('0x1234567890123456789012345678901234567890')
-const account = await stateManager.getAccount(address)
-if (account) {
+const client = createMemoryClient()
+
+try {
+  const address = '0x0000000000000000000000000000000000000123'
+  const slot0 = toHex(0n, { size: 32 })
+  const value9 = toHex(9n, { size: 32 })
+
+  await client.tevmSetAccount({
+    address,
+    balance: 42n,
+    nonce: 2n,
+    deployedBytecode: '0x602a60005260206000f3',
+    storage: { [slot0]: value9 },
+  })
+
+  const account = await client.tevmGetAccount({ address })
   console.log({
-    balance: account.balance,
-    nonce: account.nonce,
-    codeHash: account.codeHash,
-    storageRoot: account.storageRoot
+    balance: account.balance, // 42n
+    nonce: account.nonce, // 2n
+    code: account.deployedBytecode, // '0x602a60005260206000f3'
+    slot0: await client.getStorageAt({ address, slot: slot0 }), // 0x00...09
   })
+} finally {
+  await client.tevmClose()
 }
-
-// Create or update an account
-await stateManager.putAccount(
-  address,
-  createAccount({
-    nonce: 0n,
-    balance: 10_000_000n
-  })
-)
-
-// Delete an account
-await stateManager.deleteAccount(address)
 ```
 
-```typescript [Client API] filename="client-api.ts"
+Unspecified fields in `tevmSetAccount` are preserved. To update only a balance, `tevmDeal({ address, amount })` or viem's `setBalance({ address, value })` is shorter:
+
+```ts
+await client.tevmDeal({ address, amount: 100n })
+```
+
+<WatchOut title="Multi-field tevmSetAccount calls are not atomic">
+Under the hood, `tevmSetAccount` issues separate native RPC calls for each supplied field (`anvil_setBalance`, `anvil_setNonce`, `anvil_setCode`, and one `anvil_setStorageAt` per slot). If a later setter fails, earlier setters have already mutated state. Wrap multi-field edits in `snapshot()` / `revert()` if you need all-or-nothing rollback.
+</WatchOut>
+
+## Snapshots vs. state blobs
+
+<StateRollbackDiagram />
+
+### In-process rollback (`snapshot` / `revert`)
+
+Snapshots rewind a single engine's state, blocks, and timestamps back to the exact point the snapshot was taken:
+
+```ts
 import { createMemoryClient } from 'tevm'
 
 const client = createMemoryClient()
 
-await client.setBalance({
-  address: '0x1234567890123456789012345678901234567890',
-  value: 1000000000000000000n
-})
+try {
+  const target = '0x3333333333333333333333333333333333333333'
+  const snapshotId = await client.snapshot()
 
-const balance = await client.getBalance({
-  address: '0x1234567890123456789012345678901234567890'
-})
+  await client.setBalance({ address: target, value: 999n })
+  console.log(await client.getBalance({ address: target })) // 999n
+
+  await client.revert({ id: snapshotId })
+  console.log(await client.getBalance({ address: target })) // 0n
+} finally {
+  await client.tevmClose()
+}
 ```
 
-:::
+Reverting consumes `snapshotId`. If you run multiple tests against one client, take a fresh snapshot after each revert (for example in `beforeEach` / `afterEach`).
 
-:::tip
-Raw API gives maximum control; client API is the recommended interface for most users (mirrors viem).
-:::
+### Portable state blobs (`tevmDumpState` / `tevmLoadState`)
 
-## Contract State Management
+`tevmDumpState()` returns ZEVM's opaque hexadecimal state blob (`0x...`). Pass that hex string directly to `tevmLoadState(blob)` on another engine — or write it to disk to seed a future run:
 
-- Deploy bytecode
-- Read deployed code
-- Read/write storage slots
-- Clear storage or delete contracts
-
-:::code-group
-
-```typescript [Raw API] filename="contract-management.ts"
-import { createAddress } from 'tevm/address'
-import { hexToBytes } from 'tevm/utils'
-
-const address = createAddress('0x1234567890123456789012345678901234567890')
-
-// Deploy contract code
-await stateManager.putCode(address, new Uint8Array([1, 2, 3]))
-
-// Read contract code
-const code = await stateManager.getCode(address)
-
-// Read storage slot
-const slot = hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000')
-const value = await stateManager.getStorage(address, slot)
-
-// Write storage
-const key = hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000')
-const newValue = hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000001')
-await stateManager.putStorage(address, key, newValue)
-
-// Clear all storage
-await stateManager.clearStorage(address)
-```
-
-```typescript [Client API] filename="client-contract-management.ts"
+```ts
 import { createMemoryClient } from 'tevm'
 
-const client = createMemoryClient()
-const contractAddress = '0x1234567890123456789012345678901234567890'
-
-await client.setCode({
-  address: contractAddress,
-  bytecode: '0x608060405234801561001057600080fd5b50'
-})
-
-const code = await client.getCode({
-  address: contractAddress,
-  blockTag: 'latest'
-})
-
-const result = await client.call({
-  to: contractAddress,
-  data: '0x70a08231000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266'
-})
-```
-
-:::
-
-## Framework Integration
-
-You can combine viem/ethers with raw state access.
-
-:::code-group
-
-```typescript [Viem] filename="viem-integration.ts"
-import { createMemoryClient } from 'tevm'
-
-const client = createMemoryClient()
-
-await client.setBalance({
-  address: '0x1234567890123456789012345678901234567890',
-  value: 1000000000000000000n
-})
-
-// Drop down to raw state manager
-const vm = await client.transport.tevm.getVm()
-const stateManager = vm.stateManager
-
-await stateManager.checkpoint()
-try {
-  await stateManager.putStorage(address, key, value)
-  await stateManager.commit()
-} catch (error) {
-  await stateManager.revert()
-}
-```
-
-```typescript [Ethers] filename="ethers-integration.ts"
-import { createTevmNode } from 'tevm'
-import { requestEip1193 } from 'tevm/decorators'
-import { BrowserProvider } from 'ethers'
-
-const node = createTevmNode().extend(requestEip1193())
-const provider = new BrowserProvider(node)
-
-const balance = await provider.getBalance('0x1234...')
-
-const vm = await node.getVm()
-const stateManager = vm.stateManager
-```
-
-:::
-
-:::note
-`createMemoryClient` implements viem's public actions. The `requestEip1193` decorator makes a Tevm node compatible with Ethers.js providers.
-:::
-
-## Advanced Features
-
-### State Checkpoints
-
-Atomic changes that can be committed or reverted (transaction-like semantics):
-
-```typescript filename="checkpoints.ts"
-const stateManager = (await node.getVm()).stateManager
-
-await stateManager.checkpoint()
-try {
-  await stateManager.putAccount(address, account)
-  await stateManager.putStorage(address, key, value)
-  await stateManager.commit()
-} catch (error) {
-  await stateManager.revert()
-  console.error('State changes reverted:', error)
-}
-```
-
-### State Persistence
-
-Dump and restore canonical state to any storage backend (localStorage, DB, etc.):
-
-```typescript filename="persistence.ts"
-const state = await stateManager.dumpCanonicalGenesis()
-localStorage.setItem('tevmState', JSON.stringify(state))
-
-const serialized = localStorage.getItem('tevmState')
-if (!serialized) throw new Error('No saved Tevm state')
-const savedState = JSON.parse(serialized)
-await stateManager.generateCanonicalGenesis(savedState)
-```
-
-### Fork Mode
-
-Forked nodes lazy-load and cache state from a remote provider:
-
-```typescript filename="fork-mode.ts"
-import { createTevmNode, http } from 'tevm'
-import { createAddress } from 'tevm/address'
-
-const rpcUrl = process.env.MAINNET_RPC_URL
-if (!rpcUrl) {
-  throw new Error('MAINNET_RPC_URL is required for fork mode')
-}
-
-const node = createTevmNode({
-  fork: { transport: http(rpcUrl)({}) }
-})
-
-const stateManager = (await node.getVm()).stateManager
-const address = createAddress('0x1234567890123456789012345678901234567890')
-
-// First access fetches from remote
-const account = await stateManager.getAccount(address)
-// Subsequent access uses cache
-const cachedAccount = await stateManager.getAccount(address)
-```
-
-## Best Practices
-
-- Handle errors from state operations.
-- Use `deepCopy` for isolated test scenarios.
-- Group related changes with checkpoints.
-
-:::code-group
-
-```typescript [Error Handling] filename="error-handling.ts"
-import { createAddress } from 'tevm/address'
-
-const address = createAddress('0x1234567890123456789012345678901234567890')
+const source = createMemoryClient()
+const target = createMemoryClient()
 
 try {
-  const account = await stateManager.getAccount(address)
-  if (!account) {
-    console.log('Account does not exist yet')
-  } else {
-    console.log('Balance:', account.balance)
-  }
-} catch (error) {
-  console.error('State operation failed:', error)
+  const address = '0x0000000000000000000000000000000000000123'
+  await source.tevmDeal({ address, amount: 99n })
+
+  // Export opaque ZEVM hex blob
+  const blob = await source.tevmDumpState()
+
+  // Hydrate an independent engine
+  await target.tevmLoadState(blob)
+  console.log((await target.tevmGetAccount({ address })).balance) // 99n
+} finally {
+  await source.tevmClose()
+  await target.tevmClose()
 }
 ```
 
-```typescript [State Isolation] filename="state-isolation.ts"
-const isolatedState = await stateManager.deepCopy()
-await isolatedState.putAccount(address, account)
-// Original stateManager unaffected
-```
+<WatchOut title="Opaque hex blob, not a JSON account map">
+`tevmDumpState()` returns a hex string (`Hex`) encoded by ZEVM — not the old `{ state: Record<Address, Account> }` object from pre-migration JS releases. Pass the hex string straight into `client.tevmLoadState(blob)` (not `{ state: blob }`).
+</WatchOut>
 
-```typescript [Atomic Operations] filename="atomic-operations.ts"
-await stateManager.checkpoint()
-try {
-  await stateManager.putAccount(address, account)
-  await stateManager.putStorage(address, key, value)
-  await stateManager.commit()
-} catch (error) {
-  await stateManager.revert()
-  console.error('Transaction reverted:', error)
-}
-```
+## Wire vs. host types
 
-:::
+| Operation | Balance / Nonce type | Storage slot format |
+| --- | --- | --- |
+| `tevmGetAccount` / `tevmSetAccount` / `tevmDeal` | `bigint` | 32-byte hex string (or minimal hex key) |
+| viem `getBalance` / `setBalance` / `getStorageAt` | `bigint` | 32-byte hex string |
+| Raw `engine.request({ method: 'eth_getBalance', ... })` | Hex quantity (`'0x2a'`) | Hex quantity / 32-byte hex |
 
-:::warning
-Low-level state reads return `undefined` for missing local accounts. High-level actions such as `getAccountHandler` throw by default unless `throwOnFail: false` is set.
-:::
-
-## Related Resources
-
-[Runtime Model and ZEVM](./runtime-model) · [State Manager API](https://github.com/evmts/tevm/blob/main/packages/state/docs/interfaces/StateManager.md) · [Account Management](../api/account-management) · [Contract Storage](/reference/contract) · [Forking Guide](../core/forking)
+Next: [Account management API](../api/account-management) · [Forking upstream chains](./forking) · [Testing with Vitest](../examples/local-testing)

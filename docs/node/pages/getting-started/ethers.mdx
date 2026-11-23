@@ -1,86 +1,125 @@
 ---
-title: Getting Started with Ethers
-description: Connect ethers v6 to tevm@1.0.0-rc.151 through EIP-1193
-authors:
-  - "[William Cory](https://x.com/fucory)"
-  - "[Tevm Team](https://github.com/evmts)"
+title: "Tutorial: Ethers v6"
+description: Connect ethers v6 to Tevm with TevmProvider or BrowserProvider
 ---
 
-# Getting Started with Ethers.js
+import { CompareCard, CompareGrid, QaBox, WatchOut } from '../../components'
 
-Tevm's primary client surface is viem-compatible. Ethers v6 can use the same
-in-memory node through its EIP-1193 provider interface.
+# Tutorial: Driving Tevm with Ethers v6
 
-## Install
+You have an existing ethers v6 application or test suite and want to run it against an in-process native EVM without spinning up an external RPC server.
+
+Tevm supports ethers v6 in two ways:
+
+<CompareGrid>
+  <CompareCard title="TevmProvider (@tevm/ethers)" badge="Recommended">
+    Subclasses ethers' <code>JsonRpcApiProvider</code>, disables ethers' read cache automatically, wires directly to native <code>rpc()</code>, and exposes <code>provider.tevm</code> for cheatcodes and mining.
+  </CompareCard>
+  <CompareCard title="BrowserProvider(client)" badge="Zero extra packages">
+    Wraps <code>createMemoryClient()</code> via EIP-1193. Pass <code>{'{ cacheTimeout: -1 }'}</code> so ethers never returns stale state after local mutations.
+  </CompareCard>
+</CompareGrid>
+
+## 1. Install
 
 :::code-group
 
-```bash [npm]
-npm install tevm@1.0.0-rc.151 viem ethers@6
-```
-
 ```bash [pnpm]
-pnpm add tevm@1.0.0-rc.151 viem ethers@6
+pnpm add tevm viem ethers@6 @tevm/ethers
 ```
 
-```bash [yarn]
-yarn add tevm@1.0.0-rc.151 viem ethers@6
-```
-
-```bash [bun]
-bun add tevm@1.0.0-rc.151 viem ethers@6
+```bash [npm]
+npm install tevm viem ethers@6 @tevm/ethers
 ```
 
 :::
 
-## Create a Provider
+*(Omit `@tevm/ethers` if you prefer wrapping `createMemoryClient()` in ethers' built-in `BrowserProvider`.)*
 
-`createMemoryClient()` is synchronous. Its `request` method follows EIP-1193.
-Pass the client directly to ethers; Tevm preserves typed RPC return values while
-also satisfying ethers' open-ended provider interface:
+## 2. Create a provider and fund a wallet
 
 ```ts
+import { TevmProvider } from '@tevm/ethers'
+import { Wallet, formatEther, parseEther } from 'ethers'
+import { getAddress } from 'tevm'
+
+const provider = await TevmProvider.createMemoryProvider({
+  mining: { auto: false },
+})
+
+try {
+  const signer = Wallet.createRandom().connect(provider)
+
+  // Use provider.tevm (a full MemoryClient) for local state setup
+  await provider.tevm.setBalance({
+    address: getAddress(signer.address),
+    value: parseEther('10'),
+  })
+
+  const balance = await provider.getBalance(signer.address)
+  console.log('Funded balance:', formatEther(balance), 'ETH') // 10.0 ETH
+
+  // Send a transaction through ethers
+  const tx = await signer.sendTransaction({
+    to: '0x1111111111111111111111111111111111111111',
+    value: parseEther('1'),
+  })
+
+  // Manual mining is enabled, so mine before waiting for the receipt
+  await provider.tevm.mine({ blocks: 1 })
+  const receipt = await tx.wait()
+
+  console.log('Receipt status:', receipt?.status) // 1
+} finally {
+  // Stops ethers polling and closes the native ZEVM engine
+  provider.destroy()
+}
+```
+
+<QaBox question="Why does TevmProvider have a .tevm property?">
+Ethers' `Provider` interface only covers standard Ethereum JSON-RPC reads and transaction submission. Exposing the underlying `MemoryClient` on `provider.tevm` lets you call `setBalance`, `setCode`, `snapshot`, `revert`, `mine`, and `tevmCall` without juggling two disconnected objects.
+</QaBox>
+
+## Alternative: Using ethers' `BrowserProvider`
+
+If you do not want to install `@tevm/ethers`, pass a `MemoryClient` directly to `BrowserProvider`:
+
+```ts
+import { BrowserProvider, Wallet, parseEther } from 'ethers'
 import { createMemoryClient, getAddress } from 'tevm'
-import { BrowserProvider, Wallet, formatEther, parseEther } from 'ethers'
 
 const client = createMemoryClient()
-await client.tevmReady()
 
-const provider = new BrowserProvider(client, undefined, {
-  cacheTimeout: -1,
-})
-const signer = Wallet.createRandom().connect(provider)
+try {
+  await client.tevmReady()
 
-await client.setBalance({
-  address: getAddress(signer.address),
-  value: parseEther('10'),
-})
+  const provider = new BrowserProvider(client, undefined, {
+    cacheTimeout: -1,
+  })
+  const signer = Wallet.createRandom().connect(provider)
 
-console.log(formatEther(await provider.getBalance(signer.address)))
+  await client.setBalance({
+    address: getAddress(signer.address),
+    value: parseEther('10'),
+  })
+
+  // Automining is on by default, so tx.wait() resolves immediately
+  const tx = await signer.sendTransaction({
+    to: '0x1111111111111111111111111111111111111111',
+    value: parseEther('1'),
+  })
+  const receipt = await tx.wait()
+  console.log('Mined in block:', receipt?.blockNumber)
+} finally {
+  await client.tevmClose()
+}
 ```
 
-The negative cache timeout keeps ethers from briefly returning a cached block
-or balance after Tevm changes local state.
+<WatchOut title="Do not forget cacheTimeout: -1 with BrowserProvider">
+By default, ethers v6 caches `eth_blockNumber` and account reads briefly. In tests where you mutate balances or mine blocks back-to-back, leaving the default cache enabled causes ethers to return the previous block's values. `TevmProvider` sets `cacheTimeout: -1` for you automatically.
+</WatchOut>
 
-## Transactions and Mining
+## Next steps
 
-Ethers transactions enter Tevm's txpool. With the default manual mining mode,
-mine before waiting for the receipt:
-
-```ts
-const tx = await signer.sendTransaction({
-  to: '0x1111111111111111111111111111111111111111',
-  value: parseEther('1'),
-})
-
-await client.mine({ blocks: 1 })
-const receipt = await tx.wait()
-
-console.log(receipt?.status)
-```
-
-`client.mine({ blocks: 1 })` is the viem test action. The equivalent Tevm
-action is `client.tevmMine({ blockCount: 1 })`.
-
-See [Using with Ethers](/examples/ethers) for a complete contract deployment
-and write example.
+- [Ethers v6 cookbook](../examples/ethers) — full contract deployment, writes, and testing example.
+- [Mining & block production](../core/mining-modes) — choosing between automining and manual mining in ethers tests.

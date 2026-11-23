@@ -1,7 +1,16 @@
-## See Also
+---
+title: Decorators (Removed in Native Engine)
+description: How native ZevmEngine and viem client extensions replace the legacy @tevm/decorators package
+---
 
-- [JSON-RPC API](/api/json-rpc)
-- [Client Types](#TODO)
-- [Actions Reference](/reference/actions)
-- [EIP-1193 Specification](https://eips.ethereum.org/EIPS/eip-1193)
-- [Ethereum JSON-RPC](https://ethereum.org/en/developers/docs/apis/json-rpc/)
+# Decorators (migrated)
+
+The legacy `@tevm/decorators` package (`requestEip1193`, `ethActions`, `tevmActions`, `tevmSend`) was removed in the native ZEVM engine migration.
+
+## Native replacements
+
+- **EIP-1193 & JSON-RPC:** `createZevmEngine()` (alias `createTevmNode()`) exposes `request()` and `rpc()` directly — no decorator required.
+- **Viem & TEVM actions:** `createMemoryClient()` attaches viem `publicActions`, `walletActions`, `testActions({ mode: 'anvil' })`, and `tevmViemActions()`.
+- **Remote HTTP viem client:** extend any viem client with `tevmViemExtension()` from `@tevm/viem`, or call `createHttpClient({ url })` from `tevm/http-client`.
+
+See [Migrating from the JS engine](/core/migration-from-js-engine) and [Engine API](/core/tevm-node-interface).

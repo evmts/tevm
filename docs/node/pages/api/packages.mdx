@@ -1,113 +1,45 @@
 ---
-title: Package Reference
-description: Complete reference of all Tevm Node packages and modules
+title: Package Overview
+description: Every workspace package and subpath export in the Tevm monorepo
 ---
 
-# Package Reference
+# Package overview
 
-Tevm Node is modular. These docs target the `1.0.0-rc.151` package set.
-
-## Installation
-
-### Complete Package
+Most applications only need the umbrella `tevm` package alongside `viem`. Install individual `@tevm/*` packages only when building specialized adapters or minimizing dependencies.
 
 ```bash
-npm install tevm@1.0.0-rc.151 viem
+pnpm add tevm viem
 ```
 
-```typescript
-import { createTevmNode } from 'tevm'
-import { callHandler } from 'tevm/actions'
-import { http } from 'tevm'
-```
+## `tevm` subpath exports
 
-### Individual Packages
+| Import path | Backing package | Purpose |
+| --- | --- | --- |
+| `tevm` | Umbrella | `createMemoryClient`, `createZevmEngine`, `createTevmNode`, `NativeRpcError`, `createContract`, standalone `tevm*` actions, viem helpers, `PREFUNDED_ACCOUNTS` |
+| `tevm/node` | `@tevm/node` | Native ZEVM Node-API wrapper (`createZevmEngine`, `createTevmNode`, `NativeRpcError`, types) |
+| `tevm/memory-client` | `@tevm/memory-client` | `createMemoryClient`, `createTevmTransport`, `tevmViemActions`, `tevmReady` |
+| `tevm/actions` | `@tevm/actions` | Browser-safe typed RPC helpers (`tevmCall`, `tevmContract`, `tevmDeploy`, `tevmDeal`, `tevmGetAccount`, `tevmSetAccount`, `tevmMine`, `tevmDumpState`, `tevmLoadState`) |
+| `tevm/server` | `@tevm/server` | `createServer` (HTTP + WS), `createIpcServer`, `createHttpHandler`, `createWebSocketServer`, `createExpressMiddleware`, `createNextApiHandler` |
+| `tevm/http-client` | `@tevm/http-client` | `createHttpClient` for connecting to a running TEVM HTTP server |
+| `tevm/common` | `@tevm/common` | Viem chain presets (`mainnet`, `optimism`, `arbitrum`, `base`, …) and `tevmDefault` (`foundry`) |
+| `tevm/contract` | `@tevm/contract` | `createContract` plus bundled fixtures (`SimpleContract`, `ERC20`, `ERC721`, `ErrorContract`, `AdvancedContract`) |
+| `tevm/predeploys` | `@tevm/predeploys` | `definePredeploy` for typed predeploy descriptors |
+| `tevm/errors` | `@tevm/errors` | Structured JSON-RPC, EVM, and client error classes extending `BaseError` |
+| `tevm/utils` | `@tevm/utils` | ABI/hex/RLP utilities, `PREFUNDED_ACCOUNTS`, `PREFUNDED_PRIVATE_KEYS`, `serializeToJson` |
+| `tevm/bundler/*` | `@tevm/*-plugin` | Build-time Solidity plugins (`vite-plugin`, `rollup-plugin`, `esbuild-plugin`, `webpack-plugin`, `rspack-plugin`, `bun-plugin`, `base-bundler`, `compiler`, `config`, `solc`) |
 
-```bash
-npm install @tevm/node@1.0.0-rc.151 @tevm/actions@1.0.0-rc.151 viem
-```
+## Standalone ecosystem packages
 
-```typescript
-import { createTevmNode } from '@tevm/node'
-import { callHandler } from '@tevm/actions'
-```
+| Package | Purpose |
+| --- | --- |
+| `@tevm/ethers` | `TevmProvider` (`JsonRpcApiProvider` subclass wired directly to native `rpc()`) |
+| `@tevm/viem` | `tevmViemExtension()` — attaches `client.tevm.*` helpers onto any viem public client (browser-safe) |
+| `@tevm/mcp` | Stdio Model Context Protocol server giving AI coding agents 14 isolated EVM & Solidity tools |
+| `@tevm/ts-plugin` | TypeScript language service plugin for `.sol` import resolution, typechecking, and NatSpec hover |
+| `@tevm/cli` | `tevm` command-line tool (`call`, `contract`, `deploy`, `mine`, `serve`, `dump-state`, `load-state`, …) |
 
-## Core Packages
+## Native engine dependency
 
-### Node & Client
-- **@tevm/node** - Core node implementation; blockchain and state management; mining and block production.
-- **@tevm/memory-client** - In-memory Ethereum client with Viem-compatible interface; local state and transaction handling.
+`@tevm/node` loads `@evmts/zevm` (the native Zig Node-API addon combining ZEVM, Voltaire, and Guillotine Mini). There is no pure-JavaScript fallback engine; if the native addon is missing for your platform, `createZevmEngine()` throws immediately.
 
-### EVM & Execution
-- **@tevm/vm** - VM coordinating EVM execution, block building, receipts, and state transitions; backed by ZEVM-compatible EVM, tx, common, and block primitives; emits VM/EVM lifecycle events.
-- **@tevm/evm** - Low-level EVM operations: ZEVM-backed bytecode execution, gas accounting, step events, custom precompiles, profiling, and direct `runCall` access.
-
-### State & Storage
-- **@tevm/state** - Account state, storage manipulation, fork-backed reads, snapshots, state roots, and proof support.
-- **@tevm/blockchain** - Block management, chain reorganization, header validation.
-
-## Transaction Handling
-
-### Transaction Processing
-- **@tevm/tx** - ZEVM-backed transaction facade; legacy, EIP-2930, EIP-1559, EIP-4844, EIP-7702 helpers; Tevm impersonated transactions for local execution and fork testing.
-- **@tevm/txpool** - Pending transaction queue, ordering, replacement handling, `txpool_*` JSON-RPC support.
-
-### Block & Receipt Management
-- **@tevm/block** - Block creation, validation, chain management.
-- **@tevm/receipt-manager** - Receipt storage, event logging, gas tracking; `eth_getTransactionReceipt`, `eth_getBlockReceipts`, filters, subscriptions.
-
-## Client Integration
-
-### Communication
-- **@tevm/jsonrpc** - Standard Ethereum and custom Tevm methods, error handling; HTTP, WebSocket, rate-limit, and load-balance transports.
-- **@tevm/http-client** - HTTP client; remote node communication, request batching, error handling.
-
-### Actions & Procedures
-- **@tevm/actions** - High-level actions for contract interaction, account management, state queries; `eth_*`, `tevm_*`, `debug_*`, `engine_*`, `txpool_*`, `anvil_*`, `hardhat_*`, `ganache_*`, `evm_*` handlers.
-- **@tevm/procedures** - State manipulation, chain operations, utility functions.
-
-## Smart Contract Tools
-
-### Contract Interaction
-- **@tevm/contract** - ABI handling, function encoding, event parsing.
-- **@tevm/precompiles** - Standard and custom precompiles; gas calculation.
-
-### Contract Management
-- **@tevm/predeploys** - Pre-deployed standard and network-specific contracts.
-
-## Utilities & Helpers
-
-### Core Utilities
-- **@tevm/utils** - Address handling, data encoding, type conversion; ZEVM-backed utilities and EIP-7702 authorization helpers.
-- **@tevm/common** - Chain configurations and network parameters; ZEVM-backed Common object plus viem chain definitions.
-
-### Development Tools
-- **@tevm/decorators** - Function decorators for method extension and behavior modification.
-- **@tevm/errors** - Error types, messages, stack traces.
-
-### Data Structures
-- **@tevm/rlp** - ZEVM-backed RLP encoding/decoding for serialization, network protocol, storage.
-- **@tevm/trie** - ZEVM-backed Merkle Patricia Tree for state storage, proof verification, tree manipulation.
-
-## Development & Debugging
-
-### Logging & Debugging
-- **@tevm/logger** - Configurable levels, output formatting, debug information.
-- **@tevm/effect** - Side effect handling, async operations, error recovery.
-
-### Storage & Types
-- **@tevm/sync-storage-persister** - State synchronization, persistence, cache management.
-- **@tevm/client-types** - Interface and type definitions.
-
-## Best Practices
-
-- **Start simple** - Begin with the complete `tevm` package. Split only to optimize bundle size.
-- **Bundle optimization** - Import from subpaths (`tevm/actions`) and use tree-shaking-friendly imports.
-- **Version management** - Keep all `@tevm/*` packages on the same version.
-- **Development** - Use TypeScript; leverage provided type definitions.
-
-## Related Topics
-
-- [Architecture Overview](../introduction/architecture-overview)
-- [API Reference](./methods)
-- [GitHub Repository](https://github.com/evmts/tevm)
+Next: [Package reference index](../reference) · [Architecture](../introduction/architecture-overview) · [Migrating from the JS engine](../core/migration-from-js-engine)

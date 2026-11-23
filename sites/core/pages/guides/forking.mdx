@@ -1,94 +1,61 @@
 ---
 title: Forking
-description: Overlay local tevm execution on a pinned upstream EVM block
+description: Overlay local native execution on an upstream JSON-RPC endpoint at a pinned block
 ---
+
+import { CoreForkDiagram, QaBox, WatchOut } from '../../components/Diagrams'
 
 # Forking
 
-A fork reads accounts, code, storage, and blocks from an upstream EIP-1193 transport as they are needed. It does not copy the whole chain. Every mutation remains local.
+A fork reads accounts, contract code, and storage slots lazily from an upstream JSON-RPC endpoint and stores every write in a local overlay. It never copies the whole chain and never writes upstream.
 
-## Create a reproducible fork
+<CoreForkDiagram />
 
-Pin the chain and block. This avoids a chain ID discovery request and gives every run the same starting state.
+## Configure a fork
+
+Pass `fork: { url, blockNumber }` alongside the matching `chainId` and `common` preset:
 
 ```ts
-import assert from 'node:assert/strict'
-import { createMemoryClient, http } from 'tevm'
+import { createMemoryClient } from 'tevm'
 import { mainnet } from 'tevm/common'
 
-const forkBlock = 19_000_000n
 const client = createMemoryClient({
+  chainId: mainnet.id,
   common: mainnet,
   fork: {
-    transport: http('https://eth-mainnet.public.blastapi.io')({}),
-    blockTag: forkBlock,
+    url: process.env.MAINNET_RPC_URL ?? 'https://ethereum-rpc.publicnode.com',
+    blockNumber: 20_000_000,
   },
 })
 
-await client.tevmReady()
+try {
+  await client.tevmReady()
 
-const block = await client.getBlock({ blockNumber: forkBlock })
-assert.equal(block.number, forkBlock)
-assert.match(block.hash, /^0x[0-9a-f]{64}$/)
-```
+  const vitalik = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+  const balance = await client.getBalance({ address: vitalik })
 
-`http(url)` is a viem transport factory. Invoke it with `({})` and pass the returned transport to `fork.transport`.
-
-## Read upstream, write locally
-
-The first missing read fetches from upstream and enters the local cache. A test action changes the overlay only.
-
-```ts
-import assert from 'node:assert/strict'
-import { createMemoryClient, http } from 'tevm'
-import { mainnet } from 'tevm/common'
-
-const address = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
-const rpc = http('https://eth-mainnet.public.blastapi.io')({})
-const upstreamMethods = []
-const upstream = {
-  ...rpc,
-  async request(args) {
-    upstreamMethods.push(args.method)
-    return rpc.request(args)
-  },
+  // Local write stays in memory; upstream mainnet is untouched
+  await client.tevmDeal({ address: vitalik, amount: balance + 1n })
+} finally {
+  await client.tevmClose()
 }
-const client = createMemoryClient({
-  common: mainnet,
-  fork: {
-    transport: upstream,
-    blockTag: 19_000_000n,
-  },
-})
-
-const upstreamBalance = await client.getBalance({
-  address,
-  blockNumber: 19_000_000n,
-})
-
-await client.setBalance({ address, value: upstreamBalance + 1n })
-
-assert.equal(await client.getBalance({ address }), upstreamBalance + 1n)
-assert.equal(
-  upstreamMethods.some((method) =>
-    method.startsWith('anvil_') ||
-    method.startsWith('tevm_') ||
-    method === 'eth_sendTransaction'
-  ),
-  false,
-)
 ```
+
+<QaBox question="Why does getBlockNumber() return 0n right after forking?">
+ZEVM forks upstream **state** at your pinned `blockNumber` into a fresh local chain starting at block height `0`. Historical upstream block headers are not imported; local blocks mined on the fork start at `1`, `2`, `3`, and so on.
+</QaBox>
+
+<WatchOut title="Do not fork a server on the same Node.js event loop">
+ZEVM performs fork HTTP requests synchronously in native Zig code. If a test runs a local mock upstream server, launch that server in a separate OS process (`node:child_process`) so the native request cannot block the JavaScript thread serving it.
+</WatchOut>
 
 ## Operational rules
 
 | Choice | Result |
 | --- | --- |
-| Pin `blockTag` | Reproducible state and block context |
-| Omit `blockTag` | Initialize from the upstream head |
-| Set `common` | Known chain rules without a discovery request |
-| Read uncached data | One or more upstream requests |
-| Read cached data | Local lookup |
-| Write state or mine | Local overlay only |
-| Need another base block | Create a new client |
-
-The published rc.151 package does not initialize KZG while reconstructing blob transactions, so the verified example pins a pre-Dencun mainnet block. Optimism deposit transaction fidelity and explicit rejection of Arbitrum custom types were fixed in source after rc.151. Do not use rc.151 to reconstruct blocks containing those transaction forms.
+| Pin `blockNumber` | Reproducible upstream state across every run |
+| Omit `blockNumber` | Forks from the upstream head at startup |
+| Set `chainId` + `common` | Matches upstream chain ID and viem metadata |
+| First read of an address/slot | Fetches once from upstream and caches locally |
+| Any write or mined block | Stored in the local overlay only |
+| Switch fork block | Call `anvil_reset` with new `forking` params, or create a new client |

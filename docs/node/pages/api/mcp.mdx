@@ -1,0 +1,101 @@
+---
+title: MCP Server for AI Agents
+description: Give Claude, Cursor, Codex, or Antigravity isolated native EVM sessions, Solidity compilation, forking, and opcode tracing with @tevm/mcp
+---
+
+import { McpLoopDiagram, UnderTheHood } from '../../components'
+
+# MCP server for AI agents
+
+`@tevm/mcp` exposes Tevm's native ZEVM engine and bundled `solc` compiler over the [Model Context Protocol (MCP)](https://modelcontextprotocol.io) stdio transport. An AI coding agent can spin up isolated local or forked chains, compile Solidity, deploy contracts, send transactions, inspect storage, and trace reverts without touching your host environment or external dev nodes.
+
+<McpLoopDiagram />
+
+## Configure your MCP client
+
+Point any MCP-compatible host (Claude Desktop, Claude Code, Cursor, Codex, Antigravity) at the `@tevm/mcp` stdio CLI:
+
+```json
+{
+  "mcpServers": {
+    "tevm": {
+      "command": "npx",
+      "args": ["-y", "@tevm/mcp"]
+    }
+  }
+}
+```
+
+## Available tools (14)
+
+### Session lifecycle
+
+| Tool | Purpose |
+| --- | --- |
+| `evm_create_session` | Create a fresh isolated local EVM (`chainId: 31337`, block `0`). Returns a UUID `handle`. |
+| `evm_fork_chain` | Fork any HTTP JSON-RPC endpoint at an optional `blockNumber` and `chain` preset. Returns a UUID `handle`. |
+| `evm_close_session` | Release the session's native ZEVM handle immediately. |
+
+### Compilation & execution
+
+| Tool | Purpose |
+| --- | --- |
+| `evm_compile_solidity` | Compile one Solidity source file with bundled `solc` into ABI, creation bytecode, and deployed bytecode. |
+| `evm_deploy_contract` | Deploy bytecode (or compile + deploy Solidity source) into the session txpool. Returns predicted address, `gasLimit`, and `txHash`. Mine with `evm_mine` to commit. |
+| `evm_call_contract` | Read-only contract call (accepts full ABI or a single human-readable signature). Returns decoded output, raw output, and gas estimate. |
+| `evm_send_transaction` | Execute a state-changing function and add it to the txpool. Returns estimated gas and `txHash`. |
+| `evm_mine` | Mine pending transactions and optionally advance block timestamps. |
+
+### Inspection & debugging
+
+| Tool | Purpose |
+| --- | --- |
+| `evm_get_account` | Read balance, nonce, code, and an optional storage slot. |
+| `evm_set_account` | Cheatcode setter for balance, nonce, code, or storage without sending a transaction. |
+| `evm_get_block` | Fetch the latest block or a block by number/hash (optionally with full transactions). |
+| `evm_get_transaction_receipt` | Fetch mined receipt status, actual gas used, logs, and deployed contract address. |
+| `evm_get_txpool` | Inspect pending and queued transactions waiting for `evm_mine`. |
+| `evm_trace_call` | Run `debug_traceCall` and return a context-window-bounded head/tail opcode trace plus decoded revert errors — even when the call reverts. |
+
+## Programmatic usage
+
+Embed the session manager and tool executor directly in custom agent harnesses:
+
+```ts
+import { createSessionManager, executeTool } from '@tevm/mcp'
+
+const sessions = createSessionManager()
+let handle = ''
+
+try {
+  const created = (await executeTool('evm_create_session', {}, sessions)) as {
+    handle: string
+    chainId: number
+  }
+  handle = created.handle
+
+  const compiled = (await executeTool(
+    'evm_compile_solidity',
+    {
+      source: 'pragma solidity ^0.8.20; contract Box { uint256 public x = 7; }',
+      contractName: 'Box',
+    },
+    sessions,
+  )) as { abi: unknown[]; bytecode: string }
+
+  await executeTool(
+    'evm_deploy_contract',
+    { session: handle, bytecode: compiled.bytecode },
+    sessions,
+  )
+  await executeTool('evm_mine', { session: handle }, sessions)
+} finally {
+  if (handle) await sessions.close(handle)
+}
+```
+
+<UnderTheHood>
+Each session handle owns an independent `MemoryClient` / `ZevmEngine`. Closing or expiring a session invokes `tevmClose()` so native handles are never leaked across long-running agent sessions.
+</UnderTheHood>
+
+Next: [Tracing & engine events](./evm-events) · [HTTP, WebSocket & IPC server](./server)

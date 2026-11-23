@@ -1,6 +1,6 @@
 ---
 title: Core API map
-description: Terse map of tevm core entry points, options, and action groups
+description: Concise reference of tevm entry points, engine options, action groups, and return boundaries
 ---
 
 # Core API map
@@ -9,14 +9,16 @@ description: Terse map of tevm core entry points, options, and action groups
 
 | Import | Main exports |
 | --- | --- |
-| `tevm` | `createMemoryClient`, `createTevmNode`, transports, viem helpers |
-| `tevm/actions` | Standalone action handlers |
-| `tevm/address` | EVM address creation and types |
-| `tevm/common` | Chain presets and common configuration |
-| `tevm/evm` | `createEvm`, precompiles, execution types |
-| `tevm/state` | `createStateManager`, state types |
-| `tevm/contract` | Contract descriptors and bundled fixtures |
-| `tevm/utils` | Accounts, bytes, hex, hashing, RLP utilities |
+| `tevm` | `createMemoryClient`, `createZevmEngine`, `createTevmNode`, `NativeRpcError`, standalone `tevm*` actions, `createContract`, viem utilities, `PREFUNDED_ACCOUNTS` |
+| `tevm/node` | `createZevmEngine`, `createTevmNode`, `NativeRpcError`, `ZevmEngine` types |
+| `tevm/memory-client` | `createMemoryClient`, `createTevmTransport`, `tevmViemActions`, `tevmReady` |
+| `tevm/actions` | Browser-safe `tevmCall`, `tevmContract`, `tevmDeploy`, `tevmDeal`, `tevmGetAccount`, `tevmSetAccount`, `tevmMine`, `tevmDumpState`, `tevmLoadState` |
+| `tevm/server` | `createServer`, `createIpcServer`, `createHttpHandler`, `createWebSocketServer`, `createExpressMiddleware`, `createNextApiHandler` |
+| `tevm/http-client` | `createHttpClient` |
+| `tevm/common` | Viem chain presets and `tevmDefault` (`foundry`) |
+| `tevm/contract` | `createContract` and bundled fixtures (`SimpleContract`, `ERC20`, `ERC721`, `ErrorContract`) |
+| `tevm/utils` | Hex, bytes, ABI, RLP, signing helpers, `PREFUNDED_ACCOUNTS` |
+| `tevm/bundler/*` | Solidity plugins for Vite, Rollup, esbuild, Webpack, Rspack, and Bun |
 
 ## Memory client options
 
@@ -25,46 +27,40 @@ import assert from 'node:assert/strict'
 import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
 
 const client = createMemoryClient({
+  chainId: 31337,
   account: PREFUNDED_ACCOUNTS[0],
-  miningConfig: { type: 'manual' },
-  loggingLevel: 'warn',
+  mining: { auto: false },
 })
 
-await client.tevmReady()
-assert.equal(client.account?.address, PREFUNDED_ACCOUNTS[0].address)
-assert.equal(await client.getBlockNumber(), 0n)
+try {
+  await client.tevmReady()
+  assert.equal(client.account?.address, PREFUNDED_ACCOUNTS[0].address)
+  assert.equal(await client.getChainId(), 31337)
+  assert.equal(await client.getBlockNumber(), 0n)
+} finally {
+  await client.tevmClose()
+}
 ```
 
-| Option | Value | Default |
+| Option | Type | Default |
 | --- | --- | --- |
-| `account` | viem account or address | none |
-| `common` | tevm `Common` | local tevm chain |
-| `fork` | transport plus optional `blockTag` | local genesis |
-| `miningConfig` | `auto`, `manual`, or interval configuration | auto |
-| `loggingLevel` | `debug`, `info`, `warn`, `error`, `silent` | package default |
-| `customPrecompiles` | precompile definitions | none |
+| `chainId` | `number` (unsigned safe integer) | `31337` |
+| `mining` | `{ auto?: boolean; interval?: number }` | `{ auto: true }` |
+| `fork` | `{ url: string; blockNumber?: number }` | `undefined` |
+| `engine` | `ZevmEngine` | new isolated engine |
+| `common` | viem `Chain` | `foundry` |
+| `account` | viem `Account \| Hex` | `undefined` |
+| `name` / `key` | `string` | `'TEVM'` / `'tevm'` |
 
-## Action groups
-
-| Group | Representative methods |
-| --- | --- |
-| Public | `getBalance`, `getBlock`, `getCode`, `getLogs`, `call`, `readContract` |
-| Wallet | `sendTransaction`, `deployContract`, `writeContract`, signing methods |
-| Test | `setBalance`, `setCode`, `setStorageAt`, `mine`, `snapshot`, `revert`, `increaseTime` |
-| tevm read | `tevmGetAccount`, `tevmDumpState`, `tevmReady` |
-| tevm execute | `tevmCall`, `tevmContract`, `tevmDeploy` |
-| tevm mutate | `tevmSetAccount`, `tevmDeal`, `tevmLoadState`, `tevmMine` |
-| EIP-1193 | `request({ method, params })` |
-
-## Result boundaries
+## Return boundaries
 
 | Operation | Returns |
 | --- | --- |
-| `tevmCall` | Execution data, gas, logs, optional errors, optional `txHash` |
-| `tevmSetAccount` | Updated account result |
-| `tevmMine` | Mined block hashes |
-| `getTransactionReceipt` | viem-formatted canonical receipt |
-| `request` | JSON-RPC-formatted result |
-| `stateManager.getAccount` | Internal account or `undefined` |
-
-All pages on this site execute their TypeScript fences through `pnpm verify:samples`. The verifier rejects unless `tevm` resolves to the published `1.0.0-rc.151` package.
+| `tevmCall` (read) | `{ rawData }` (throws `NativeRpcError` with `code: 3, data` on revert) |
+| `tevmCall` (`addToMempool` / `addToBlockchain`) | `{ rawData: '0x', txHash, receipt? }` |
+| `tevmContract` | `CallResult & { data? }` (`data` decoded on read calls) |
+| `tevmDeploy` | `CallResult & { createdAddress? }` |
+| `tevmGetAccount` | `{ address, balance: bigint, nonce: bigint, deployedBytecode, storage }` |
+| `tevmDumpState` | Opaque ZEVM `Hex` blob |
+| `engine.request` | Parsed JSON-RPC result (hex quantities) |
+| `engine.rpc` | Exact JSON-RPC wire string, or `null` for notifications |

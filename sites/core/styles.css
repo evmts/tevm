@@ -1,1 +1,103 @@
 @import "@tevm/docs-shared/styles.css";
+
+:root {
+	--tevm-primary: #0085ff;
+	--tevm-surface: #f8fafc;
+	--tevm-surface-2: #ffffff;
+	--tevm-border: #d8e1eb;
+	--tevm-text: #0f172a;
+	--tevm-muted: #475569;
+	--tevm-accent-bg: rgba(0, 133, 255, 0.08);
+	--tevm-accent-border: rgba(0, 133, 255, 0.45);
+	--tevm-emerald-bg: rgba(16, 185, 129, 0.09);
+	--tevm-emerald-border: rgba(16, 185, 129, 0.48);
+	--tevm-amber-bg: rgba(245, 158, 11, 0.1);
+	--tevm-amber-border: rgba(245, 158, 11, 0.5);
+}
+
+:root.dark {
+	--tevm-primary: #38a3ff;
+	--tevm-surface: #11161f;
+	--tevm-surface-2: #161d29;
+	--tevm-border: #2b3648;
+	--tevm-text: #f1f5f9;
+	--tevm-muted: #94a3b8;
+	--tevm-accent-bg: rgba(56, 163, 255, 0.13);
+	--tevm-accent-border: rgba(56, 163, 255, 0.55);
+	--tevm-emerald-bg: rgba(16, 185, 129, 0.14);
+	--tevm-emerald-border: rgba(16, 185, 129, 0.52);
+	--tevm-amber-bg: rgba(245, 158, 11, 0.14);
+	--tevm-amber-border: rgba(245, 158, 11, 0.55);
+}
+
+.tevm-diagram {
+	margin: 1.5rem 0;
+	border: 1px solid var(--tevm-border);
+	border-radius: 12px;
+	background: var(--tevm-surface);
+	overflow: hidden;
+}
+
+.tevm-diagram__header {
+	padding: 0.55rem 0.95rem;
+	font-size: 0.76rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--tevm-muted);
+	border-bottom: 1px solid var(--tevm-border);
+	background: var(--tevm-surface-2);
+}
+
+.tevm-diagram__canvas {
+	padding: 0.65rem;
+	color: var(--tevm-muted);
+}
+
+.tevm-diagram__caption {
+	padding: 0.6rem 0.95rem;
+	font-size: 0.84rem;
+	line-height: 1.45;
+	color: var(--tevm-muted);
+	border-top: 1px solid var(--tevm-border);
+	background: var(--tevm-surface-2);
+}
+
+.tevm-svg {
+	display: block;
+	height: auto;
+	font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+.tevm-svg .svg-band-subtle { fill: var(--tevm-surface-2); stroke: var(--tevm-border); stroke-width: 1; }
+.tevm-svg .svg-box { fill: var(--tevm-surface); stroke: var(--tevm-border); stroke-width: 1.25; }
+.tevm-svg .svg-box-strong { fill: var(--tevm-surface-2); stroke: var(--tevm-primary); stroke-width: 1.75; }
+.tevm-svg .svg-box-accent { fill: var(--tevm-accent-bg); stroke: var(--tevm-accent-border); stroke-width: 1.4; }
+.tevm-svg .svg-box-emerald { fill: var(--tevm-emerald-bg); stroke: var(--tevm-emerald-border); stroke-width: 1.4; }
+.tevm-svg .svg-box-amber { fill: var(--tevm-amber-bg); stroke: var(--tevm-amber-border); stroke-width: 1.4; }
+.tevm-svg .svg-bg-chip { fill: var(--tevm-surface); }
+.tevm-svg .svg-eyebrow { fill: var(--tevm-muted); font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; }
+.tevm-svg .svg-title { fill: var(--tevm-text); font-size: 13.5px; font-weight: 700; }
+.tevm-svg .svg-sub { fill: var(--tevm-muted); font-size: 11.5px; }
+.tevm-svg .svg-mono { fill: var(--tevm-text); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.75px; font-weight: 600; }
+.tevm-svg .svg-mono-muted { fill: var(--tevm-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+.tevm-svg .svg-line { stroke: var(--tevm-muted); stroke-width: 1.5; }
+.tevm-svg .svg-line-accent { stroke: var(--tevm-primary); stroke-width: 1.75; }
+.tevm-svg .svg-line-emerald { stroke: #10b981; stroke-width: 1.75; }
+.tevm-svg .svg-line-amber { stroke: #f59e0b; stroke-width: 1.75; }
+.tevm-svg .svg-divider { stroke: var(--tevm-border); stroke-width: 1.25; }
+
+.tevm-callout {
+	margin: 1.35rem 0;
+	padding: 0.9rem 1.1rem;
+	border-radius: 10px;
+	border: 1px solid var(--tevm-border);
+	border-left-width: 4px;
+	background: var(--tevm-surface);
+}
+.tevm-callout--warn { border-left-color: #f59e0b; background: var(--tevm-amber-bg); }
+.tevm-callout--qa { border-left-color: #10b981; background: var(--tevm-emerald-bg); }
+.tevm-callout__label { font-size: 0.85rem; font-weight: 700; color: var(--tevm-text); margin-bottom: 0.3rem; }
+.tevm-callout__body { font-size: 0.93rem; line-height: 1.5; color: var(--tevm-text); }
+.tevm-callout__body > p:first-child { margin-top: 0; }
+.tevm-callout__body > p:last-child { margin-bottom: 0; }

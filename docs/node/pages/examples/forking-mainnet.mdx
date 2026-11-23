@@ -1,112 +1,135 @@
 ---
 title: Forking Mainnet
-description: Example on forking a live chain
+description: Fork live mainnet or L2 state locally, impersonate whales, simulate swaps, and run deterministic local fork tests
 ---
 
-# Forking Mainnet Example
+import { ForkOverlayDiagram, WatchOut } from '../../components'
 
-:::tip
-Set `MAINNET_RPC_URL` to a mainnet RPC endpoint before running these examples.
-:::
+# Cookbook: Forking live networks
 
-## Basic Fork Setup
+Forking lets you run real mainnet, Optimism, Arbitrum, or Base contracts locally against pinned state — then modify balances, impersonate holders, and trace failures without risking real funds.
 
-Unknown accounts/contracts fetch from the remote on demand and cache locally.
+<ForkOverlayDiagram />
 
-```ts
-import { createTevmNode, http } from 'tevm'
+## Read and simulate against live mainnet USDC
 
-const rpcUrl = process.env.MAINNET_RPC_URL
-if (!rpcUrl) throw new Error('MAINNET_RPC_URL is required')
-
-const node = createTevmNode({
-  fork: {
-    transport: http(rpcUrl)({}),
-  },
-  loggingLevel: 'debug',
-})
-
-await node.ready()
-```
-
-## Account Impersonation
+Set `MAINNET_RPC_URL` in your environment before running:
 
 ```ts
-import { callHandler } from 'tevm/actions'
+import { createMemoryClient, parseAbi, parseEther } from 'tevm'
+import { mainnet } from 'tevm/common'
 
-const result = await callHandler(node)({
-  from: '0x28C6c06298d514Db089934071355E5743bf21d60',
-  to: '0x1234567890123456789012345678901234567890',
-  value: 1000000000000000000n, // 1 ETH
-  skipBalance: true,
-  throwOnFail: false,
-})
-```
+const rpcUrl = process.env.MAINNET_RPC_URL ?? 'https://ethereum-rpc.publicnode.com'
 
-## Working with Forked Contracts
+const USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+const WHALE = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503'
+const RECIPIENT = '0x1111111111111111111111111111111111111111'
 
-```ts
-import { callHandler } from 'tevm/actions'
-import { encodeFunctionData, parseAbi } from 'viem'
-
-const USDC_ADDRESS = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
-const HOLDER_ADDRESS = '0x47ac0fb4f2d84898e4d9e7b4dab3c24507a6d503'
-const RECIPIENT_ADDRESS = '0x1234567890123456789012345678901234567890'
-const ERC20_ABI = parseAbi([
+const erc20Abi = parseAbi([
   'function balanceOf(address) view returns (uint256)',
   'function transfer(address to, uint256 amount) returns (bool)',
 ])
 
-const balance = await callHandler(node)({
-  to: USDC_ADDRESS,
-  data: encodeFunctionData({
-    abi: ERC20_ABI,
-    functionName: 'balanceOf',
-    args: [HOLDER_ADDRESS],
-  }),
-})
-
-// Simulate a local write; the remote chain is not affected.
-const transfer = await callHandler(node)({
-  from: HOLDER_ADDRESS,
-  to: USDC_ADDRESS,
-  data: encodeFunctionData({
-    abi: ERC20_ABI,
-    functionName: 'transfer',
-    args: [RECIPIENT_ADDRESS, 1n],
-  }),
-  skipBalance: true,
-  throwOnFail: false,
-})
-```
-
-## Fork at Specific Block
-
-```ts
-const node = createTevmNode({
+const client = createMemoryClient({
+  chainId: mainnet.id,
+  common: mainnet,
   fork: {
-    transport: http(rpcUrl)({}),
-    blockTag: 23_483_670n,
+    url: rpcUrl,
+    blockNumber: 20_000_000,
   },
 })
 
-const vm = await node.getVm()
-const block = await vm.blockchain.getBlock(23_483_670n)
+try {
+  await client.tevmReady()
+
+  // 1. Read live USDC balance at block 20,000,000 (cached after first fetch)
+  const whaleBalance = await client.readContract({
+    address: USDC,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: [WHALE],
+  })
+  console.log('Whale USDC:', whaleBalance)
+
+  // 2. Fund whale with gas, impersonate, and transfer locally
+  await client.setBalance({ address: WHALE, value: parseEther('1') })
+  await client.impersonateAccount({ address: WHALE })
+
+  await client.writeContract({
+    account: WHALE,
+    address: USDC,
+    abi: erc20Abi,
+    functionName: 'transfer',
+    args: [RECIPIENT, 1_000_000n], // 1 USDC
+  })
+
+  const received = await client.readContract({
+    address: USDC,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: [RECIPIENT],
+  })
+  console.log('Recipient local USDC:', received) // 1000000n
+} finally {
+  await client.tevmClose()
+}
 ```
 
-## Multiple Network Support
+## Forking an L2 (Optimism, Base, Arbitrum)
+
+Pass the chain's `id` and viem `common` preset alongside its RPC URL:
 
 ```ts
-const optimismNode = createTevmNode({
-  fork: { transport: http(process.env.OPTIMISM_RPC_URL!)({}) },
+import { createMemoryClient } from 'tevm'
+import { base, optimism } from 'tevm/common'
+
+const opClient = createMemoryClient({
+  chainId: optimism.id,
+  common: optimism,
+  fork: {
+    url: process.env.OPTIMISM_RPC_URL ?? 'https://mainnet.optimism.io',
+  },
 })
 
-const arbitrumNode = createTevmNode({
-  fork: { transport: http(process.env.ARBITRUM_RPC_URL!)({}) },
+const baseClient = createMemoryClient({
+  chainId: base.id,
+  common: base,
+  fork: {
+    url: process.env.BASE_RPC_URL ?? 'https://mainnet.base.org',
+  },
 })
 ```
 
-**Related**
-- [Forking Guide](../core/forking)
-- [State Management](../core/managing-state)
-- [JSON-RPC Support](../api/json-rpc)
+## Testing forks against a local mock upstream
+
+<WatchOut title="Spawn local upstreams in a child process">
+ZEVM executes fork HTTP requests synchronously in native Zig code. Never fork an HTTP server hosted on the same Node.js event loop — the native call will block the event loop from serving the request.
+</WatchOut>
+
+Run your local upstream server in a child process with `node:child_process`:
+
+```ts
+import { fork } from 'node:child_process'
+import { once } from 'node:events'
+import { createMemoryClient } from 'tevm'
+
+const upstream = fork('./upstream-server.mjs', { stdio: ['ignore', 'ignore', 'inherit', 'ipc'] })
+try {
+  const [{ url }] = (await once(upstream, 'message')) as [{ url: string }]
+
+  const client = createMemoryClient({ fork: { url, blockNumber: 1 } })
+  try {
+    await client.tevmReady()
+    // Reads lazily from the child process without deadlocking
+    console.log(await client.getBlockNumber()) // 0n (local chain starts at 0)
+  } finally {
+    await client.tevmClose()
+  }
+} finally {
+  const exited = once(upstream, 'exit')
+  upstream.kill('SIGTERM')
+  await exited
+}
+```
+
+Next: [Forking guide](../core/forking) · [Accounts, storage & snapshots](../core/managing-state)

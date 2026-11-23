@@ -1,190 +1,90 @@
 ---
-title: Why run Ethereum in JS?
-description: Motivations for in-browser & local EVM execution and the advantages over traditional RPC execution
+title: Why embed an EVM?
+description: Why Tevm exists — TypeScript + EVM in one process, native execution speed, direct Solidity imports, and instant test isolation
 authors:
   - "[William Cory](https://x.com/fucory)"
   - "[Tevm Team](https://github.com/evmts)"
 ---
 
-# Why Run An Ethereum Node in JavaScript?
+import { BundlerPipelineDiagram, UnderTheHood } from '../../components'
 
-> You know what would make solving all these problems trivially easy? If we just were able to use Foundry in the browser
+# Why embed an EVM in your process?
 
-That's what [Fucory](https://x.com/fucory) thought the day he started building Tevm — putting the Foundry API in the browser, then growing from there. Tevm's use case is simply TypeScript + EVM.
+> You know what would make solving all these problems trivially easy? If we just were able to use Foundry in JavaScript.
 
-> We believe every TypeScript user of the EVM who installs Viem will also install Tevm alongside it in the future
+That thought is how [Fucory](https://x.com/fucory) started Tevm. Most Ethereum tools treat the TypeScript application and the Ethereum node as two separate worlds connected by a brittle local port. You run one tool to compile Solidity, a second tool to generate types, a third process to run a fork on `localhost:8545`, and then hope parallel tests do not stomp on each other's nonces.
 
-- **🚀 Enhanced Performance** — Execute transactions locally with near-zero latency for gas estimation, simulation, and debugging.
-- **💻 Browser Compatibility** — Enable offline capabilities, optimistic UI, and real-time simulations in dApps.
-- **🔍 Debug Superpowers** — Step through EVM execution opcode by opcode; inspect memory and stack.
-- **🛠️ Familiar Developer Experience** — Works with viem, ethers, or any EIP-1193 compatible tool.
+Tevm's premise is simple: **TypeScript + EVM in one toolkit.**
 
-:::info[Did you know?]
-Tevm Node is part of a larger ecosystem that includes [Tevm Bundler](https://tevm.sh/bundler) for direct Solidity imports into JavaScript/TypeScript.
-:::
+> We believe every TypeScript user of the EVM who installs Viem will also install Tevm alongside it.
 
-## Performance & Efficiency
+## 1. Zero daemon friction, real native speed
 
-- **⚡ Optimized fork mode** — Benchmarked to outperform Anvil at executing calls in `forked` mode via more efficient storage slot retrieval.
-- **⚡ Zero network latency** — Local EVM execution eliminates RPC round-trips for near-instant simulations and gas estimation.
-- **Local-first gas estimation** — No loading spinner, no RPC credits burned.
-- **🔄 Powerful JS interop** — Simulate multiple transactions, plug directly into the EVM, or write custom contracts in JS.
+An external dev node (`anvil`, `hardhat node`) owns one shared process and one shared port. Every test file fights over the same chain state unless you orchestrate port pools and cleanup scripts.
 
-## Optimistic previews
+With Tevm, `createMemoryClient()` instantiates a fresh native ZEVM engine inside your Node.js process:
 
-Simulate the user's transaction with `tevmCall` before submitting it to a
-network. The result includes return data, gas used, logs, and optional traces
-without changing canonical state:
+- **Parallel tests never collide.** Each test creates its own isolated chain state and releases it with `await client.tevmClose()`.
+- **Native execution speed.** Bytecode runs in Zig (Guillotine Mini + Voltaire) over a C ABI — not a pure-JavaScript interpreter.
+- **Deterministic genesis.** Local chains start at block `0`, timestamp `0`, chain ID `31337`, with 10 prefunded dev accounts.
 
-```typescript
-import { createMemoryClient, http } from 'tevm'
-import { mainnet } from 'tevm/common'
+## 2. One engine for tests, backends, and browser dev servers
 
-const client = createMemoryClient({
-  common: mainnet,
-  fork: {
-    transport: http('https://ethereum-rpc.publicnode.com')({}),
-    blockTag: 20_000_000n,
-  },
-})
+Early Tevm releases ran an EthereumJS engine in the browser. Shipping a full EVM in JavaScript meant maintaining two divergent execution implementations and paying JS interpreter overhead.
 
-await client.tevmReady()
+Tevm now runs a single native engine (ZEVM) in Node.js (`>=24`):
 
-const preview = await client.tevmCall({
-  from: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
-  to: '0x1111111111111111111111111111111111111111',
-  value: 1n,
-  createTrace: true,
-})
+- **Tests and Node.js services** talk directly to the native addon in memory with zero network serialization overhead.
+- **Browser frontends and wallets** connect to the exact same engine over HTTP or WebSocket using `tevm/server` (`pnpm native:server` or `createServer(client)`).
+- **AI coding agents** drive isolated EVM sessions over stdio using `@tevm/mcp`.
 
-console.log(preview.executionGasUsed, preview.errors)
+<UnderTheHood title="Why native Node-API instead of a browser JS EVM?">
+One execution engine means one source of truth for hardfork semantics, gas accounting, tracing, and fork behavior. Node-API lets Node.js call ZEVM directly in-process, while `tevm/server` serves HTTP batches, WebSocket `eth_subscribe` streams, and Unix IPC to any browser or external process.
+</UnderTheHood>
+
+## 3. Import Solidity like TypeScript
+
+Running contracts from TypeScript shouldn't require a separate codegen step every time you edit a function signature.
+
+The optional **Tevm Bundler** (`tevm/bundler/*`) and `@tevm/ts-plugin` teach your bundler and editor how to compile `.sol` files directly:
+
+- NatSpec comments on hover in your editor
+- Red underlines before you save the Solidity file
+- Full `abitype` inference for `read`, `write`, `events`, and `deploy`
+- Resolves both `node_modules` and Foundry `remappings.txt` / `foundry.toml`
+
+```ts
+import { Counter } from './Counter.sol'
+
+console.log(Counter.abi)
 ```
 
-### Real-World Performance Benefits
+<BundlerPipelineDiagram />
 
-:::tip[Performance Comparison]
-Tevm's local execution provides instantaneous gas estimation.
-:::
+## 4. Built for debugging, not guesswork
 
-Fork-backed reads populate Tevm's local caches, so repeated simulations can
-reuse account code and storage already fetched from the upstream RPC.
+When a transaction reverts on a forked contract, a generic `"execution reverted"` string wastes an hour. Tevm returns structured native revert data (`{ code: 3, data: '0x...' }`) and exposes native opcode tracing via `debug_traceCall` — complete with pre-op stack, memory, gas cost per step, and revert bytes.
 
-## Enhanced User Experiences
+```ts
+import { createMemoryClient } from 'tevm'
 
-JavaScript-based EVM execution enables new categories of dApp features:
+const client = createMemoryClient()
+try {
+  const target = '0x0000000000000000000000000000000000000123'
+  await client.tevmSetAccount({
+    address: target,
+    deployedBytecode: '0x602a60005260206000f3',
+  })
 
-- **Maximally hackable** — Complete control including deep internals; supports almost any use case.
-- **⚡ Optimistic UI** — Show users the likely outcome of transactions before they're mined.
-- **🛡️ Reliable** — Near 100% test coverage; most reported bugs fixed in under 24 hours.
-- **🧮 Transaction Simulation** — Preview results of complex interactions before sending.
-- **🔐 Enhanced Privacy** — Process sensitive data locally without sending it to external services.
+  const trace = await client.transport.tevm.request({
+    method: 'debug_traceCall',
+    params: [{ to: target }, 'latest', { enableMemory: true }],
+  })
 
-## Top Tier Devx
-
-### Use the tools you already know
-
-Tevm plugs directly into `wagmi`, `viem`, and `ethers`.
-
-### Interop with contracts effortlessly
-
-The **Tevm Bundler** (optional) makes TypeScript aware of how to process and compile Solidity. It's in the same category as `Wagmi CLI` or `Typechain`, but more powerful:
-
-- Natspec on hover
-- Typesafe contracts
-- tRPC-like experience — red underlines before you save the Solidity file
-- No external build tools — plugs into your existing JS pipeline
-- Reads foundry config for remappings and lib
-
-#### Import Solidity directly
-
-The bundler has a compiler built in — no precompilation needed:
-
-```typescript
-import { MyContract } from "./MyContract.sol";
-
-console.log(MyContract.abi);
+  console.log(trace)
+} finally {
+  await client.tevmClose()
+}
 ```
 
-You can import from node_modules or foundry projects. Tevm supports remappings, lib, and other advanced options. Unlike Foundry, Tevm supports node_module resolution by default.
-
-### Low level control of the EVM
-
-Tools like `anvil` run in a separate process over HTTP. Tevm runs in memory with direct node access — enabling programmability no other tool offers.
-
-#### Run callbacks on every EVM step 🔬
-
-Step through EVM execution opcode by opcode, inspect memory and stack, and see exactly what happens in your contracts.
-
-```typescript filename="debug-example.ts"
-vm.evm.events.on("step", (data, next) => {
-  console.log(
-    `${data.pc.toString().padStart(5)}:`,
-    `${data.opcode.name.padEnd(10)}`,
-    `gas: ${data.gasLeft.toString().padStart(8)}`,
-    `stack: ${data.stack.join(", ")}`,
-  );
-  next();
-});
-```
-
-You can even modify EVM execution as it runs.
-
-#### Mock EVM contracts with JavaScript contracts
-
-Write contracts in JavaScript. Precompiles are like Foundry cheat codes, but instead of a standard library you write arbitrary JS. Works nicely with the Tevm Bundler:
-
-```typescript
-import {
-  definePrecompile,
-  createContract,
-  createMemoryClient,
-} from "tevm";
-import { hexToBytes, stringToHex } from "tevm/utils";
-
-const contract = createContract({
-  address: `0x${"1234".repeat(10)}`,
-  humanReadableAbi: ["function hello() returns (bytes)"],
-});
-
-const { precompile } = definePrecompile({
-  contract,
-  call: async () => ({
-    returnValue: hexToBytes(stringToHex("hello")),
-    executionGasUsed: 200n,
-  }),
-});
-
-const memoryClient = createMemoryClient({
-  customPrecompiles: [precompile()],
-});
-```
-
-### Deterministic Testing 🧪
-
-Though built for application development, Tevm is great for testing too — fully reproducible environments with complete control over blockchain state, time, and mining.
-
-## Solidity Imports
-
-Tevm Bundler (optional) creates the best devx for Solidity files in TypeScript:
-
-```typescript
-import { MyContract } from "./MyContract.sol";
-```
-
-## JavaScript Ecosystem Integration
-
-:::note[Seamless Integration]
-Running Ethereum in JavaScript means you can leverage the entire JS ecosystem effortlessly.
-:::
-
-- **🔤 TypeScript** — Type-safe contract interactions with full IntelliSense
-- **⚛️ UI Frameworks** — React, Vue, Svelte and other frontend libraries
-- **🏗️ Build Tools** — Vite, Webpack, ESBuild and other bundlers
-- **🧪 Testing** — Vitest support via Vite
-- **🔄 Runtimes** — Node.js, browsers, Electron, serverless functions
-- **📦 NPM Ecosystem** — Millions of packages in the npm registry
-- **🌐 Web APIs** — Browser storage, WebSockets, service workers, and more
-
-## Ready to Get Started?
-
-Next: [Install Tevm](../getting-started/overview) · [Create a Tevm Node](../core/create-tevm-node) · [Run examples](../examples/viem) · [GitHub](https://github.com/evmts/tevm)
+Next: [Quickstart](../getting-started/overview) · [Architecture](./architecture-overview) · [Testing with Vitest](../examples/local-testing)

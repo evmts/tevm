@@ -1,225 +1,173 @@
 ---
-title: Call API
-description: Detailed documentation of the Call action handler
+title: Call, Contract & Deploy
+description: Complete API reference for tevmCall, tevmContract, and tevmDeploy — simulations, state overrides, transactions, deployments, and revert data
 ---
 
-# Call API
+import { ExecutionFlowDiagram, QaBox, WatchOut } from '../../components'
 
-The Call API covers ~90% of use cases (with mining) and provides an EVM call interface with extensive configuration.
+# Call, contract & deploy
 
-:::warning[Transaction Inclusion]
-Tevm defaults to manual mining mode:
-- With `addToMempool: true` (or deprecated `createTransaction: true`), you must call `client.tevmMine()` to include the transaction
-- `addToBlockchain: true` auto-mines for immediate inclusion
-- You cannot use both `addToMempool` and `addToBlockchain`
-:::
+Three action functions cover nearly all EVM execution: `tevmCall` (raw calldata), `tevmContract` (ABI-encoded calls with typed return decoding), and `tevmDeploy` (contract creation).
 
-## Basic Usage
+All three are attached to `createMemoryClient()` and also exported as standalone tree-shakeable functions from `tevm` and `tevm/actions`.
 
-Two API styles:
+<ExecutionFlowDiagram />
 
-### Client-based API
+## `tevmCall`
 
-```ts
-import { createMemoryClient } from 'tevm'
+Executes an `eth_call` simulation by default. Pass `addToMempool: true` to queue a transaction via `eth_sendTransaction`, or `addToBlockchain: true` to submit and ensure a block is mined.
 
-const client = createMemoryClient()
+### Parameters (`CallParams`)
 
-const result = await client.tevmCall({
-  from: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
-  to: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // WETH
-  data: '0x'
-})
-```
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `to` | `Address` | — | Recipient or contract address (omit for deployment). |
+| `from` | `Address` | first `eth_accounts` entry (for txs) | Caller / sender address. |
+| `data` | `Hex` | `'0x'` | Calldata or creation bytecode. |
+| `value` | `bigint` | — | Value in wei. |
+| `gas` | `bigint` | — | Gas limit. |
+| `gasPrice` | `bigint` | — | Legacy gas price in wei. |
+| `maxFeePerGas` | `bigint` | — | EIP-1559 max fee per gas. |
+| `maxPriorityFeePerGas` | `bigint` | — | EIP-1559 priority fee. |
+| `nonce` | `bigint` | — | Explicit sender nonce. |
+| `blockTag` | `string` | `'latest'` | Block tag or hex number for `eth_call`. |
+| `stateOverride` | `Record<string, JsonValue>` | — | Standard `eth_call` state overrides (`balance`, `nonce`, `code`, `state`, `stateDiff`). |
+| `addToMempool` | `boolean` | `false` | Submits via `eth_sendTransaction` and returns `{ rawData: '0x', txHash }`. |
+| `addToBlockchain` | `boolean` | `false` | Submits and mines a block if no receipt exists yet; returns `{ rawData: '0x', txHash, receipt }`. |
 
-### Tree-shakable API
-
-```ts
-import { createTevmTransport, tevmCall } from 'tevm'
-import { createClient } from 'viem'
-
-const client = createClient({ transport: createTevmTransport() })
-
-const result = await tevmCall(client, {
-  from: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
-  to: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // WETH
-  data: '0x'
-})
-```
-
-## Parameters
-
-```ts
-type CallParams = {
-  to?: Address                  // required except contract deployment
-  data?: Hex
-  value?: bigint                // wei
-  gas?: bigint
-  blockTag?: 'latest' | 'pending' | 'earliest' | number
-  createTransaction?: 'on-success' | 'always' | 'never' | boolean  // DEPRECATED
-  addToMempool?: 'on-success' | 'always' | 'never' | boolean       // requires mining
-  addToBlockchain?: 'on-success' | 'always' | 'never' | boolean    // auto-mines
-  skipBalance?: boolean
-  createAccessList?: boolean
-  createTrace?: boolean
-  from?: Address                // defaults to first account
-  maxFeePerGas?: bigint
-  maxPriorityFeePerGas?: bigint
-  stateOverrideSet?: StateOverrideSet
-  blockOverrideSet?: BlockOverrideSet
-  onStep?: (data: InterpreterStep, next?: () => void) => void
-  onNewContract?: (data: NewContractEvent, next?: () => void) => void
-  onBeforeMessage?: (data: Message, next?: () => void) => void
-  onAfterMessage?: (data: EVMResult, next?: () => void) => void
-}
-```
-
-## Return Type
+### Return type (`CallResult`)
 
 ```ts
 type CallResult = {
-  rawData: Hex                  // return data
-  executionGasUsed: bigint
-  totalGasSpent?: bigint        // includes intrinsic costs
+  rawData: Hex
   txHash?: Hex
-  logs?: Log[]
-  createdAddress?: Address
-  accessList?: Record<Address, Set<Hex>>
-  trace?: TraceResult
-  errors?: TevmCallError[]
+  receipt?: JsonValue
 }
 ```
 
-## Examples
+### Simulation with `stateOverride`
 
-### Simple Contract Call
+`stateOverride` lets you replace bytecode, balances, or storage slots for a single `eth_call` without mutating chain state:
 
 ```ts
-import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
-import { ERC20 } from 'tevm/contract'
-import { encodeFunctionData, decodeFunctionResult, parseAbi } from 'viem'
-
-const abi = parseAbi(['function balanceOf(address account) view returns (uint256 balance)'])
+import { createMemoryClient, toHex } from 'tevm'
 
 const client = createMemoryClient()
+try {
+  const target = '0x0000000000000000000000000000000000000123'
 
-const result = await client.tevmCall({
-  to: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // WETH
-  from: PREFUNDED_ACCOUNTS[0].address,
-  deployedBytecode: ERC20.deployedBytecode,
-  data: encodeFunctionData({
-    abi,
-    functionName: 'balanceOf',
-    args: [PREFUNDED_ACCOUNTS[0].address]
+  const result = await client.tevmCall({
+    to: target,
+    stateOverride: {
+      [target]: { code: '0x602b60005260206000f3' },
+    },
   })
-})
 
-const balance = decodeFunctionResult({ abi, functionName: 'balanceOf', data: result.rawData })
+  console.log(result.rawData) // 0x000...002b (43)
+  console.log(await client.getCode({ address: target })) // undefined (chain unchanged)
+} finally {
+  await client.tevmClose()
+}
 ```
 
-### Contract Deployment
+## `tevmContract`
+
+ABI-encodes `functionName` and `args`, delegates to `tevmCall`, and ABI-decodes `rawData` into `data` for read-only calls. Accepts either `address` or `to`.
 
 ```ts
-import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
-import { SimpleContract } from 'tevm/contract'
-import { encodeDeployData } from 'viem'
+import { createMemoryClient, parseAbi } from 'tevm'
 
 const client = createMemoryClient()
+try {
+  const address = '0x0000000000000000000000000000000000000123'
+  await client.tevmSetAccount({
+    address,
+    deployedBytecode: '0x602a60005260206000f3',
+  })
 
-const result = await client.tevmCall({
-  from: PREFUNDED_ACCOUNTS[0].address,
-  data: encodeDeployData(SimpleContract.deploy(2n)),
-  addToBlockchain: true // auto-mines
-})
+  const abi = parseAbi(['function answer() view returns (uint256)'])
 
-console.log('Deployed at:', result.createdAddress)
+  // Read simulation: decodes `data` with full TypeScript return inference
+  const readResult = await client.tevmContract({
+    address,
+    abi,
+    functionName: 'answer',
+  })
+  console.log(readResult.data) // 42n (typed as bigint | undefined)
+
+  // State-changing call: submits & mines; `data` is undefined, `txHash` & `receipt` are populated
+  const writeResult = await client.tevmContract({
+    address,
+    abi,
+    functionName: 'answer',
+    addToBlockchain: true,
+  })
+  console.log(writeResult.txHash)
+} finally {
+  await client.tevmClose()
+}
 ```
 
-### State Override
+## `tevmDeploy`
 
-```ts
-import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
-
-const client = createMemoryClient()
-
-const result = await client.tevmCall({
-  from: PREFUNDED_ACCOUNTS[0].address,
-  to: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-  data: '0x',
-  stateOverrideSet: {
-    [PREFUNDED_ACCOUNTS[0].address]: {
-      balance: 4096n,
-      nonce: 2n,
-      state: {}
-    }
-  }
-})
-```
-
-### Debug Trace
+Encodes `bytecode` plus optional constructor `abi` and `args`, submits the creation transaction, and mines it immediately unless `addToMempool: true` is passed.
 
 ```ts
 import { createMemoryClient } from 'tevm'
 
-const client = createMemoryClient()
-
-const result = await client.tevmCall({
-  from: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
-  to: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-  data: '0x',
-  createTrace: true
-})
-
-if (result.trace) {
-  result.trace.structLogs.forEach(log => {
-    console.log(log.op, log.stack, log.gas, log.gasCost)
+const client = createMemoryClient({ mining: { auto: false } })
+try {
+  // Mined immediately by default -> createdAddress is populated
+  const deployed = await client.tevmDeploy({
+    bytecode: '0x600a600c600039600a6000f3602a60005260206000f3',
   })
+  console.log('Deployed at:', deployed.createdAddress)
+
+  // Queued to mempool -> createdAddress is undefined until you mine
+  const pending = await client.tevmDeploy({
+    bytecode: '0x600a600c600039600a6000f3602a60005260206000f3',
+    addToMempool: true,
+  })
+  console.log('Pending tx:', pending.txHash, 'address:', pending.createdAddress)
+  await client.tevmMine({ blocks: 1 })
+} finally {
+  await client.tevmClose()
 }
 ```
 
-### EVM Event Handlers
+## Handling reverts and native errors
 
-Monitor execution in real-time:
+When EVM execution reverts, `tevmCall` and `tevmContract` reject with `NativeRpcError` where `code === 3` and `data` contains the raw revert payload:
 
 ```ts
-import { bytesToHex, createMemoryClient } from 'tevm'
-import { encodeFunctionData } from 'viem'
+import { createMemoryClient, NativeRpcError } from 'tevm'
 
 const client = createMemoryClient()
+try {
+  const target = '0x0000000000000000000000000000000000000123'
+  // PUSH4 0xdeadbeef; PUSH1 0; MSTORE; PUSH1 4; PUSH1 28; REVERT
+  await client.tevmSetAccount({
+    address: target,
+    deployedBytecode: '0x63deadbeef6000526004601cfd',
+  })
 
-const result = await client.tevmCall({
-  from: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
-  to: contractAddress,
-  data: encodeFunctionData({ abi, functionName: 'myFunction', args: [arg1, arg2] }),
-  onStep: (step, next) => {
-    console.log(
-      `${step.opcode.name} at PC=${step.pc}`,
-      `Gas: ${step.gasLeft.toString()}`,
-      `Stack depth: ${step.stack.length}`
-    )
-    next?.()
-  },
-  onNewContract: (data, next) => {
-    console.log(`New contract: ${data.address.toString()}`)
-    next?.()
-  },
-  onBeforeMessage: (message, next) => {
-    console.log(`Call to: ${message.to?.toString()}`,
-                `Value: ${message.value.toString()}`,
-                `Gas limit: ${message.gasLimit.toString()}`)
-    next?.()
-  },
-  onAfterMessage: (result, next) => {
-    console.log(`Result: ${bytesToHex(result.execResult.returnValue)}`,
-                `Gas used: ${result.execResult.executionGasUsed.toString()}`)
-    if (result.execResult.exceptionError) {
-      console.error(`Error: ${result.execResult.exceptionError.error}`)
-    }
-    next?.()
+  await client.tevmCall({ to: target })
+} catch (error) {
+  if (error instanceof NativeRpcError) {
+    console.log({ code: error.code, data: error.data })
+    // { code: 3, data: '0xdeadbeef' }
   }
-})
+} finally {
+  await client.tevmClose()
+}
 ```
 
-## Higher Level APIs
+<QaBox question="Can I use tevmCall and tevmContract against a remote HTTP server or in a browser?">
+Yes. Standalone `tevmCall`, `tevmContract`, `tevmDeploy`, and the other helpers in `@tevm/actions` accept any `RpcClient` (`{ request(req): Promise<JsonValue> }`) and have no native Node.js imports. Pass a viem HTTP client, a `ZevmEngine`, or a `MemoryClient`.
+</QaBox>
 
-While `tevmCall`
+<WatchOut title="Transaction results do not decode return data">
+When `addToMempool: true` or `addToBlockchain: true` is set, `tevmContract` submits an Ethereum transaction and returns `{ rawData: '0x', txHash, receipt? }` with `data: undefined`. Simulate first (default) if you need the ABI-decoded return value.
+</WatchOut>
+
+Next: [Account management](./account-management) · [Tracing & engine events](./evm-events) · [JSON-RPC reference](./json-rpc)

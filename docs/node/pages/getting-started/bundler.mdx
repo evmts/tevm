@@ -1,23 +1,41 @@
 ---
-title: Bundler Quickstart
-description: Import Solidity files as typed TypeScript modules with Tevm
+title: "Tutorial: Solidity Bundler"
+description: Import .sol files directly into TypeScript with full ABI types, bytecode, and IDE hover support
 ---
 
-# Bundler Quickstart
+import { BundlerPipelineDiagram, QaBox, UnderTheHood, WatchOut } from '../../components'
 
-Tevm bundler plugins compile `.sol` imports at build time and generate modules containing ABI, bytecode, and type-safe contract helpers.
+# Tutorial: Importing `.sol` Files Directly
 
-## Install
+Normally, wiring a Solidity contract into TypeScript means running `forge build` or `hardhat compile`, copying ABI JSON files, running a codegen CLI, and hoping your generated types stay in sync when a `.sol` file changes.
+
+The Tevm Bundler turns `.sol` files into ordinary ES modules at build time — with a TypeScript language service plugin (`@tevm/ts-plugin`) giving you live type errors and NatSpec on hover before you even save.
+
+<BundlerPipelineDiagram />
+
+## 1. Install
 
 ```bash
-npm install tevm@1.0.0-rc.151 viem
+pnpm add tevm viem
 ```
 
-The `tevm` package exposes plugin entry points for Vite, Rollup, esbuild, Webpack, rspack, and Bun.
+All bundler plugins ship inside `tevm/bundler/*`:
 
-## Vite
+| Bundler | Entry point | Export |
+| --- | --- | --- |
+| Vite | `tevm/bundler/vite-plugin` | `vitePluginTevm()` |
+| Rollup | `tevm/bundler/rollup-plugin` | `rollupPluginTevm()` |
+| esbuild | `tevm/bundler/esbuild-plugin` | `esbuildPluginTevm()` |
+| Webpack | `tevm/bundler/webpack-plugin` | `new WebpackPluginTevm()` |
+| Rspack | `tevm/bundler/rspack-plugin` | `rspackPluginTevm()` |
+| Bun | `tevm/bundler/bun-plugin` | `bunPluginTevm()` |
 
-```ts
+## 2. Register your bundler plugin
+
+:::code-group
+
+```ts [Vite]
+// vite.config.ts
 import { defineConfig } from 'vite'
 import { vitePluginTevm } from 'tevm/bundler/vite-plugin'
 
@@ -26,20 +44,7 @@ export default defineConfig({
 })
 ```
 
-## Rollup
-
-```ts
-import { rollupPluginTevm } from 'tevm/bundler/rollup-plugin'
-
-export default {
-  input: 'src/index.ts',
-  plugins: [rollupPluginTevm()],
-}
-```
-
-## esbuild
-
-```ts
+```ts [esbuild]
 import { build } from 'esbuild'
 import { esbuildPluginTevm } from 'tevm/bundler/esbuild-plugin'
 
@@ -51,9 +56,19 @@ await build({
 })
 ```
 
-## Webpack
+```ts [Rollup]
+// rollup.config.ts
+import { rollupPluginTevm } from 'tevm/bundler/rollup-plugin'
 
-```ts
+export default {
+  input: 'src/index.ts',
+  output: { dir: 'dist', format: 'esm' },
+  plugins: [rollupPluginTevm()],
+}
+```
+
+```ts [Webpack]
+// webpack.config.ts
 import { WebpackPluginTevm } from 'tevm/bundler/webpack-plugin'
 
 export default {
@@ -61,48 +76,93 @@ export default {
 }
 ```
 
-The Webpack export is the `WebpackPluginTevm` constructor with an uppercase `W`.
+```ts [Rspack]
+// rspack.config.ts
+import { rspackPluginTevm } from 'tevm/bundler/rspack-plugin'
 
-## Import a Contract
+export default {
+  plugins: [rspackPluginTevm()],
+}
+```
 
-Given:
+```ts [Bun]
+// plugins.ts (referenced from preload = ["./plugins.ts"] in bunfig.toml)
+import { plugin } from 'bun'
+import { bunPluginTevm } from 'tevm/bundler/bun-plugin'
+
+plugin(bunPluginTevm({}))
+```
+
+:::
+
+<WatchOut title="Webpack uses a class constructor">
+Every bundler plugin is a lowercase factory function (`vitePluginTevm()`, `esbuildPluginTevm()`, etc.) **except** Webpack, which exports the class `WebpackPluginTevm` and must be instantiated with `new WebpackPluginTevm()`.
+</WatchOut>
+
+## 3. Enable TypeScript IDE support
+
+Add `@tevm/ts-plugin` to your `tsconfig.json` so your editor resolves `.sol` imports, shows NatSpec documentation on hover, and flags mismatched arguments immediately:
+
+```json
+{
+  "compilerOptions": {
+    "plugins": [{ "name": "@tevm/ts-plugin" }]
+  }
+}
+```
+
+## 4. Import a contract and run it
+
+Write a Solidity contract anywhere in your project (imports from `node_modules` and Foundry `remappings.txt` / `foundry.toml` work out of the box):
 
 ```solidity
 // src/Counter.sol
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 contract Counter {
     uint256 public number;
-    function setNumber(uint256 next) public { number = next; }
+
+    function setNumber(uint256 next) public {
+        number = next;
+    }
 }
 ```
 
-Import the generated contract module:
+Import `Counter` directly and use its typed `deploy`, `read`, and `write` action creators with Tevm or viem:
 
 ```ts
 import { Counter } from './Counter.sol'
-import { createMemoryClient } from 'tevm'
+import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
 
-const client = createMemoryClient()
-const counter = Counter.withAddress(
-  '0x2222222222222222222222222222222222222222',
-)
-
-await client.setCode({
-  address: counter.address,
-  bytecode: counter.deployedBytecode,
+const client = createMemoryClient({
+  account: PREFUNDED_ACCOUNTS[0],
 })
 
-const number = await client.readContract(counter.read.number())
-console.log(number)
+try {
+  const hash = await client.deployContract(Counter.deploy())
+  const receipt = await client.getTransactionReceipt({ hash })
+  const counter = Counter.withAddress(receipt.contractAddress!)
+
+  await client.writeContract(counter.write.setNumber(42n))
+  const value = await client.readContract(counter.read.number())
+
+  console.log(value) // 42n
+} finally {
+  await client.tevmClose()
+}
 ```
 
-`.s.sol` script contracts include creation bytecode. Plain `.sol` imports always provide ABI helpers and provide bytecode when the compiler output includes it.
+<UnderTheHood>
+Each compiled `.sol` module exports one `Contract` object per contract declared in the file. That object carries `abi`, `humanReadableAbi`, `bytecode`, `deployedBytecode`, `withAddress(addr)`, `deploy(...)`, `read.*`, `write.*`, and `events.*` — all typed via `abitype` so viem and Tevm infer parameter and return types end-to-end.
+</UnderTheHood>
 
-## Supported rc.151 Surface
+<QaBox question="Can I use the Tevm Bundler in a browser frontend even though the native engine runs in Node.js?">
+Yes. The bundler compiles Solidity at **build time** and emits pure JavaScript/TypeScript contract objects (`abi`, `read`, `write`, `events`) with zero native dependencies. Use those compiled imports in any React, Svelte, or Next.js frontend with standard viem or wagmi, and connect to `@tevm/server` over HTTP/WebSocket during local development.
+</QaBox>
 
-The rc.151 bundler supports filesystem Solidity imports and the package plugin entry points above. It does not export the proposed `sol` template tag or `loadContract`/CAIP-10 contract loader APIs.
+## Next steps
 
-## Related
-
-[Bundler Overview](../reference/bundler/overview) · [Plugin Reference](../reference/bundler-plugins) · [Troubleshooting](../reference/bundler/troubleshooting)
+- [Bundler overview](../reference/bundler/overview) — configuration, Foundry remappings, and caching.
+- [Bundler plugins reference](../reference/bundler-plugins) — options per bundler.
+- [Troubleshooting](../reference/bundler/troubleshooting) — fixing common TS plugin and solc version issues.

@@ -1,164 +1,167 @@
 ---
-title: Building a Debugger UI
-description: Build a minimal Svelte EVM debugger with Tevm's opcode hooks and traces
+title: Browser Trace Viewer
+description: Pair a local @tevm/server with a browser UI that calls debug_traceCall and renders Guillotine Mini opcode steps
 ---
 
-# Building a Debugger UI
+import { ServerTransportsDiagram, TracePipelineDiagram } from '../../components'
 
-This Svelte example runs a real EVM call in the browser and renders its opcode, stack, gas, and trace data. It uses the public `MemoryClient` call API from `tevm@1.0.0-rc.151`; it does not depend on internal VM event emitters.
+# Cookbook: Building a browser trace viewer
 
-## Create the App
+Because Tevm's native ZEVM engine runs in Node.js, browser tools connect over HTTP or WebSocket to `@tevm/server`. This cookbook wires a tiny Node.js RPC server to a browser frontend that deploys sample bytecode, calls `debug_traceCall`, and renders each opcode step.
 
-```bash
-npm create vite@latest tevm-debugger -- --template svelte-ts
-cd tevm-debugger
-npm install
-npm install tevm@1.0.0-rc.151 viem
+<ServerTransportsDiagram />
+
+## 1. Start a CORS-enabled local Tevm server
+
+Save as `server.mjs` and run `node server.mjs`:
+
+```ts
+import { createMemoryClient } from 'tevm'
+import { createServer } from 'tevm/server'
+
+const client = createMemoryClient()
+await client.tevmReady()
+
+// Pre-load sample bytecode: PUSH1 0x2a; PUSH1 0x00; MSTORE; PUSH1 0x20; PUSH1 0x00; RETURN
+const target = '0x0000000000000000000000000000000000000123'
+await client.tevmSetAccount({
+  address: target,
+  deployedBytecode: '0x602a60005260206000f3',
+})
+
+const server = createServer(client, {}, { cors: true })
+server.listen(8545, '127.0.0.1', () => {
+  console.log('TEVM trace server listening on http://127.0.0.1:8545')
+})
+
+process.once('SIGINT', () => {
+  server.close(() => {
+    void client.tevmClose()
+  })
+})
 ```
 
-Replace `src/App.svelte` with the component below.
+## 2. Query `debug_traceCall` from the browser
 
-## Debugger Component
+<TracePipelineDiagram />
+
+Any browser framework (React, Svelte, Vue, or vanilla TypeScript) can call `debug_traceCall` directly over `fetch` or viem's `http()` transport:
+
+```ts
+type StructLog = {
+  pc: number
+  op: string
+  gas: number
+  gasCost: number
+  depth: number
+  stack: string[]
+  memory?: string[]
+  returnData?: string
+}
+
+type TraceResult = {
+  gas: number
+  failed: boolean
+  returnValue: string
+  truncated: boolean
+  structLogs: StructLog[]
+}
+
+export async function traceCall(
+  rpcUrl: string,
+  to: `0x${string}`,
+  data: `0x${string}` = '0x',
+): Promise<TraceResult> {
+  const response = await fetch(rpcUrl, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'debug_traceCall',
+      params: [
+        { to, data },
+        'latest',
+        { enableMemory: true, enableReturnData: true },
+      ],
+    }),
+  })
+
+  const payload = (await response.json()) as {
+    result?: TraceResult
+    error?: { code: number; message: string }
+  }
+  if (payload.error) throw new Error(`${payload.error.code}: ${payload.error.message}`)
+  return payload.result!
+}
+```
+
+## 3. Render the step table
+
+In your UI component (Svelte, React, or vanilla DOM):
 
 ```svelte
 <script lang="ts">
-  import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
+  import { traceCall, type TraceResult } from './trace'
 
-  type DisplayStep = {
-    pc: number
-    opcode: string
-    gasLeft: bigint
-    depth: number
-    stack: bigint[]
-  }
-
-  const client = createMemoryClient()
-  const contract = '0x4444444444444444444444444444444444444444'
-
-  let steps: DisplayStep[] = []
+  let trace: TraceResult | null = null
   let error = ''
-  let gasUsed = 0n
-  let running = false
+  let loading = false
 
-  async function run() {
-    running = true
-    steps = []
+  async function runTrace() {
+    loading = true
     error = ''
-
     try {
-      // PUSH1 1; PUSH1 0; SSTORE
-      await client.tevmSetAccount({
-        address: contract,
-        deployedBytecode: '0x6001600055',
-      })
-
-      const result = await client.tevmCall({
-        from: PREFUNDED_ACCOUNTS[0].address,
-        to: contract,
-        createTrace: true,
-        throwOnFail: false,
-        onStep(step, next) {
-          steps = [
-            ...steps,
-            {
-              pc: step.pc,
-              opcode: step.opcode.name,
-              gasLeft: step.gasLeft,
-              depth: step.depth,
-              stack: Array.from(step.stack),
-            },
-          ]
-          next?.()
-        },
-      })
-
-      gasUsed = result.executionGasUsed
-      error = result.errors?.map((item) => item.message).join('\n') ?? ''
+      trace = await traceCall(
+        'http://127.0.0.1:8545',
+        '0x0000000000000000000000000000000000000123',
+      )
     } catch (cause) {
       error = cause instanceof Error ? cause.message : String(cause)
     } finally {
-      running = false
+      loading = false
     }
   }
 </script>
 
-<svelte:head><title>Tevm Debugger</title></svelte:head>
-
 <main>
-  <h1>Tevm EVM Debugger</h1>
-  <button onclick={run} disabled={running}>
-    {running ? 'Running…' : 'Run sample bytecode'}
+  <h1>Tevm Trace Viewer</h1>
+  <button onclick={runTrace} disabled={loading}>
+    {loading ? 'Tracing…' : 'Trace call'}
   </button>
-  <p>Execution gas used: {gasUsed.toString()}</p>
 
-  {#if error}
-    <pre class="error">{error}</pre>
+  {#if error}<pre>{error}</pre>{/if}
+
+  {#if trace}
+    <p>
+      Gas: {trace.gas} · Failed: {String(trace.failed)} · Return: <code>{trace.returnValue}</code>
+      {#if trace.truncated} (truncated at 100,000 steps){/if}
+    </p>
+
+    <table>
+      <thead>
+        <tr><th>PC</th><th>Opcode</th><th>Gas</th><th>Cost</th><th>Stack (top last)</th></tr>
+      </thead>
+      <tbody>
+        {#each trace.structLogs as step}
+          <tr>
+            <td>{step.pc}</td>
+            <td>{step.op}</td>
+            <td>{step.gas}</td>
+            <td>{step.gasCost}</td>
+            <td>{step.stack.join(', ') || '—'}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
   {/if}
-
-  <table>
-    <thead>
-      <tr><th>PC</th><th>Opcode</th><th>Gas left</th><th>Depth</th><th>Stack</th></tr>
-    </thead>
-    <tbody>
-      {#each steps as step}
-        <tr>
-          <td>{step.pc}</td>
-          <td>{step.opcode}</td>
-          <td>{step.gasLeft.toString()}</td>
-          <td>{step.depth}</td>
-          <td>{step.stack.map((value) => `0x${value.toString(16)}`).join(', ') || 'none'}</td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
 </main>
-
-<style>
-  :global(body) { margin: 0; background: #111827; color: #e5e7eb; font-family: system-ui; }
-  main { max-width: 72rem; margin: 0 auto; padding: 2rem; }
-  button { padding: .65rem 1rem; border: 0; border-radius: .4rem; cursor: pointer; }
-  button:disabled { cursor: wait; opacity: .6; }
-  table { width: 100%; margin-top: 1.5rem; border-collapse: collapse; font-family: ui-monospace, monospace; }
-  th, td { padding: .65rem; border-bottom: 1px solid #374151; text-align: left; }
-  .error { padding: 1rem; background: #7f1d1d; white-space: pre-wrap; }
-</style>
 ```
 
-The call executes three instructions, so the table should show `PUSH1`, `PUSH1`, and `SSTORE`. `Array.from(step.stack)` copies each live interpreter stack into stable display data.
+## Extending the viewer
 
-## Use the Returned Trace
+- **Live block feed:** open a WebSocket to `ws://127.0.0.1:8545` and subscribe to `newHeads` (`eth_subscribe`) to refresh your UI whenever blocks are mined.
+- **Revert inspection:** `debug_traceCall` returns `failed: true` and the raw revert bytes in `returnValue` instead of throwing, so you can highlight the exact `REVERT` step and decode custom errors with viem's `decodeErrorResult`.
+- **Step budget:** check `trace.truncated` before assuming the trace ran to completion (the native cap is 100,000 steps).
 
-The same call can return a serializable Geth-style trace. It contains `pc`, `op`, `gas`, `gasCost`, `depth`, and stack values for each instruction.
-
-```ts
-import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
-
-const client = createMemoryClient()
-const contract = '0x4444444444444444444444444444444444444444'
-
-await client.tevmSetAccount({
-  address: contract,
-  deployedBytecode: '0x6001600055',
-})
-
-const result = await client.tevmCall({
-  from: PREFUNDED_ACCOUNTS[0].address,
-  to: contract,
-  createTrace: true,
-})
-
-for (const step of result.trace?.structLogs ?? []) {
-  console.log(step.pc, step.op, step.gas, step.stack)
-}
-```
-
-Use the callback for a live UI and the returned trace for export, filtering, comparisons, or persistence. Always call `next?.()` from a callback so execution can continue.
-
-## Next Steps
-
-- Add a source map from bytecode offsets to Solidity locations.
-- Group trace steps by `depth` to visualize nested calls.
-- Display `step.memory` from the live callback when building a memory inspector.
-- Persist traces as JSON after converting bigint fields to strings.
-
-See [EVM Events](../api/evm-events), [Call API](../api/tevm-call), and [Performance Profiling](../advanced/performance-profiler) for the underlying APIs.
+Next: [Tracing & engine events](../api/evm-events) · [HTTP, WebSocket & IPC server](../api/server)

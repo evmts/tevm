@@ -1,113 +1,137 @@
 import { defineConfig } from 'vocs'
 
 export default defineConfig({
-	title: 'Tevm Node',
+	title: 'Tevm',
 	titleTemplate: '%s · Tevm',
 	baseUrl: process.env.VERCEL_ENV === 'production' ? 'https://node.tevm.sh' : process.env.VERCEL_URL,
 	rootDir: '.',
-	description: 'A lightweight, unopinionated, powerful EVM node that runs in the browser',
-	// Updated logo configuration
+	description:
+		'Native Ethereum execution embedded in Node.js — viem-compatible memory client, HTTP/WS/IPC JSON-RPC server, and Solidity bundler plugins.',
 	logoUrl: {
 		light: '/tevm-logo-light.png',
 		dark: '/tevm-logo-dark.png',
 	},
 	iconUrl: '/tevm-logo.webp',
-	// Configuring OG Image
 	ogImageUrl: 'https://vocs.dev/api/og?logo=%logo&title=%title&description=%description',
-	// Set default font
 	font: {
 		google: 'Inter',
 	},
-	// Enhance theme with accent color
 	theme: {
 		accentColor: '#0085FF',
 		colorScheme: 'system',
 	},
-	// Banner for important updates or announcements
-	banner: {
-		content:
-			'Tevm 1.0 docs target `tevm@1.0.0-rc.151`. [Install the release candidate](/getting-started/overview).',
-		dismissable: true,
-		backgroundColor: '#e6f7ff',
-	},
-	// Improved top navigation
 	topNav: [
 		{
-			text: 'Docs',
-			link: '/introduction/what-is-tevm-node',
-			match: '/introduction',
-		},
-		{ text: 'CLI', link: '/reference/cli', match: '/reference/cli' },
-		{
-			text: 'Quick Start',
+			text: 'Start',
 			link: '/getting-started/overview',
 			match: '/getting-started',
 		},
-		{ text: 'Examples', link: '/examples/viem', match: '/examples' },
+		{
+			text: 'Guides',
+			link: '/core/create-tevm-node',
+			match: '/core',
+		},
+		{
+			text: 'API & Server',
+			link: '/api/tevm-call',
+			match: '/api',
+		},
+		{
+			text: 'Cookbooks',
+			link: '/examples/local-testing',
+			match: '/examples',
+		},
+		{
+			text: 'CLI',
+			link: '/reference/cli',
+			match: '/reference/cli',
+		},
 		{
 			text: 'Ecosystem',
 			items: [
 				{ text: 'Viem', link: 'https://viem.sh/' },
-				{
-					text: 'ZEVM Docs',
-					link: 'https://zevm.sh/docs',
-				},
+				{ text: 'ZEVM Docs', link: 'https://zevm.sh/docs' },
 				{ text: 'ZEVM GitHub', link: 'https://github.com/evmts/zevm' },
-				{ text: 'Krome', link: 'https://github.com/evmts/krome' },
+				{ text: 'Tevm GitHub', link: 'https://github.com/evmts/tevm' },
 			],
 		},
 	],
 	sidebar: [
 		{
-			text: 'Getting started',
+			text: 'Start here',
 			collapsed: false,
 			items: [
-				{ text: 'Overview', link: '/getting-started/overview' },
-				{
-					text: 'Why Run Ethereum in JS?',
-					link: '/introduction/why-run-ethereum-in-js',
-				},
-				{ text: 'Getting started with Viem', link: '/getting-started/viem' },
-				{
-					text: 'Getting started with Ethers',
-					link: '/getting-started/ethers',
-				},
-				{ text: 'Bundler Quickstart', link: '/getting-started/bundler' },
-				{ text: 'What is Tevm Node?', link: '/introduction/what-is-tevm-node' },
-				{
-					text: 'Architecture Overview',
-					link: '/introduction/architecture-overview',
-				},
-				{
-					text: 'Community & Testimonials',
-					link: '/getting-started/testimonials',
-				},
+				{ text: 'Quickstart', link: '/getting-started/overview' },
+				{ text: 'What is Tevm?', link: '/introduction/what-is-tevm-node' },
+				{ text: 'Why embed an EVM?', link: '/introduction/why-run-ethereum-in-js' },
+				{ text: 'Architecture', link: '/introduction/architecture-overview' },
+				{ text: 'Tutorial: Viem', link: '/getting-started/viem' },
+				{ text: 'Tutorial: Ethers v6', link: '/getting-started/ethers' },
+				{ text: 'Tutorial: Solidity bundler', link: '/getting-started/bundler' },
+				{ text: 'Community', link: '/getting-started/testimonials' },
 			],
 		},
 		{
-			text: 'Tevm guides',
+			text: 'Core guides',
+			collapsed: false,
+			items: [
+				{ text: 'Client & engine options', link: '/core/create-tevm-node' },
+				{ text: 'Mining & block production', link: '/core/mining-modes' },
+				{ text: 'Forking upstream chains', link: '/core/forking' },
+				{ text: 'Accounts, storage & snapshots', link: '/core/managing-state' },
+				{ text: 'Runtime model & ZEVM', link: '/core/runtime-model' },
+				{ text: 'Engine API (ZevmEngine)', link: '/core/tevm-node-interface' },
+				{ text: 'Migrating from JS engine', link: '/core/migration-from-js-engine' },
+			],
+		},
+		{
+			text: 'API, servers & tooling',
+			collapsed: false,
+			items: [
+				{ text: 'Call, contract & deploy', link: '/api/tevm-call' },
+				{ text: 'Account management', link: '/api/account-management' },
+				{ text: 'HTTP, WebSocket & IPC server', link: '/api/server' },
+				{ text: 'Tracing & engine events', link: '/api/evm-events' },
+				{ text: 'JSON-RPC reference', link: '/api/json-rpc' },
+				{ text: 'Client methods map', link: '/api/methods' },
+				{ text: 'MCP server for AI agents', link: '/api/mcp' },
+				{ text: 'Package overview', link: '/api/packages' },
+			],
+		},
+		{
+			text: 'Cookbooks',
+			collapsed: false,
+			items: [
+				{ text: 'Testing with Vitest', link: '/examples/local-testing' },
+				{ text: 'Viem cookbook', link: '/examples/viem' },
+				{ text: 'Ethers v6 cookbook', link: '/examples/ethers' },
+				{ text: 'Forking mainnet', link: '/examples/forking-mainnet' },
+				{ text: 'Browser trace viewer', link: '/examples/debugger-ui' },
+			],
+		},
+		{
+			text: 'Package reference',
 			collapsed: true,
 			items: [
-				{ text: 'Creating a Node', link: '/core/create-tevm-node' },
-				{ text: 'Runtime Model and ZEVM', link: '/core/runtime-model' },
-				{ text: 'Using with Viem', link: '/examples/viem' },
-				{ text: 'Using with Ethers', link: '/examples/ethers' },
-				{ text: 'Forking & Reforking', link: '/core/forking' },
-				{ text: 'Managing State', link: '/core/managing-state' },
-				{ text: 'Mining Modes', link: '/core/mining-modes' },
-				{ text: 'Account Management', link: '/api/account-management' },
-				{ text: 'EVM Events', link: '/api/evm-events' },
-				{ text: 'JSON-RPC', link: '/api/json-rpc' },
-				{ text: 'Methods Overview', link: '/api/methods' },
-				{ text: 'Package Overview', link: '/api/packages' },
-				{ text: 'Call API', link: '/api/tevm-call' },
-				{ text: 'VM and Submodules', link: '/api/vm-and-submodules' },
-				{ text: 'Decorators', link: '/api/decorators' },
+				{ text: 'All packages', link: '/reference' },
+				{ text: 'Memory client (@tevm/memory-client)', link: '/reference/memory-client' },
+				{ text: 'Native engine (@tevm/node)', link: '/reference/node' },
+				{ text: 'Actions (@tevm/actions)', link: '/reference/actions' },
+				{ text: 'Server (@tevm/server)', link: '/reference/server' },
+				{ text: 'Contract (@tevm/contract)', link: '/reference/contract' },
+				{ text: 'Common (@tevm/common)', link: '/reference/common' },
+				{ text: 'Utils (@tevm/utils)', link: '/reference/utils' },
 				{
-					text: 'Custom Precompiles (advanced)',
-					link: '/advanced/custom-precompiles',
+					text: 'Bundler plugins',
+					link: '/reference/bundler',
+					items: [
+						{ text: 'Overview', link: '/reference/bundler/overview' },
+						{ text: 'Plugins reference', link: '/reference/bundler-plugins' },
+						{ text: 'Internals', link: '/reference/bundler/internals' },
+						{ text: 'Methods & exports', link: '/reference/bundler/methods' },
+						{ text: 'Troubleshooting', link: '/reference/bundler/troubleshooting' },
+					],
 				},
-				{ text: 'TevmNode (advanced)', link: '/core/tevm-node-interface' },
 			],
 		},
 		{
@@ -118,19 +142,16 @@ export default defineConfig({
 				{ text: 'call', link: '/reference/cli/call' },
 				{ text: 'compile', link: '/reference/cli/compile' },
 				{ text: 'contract', link: '/reference/cli/contract' },
-				{ text: 'action create-access-list', link: '/reference/cli/create-access-list' },
+				{ text: 'create-access-list', link: '/reference/cli/create-access-list' },
 				{ text: 'create-block-filter', link: '/reference/cli/create-block-filter' },
-				{
-					text: 'create-contract-event-filter',
-					link: '/reference/cli/create-contract-event-filter',
-				},
+				{ text: 'create-contract-event-filter', link: '/reference/cli/create-contract-event-filter' },
 				{ text: 'create-event-filter', link: '/reference/cli/create-event-filter' },
 				{ text: 'deploy', link: '/reference/cli/deploy' },
 				{ text: 'dump-state', link: '/reference/cli/dump-state' },
 				{ text: 'estimate-fees-per-gas', link: '/reference/cli/estimate-fees-per-gas' },
 				{ text: 'estimate-gas', link: '/reference/cli/estimate-gas' },
 				{ text: 'get-account', link: '/reference/cli/get-account' },
-				{ text: 'action get-balance', link: '/reference/cli/get-balance' },
+				{ text: 'get-balance', link: '/reference/cli/get-balance' },
 				{ text: 'get-block', link: '/reference/cli/get-block' },
 				{ text: 'get-block-number', link: '/reference/cli/get-block-number' },
 				{ text: 'get-bytecode', link: '/reference/cli/get-bytecode' },
@@ -145,141 +166,23 @@ export default defineConfig({
 				{ text: 'mine', link: '/reference/cli/mine' },
 				{ text: 'multicall', link: '/reference/cli/multicall' },
 				{ text: 'read-contract', link: '/reference/cli/read-contract' },
-				{
-					text: 'action send-raw-transaction',
-					link: '/reference/cli/send-raw-transaction',
-				},
+				{ text: 'send-raw-transaction', link: '/reference/cli/send-raw-transaction' },
 				{ text: 'serve', link: '/reference/cli/serve' },
 				{ text: 'set-account', link: '/reference/cli/set-account' },
 				{ text: 'set-code', link: '/reference/cli/set-code' },
 				{ text: 'set-nonce', link: '/reference/cli/set-nonce' },
 				{ text: 'set-storage-at', link: '/reference/cli/set-storage-at' },
-				{ text: 'action simulate-calls', link: '/reference/cli/simulate-calls' },
-			],
-		},
-		{
-			text: 'Reference',
-			collapsed: true,
-			items: [
-				{
-					text: 'Core Packages',
-					collapsed: true,
-					items: [
-						{ text: 'Actions (@tevm/actions)', link: '/reference/actions' },
-						{ text: 'Virtual Machine (@tevm/vm)', link: '/reference/vm' },
-						{
-							text: 'State Management (@tevm/state)',
-							link: '/reference/state',
-						},
-						{
-							text: 'Blockchain (@tevm/blockchain)',
-							link: '/reference/blockchain',
-						},
-						{ text: 'EVM (@tevm/evm)', link: '/reference/evm' },
-					],
-				},
-				{
-					text: 'Transaction & Block Packages',
-					collapsed: true,
-					items: [
-						{ text: 'Block (@tevm/block)', link: '/reference/block' },
-						{ text: 'Transactions (@tevm/tx)', link: '/reference/tx' },
-						{
-							text: 'Transaction Pool (@tevm/txpool)',
-							link: '/reference/txpool',
-						},
-						{
-							text: 'Receipt Manager (@tevm/receipt-manager)',
-							link: '/reference/receipt-manager',
-						},
-					],
-				},
-				{
-					text: 'Client & Communication',
-					collapsed: true,
-					items: [
-						{
-							text: 'Memory Client (@tevm/memory-client)',
-							link: '/reference/memory-client',
-						},
-						{ text: 'HTTP Client (@tevm/http-client)', link: '/api/json-rpc' },
-						{ text: 'JSON-RPC (@tevm/jsonrpc)', link: '/api/json-rpc' },
-						{ text: 'Server (@tevm/server)', link: '/reference/server' },
-					],
-				},
-				{
-					text: 'Smart Contract Tools',
-					collapsed: true,
-					items: [
-						{ text: 'Contract (@tevm/contract)', link: '/reference/contract' },
-						{
-							text: 'Contract type generator',
-							link: '/reference/contract-type-generator',
-						},
-						{
-							text: 'Contract Bundler',
-							link: '/reference/bundler',
-							items: [
-								{ text: 'Overview', link: '/reference/bundler/overview' },
-								{ text: 'Internals', link: '/reference/bundler/internals' },
-								{
-									text: 'Methods & Exports',
-									link: '/reference/bundler/methods',
-								},
-								{
-									text: 'Troubleshooting',
-									link: '/reference/bundler/troubleshooting',
-								},
-							],
-						},
-						{
-							text: 'Precompiles (@tevm/precompiles)',
-							link: '/advanced/custom-precompiles',
-						},
-						{
-							text: 'Predeploys (@tevm/predeploys)',
-							link: '/advanced/custom-precompiles',
-						},
-					],
-				},
-				{
-					text: 'Utilities & Helpers',
-					collapsed: true,
-					items: [
-						{ text: 'Utils (@tevm/utils)', link: '/reference/utils' },
-						{ text: 'Common (@tevm/common)', link: '/reference/common' },
-						{ text: 'Built-in chain presets', link: '/reference/chain-presets' },
-						{
-							text: 'Decorators (@tevm/decorators)',
-							link: '/reference/decorators',
-						},
-						{ text: 'Procedures (@tevm/procedures)', link: '/api/methods' },
-						{ text: 'RLP (@tevm/rlp)', link: '/reference/rlp' },
-						{ text: 'Trie (@tevm/trie)', link: '/reference/trie' },
-						{ text: 'Address (@tevm/address)', link: '/reference/address' },
-					],
-				},
-			],
-		},
-		{
-			text: 'Integration Examples',
-			collapsed: true,
-			items: [
-				{ text: 'Local Testing Flow', link: '/examples/local-testing' },
-				{ text: 'Reusable test fixtures', link: '/reference/test-fixtures' },
-				{ text: 'Forking Mainnet', link: '/examples/forking-mainnet' },
-				{ text: 'Building a Debugger UI', link: '/examples/debugger-ui' },
+				{ text: 'simulate-calls', link: '/reference/cli/simulate-calls' },
 			],
 		},
 	],
 	editLink: {
-		pattern: 'https://github.com/evmts/tevm/edit/main/docs/node/docs/pages/:path',
+		pattern: 'https://github.com/evmts/tevm/edit/main/docs/node/pages/:path',
 		text: 'Edit this page on GitHub',
 	},
-	// Enable search with boosting for important pages
 	search: {
 		boostDocument(documentId) {
-			if (documentId.includes('getting-started') || documentId.includes('overview')) {
+			if (documentId.includes('getting-started') || documentId.includes('core/')) {
 				return 2
 			}
 			return 1
@@ -289,7 +192,7 @@ export default defineConfig({
 		{
 			icon: 'github',
 			link: 'https://github.com/evmts/tevm',
-			label: 'Github',
+			label: 'GitHub',
 		},
 		{
 			icon: 'telegram',
@@ -299,10 +202,9 @@ export default defineConfig({
 		{
 			icon: 'x',
 			link: 'https://x.com/tevmtools',
-			label: 'Twitter',
+			label: 'X',
 		},
 	],
-	// Configure code highlighting
 	markdown: {
 		code: {
 			themes: {

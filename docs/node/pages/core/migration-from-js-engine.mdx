@@ -1,0 +1,72 @@
+---
+title: Migrating from the JS Engine
+description: Concrete mapping from the legacy EthereumJS-based Tevm engine to the native ZEVM engine
+---
+
+import { WatchOut } from '../../components'
+
+# Migrating from the JS engine
+
+Tevm replaced its JavaScript EthereumJS execution engine with the native Zig ZEVM engine (Guillotine Mini + Voltaire + ZEVM over Node-API). This page maps every changed or removed surface to its native replacement.
+
+## Configuration changes
+
+| Legacy JS engine | Native ZEVM engine | Notes |
+| --- | --- | --- |
+| `miningConfig: { type: 'manual' }` | `mining: { auto: false }` | Automining is now `true` by default. |
+| `miningConfig: { type: 'auto' }` | `mining: { auto: true }` (default) | Omit `mining` for automining. |
+| `miningConfig: { type: 'interval', blockTime: 5 }` | `mining: { auto: false, interval: 5 }` | `interval` is whole seconds (`0` disables timer). |
+| `fork: { transport: http(url)({}), blockTag: 20_000_000n }` | `fork: { url, blockNumber: 20_000_000 }` | `blockNumber` is a safe integer `number`. Local chain starts at height `0`. |
+| `client.tevmMine({ blockCount: 2 })` | `client.tevmMine({ blocks: 2 })` | Matches viem's `client.mine({ blocks: 2 })`. |
+| *(no cleanup required)* | `await client.tevmClose()` | Required to release native memory and stop interval threads. |
+
+## State & action changes
+
+| Legacy JS engine | Native ZEVM engine | Notes |
+| --- | --- | --- |
+| `const { state } = await client.tevmDumpState()` | `const blob = await client.tevmDumpState()` | Returns an opaque ZEVM hex string (`0x...`), not a JS account map. |
+| `await client.tevmLoadState({ state })` | `await client.tevmLoadState(blob)` | Takes the hex string directly. Incompatible with v1 JS dumps. |
+| `tevmCall({ createTrace: true, onStep })` | `client.transport.tevm.request({ method: 'debug_traceCall', ... })` | Native Guillotine Mini opcode trace (`structLogs`, capped at 100,000 steps). |
+| `tevmCall({ stateOverrideSet })` | `tevmCall({ stateOverride })` | Standard `eth_call` wire override shape. |
+| `tevmSetAccount({ state: { ... } })` | `tevmSetAccount({ storage: { ... } })` | Executes per-field native setters; wrap in `snapshot()`/`revert()` for atomicity. |
+| `tevmDeal({ account, amount })` | `tevmDeal({ address, amount })` | Sets native ETH balance via `anvil_setBalance`. |
+| `callHandler(node)(params)` | `tevmCall(client, params)` | Standalone actions live in `tevm` and `tevm/actions` and accept any `RpcClient`. |
+| `createTevmNode().extend(requestEip1193())` | `createZevmEngine()` / `createTevmNode()` | `request()` and `rpc()` are built directly into the engine; decorators were removed. |
+| `new BrowserProvider(client)` | `TevmProvider.createMemoryProvider()` (`@tevm/ethers`) | `BrowserProvider(client, undefined, { cacheTimeout: -1 })` also works. |
+
+## Removed surfaces
+
+The following legacy JavaScript-engine internals and packages have been removed:
+
+- **Internal JS packages & facades:** `@tevm/vm`, `@tevm/evm`, `@tevm/state`, `@tevm/blockchain`, `@tevm/block`, `@tevm/tx`, `@tevm/txpool`, `@tevm/receipt-manager`, `@tevm/rlp`, `@tevm/trie`, `@tevm/address`, `@tevm/decorators`, `@tevm/precompiles`, `@tevm/procedures`, `@tevm/sync-storage-persister`.
+- **Internal escape hatches:** `node.getVm()`, `node.getTxPool()`, `node.getReceiptsManager()`, `vm.stateManager`, `vm.evm.events.on('step', ...)`, JavaScript `customPrecompiles`, and `profiler: true`.
+- **In-browser execution:** There is no browser WASM engine in this release. Browser apps connect to `@tevm/server` over HTTP or WebSocket using viem's `http()` or `webSocket()` transport, while continuing to use `tevm/bundler/*` and `@tevm/actions` in the browser.
+
+<WatchOut title="Fork tests with a local mock upstream">
+Because ZEVM's fork backend makes synchronous HTTP calls in native Zig code, an upstream mock server must run in a separate OS process (`node:child_process`), never on the same JavaScript event loop as the forked client.
+</WatchOut>
+
+## Before & after example
+
+```ts
+// Before (legacy JS engine)
+const oldClient = createMemoryClient({
+  miningConfig: { type: 'manual' },
+  fork: { transport: http(url)({}), blockTag: 20_000_000n },
+})
+await oldClient.tevmMine({ blockCount: 1 })
+
+// After (native ZEVM engine)
+const client = createMemoryClient({
+  chainId: 1,
+  mining: { auto: false },
+  fork: { url, blockNumber: 20_000_000 },
+})
+try {
+  await client.tevmMine({ blocks: 1 })
+} finally {
+  await client.tevmClose()
+}
+```
+
+Next: [Architecture](../introduction/architecture-overview) · [HTTP, WebSocket & IPC server](../api/server) · [Tracing & engine events](../api/evm-events)

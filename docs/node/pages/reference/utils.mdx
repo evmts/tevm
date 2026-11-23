@@ -1,243 +1,29 @@
 ---
-title: Utilities & Addresses
-description: Core utility functions such as createAddress, createContractAddress, and related classes & errors.
+title: "@tevm/utils"
+description: Shared viem encoding/decoding utilities, prefunded dev accounts, and JSON serialization helpers
 ---
 
-# Utilities & Addresses
+# `@tevm/utils`
 
-Lightweight utility functions and classes built on [`tevm/utils`](https://github.com/evmts/tevm/tree/main/packages/utils), [`@evmts/zevm`](https://github.com/evmts/zevm), and [`viem`](https://viem.sh).
+Subpath: `tevm/utils` (also re-exported from `tevm`).
 
-## createAddress
+Re-exports commonly used viem ABI, hex, byte, RLP, and signing helpers alongside Tevm's deterministic dev accounts.
 
-Create an Ethereum address from various inputs.
+## Key exports
 
-```ts
-import { createAddress } from 'tevm/address'
+- **Prefunded accounts:** `PREFUNDED_ACCOUNTS`, `PREFUNDED_PRIVATE_KEYS`, `PREFUNDED_PUBLIC_KEYS`, `PREFUNDED_SEED`
+- **Units & addresses:** `parseEther`, `formatEther`, `parseGwei`, `formatGwei`, `getAddress`, `isAddress`
+- **Hex & bytes:** `toHex`, `fromHex`, `toBytes`, `fromBytes`, `bytesToHex`, `hexToBytes`, `bytesToBigInt`, `hexToBigInt`, `numberToHex`, `stringToHex`, `hexToString`, `isHex`, `isBytes`
+- **ABI & hashing:** `parseAbi`, `formatAbi`, `encodeFunctionData`, `decodeFunctionResult`, `encodeDeployData`, `encodeAbiParameters`, `decodeAbiParameters`, `encodeErrorResult`, `decodeErrorResult`, `encodeEventTopics`, `decodeEventLog`, `encodePacked`, `keccak256`
+- **RLP & signing:** `toRlp`, `fromRlp`, `serializeTransaction`, `mnemonicToAccount`, `signMessage`, `hashMessage`, `verifyMessage`, `recoverAddress`, `recoverMessageAddress`
 
-createAddress(`0x${'00'.repeat(20)}`)
-createAddress(420n)
-createAddress(new Uint8Array(20))
-```
-
-### Signature
+## Example
 
 ```ts
-declare function createAddress(
-  address: number | bigint | string | Uint8Array | EthjsAddress
-): Address
+import { formatEther, parseEther, PREFUNDED_ACCOUNTS } from 'tevm/utils'
+
+console.log(PREFUNDED_ACCOUNTS[0].address)
+console.log(formatEther(parseEther('1.5'))) // '1.5'
 ```
 
-Accepts `0x`-prefixed hex, unprefixed hex, numbers, bigints, `Uint8Array`s, or `EthjsAddress`. Throws `InvalidAddressError` on invalid input.
-
-## Address Class
-
-Thin wrapper around `EthjsAddress`.
-
-```ts
-import { Address } from 'tevm/address'
-
-const a = new Address(Uint8Array.from([ /* 20 bytes */ ]))
-a.bytes      // raw 20-byte address
-a.toString() // '0x...'
-```
-
-## createContractAddress
-
-CREATE address per [EIP-1014](https://eips.ethereum.org/EIPS/eip-1014):
-
-```ts
-import { createContractAddress } from 'tevm/address'
-
-const contractAddr = createContractAddress(createAddress('0x1111...1111'), 1n)
-```
-
-Computes `keccak256(rlp([senderAddress, nonce]))[-20..]`. Throws `InvalidAddressError` if `from` is invalid.
-
-## Common Errors
-
-- `InvalidAddressError` - bytes/string can't parse as a 20-byte address.
-- `UnreachableCodeError` - unexpected code path; usually wrapped into a more descriptive error.
-
-## Other Re-exports
-
-Lower-level helpers from [`tevm/utils`](https://github.com/evmts/tevm/tree/main/packages/utils), ZEVM, or [`viem`](https://viem.sh):
-
-- `hexToBytes(hex)` - hex to raw bytes (with optional size checks).
-- `keccak256(data, 'bytes' | 'hex')` - keccak256 hasher.
-- `encodeFunctionData(...)`, `toRlp(...)` - ABI/RLP encoders.
-- EIP-7702 helpers: `eoaCode7702SignAuthorization`, `eoaCode7702RecoverAuthority`, and authorization-list encoders.
-
-:::tip
-Prefer [`viem`](https://viem.sh) utilities for bytes conversion, hashing, and ABIs in browser/Node code. Tevm re-exports many for convenience.
-:::
-
-# @tevm/utils
-
-Full API: [packages/utils/docs](https://github.com/evmts/tevm/tree/main/packages/utils/docs). Combines ZEVM primitives, viem utilities, and Tevm helpers.
-
-## Installation
-
-```bash
-npm install @tevm/utils@1.0.0-rc.151 viem
-```
-
-## Main Components
-
-### Hex and Bytes Conversion
-
-```typescript
-import {
-  bytesToHex,
-  hexToBytes,
-  bytesToBigInt,
-  bytesToNumber,
-  hexToBigInt,
-  hexToNumber,
-  numberToHex,
-  stringToHex,
-  hexToString,
-} from '@tevm/utils'
-
-bytesToHex(new Uint8Array([1, 164])) // '0x01a4'
-hexToBytes('0x01a4')                  // Uint8Array([1, 164])
-hexToNumber('0x01a4')                 // 420
-numberToHex(420)                      // '0x1a4'
-hexToString('0x48656c6c6f')           // 'Hello'
-stringToHex('Hello')                  // '0x48656c6c6f'
-```
-
-### Type Checking
-
-```typescript
-import { isHex, isBytes, isAddress } from '@tevm/utils'
-
-isHex('0x123')
-isBytes(new Uint8Array())
-isAddress('0x123...')
-```
-
-### Unit Conversion
-
-```typescript
-import { formatEther, parseEther, formatGwei, parseGwei } from '@tevm/utils'
-
-formatEther(1000000000000000000n) // '1'
-parseEther('1.0')                  // 1000000000000000000n
-formatGwei(1000000000n)            // '1'
-parseGwei('1.0')                   // 1000000000n
-```
-
-### Cryptography
-
-```typescript
-import { keccak256, ecrecover, randomBytes } from '@tevm/utils'
-
-const hash = keccak256('0x1234')
-const address = ecrecover(messageHash, v, r, s)
-const random = randomBytes(32)
-```
-
-### ABI Encoding/Decoding
-
-```typescript
-import {
-  parseAbi,
-  encodeFunctionData,
-  decodeFunctionData,
-  encodeEventTopics,
-} from '@tevm/utils'
-
-const abi = parseAbi([
-  'function transfer(address to, uint256 amount) returns (bool)',
-  'event Transfer(address indexed from, address indexed to, uint256 amount)',
-])
-const from = '0x1111111111111111111111111111111111111111'
-const to = '0x2222222222222222222222222222222222222222'
-
-const data = encodeFunctionData({
-  abi,
-  functionName: 'transfer',
-  args: [to, 1n],
-})
-const decoded = decodeFunctionData({ abi, data })
-const topics = encodeEventTopics({
-  abi,
-  eventName: 'Transfer',
-  args: { from, to },
-})
-```
-
-### RLP
-
-```typescript
-import { toRlp, fromRlp } from '@tevm/utils'
-
-const rlp = toRlp(['0x123', '0x456'])
-const decoded = fromRlp(rlp)
-```
-
-### Memory Database
-
-```typescript
-import { createMemoryDb } from '@tevm/utils'
-
-const db = createMemoryDb()
-const db2 = createMemoryDb(new Map())
-```
-
-## Types
-
-### Basic
-
-```typescript
-import type { Address, Hex, BlockTag, BlockNumber, BytesLike, BigIntLike } from '@tevm/utils'
-
-const address: Address = '0x...'
-const hex: Hex = '0x...'
-const blockTag: BlockTag = 'latest'
-```
-
-### ABI
-
-```typescript
-import type { Abi, AbiFunction, AbiEvent, AbiConstructor, ParseAbi, FormatAbi } from '@tevm/utils'
-
-type ParsedAbi = ParseAbi<typeof abiString>
-type FormattedAbi = FormatAbi<typeof parsedAbi>
-```
-
-### Contract
-
-```typescript
-import type {
-  ContractFunctionName,
-  ContractConstructorArgs,
-  ExtractAbiFunction,
-  ExtractAbiEvent,
-} from '@tevm/utils'
-
-type TransferFunction = ExtractAbiFunction<typeof abi, 'transfer'>
-type TransferEvent = ExtractAbiEvent<typeof abi, 'Transfer'>
-```
-
-## Constants
-
-```typescript
-import { GWEI_TO_WEI, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from '@tevm/utils'
-
-GWEI_TO_WEI // 1000000000n
-```
-
-## Error Handling
-
-```typescript
-import { invariant } from '@tevm/utils'
-
-invariant(condition, new Error('Error message'))
-```
-
-## See Also
-
-- [Viem](https://viem.sh/docs/utilities/fromBytes)
-- [ZEVM](https://github.com/evmts/zevm)
-- [ABI Specification](https://docs.soliditylang.org/en/latest/abi-spec.html)
+See also: [Account management](/api/account-management)

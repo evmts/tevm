@@ -1,179 +1,162 @@
 ---
-title: Getting Started with Viem
-description: Use Tevm as a batteries-included viem client or tree-shakable transport
+title: "Tutorial: Viem"
+description: Use Tevm as a batteries-included viem client or attach createTevmTransport to a minimal tree-shakeable viem client
 ---
 
-# Getting Started with Viem
+import { CompareCard, CompareGrid, QaBox, UnderTheHood, WatchOut } from '../../components'
 
-`createMemoryClient` is a viem client backed by an in-process Tevm node. It includes viem public, wallet, and Anvil-compatible test actions plus Tevm-specific actions.
+# Tutorial: Driving Tevm with Viem
 
-## Install
+If you already know [viem](https://viem.sh), you already know most of Tevm. `createMemoryClient()` is a standard viem client whose transport routes directly into an in-process native ZEVM engine.
 
-```bash
-npm install tevm@1.0.0-rc.151 viem
-```
+## Choose your client shape
 
-## Batteries-Included Client
+<CompareGrid>
+  <CompareCard title="createMemoryClient()" badge="Recommended">
+    Attaches all viem <strong>public</strong>, <strong>wallet</strong>, <strong>test (Anvil)</strong>, and <strong>TEVM</strong> actions in one call. Best for tests, scripts, backends, and CLIs.
+  </CompareCard>
+  <CompareCard title="createClient + createTevmTransport()" badge="Tree-shakeable">
+    Builds a minimal viem client with only the standalone actions you import from <code>viem/actions</code> and <code>tevm</code>. Best when keeping dependency footprint tight.
+  </CompareCard>
+</CompareGrid>
 
-```ts
-import { createMemoryClient } from 'tevm'
+## Walkthrough: One client, four action surfaces
 
-const client = createMemoryClient()
-
-const chainId = await client.getChainId()
-const block = await client.getBlock({ blockTag: 'latest' })
-const balance = await client.getBalance({
-  address: '0x1111111111111111111111111111111111111111',
-})
-
-console.log(chainId, block.number, balance)
-```
-
-Client construction is synchronous. `await client.tevmReady()` is optional for local clients and useful before the first forked read.
-
-## Public, Wallet, Test, and Tevm Actions
+Every action surface talks to the exact same native state. You can fund an account with a test action, send a transaction with a wallet action, mine with a TEVM action, and read the receipt with a public action.
 
 ```ts
-import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
+import { createMemoryClient, parseEther, PREFUNDED_ACCOUNTS } from 'tevm'
 
 const client = createMemoryClient({
   account: PREFUNDED_ACCOUNTS[0],
-  miningConfig: { type: 'manual' },
+  mining: { auto: false },
 })
 
-// viem test action
-await client.setBalance({
-  address: PREFUNDED_ACCOUNTS[0].address,
-  value: 10n ** 18n,
-})
+try {
+  const bob = '0x1111111111111111111111111111111111111111'
 
-// viem wallet action
-const hash = await client.sendTransaction({
-  to: '0x1111111111111111111111111111111111111111',
-  value: 1n,
-})
+  // 1. viem test action (Anvil-compatible)
+  await client.setBalance({
+    address: PREFUNDED_ACCOUNTS[0].address,
+    value: parseEther('50'),
+  })
 
-// viem test action
-await client.mine({ blocks: 1 })
+  // 2. viem wallet action
+  const hash = await client.sendTransaction({
+    to: bob,
+    value: parseEther('1'),
+  })
 
-// viem public action
-const receipt = await client.getTransactionReceipt({ hash })
+  // 3. viem test action or TEVM action — both accept { blocks }
+  await client.mine({ blocks: 1 })
 
-// Tevm action
-const account = await client.tevmGetAccount({
-  address: '0x1111111111111111111111111111111111111111',
-})
+  // 4. viem public action
+  const receipt = await client.getTransactionReceipt({ hash })
 
-console.log(receipt.status, account.balance)
+  // 5. TEVM account helper (returns bigint balance/nonce + code + storage)
+  const account = await client.tevmGetAccount({ address: bob })
+
+  console.log(receipt.status, account.balance) // 'success' 1000000000000000000n
+} finally {
+  await client.tevmClose()
+}
 ```
 
-The viem mine action uses `{ blocks }`. The Tevm equivalent uses `client.tevmMine({ blockCount })`.
+<QaBox question="When should I use readContract vs. tevmContract?">
+Use viem's `readContract` / `writeContract` when you want portable code that works identically against an RPC provider in production.
 
-## Call a Contract
+Reach for `tevmContract` (or `tevmCall`) when you want a single call that supports `stateOverride`, `addToMempool`, or `addToBlockchain` without assembling separate transactions.
+</QaBox>
+
+## Deploy and interact with a contract
+
+Tevm bundles sample contracts in `tevm/contract` (`SimpleContract`, `ERC20`, `ERC721`, `ErrorContract`) for quick experiments, or you can pass any ABI and bytecode from Foundry, Hardhat, or the [Tevm Bundler](./bundler).
 
 ```ts
-import { createMemoryClient } from 'tevm'
+import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
 import { SimpleContract } from 'tevm/contract'
 
-const client = createMemoryClient()
-const contract = SimpleContract.withAddress(
-  '0x2222222222222222222222222222222222222222',
-)
-
-await client.setCode({
-  address: contract.address,
-  bytecode: contract.deployedBytecode,
-})
-
-const value = await client.readContract({
-  address: contract.address,
-  abi: contract.abi,
-  functionName: 'get',
-})
-
-const simulation = await client.tevmContract({
-  to: contract.address,
-  abi: contract.abi,
-  functionName: 'get',
-})
-
-console.log(value, simulation.data)
-```
-
-Use viem contract actions for familiar reads and writes. Use `tevmContract` when a call needs Tevm-only options such as opcode hooks, state overrides, `createTrace`, or `createAccessList`.
-
-## Fork Through a Viem Transport
-
-```ts
-import { createMemoryClient, http } from 'tevm'
-import { optimism } from 'tevm/common'
-
 const client = createMemoryClient({
-  common: optimism,
-  fork: {
-    transport: http('https://mainnet.optimism.io')({}),
-    blockTag: 130_000_000n,
-  },
+  account: PREFUNDED_ACCOUNTS[0],
 })
 
-await client.tevmReady()
-console.log(await client.getBlockNumber())
+try {
+  // Deploy with constructor arg 7n (automines by default)
+  const hash = await client.deployContract(SimpleContract.deploy(7n))
+  const receipt = await client.getTransactionReceipt({ hash })
+  const contract = SimpleContract.withAddress(receipt.contractAddress!)
+
+  // Read with viem
+  console.log('Initial:', await client.readContract(contract.read.get())) // 7n
+
+  // Write with viem
+  await client.writeContract(contract.write.set(42n))
+  console.log('Updated:', await client.readContract(contract.read.get())) // 42n
+} finally {
+  await client.tevmClose()
+}
 ```
 
-The value passed as `fork.transport` is an EIP-1193 request function, so invoke `http(url)` with `({})`.
+## Tree-shakeable setup with `createTevmTransport`
 
-## Tree-Shakable Client
-
-For smaller application bundles, construct a plain viem client with the Tevm transport and import actions individually.
+If you want only specific actions, compose a plain viem `createClient` with `createTevmTransport()` and call standalone functions from `viem/actions` and `tevm`:
 
 ```ts
-import {
-  createTevmTransport,
-  tevmCall,
-  tevmDumpState,
-} from 'tevm'
+import { createTevmTransport, tevmCall, tevmDumpState } from 'tevm'
 import { createClient } from 'viem'
 import { getBlockNumber } from 'viem/actions'
 
-const client = createClient({
-  transport: createTevmTransport(),
-})
+const transport = createTevmTransport()
+const client = createClient({ transport })
 
-const blockNumber = await getBlockNumber(client)
-const call = await tevmCall(client, {
-  deployedBytecode: '0x6001600055',
-  createTrace: true,
-})
-const state = await tevmDumpState(client)
+try {
+  const blockNumber = await getBlockNumber(client)
 
-console.log(blockNumber, call.executionGasUsed, state.state)
+  // Standalone actions accept any RpcClient (client or client.transport.tevm)
+  const call = await tevmCall(client, {
+    to: '0x0000000000000000000000000000000000000123',
+    stateOverride: {
+      '0x0000000000000000000000000000000000000123': {
+        code: '0x602a60005260206000f3',
+      },
+    },
+  })
+
+  const stateBlob = await tevmDumpState(client)
+  console.log(blockNumber, call.rawData, stateBlob.slice(0, 18))
+} finally {
+  await client.transport.tevm.close()
+}
 ```
 
-Standalone Tevm action functions come from `tevm`; `tevm/actions` contains lower-level handler factories and types.
+<UnderTheHood>
+`createMemoryClient` sets `cacheTime: 0` on the underlying viem client so viem never serves stale block numbers or balances after a local `setBalance`, `revert`, or `mine`. If you build a custom `createClient({ transport: createTevmTransport() })`, pass `cacheTime: 0` there too.
+</UnderTheHood>
 
-## Raw EIP-1193 Requests
+## Raw EIP-1193 requests
 
-The transport also supports the EIP-1193 request shape:
+Every `MemoryClient` exposes viem's `request({ method, params })` directly to ZEVM:
 
 ```ts
 import { createMemoryClient } from 'tevm'
 
 const client = createMemoryClient()
 
-const chainId = await client.request({ method: 'eth_chainId' })
-const balance = await client.request({
-  method: 'eth_getBalance',
-  params: ['0x1111111111111111111111111111111111111111', 'latest'],
-})
-
-console.log(chainId, balance)
+try {
+  const chainId = await client.request({ method: 'eth_chainId' })
+  const blockNumber = await client.request({ method: 'eth_blockNumber' })
+  console.log(chainId, blockNumber) // '0x7a69' '0x0'
+} finally {
+  await client.tevmClose()
+}
 ```
 
-Do not add JSON-RPC envelope fields (`id` and `jsonrpc`) to `request`.
+<WatchOut title="No JSON-RPC envelope in client.request()">
+Pass `{ method, params }` — never `{ jsonrpc: '2.0', id: 1, method }`. If you need raw JSON-RPC wire strings (including batches or notifications), call `client.transport.tevm.rpc(jsonString)`.
+</WatchOut>
 
-## Related
+## Next steps
 
-- [Viem Examples](../examples/viem)
-- [Call API](../api/tevm-call)
-- [Mining Modes](../core/mining-modes)
-- [Managing State](../core/managing-state)
+- [Viem cookbook](../examples/viem) — deeper patterns for impersonation, snapshots, time travel, and custom chains.
+- [Call, contract & deploy](../api/tevm-call) — full parameter and revert-handling reference.
+- [Testing with Vitest](../examples/local-testing) — isolating tests cleanly with `afterEach` and snapshots.

@@ -1,472 +1,110 @@
 ---
-title: JSON-RPC Guide
-description: "[EIP-1193](https://eips.ethereum.org/EIPS/eip-1193) & [JSON-RPC](https://ethereum.org/en/developers/docs/apis/json-rpc/) usage with Tevm Node"
+title: JSON-RPC Reference
+description: Namespaces, wire formatting rules, error codes, and transport boundaries for Tevm's native ZEVM JSON-RPC dispatcher
 ---
 
-# JSON-RPC Support
+import { WatchOut } from '../../components'
 
-Tevm Node provides [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193)-compatible [JSON-RPC](https://ethereum.org/en/developers/docs/apis/json-rpc/) support for integration with Ethereum libraries and tools.
+# JSON-RPC reference
 
-## EIP-1193 Provider
+Every call in Tevm — whether through `createMemoryClient()`, `createZevmEngine()`, `TevmProvider`, or `@tevm/server` — is dispatched by ZEVM's native JSON-RPC router.
 
-```ts
-import { createTevmNode } from 'tevm'
-import { requestEip1193 } from 'tevm/decorators'
+## Enabled RPC modules
 
-const node = createTevmNode().extend(requestEip1193())
+Query `rpc_modules` on any engine to inspect active namespaces:
 
-const blockNum = await node.request({ method: 'eth_blockNumber' })
-```
-
-## Supported Methods
-
-For Tevm's runtime model and the mapping to ZEVM's native trusted/light-mode docs, see [Runtime Model and ZEVM](../core/runtime-model). Native ZEVM has its own mode-gated [JSON-RPC Overview](https://zevm.sh/docs/reference/json-rpc/overview/) and [Verified Light-Mode Reads](https://zevm.sh/docs/reference/json-rpc/verified-light-mode-reads/) contract; the index below is the Tevm source of truth.
-
-Engine API methods are only registered when `engineApi` is enabled. `tevm_*`, `hardhat_*`, and `ganache_*` development-control aliases share implementations with matching `anvil_*` methods. `tevm_contract` and `eth_sendUnsignedTransaction` are registered compatibility stubs returning unsupported-method errors.
-
-### Tevm and ZEVM compatibility
-
-Native Tevm methods:
-
-- `tevm_call`
-- `tevm_contract`
-- `tevm_dumpState`
-- `tevm_getAccount`
-- `tevm_lightSyncStatus`
-- `tevm_loadState`
-- `tevm_mine`
-- `tevm_miner`
-- `tevm_setAccount`
-- `zevm_lightSyncStatus`
-
-Tevm aliases for development controls:
-
-- `tevm_addBalance`
-- `tevm_autoImpersonateAccount`
-- `tevm_deal`
-- `tevm_dealErc20`
-- `tevm_dropAllTransactions`
-- `tevm_dropTransaction`
-- `tevm_enableTraces`
-- `tevm_getAutomine`
-- `tevm_getIntervalMining`
-- `tevm_impersonateAccount`
-- `tevm_increaseTime`
-- `tevm_metadata`
-- `tevm_mineDetailed`
-- `tevm_nodeInfo`
-- `tevm_removeBlockTimestampInterval`
-- `tevm_removePoolTransactions`
-- `tevm_reset`
-- `tevm_revert`
-- `tevm_setAutomine`
-- `tevm_setBalance`
-- `tevm_setBlockGasLimit`
-- `tevm_setBlockTimestampInterval`
-- `tevm_setChainId`
-- `tevm_setCode`
-- `tevm_setCoinbase`
-- `tevm_setErc20Allowance`
-- `tevm_setIntervalMining`
-- `tevm_setLoggingEnabled`
-- `tevm_setMinGasPrice`
-- `tevm_setNextBlockBaseFeePerGas`
-- `tevm_setNextBlockTimestamp`
-- `tevm_setNonce`
-- `tevm_setPrevRandao`
-- `tevm_setRpcUrl`
-- `tevm_setStorageAt`
-- `tevm_setTime`
-- `tevm_snapshot`
-- `tevm_stopImpersonatingAccount`
-
-### Ethereum
-
-- `eth_accounts`
-- `eth_blobBaseFee`
-- `eth_blobGasPrice`
-- `eth_blockNumber`
-- `eth_call`
-- `eth_chainId`
-- `eth_coinbase`
-- `eth_createAccessList`
-- `eth_estimateGas`
-- `eth_feeHistory`
-- `eth_gasPrice`
-- `eth_getBalance`
-- `eth_getBlockAccessList`
-- `eth_getBlockByHash`
-- `eth_getBlockByNumber`
-- `eth_getBlockReceipts`
-- `eth_getBlockTransactionCountByHash`
-- `eth_getBlockTransactionCountByNumber`
-- `eth_getCode`
-- `eth_getFilterChanges`
-- `eth_getFilterLogs`
-- `eth_getLogs`
-- `eth_getProof`
-- `eth_getStorageAt`
-- `eth_getStorageValues`
-- `eth_getTransactionByBlockHashAndIndex`
-- `eth_getTransactionByBlockNumberAndIndex`
-- `eth_getTransactionByHash`
-- `eth_getTransactionCount`
-- `eth_getTransactionReceipt`
-- `eth_getUncleByBlockHashAndIndex`
-- `eth_getUncleByBlockNumberAndIndex`
-- `eth_getUncleCountByBlockHash`
-- `eth_getUncleCountByBlockNumber`
-- `eth_getWork`
-- `eth_hashrate`
-- `eth_maxPriorityFeePerGas`
-- `eth_mining`
-- `eth_newBlockFilter`
-- `eth_newFilter`
-- `eth_newPendingTransactionFilter`
-- `eth_protocolVersion`
-- `eth_sendRawTransaction`
-- `eth_sendTransaction`
-- `eth_sendUnsignedTransaction`
-- `eth_sign`
-- `eth_signTransaction`
-- `eth_simulateV1`
-- `eth_simulateV2`
-- `eth_submitHashrate`
-- `eth_submitWork`
-- `eth_subscribe`
-- `eth_syncing`
-- `eth_uninstallFilter`
-- `eth_unsubscribe`
-
-### Anvil
-
-- `anvil_addBalance`
-- `anvil_autoImpersonateAccount`
-- `anvil_deal`
-- `anvil_dealErc20`
-- `anvil_dropAllTransactions`
-- `anvil_dropTransaction`
-- `anvil_dumpState`
-- `anvil_enableTraces`
-- `anvil_getAutomine`
-- `anvil_getIntervalMining`
-- `anvil_impersonateAccount`
-- `anvil_increaseTime`
-- `anvil_loadState`
-- `anvil_metadata`
-- `anvil_mine`
-- `anvil_mineDetailed`
-- `anvil_nodeInfo`
-- `anvil_removeBlockTimestampInterval`
-- `anvil_removePoolTransactions`
-- `anvil_reset`
-- `anvil_revert`
-- `anvil_setAutomine`
-- `anvil_setBalance`
-- `anvil_setBlockGasLimit`
-- `anvil_setBlockTimestampInterval`
-- `anvil_setChainId`
-- `anvil_setCode`
-- `anvil_setCoinbase`
-- `anvil_setErc20Allowance`
-- `anvil_setIntervalMining`
-- `anvil_setLoggingEnabled`
-- `anvil_setMinGasPrice`
-- `anvil_setNextBlockBaseFeePerGas`
-- `anvil_setNextBlockTimestamp`
-- `anvil_setNonce`
-- `anvil_setPrevRandao`
-- `anvil_setRpcUrl`
-- `anvil_setStorageAt`
-- `anvil_setTime`
-- `anvil_snapshot`
-- `anvil_stopImpersonatingAccount`
-
-### Hardhat
-
-- `hardhat_addBalance`
-- `hardhat_autoImpersonateAccount`
-- `hardhat_deal`
-- `hardhat_dealErc20`
-- `hardhat_dropAllTransactions`
-- `hardhat_dropTransaction`
-- `hardhat_dumpState`
-- `hardhat_enableTraces`
-- `hardhat_getAutomine`
-- `hardhat_getIntervalMining`
-- `hardhat_impersonateAccount`
-- `hardhat_increaseTime`
-- `hardhat_loadState`
-- `hardhat_metadata`
-- `hardhat_mine`
-- `hardhat_mineDetailed`
-- `hardhat_nodeInfo`
-- `hardhat_removeBlockTimestampInterval`
-- `hardhat_removePoolTransactions`
-- `hardhat_reset`
-- `hardhat_revert`
-- `hardhat_setAutomine`
-- `hardhat_setBalance`
-- `hardhat_setBlockGasLimit`
-- `hardhat_setBlockTimestampInterval`
-- `hardhat_setChainId`
-- `hardhat_setCode`
-- `hardhat_setCoinbase`
-- `hardhat_setErc20Allowance`
-- `hardhat_setIntervalMining`
-- `hardhat_setLoggingEnabled`
-- `hardhat_setMinGasPrice`
-- `hardhat_setNextBlockBaseFeePerGas`
-- `hardhat_setNextBlockTimestamp`
-- `hardhat_setNonce`
-- `hardhat_setPrevRandao`
-- `hardhat_setRpcUrl`
-- `hardhat_setStorageAt`
-- `hardhat_setTime`
-- `hardhat_snapshot`
-- `hardhat_stopImpersonatingAccount`
-
-### Ganache
-
-- `ganache_addBalance`
-- `ganache_autoImpersonateAccount`
-- `ganache_deal`
-- `ganache_dealErc20`
-- `ganache_dropAllTransactions`
-- `ganache_dropTransaction`
-- `ganache_dumpState`
-- `ganache_enableTraces`
-- `ganache_getAutomine`
-- `ganache_getIntervalMining`
-- `ganache_impersonateAccount`
-- `ganache_increaseTime`
-- `ganache_loadState`
-- `ganache_metadata`
-- `ganache_mine`
-- `ganache_mineDetailed`
-- `ganache_nodeInfo`
-- `ganache_removeBlockTimestampInterval`
-- `ganache_removePoolTransactions`
-- `ganache_reset`
-- `ganache_revert`
-- `ganache_setAutomine`
-- `ganache_setBalance`
-- `ganache_setBlockGasLimit`
-- `ganache_setBlockTimestampInterval`
-- `ganache_setChainId`
-- `ganache_setCode`
-- `ganache_setCoinbase`
-- `ganache_setErc20Allowance`
-- `ganache_setIntervalMining`
-- `ganache_setLoggingEnabled`
-- `ganache_setMinGasPrice`
-- `ganache_setNextBlockBaseFeePerGas`
-- `ganache_setNextBlockTimestamp`
-- `ganache_setNonce`
-- `ganache_setPrevRandao`
-- `ganache_setRpcUrl`
-- `ganache_setStorageAt`
-- `ganache_setTime`
-- `ganache_snapshot`
-- `ganache_stopImpersonatingAccount`
-
-### Debug
-
-- `debug_dumpBlock`
-- `debug_getBadBlocks`
-- `debug_getModifiedAccountsByHash`
-- `debug_getModifiedAccountsByNumber`
-- `debug_getRawBlock`
-- `debug_getRawHeader`
-- `debug_getRawReceipts`
-- `debug_getRawTransaction`
-- `debug_intermediateRoots`
-- `debug_preimage`
-- `debug_storageRangeAt`
-- `debug_traceBlock`
-- `debug_traceBlockByHash`
-- `debug_traceBlockByNumber`
-- `debug_traceCall`
-- `debug_traceChain`
-- `debug_traceState`
-- `debug_traceTransaction`
-
-### EVM test-runner compatibility
-
-- `evm_increaseTime`
-- `evm_mine`
-- `evm_revert`
-- `evm_setBlockGasLimit`
-- `evm_setIntervalMining`
-- `evm_setNextBlockTimestamp`
-- `evm_snapshot`
-
-### Engine API
-
-- `engine_exchangeCapabilities`
-- `engine_exchangeTransitionConfigurationV1`
-- `engine_forkchoiceUpdatedV1`
-- `engine_forkchoiceUpdatedV2`
-- `engine_forkchoiceUpdatedV3`
-- `engine_forkchoiceUpdatedV4`
-- `engine_getBlobsV1`
-- `engine_getBlobsV2`
-- `engine_getBlobsV3`
-- `engine_getClientVersionV1`
-- `engine_getPayloadBodiesByHashV1`
-- `engine_getPayloadBodiesByHashV2`
-- `engine_getPayloadBodiesByRangeV1`
-- `engine_getPayloadBodiesByRangeV2`
-- `engine_getPayloadV1`
-- `engine_getPayloadV2`
-- `engine_getPayloadV3`
-- `engine_getPayloadV4`
-- `engine_getPayloadV5`
-- `engine_getPayloadV6`
-- `engine_newPayloadV1`
-- `engine_newPayloadV2`
-- `engine_newPayloadV3`
-- `engine_newPayloadV4`
-- `engine_newPayloadV5`
-- `testing_buildBlockV1`
-
-### Txpool, web3, net, rpc, and miner compatibility
-
-- `miner_start`
-- `miner_stop`
-- `net_listening`
-- `net_peerCount`
-- `net_version`
-- `rpc_modules`
-- `txpool_content`
-- `txpool_contentFrom`
-- `txpool_inspect`
-- `txpool_status`
-- `web3_clientVersion`
-- `web3_sha3`
-
-## Client Integration
-
-### Viem
-
-See [Viem Documentation](https://viem.sh/docs/clients/custom.html).
-
-```ts
-import { createTevmTransport } from 'tevm'
-import { mainnet } from 'tevm/common'
-import { createPublicClient } from 'viem'
-
-const tevmTransport = createTevmTransport()
-const client = createPublicClient({ chain: mainnet, transport: tevmTransport })
-```
-
-### Ethers
-
-See [Ethers Documentation](https://docs.ethers.org/v6/api/providers/#Provider).
-
-```ts
-import { createMemoryClient } from 'tevm'
-import { BrowserProvider } from 'ethers'
-
-const client = createMemoryClient()
-const provider = new BrowserProvider(client)
-```
-
-## Error Handling
-
-JSON-RPC errors follow the [standard format](https://www.jsonrpc.org/specification#error_object) and are fully typed. See [JsonRpcError type](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/JsonRpcError.md):
-
-```ts
-interface JsonRpcError {
-  code: number
-  message: string
-  data?: unknown
+```json
+{
+  "eth": "1.0",
+  "net": "1.0",
+  "web3": "1.0",
+  "rpc": "1.0",
+  "txpool": "1.0",
+  "debug": "1.0",
+  "engine": "1.0",
+  "zevm": "1.0"
 }
 ```
 
-Common codes (see [ErrorCodes](https://github.com/evmts/tevm/blob/main/packages/actions/docs/variables/ErrorCodes.md)):
-- `-32700`: Parse error ([`ParseError`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/ParseError.md))
-- `-32600`: Invalid request ([`InvalidRequest`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/InvalidRequest.md))
-- `-32601`: Method not found ([`MethodNotFound`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/MethodNotFound.md))
-- `-32602`: Invalid params ([`InvalidParams`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/InvalidParams.md))
-- `-32603`: Internal error ([`InternalError`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/InternalError.md))
-- `-32000` to `-32099`: Server error ([`ServerError`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/ServerError.md))
+Development cheatcode methods are also available under `anvil_*` and `evm_*`.
 
-See [Error Handling Guide](https://github.com/evmts/tevm/blob/main/packages/actions/docs/variables/ErrorHandling.md).
+## Dispatching requests
 
-## Best Practices
+Two host methods exist, with distinct contracts:
 
-Wrap RPC calls in try-catch. Estimate gas before sending ([ErrorCodes](https://github.com/evmts/tevm/blob/main/packages/actions/docs/variables/ErrorCodes.md)):
+| Method | Input | Output | Use when |
+| --- | --- | --- | --- |
+| `client.request({ method, params })` / `engine.request(...)` | EIP-1193 object (no `jsonrpc`/`id`) | Parsed `result`; throws `NativeRpcError` on error | Application code, viem, scripts |
+| `engine.rpc(jsonString)` | Raw JSON-RPC 2.0 string (single, batch, or notification) | Exact JSON response string, or `null` for notifications | HTTP/WS/IPC servers, wire conformance tests |
 
 ```ts
-const gasEstimate = await node.request({ method: 'eth_estimateGas', params: [tx] })
+import { createZevmEngine } from 'tevm/node'
+
+const engine = createZevmEngine()
+try {
+  // EIP-1193 shape
+  const chainId = await engine.request({ method: 'eth_chainId' })
+
+  // Raw JSON-RPC batch
+  const batch = await engine.rpc(
+    JSON.stringify([
+      { jsonrpc: '2.0', id: 1, method: 'eth_blockNumber' },
+      { jsonrpc: '2.0', id: 2, method: 'web3_clientVersion' },
+    ]),
+  )
+
+  console.log(chainId, JSON.parse(batch!))
+} finally {
+  await engine.close()
+}
 ```
 
-Wait for receipts ([ethGetTransactionReceipt](https://github.com/evmts/tevm/blob/main/packages/actions/docs/functions/ethGetTransactionReceipt.md)):
+## Core method groups
 
-```ts
-const txHash = await node.request({ method: 'eth_sendTransaction', params: [tx] })
-const receipt = await node.request({ method: 'eth_getTransactionReceipt', params: [txHash] })
-```
+### Standard Ethereum (`eth_*`, `net_*`, `web3_*`, `rpc_*`)
 
-Filter efficiently: set block ranges, use specific [topics](https://docs.soliditylang.org/en/latest/abi-spec.html#events), clean up with [`eth_uninstallFilter`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/functions/ethUninstallFilterProcedure.md).
+- **Chain & accounts:** `eth_chainId`, `eth_accounts`, `eth_blockNumber`, `eth_gasPrice`, `eth_maxPriorityFeePerGas`, `eth_feeHistory`, `eth_blobBaseFee`, `net_version`, `web3_clientVersion`, `rpc_modules`
+- **State reads:** `eth_getBalance`, `eth_getCode`, `eth_getStorageAt`, `eth_getTransactionCount`, `eth_getProof`
+- **Execution & estimation:** `eth_call` (with `stateOverride`), `eth_estimateGas`, `eth_createAccessList`
+- **Transactions & receipts:** `eth_sendTransaction`, `eth_sendRawTransaction`, `eth_signTransaction`, `eth_getTransactionByHash`, `eth_getTransactionReceipt`, `eth_getBlockReceipts`
+- **Blocks & logs:** `eth_getBlockByNumber`, `eth_getBlockByHash`, `eth_getLogs`, `eth_newFilter`, `eth_newBlockFilter`, `eth_newPendingTransactionFilter`, `eth_getFilterChanges`, `eth_getFilterLogs`, `eth_uninstallFilter`
+- **Subscriptions (over `@tevm/server` WS/IPC):** `eth_subscribe` (`newHeads`, `logs`, `newPendingTransactions`, `syncing`), `eth_unsubscribe`
 
-See:
-- [Actions Documentation](https://github.com/evmts/tevm/tree/main/packages/actions/docs)
-- [Type Definitions](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases)
-- [Function Reference](https://github.com/evmts/tevm/blob/main/packages/actions/docs/functions)
-- [Variables and Constants](https://github.com/evmts/tevm/blob/main/packages/actions/docs/variables)
+### Development controls (`anvil_*`, `evm_*`, `zevm_*`)
 
-## Related Topics
-- [Using with Viem](../examples/viem)
-- [Using with Ethers](../examples/ethers)
-- [Managing State](../core/managing-state)
-- [Receipts & Logs](../advanced/receipts-and-logs)
-- [Ethereum JSON-RPC Specification](https://ethereum.org/en/developers/docs/apis/json-rpc/)
-- [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193)
-- [Tevm API Documentation](https://github.com/evmts/tevm/tree/main/packages/actions/docs)
+- **Accounts & storage:** `zevm_getAccount`, `anvil_setBalance`, `anvil_setNonce`, `anvil_setCode`, `anvil_setStorageAt`, `anvil_impersonateAccount`, `anvil_stopImpersonatingAccount`, `anvil_autoImpersonateAccount`
+- **Mining & time:** `anvil_mine`, `evm_mine`, `anvil_getAutomine`, `evm_setAutomine`, `evm_setIntervalMining`, `evm_setNextBlockTimestamp`, `evm_increaseTime`
+- **Snapshots & state blobs:** `evm_snapshot`, `evm_revert`, `anvil_dumpState`, `anvil_loadState`, `anvil_reset`
 
-## Using Tevm Actions
+### Tracing & mempool (`debug_*`, `txpool_*`)
 
-High-level action functions are exported by `tevm`. Handler factories and parameter/result types are exported by `tevm/actions`.
+- **`debug_traceCall`** — native Guillotine Mini opcode tracer supporting `{ disableStack, enableMemory, enableReturnData, disableStorage: true }`. Retains up to 100,000 steps and reports `truncated`.
+- **`txpool_status`**, **`txpool_content`**, **`txpool_contentFrom`**, **`txpool_inspect`** — pending and queued transaction inspection.
 
-```ts
-import {
-  createMemoryClient,
-  tevmCall,
-  tevmMine,
-  tevmGetAccount,
-  tevmSetAccount,
-} from 'tevm'
+## Wire encoding rules
 
-const client = createMemoryClient()
-const address = '0x1111111111111111111111111111111111111111'
+Native JSON-RPC enforces strict Ethereum JSON-RPC wire encoding:
 
-const result = await tevmCall(client, {
-  to: address,
-  value: 0n,
-})
+- **Quantities** (block numbers, balances, nonces, gas, chain ID) are lowercase unpadded hex strings with a `0x` prefix (`'0x0'`, `'0x7a69'`, `'0x2a'`). Never pass decimal strings or `BigInt` values directly into `engine.request()`.
+- **Data** (addresses, hashes, bytecode, storage values) are `0x`-prefixed hex strings.
+- **Missing lookups** (such as `eth_getTransactionByHash` or `eth_getTransactionReceipt` for an unknown or unmined hash) return `null`.
 
-await tevmMine(client, { blockCount: 1 })
+Host helpers (`createMemoryClient`, `tevmGetAccount`, `tevmSetAccount`, `tevmCall`, `tevmMine`, `tevmDeal`) handle `bigint` ↔ hex quantity conversion for you automatically.
 
-const account = await tevmGetAccount(client, {
-  address,
-  blockTag: 'latest',
-})
+## Error codes (`NativeRpcError`)
 
-await tevmSetAccount(client, {
-  address,
-  balance: 100n,
-  nonce: 0n,
-  deployedBytecode: '0x',
-})
-```
+| Code | Meaning | Notes |
+| --- | --- | --- |
+| `3` | Execution reverted | `error.data` carries the raw revert payload (`'0x...'`). |
+| `-32700` | Parse error | Malformed JSON passed to `rpc()` or HTTP/WS server. |
+| `-32600` | Invalid request | Missing required JSON-RPC 2.0 envelope fields or empty batch `[]`. |
+| `-32601` | Method not found | Unregistered JSON-RPC method name. |
+| `-32602` | Invalid params | Wrong parameter types, counts, or invalid fork URL. |
+| `-32603` | Internal error | Engine unavailable (`503` on HTTP) or unexpected runtime failure. |
+| `-32000` | Execution / admission error | E.g. gas limit exceeding the Osaka cap (`16,777,216`), insufficient funds, or nonce mismatch. |
 
-Type references:
-- [`CallParams`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/CallParams.md)
-- [`MineParams`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/MineParams.md)
-- [`GetAccountParams`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/GetAccountParams.md)
-- [`SetAccountParams`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/SetAccountParams.md)
-- [`AnvilDealParams`](https://github.com/evmts/tevm/blob/main/packages/actions/docs/type-aliases/AnvilDealParams.md)
+<WatchOut title="Viem action presence vs. ZEVM method support">
+`createMemoryClient` attaches viem's full public, wallet, and Anvil test action sets. A viem helper existing on the client does not guarantee every obscure parameter extension is implemented in ZEVM. For exact native RPC details, consult the [ZEVM JSON-RPC docs](https://zevm.sh/docs/reference/json-rpc/overview/).
+</WatchOut>
 
-Tevm calls are simulations unless they create a transaction. Use `addToMempool: true` and mine for a receipt, or configure `{ miningConfig: { type: 'auto' } }`.
+Next: [Engine API](../core/tevm-node-interface) · [HTTP, WebSocket & IPC server](./server) · [Client methods map](./methods)

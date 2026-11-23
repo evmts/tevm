@@ -1,73 +1,80 @@
 ---
-title: State manager
-description: Read and write raw EVM accounts, contract code, storage, and checkpoints
+title: State & snapshots
+description: Edit accounts, bytecode, and storage slots, rewind with snapshots, and move opaque ZEVM state blobs between engines
 ---
 
-# State manager
+import { WatchOut } from '../../components/Diagrams'
 
-The state manager stores EVM accounts, bytecode, and 32-byte storage slots. Fork mode adds lazy upstream reads, but writes still land in the local state.
+# State & snapshots
 
-Use client test actions for ordinary setup. Use the raw manager for checkpoints, roots, proofs, cache control, or an embedded EVM.
+Voltaire and ZEVM own all account and storage state inside the native engine. Read and mutate state through `tevmGetAccount`, `tevmSetAccount`, `tevmDeal`, viem Anvil test actions, snapshots, and portable state blobs.
 
-## Accounts and checkpoints
-
-```ts
-import assert from 'node:assert/strict'
-import { createAddress } from 'tevm/address'
-import { createStateManager } from 'tevm/state'
-import { createAccount } from 'tevm/utils'
-
-const state = createStateManager({})
-const address = createAddress('0x6666666666666666666666666666666666666666')
-
-await state.ready()
-await state.putAccount(address, createAccount({ balance: 10n, nonce: 1n }))
-await state.checkpoint()
-await state.modifyAccountFields(address, { balance: 99n })
-
-assert.equal((await state.getAccount(address))?.balance, 99n)
-
-await state.revert()
-assert.equal((await state.getAccount(address))?.balance, 10n)
-```
-
-A checkpoint must end with exactly one `commit()` or `revert()`. Nesting is supported and resolves from the innermost checkpoint outward.
-
-## Code and storage
-
-Storage keys are 32 bytes. Values are stored without leading zero bytes, so reading a value written as 32-byte `0x...02` returns a one-byte array.
+## Accounts, code, and storage
 
 ```ts
 import assert from 'node:assert/strict'
-import { createAddress } from 'tevm/address'
-import { createStateManager } from 'tevm/state'
-import { bytesToHex, hexToBytes } from 'tevm/utils'
+import { createMemoryClient, toHex } from 'tevm'
 
-const state = createStateManager({})
-const address = createAddress('0x7777777777777777777777777777777777777777')
-const slot = hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000001')
+const client = createMemoryClient()
+try {
+  const address = '0x6666666666666666666666666666666666666666'
+  const slot = toHex(1n, { size: 32 })
+  const value = toHex(2n, { size: 32 })
 
-await state.ready()
-await state.putCode(address, hexToBytes('0x6001600055'))
-await state.putStorage(address, slot, hexToBytes('0x02'))
+  await client.tevmSetAccount({
+    address,
+    balance: 10n,
+    nonce: 1n,
+    deployedBytecode: '0x602a60005260206000f3',
+    storage: { [slot]: value },
+  })
 
-assert.equal(bytesToHex(await state.getCode(address)), '0x6001600055')
-assert.equal(bytesToHex(await state.getStorage(address, slot)), '0x02')
-
-await state.clearStorage(address)
-assert.equal(bytesToHex(await state.getStorage(address, slot)), '0x')
+  const account = await client.tevmGetAccount({ address })
+  assert.equal(account.balance, 10n)
+  assert.equal(account.nonce, 1n)
+  assert.equal(account.deployedBytecode, '0x602a60005260206000f3')
+  assert.equal(await client.getStorageAt({ address, slot }), value)
+} finally {
+  await client.tevmClose()
+}
 ```
 
-## Raw operation map
+<WatchOut title="Multi-field tevmSetAccount calls are not atomic">
+`tevmSetAccount` dispatches one native RPC call per supplied field (`anvil_setBalance`, `anvil_setNonce`, `anvil_setCode`, `anvil_setStorageAt`). Take a `snapshot()` first if a multi-field update needs all-or-nothing rollback.
+</WatchOut>
+
+## Portable state blobs (`tevmDumpState` / `tevmLoadState`)
+
+`tevmDumpState()` exports ZEVM's opaque hexadecimal state blob. Load that blob into a separate engine to clone or restore state:
+
+```ts
+import assert from 'node:assert/strict'
+import { createMemoryClient } from 'tevm'
+
+const source = createMemoryClient()
+const target = createMemoryClient()
+
+try {
+  const address = '0x7777777777777777777777777777777777777777'
+  await source.tevmDeal({ address, amount: 99n })
+
+  const blob = await source.tevmDumpState()
+  await target.tevmLoadState(blob)
+
+  assert.equal((await target.tevmGetAccount({ address })).balance, 99n)
+} finally {
+  await source.tevmClose()
+  await target.tevmClose()
+}
+```
+
+## Operation map
 
 | Concern | Read | Write |
 | --- | --- | --- |
-| Account | `getAccount` | `putAccount`, `modifyAccountFields`, `deleteAccount` |
-| Code | `getCode` | `putCode` |
-| Storage | `getStorage`, `dumpStorage` | `putStorage`, `clearStorage` |
-| State root | `getStateRoot`, `hasStateRoot` | `setStateRoot` |
-| Transaction boundary | current view | `checkpoint`, `commit`, `revert` |
-| Isolation | `shallowCopy` | `deepCopy` |
-| Persistence | `dumpCanonicalGenesis` | `generateCanonicalGenesis` |
-
-State manager addresses use `Address` values from `tevm/address`. Client actions use hex address strings.
+| Full account | `tevmGetAccount` (`zevm_getAccount`) | `tevmSetAccount` |
+| Balance | `getBalance` | `tevmDeal`, `setBalance` |
+| Code | `getCode` | `setCode`, `tevmSetAccount` |
+| Storage | `getStorageAt` | `setStorageAt`, `tevmSetAccount` |
+| In-process rewind | `snapshot` (`evm_snapshot`) | `revert` (`evm_revert`) |
+| Cross-engine transfer | `tevmDumpState` (`anvil_dumpState`) | `tevmLoadState` (`anvil_loadState`) |

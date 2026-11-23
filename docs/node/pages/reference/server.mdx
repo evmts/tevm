@@ -1,0 +1,46 @@
+---
+title: "@tevm/server"
+description: API reference for HTTP, WebSocket, Unix IPC, Express, and Next.js JSON-RPC servers
+---
+
+# `@tevm/server`
+
+Subpath: `tevm/server`.
+
+Serves any `MemoryClient` (or `{ transport: { tevm: ZevmEngine } }` client) over HTTP, WebSocket subscriptions, Unix IPC sockets, Express, or Next.js.
+
+## Exports
+
+| Symbol | Purpose |
+| --- | --- |
+| `createServer(client, serverOptions?, handlerOptions?)` | Creates a `node:http.Server` with HTTP JSON-RPC handling and WebSocket upgrade support on the same port. |
+| `createHttpHandler(client, options?)` | Raw `(req, res) => void` HTTP JSON-RPC handler (`cors`, `maxBodySize`, `maxBatchSize`, `requestTimeout`). |
+| `createWebSocketServer(client, server)` | Attaches a WebSocket JSON-RPC server supporting `eth_subscribe` (`newHeads`, `logs`, `newPendingTransactions`, `syncing`) and `eth_unsubscribe`. |
+| `createIpcServer(client)` | Creates a `node:net.Server` speaking newline-delimited JSON-RPC over Unix domain sockets or TCP. |
+| `createExpressMiddleware(client, options?)` | Express middleware mounting JSON-RPC on any route. |
+| `createNextApiHandler(client, options?)` | Next.js Pages API route handler. |
+
+## Example
+
+```ts
+import { createMemoryClient } from 'tevm'
+import { createIpcServer, createServer } from 'tevm/server'
+
+const client = createMemoryClient()
+await client.tevmReady()
+
+const httpServer = createServer(client, {}, { cors: true })
+httpServer.listen(8545, '127.0.0.1')
+
+const ipcServer = createIpcServer(client)
+ipcServer.listen('/tmp/tevm.sock')
+
+process.once('SIGINT', () => {
+  ipcServer.close()
+  httpServer.close(() => {
+    void client.tevmClose()
+  })
+})
+```
+
+See also: [HTTP, WebSocket & IPC server guide](/api/server) · [Browser trace viewer](/examples/debugger-ui)

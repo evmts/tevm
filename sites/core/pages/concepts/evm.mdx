@@ -1,79 +1,83 @@
 ---
 title: The EVM in tevm
-description: How tevm layers execution, state, blocks, actions, and clients
+description: How tevm layers Guillotine Mini, Voltaire, ZEVM, ZevmEngine, actions, and MemoryClient
 ---
+
+import { CoreStackDiagram } from '../../components/Diagrams'
 
 # The EVM in tevm
 
-The EVM is the execution engine. It reads accounts and storage through the state manager, resolves block context through the blockchain, and returns execution results. tevm wraps that engine with a node, action handlers, and a memory client.
+Tevm embeds a native Zig Ethereum node inside Node.js and exposes it through a serialized Node-API bridge. Every client method, standalone action, and JSON-RPC server shares the same native dispatcher.
+
+<CoreStackDiagram />
 
 | Layer | Owns | Reach for it when |
 | --- | --- | --- |
-| `@tevm/evm` | Opcodes, calls, precompiles, execution events | You are embedding execution |
-| `@tevm/state` | Accounts, code, storage, proofs, checkpoints | You need raw state control |
-| `TevmNode` | VM, blockchain, txpool, receipts, lifecycle | You are building infrastructure |
-| `tevm/actions` | Typed operations over a node | You want tree-shakable commands |
-| `MemoryClient` | viem, test, tevm, and EIP-1193 APIs | You are building an app or test |
+| **Guillotine Mini** | EVM bytecode execution, hardforks, `debug_traceCall` | Executed natively by ZEVM |
+| **Voltaire** | Accounts, bytecode, storage, RLP, cryptography | Executed natively by ZEVM |
+| **ZEVM** | Chain, mempool, mining, receipts, filters, snapshots, fork | Executed natively via Node-API |
+| `ZevmEngine` (`tevm/node`) | Serialized `request()`, raw `rpc()`, `events`, `close()` | Building servers, proxies, or custom harnesses |
+| `tevm/actions` | Browser-safe typed RPC helpers | Tree-shaking or remote HTTP clients |
+| `MemoryClient` (`tevm`) | viem public, wallet, test, and TEVM actions | Application code and test suites |
 
-## Execute at the EVM layer
+## Drive the native engine directly
 
-The identity precompile returns its input. This example constructs the EVM explicitly and executes a call without a client.
+`createZevmEngine` (alias `createTevmNode`) talks straight to ZEVM's JSON-RPC dispatcher without constructing a viem client:
 
 ```ts
 import assert from 'node:assert/strict'
-import { createAddress } from 'tevm/address'
-import { createChain } from 'tevm/blockchain'
-import { mainnet } from 'tevm/common'
-import { createEvm } from 'tevm/evm'
-import { createStateManager } from 'tevm/state'
-import { bytesToHex, hexToBytes } from 'tevm/utils'
+import { createZevmEngine } from 'tevm/node'
 
-const stateManager = createStateManager({})
-const blockchain = await createChain({ common: mainnet })
-const evm = await createEvm({ common: mainnet, stateManager, blockchain })
+const engine = createZevmEngine({ chainId: 31337 })
+try {
+  await engine.ready()
 
-const result = await evm.runCall({
-  to: createAddress(4),
-  data: hexToBytes('0x1234'),
-  gasLimit: 100_000n,
-})
+  // Identity precompile (0x04) echoes its input bytes
+  const output = await engine.request({
+    method: 'eth_call',
+    params: [{ to: '0x0000000000000000000000000000000000000004', data: '0x1234' }, 'latest'],
+  })
 
-assert.equal(result.execResult.exceptionError, undefined)
-assert.equal(bytesToHex(result.execResult.returnValue), '0x1234')
+  assert.equal(output, '0x1234')
+} finally {
+  await engine.close()
+}
 ```
 
-## Observe execution through the client
+## Trace execution natively with `debug_traceCall`
 
-Most callers do not need to assemble the EVM. Action hooks expose the same execution while the client handles lifecycle and result formatting.
+Guillotine Mini records pre-opcode stack, memory, gas, and return data natively and returns a structured `structLogs` trace (capped at 100,000 steps):
 
 ```ts
 import assert from 'node:assert/strict'
 import { createMemoryClient } from 'tevm'
 
 const client = createMemoryClient()
-let steps = 0
+try {
+  const target = '0x0000000000000000000000000000000000000123'
+  await client.tevmSetAccount({
+    address: target,
+    deployedBytecode: '0x602a60005260206000f3',
+  })
 
-const result = await client.tevmCall({
-  to: '0x0000000000000000000000000000000000000004',
-  data: '0x1234',
-  onStep: () => {
-    steps += 1
-  },
-})
+  const trace = await client.transport.tevm.request({
+    method: 'debug_traceCall',
+    params: [{ to: target }, 'latest', { enableMemory: true }],
+  })
 
-assert.equal(result.rawData, '0x1234')
-assert.equal(result.errors, undefined)
-assert.equal(steps, 0)
+  assert.equal(trace.failed, false)
+  assert.equal(trace.returnValue, '0x000000000000000000000000000000000000000000000000000000000000002a')
+  assert.equal(trace.structLogs[0]?.op, 'PUSH1')
+  assert.equal(trace.structLogs.at(-1)?.op, 'RETURN')
+} finally {
+  await client.tevmClose()
+}
 ```
 
-Precompiles do not execute bytecode opcodes, so this call records zero opcode steps. Calls to deployed bytecode invoke `onStep` once for each executed opcode.
+## Request lifecycle
 
-## Runtime flow
-
-1. A client method or JSON-RPC request selects an action.
-2. The action validates and normalizes parameters.
-3. The node supplies its VM, state, blockchain, txpool, and receipt manager.
-4. The EVM executes against the current state checkpoint.
-5. The action commits, reverts, queues, or only reports the result according to its options.
-
-A plain `tevmCall` is a simulation. A transaction becomes pending only when an action adds it to the txpool. A receipt exists only after mining includes it in a canonical block.
+1. A client method, standalone action, or server transport builds a JSON-RPC request.
+2. `ZevmEngine` serializes the request on a FIFO promise queue and invokes the Node-API addon.
+3. ZEVM dispatches the method to Voltaire (state) and Guillotine Mini (EVM execution).
+4. `request()` returns the parsed JSON result or throws `NativeRpcError` (`code`, `message`, optional `data`); `rpc()` returns exact JSON wire text or `null` for notifications.
+5. `events` emits `request`, `response`, `block` (including blocks mined on ZEVM's interval thread), and `close`.

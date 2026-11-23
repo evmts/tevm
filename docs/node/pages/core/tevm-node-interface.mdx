@@ -1,106 +1,131 @@
 ---
-title: TevmNode Interface
-description: The low-level runtime interface underneath MemoryClient
+title: Engine API (ZevmEngine)
+description: Low-level Node-API wrapper over ZEVM — serialized request(), raw rpc(), lifecycle events, and NativeRpcError
 ---
 
-# TevmNode Interface
+import { UnderTheHood, WatchOut } from '../../components'
 
-`TevmNode` owns Tevm's stateful runtime. Most applications should use `createMemoryClient`; use the node directly when building decorators, servers, or execution tooling.
+# Engine API (`ZevmEngine`)
 
-## Create and Initialize a Node
+`createZevmEngine` (also exported as `createTevmNode`) is the lowest-level JavaScript interface in Tevm. Use `createMemoryClient` for application and test code; use `createZevmEngine` directly when building custom RPC servers, proxies, CLI harnesses, or protocol tooling.
 
-```ts
-import { createTevmNode } from 'tevm'
-
-const node = createTevmNode({
-  miningConfig: { type: 'manual' },
-})
-
-console.log(node.mode, node.miningConfig)
-await node.ready()
-```
-
-`createTevmNode()` is synchronous. `ready()` eagerly completes the lazy VM, chain, state, txpool, and receipt initialization.
-
-## Component Access
+## Interface
 
 ```ts
-import { createTevmNode } from 'tevm'
+export type JsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | JsonValue[]
+  | { [key: string]: JsonValue }
 
-const node = createTevmNode()
-const vm = await node.getVm()
-const txPool = await node.getTxPool()
-const receipts = await node.getReceiptsManager()
-const head = await vm.blockchain.getCanonicalHeadBlock()
+export type EngineRequest = {
+  method: string
+  params?: JsonValue[]
+}
 
-console.log({
-  blockNumber: head.header.number,
-  pooledSenders: txPool.pool.size,
-  maximumLogs: receipts.GET_LOGS_LIMIT,
-})
+export type ZevmEngineOptions = {
+  /** Unsigned safe integer chain ID. Defaults to 31337. */
+  chainId?: number
+  /** Automine defaults to true. Interval is whole seconds; 0 disables the timer. */
+  mining?: { auto?: boolean; interval?: number }
+  /** Fork upstream state into a local chain at height 0. */
+  fork?: { url: string; blockNumber?: number }
+}
+
+export type ZevmEngine = {
+  events: EventEmitter
+  ready: () => Promise<void>
+  request: (request: EngineRequest) => Promise<JsonValue>
+  rpc: (json: string) => Promise<string | null>
+  close: () => Promise<void>
+}
 ```
 
-These objects use low-level Ethereum types. Prefer public actions for normal account, block, transaction, receipt, and log queries.
+## `request()` vs. `rpc()`
 
-## Add APIs with Decorators
-
-The base node does not expose `request`. Add the EIP-1193 decorator explicitly:
+- **`request({ method, params })`** wraps your call in a JSON-RPC 2.0 envelope, parses the native response, returns `response.result`, and throws `NativeRpcError` if the native dispatcher returns an error object.
+- **`rpc(jsonString)`** passes raw JSON-RPC wire text straight to ZEVM and returns the exact serialized JSON response string — or `null` for notifications (requests without an `id`). Use `rpc()` for HTTP/WebSocket/IPC servers, JSON-RPC batches, and exact wire conformance checks.
 
 ```ts
-import { createTevmNode } from 'tevm'
-import { requestEip1193, tevmActions } from 'tevm/decorators'
+import { createZevmEngine, NativeRpcError } from 'tevm/node'
 
-const node = createTevmNode()
-  .extend(tevmActions())
-  .extend(requestEip1193())
+const engine = createZevmEngine({ mining: { auto: false } })
 
-const chainId = await node.request({ method: 'eth_chainId' })
-const account = await node.getAccount({
-  address: '0x1111111111111111111111111111111111111111',
-})
+try {
+  await engine.ready()
 
-console.log(chainId, account.balance)
+  // Single typed request
+  const chainId = await engine.request({ method: 'eth_chainId' })
+  console.log(chainId) // '0x7a69'
+
+  // Raw JSON-RPC batch
+  const batchJson = await engine.rpc(
+    JSON.stringify([
+      { jsonrpc: '2.0', id: 1, method: 'eth_blockNumber' },
+      { jsonrpc: '2.0', id: 2, method: 'eth_accounts' },
+    ]),
+  )
+  console.log(JSON.parse(batchJson!))
+
+  // JSON-RPC notification (no id) -> returns null
+  const note = await engine.rpc(
+    JSON.stringify({ jsonrpc: '2.0', method: 'eth_chainId' }),
+  )
+  console.log(note) // null
+
+  // Structured native error
+  try {
+    await engine.request({ method: 'missing_method' })
+  } catch (error) {
+    if (error instanceof NativeRpcError) {
+      console.log(error.code, error.message) // -32601 'Method not found'
+    }
+  }
+} finally {
+  await engine.close()
+}
 ```
 
-Other built-in decorators include `ethActions` and `tevmSend`. Decorators return an extended node and share the original node's state.
+## Lifecycle events
 
-## Runtime Controls
+`engine.events` is a Node.js `EventEmitter` that emits four events:
+
+| Event | Payload | When it fires |
+| --- | --- | --- |
+| `request` | `EngineRequest` (`{ method, params? }`) | Immediately before `engine.request()` dispatches to native code |
+| `response` | `{ request: EngineRequest; result: JsonValue }` | Immediately after `engine.request()` succeeds |
+| `block` | Block header object (`eth_getBlockByNumber` result) | When block height advances — via explicit mining or background interval mining |
+| `close` | *(none)* | Once, when `engine.close()` releases the native handle |
 
 ```ts
-import { createTevmNode } from 'tevm'
+import { createZevmEngine } from 'tevm/node'
 
-const node = createTevmNode()
+const engine = createZevmEngine({ mining: { auto: false } })
+engine.events.on('block', (block) => console.log('Mined:', block.number))
+engine.events.on('close', () => console.log('Engine closed'))
 
-node.setMiningConfig({ type: 'interval', blockTime: 5 })
-node.setNextBlockTimestamp(2_000_000_000n)
-node.setNextBlockGasLimit(30_000_000n)
-node.setTracesEnabled(true)
-node.setAutoImpersonate(true)
-
-node.setMiningConfig({ type: 'manual' })
-await node.close()
+try {
+  await engine.request({ method: 'evm_mine' })
+} finally {
+  await engine.close()
+}
 ```
 
-`close()` stops interval mining and releases node resources.
+<UnderTheHood>
+Calls to `request()`, `rpc()`, and `close()` execute sequentially through an internal FIFO promise queue. Concurrent `Promise.all([...])` mutations serialize cleanly without racing inside native memory.
+</UnderTheHood>
 
-## Extend with Application Logic
+<WatchOut title="Closed engines reject immediately">
+`engine.close()` is idempotent and frees the native handle. Any subsequent `request()` or `rpc()` rejects with `Error('engine is closed')`.
+</WatchOut>
 
-```ts
-import { createTevmNode } from 'tevm'
+## Error class: `NativeRpcError`
 
-const node = createTevmNode().extend((baseNode) => ({
-  async getHeadNumber() {
-    const vm = await baseNode.getVm()
-    const head = await vm.blockchain.getCanonicalHeadBlock()
-    return head.header.number
-  },
-}))
+`NativeRpcError` extends `Error` with:
 
-console.log(await node.getHeadNumber())
-```
+- `code: number` — exact JSON-RPC error code from ZEVM (for example `-32601` Method not found, `-32602` Invalid params, `-32000` Server error, or `3` for EVM execution reverts).
+- `data?: JsonValue` — optional structured data (for example, raw revert bytes `'0xdeadbeef'` when `code === 3`).
 
-Keep extensions thin and compose existing node methods. Use the handler factories in `tevm/actions` when an extension needs Tevm or JSON-RPC behavior.
-
-## Related
-
-[Architecture Overview](../introduction/architecture-overview) · [Memory Client](../reference/memory-client) · [Decorators](../api/decorators)
+Next: [HTTP, WebSocket & IPC server](../api/server) · [JSON-RPC reference](../api/json-rpc) · [Client & engine options](./create-tevm-node)

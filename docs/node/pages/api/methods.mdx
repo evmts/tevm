@@ -1,418 +1,63 @@
 ---
-title: Methods
-description: Complete reference for Tevm Node's API methods and capabilities
+title: Client Methods Map
+description: Quick-reference map of every method surface on MemoryClient and ZevmEngine
 ---
 
-# Tevm Node Methods
+# Client methods map
 
-Reference for the main API methods on a Tevm Node instance: EVM interaction, state management, execution control.
+`createMemoryClient()` combines five surfaces on one object. Every method talks to the same underlying `ZevmEngine` (`client.transport.tevm`).
 
-## Core Methods
+## TEVM actions
 
-### Initialization
+Attached to `MemoryClient` and exported as standalone functions from `tevm` and `tevm/actions`:
 
-```ts
-import { createTevmNode, http } from 'tevm'
+| Method on `MemoryClient` | Standalone function | Purpose |
+| --- | --- | --- |
+| `client.tevmReady()` | `tevmReady(client)` | Wait for initial fork/mining configuration |
+| `client.tevmClose()` | `engine.close()` | Release the native handle and stop interval timers |
+| `client.tevmCall(params)` | `tevmCall(rpc, params)` | Simulate (`eth_call` + `stateOverride`) or submit a tx (`addToMempool` / `addToBlockchain`) |
+| `client.tevmContract(params)` | `tevmContract(rpc, params)` | ABI-encoded call with typed return decoding |
+| `client.tevmDeploy(params)` | `tevmDeploy(rpc, params)` | Deploy creation bytecode (+ optional `abi`/`args`), returning `createdAddress` |
+| `client.tevmGetAccount({ address })` | `tevmGetAccount(rpc, { address })` | Read `balance` (`bigint`), `nonce` (`bigint`), `deployedBytecode`, `storage` |
+| `client.tevmSetAccount(params)` | `tevmSetAccount(rpc, params)` | Set any subset of `balance`, `nonce`, `deployedBytecode`, `storage` |
+| `client.tevmDeal({ address, amount })` | `tevmDeal(rpc, { address, amount })` | Set an account's ETH balance |
+| `client.tevmMine({ blocks?, interval? })` | `tevmMine(rpc, params)` | Mine blocks with optional timestamp step in seconds |
+| `client.tevmDumpState()` | `tevmDumpState(rpc)` | Export ZEVM's opaque hex state blob (`0x...`) |
+| `client.tevmLoadState(blob)` | `tevmLoadState(rpc, blob)` | Hydrate a ZEVM state blob |
 
-const rpcUrl = process.env.MAINNET_RPC_URL
-if (!rpcUrl) {
-  throw new Error('MAINNET_RPC_URL is required for fork mode')
-}
+## Viem public actions
 
-const node = createTevmNode({
-  fork: {
-    transport: http(rpcUrl)({})
-  }
-})
+Standard read-only queries (`cacheTime: 0`):
 
-await node.ready()
-```
+- **Blocks & chain:** `getBlockNumber`, `getBlock`, `getChainId`, `getGasPrice`, `estimateFeesPerGas`
+- **Accounts & storage:** `getBalance`, `getCode`, `getStorageAt`, `getTransactionCount`
+- **Transactions & logs:** `getTransaction`, `getTransactionReceipt`, `waitForTransactionReceipt`, `getLogs`, `createEventFilter`, `getFilterChanges`
+- **Contracts:** `call`, `readContract`, `simulateContract`, `estimateGas`, `estimateContractGas`, `multicall`
 
-:::warning
-Always `await node.ready()` before using the node.
-:::
+## Viem wallet actions
 
-### Virtual Machine
+Transaction submission and signing (uses `options.account` if set):
 
-```ts
-import { createImpersonatedTx } from 'tevm/tx'
-import { createAddress } from 'tevm/address'
+- `getAddresses`, `sendTransaction`, `sendRawTransaction`, `writeContract`, `deployContract`, `signMessage`, `signTypedData`
 
-const vm = await node.getVm()
+## Viem test actions (`mode: 'anvil'`)
 
-const tx = createImpersonatedTx({
-  impersonatedAddress: createAddress('0x1234567890123456789012345678901234567890'),
-  nonce: 0n,
-  gasLimit: 21064n,
-  maxFeePerGas: 8n,
-  maxPriorityFeePerGas: 1n,
-  to: createAddress('0x5678901234567890123456789012345678901234'),
-  value: 1000000000000000000n, // 1 ETH
-})
+Direct chain and state manipulation:
 
-const result = await vm.runTx({ tx, skipNonce: true, skipBalance: true })
+- **Accounts:** `setBalance`, `setCode`, `setNonce`, `setStorageAt`, `impersonateAccount`, `stopImpersonatingAccount`
+- **Mining & time:** `mine`, `setAutomine`, `setIntervalMining`, `setNextBlockTimestamp`, `increaseTime`, `setNextBlockBaseFeePerGas`, `setBlockGasLimit`
+- **State:** `snapshot`, `revert`, `reset`, `dumpState`, `loadState`
 
-if (!result.execResult.exceptionError) {
-  console.log('Gas used:', result.totalGasSpent)
-}
-```
+## Low-level engine (`client.transport.tevm`)
 
-:::note
-The VM interface provides the lowest level of control for executing transactions and inspecting execution.
-:::
+Direct access to `ZevmEngine`:
 
-### Transaction Pool
+| Member | Purpose |
+| --- | --- |
+| `request({ method, params })` | Serialized EIP-1193 call; throws `NativeRpcError` on failure |
+| `rpc(jsonString)` | Raw JSON-RPC 2.0 string (batches, notifications, exact wire response) |
+| `events` | `EventEmitter` emitting `request`, `response`, `block`, `close` |
+| `ready()` | Initialization promise |
+| `close()` | Idempotent native shutdown |
 
-```ts
-const txPool = await node.getTxPool()
-
-await txPool.add({
-  from: '0x1234...',
-  to: '0x5678...',
-  value: 1000000000000000000n,
-})
-
-// Sorted by gas price and nonce
-const pending = await txPool.txsByPriceAndNonce()
-
-// Raw access
-const allPending = txPool.getPendingTransactions()
-
-// Pending nonce for an address
-const nextNonce = txPool.getPendingNonce('0x1234...')
-```
-
-:::tip
-Pool transactions remain pending until mined. Mining behavior depends on your mining configuration.
-:::
-
-### Receipts & Logs
-
-```ts
-import { hexToBytes } from 'tevm/utils'
-
-const receipts = await node.getReceiptsManager()
-const vm = await node.getVm()
-const fromBlock = await vm.blockchain.getBlock(0n)
-const toBlock = fromBlock
-
-const receipt = await receipts.getReceiptByTxHash(
-  hexToBytes('0x1234567890123456789012345678901234567890123456789012345678901234'),
-)
-
-const logs = await receipts.getLogs(
-  fromBlock,
-  toBlock,
-  [hexToBytes('0x1234567890123456789012345678901234567890')],
-  [hexToBytes('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef')],
-)
-```
-
-The logs API mirrors Ethereum's JSON-RPC pattern (filter by address, topics, block range).
-
-## State Management
-
-### Account Impersonation
-
-```ts
-// Impersonate (fork mode only)
-node.setImpersonatedAccount('0x1234...')
-
-const impersonated = node.getImpersonatedAccount()
-
-// Stop
-node.setImpersonatedAccount(undefined)
-```
-
-:::warning
-Impersonation primarily affects the JSON-RPC layer, enabling `eth_sendRawTransaction` to execute as the impersonated account. Works best in fork mode.
-:::
-
-#### Strict impersonation (anvil parity)
-
-By default Tevm auto-impersonates every sender, so `eth_sendTransaction` succeeds from any address. Anvil instead rejects unknown senders with `No Signer available`. Opt into anvil's behavior with `strictImpersonation`:
-
-```ts
-import { createTevmNode } from '@tevm/node'
-
-const node = createTevmNode({ strictImpersonation: true })
-
-// throws NoSignerAvailableError: No Signer available for 0xd8dA...
-await node.request({
-  method: 'eth_sendTransaction',
-  params: [{ from: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045', to: '0x0000000000000000000000000000000000000001', value: '0x0' }],
-})
-
-// anvil_impersonateAccount grants access, anvil_stopImpersonatingAccount revokes it again
-node.setImpersonatedAccount('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')
-```
-
-Prefunded dev accounts always have a signer, and `anvil_autoImpersonateAccount` still bypasses the check while enabled. The mode can also be toggled at runtime with `node.setStrictImpersonation(true)` and is preserved across `deepCopy` and snapshot/revert. It defaults to `false`, so existing behavior is unchanged.
-
-### Event Filtering
-
-```ts
-node.setFilter({
-  id: '0x1',
-  fromBlock: 0n,
-  toBlock: 'latest',
-  address: '0x1234...',
-  topics: [
-    '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', // Transfer
-  ],
-})
-
-const filters = node.getFilters()
-node.removeFilter('0x1')
-
-const logs = await node.request({
-  method: 'eth_getFilterChanges',
-  params: ['0x1']
-})
-```
-
-Topic `0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef` is keccak256 of `Transfer(address,address,uint256)`.
-
-## Node Properties
-
-### Status
-
-```ts
-console.log(node.status)
-// 'INITIALIZING' | 'READY' | 'SYNCING' | 'MINING' | 'STOPPED'
-
-const waitForReady = async () => {
-  while (node.status !== 'READY') {
-    await new Promise(resolve => setTimeout(resolve, 100))
-  }
-}
-```
-
-### Mode
-
-```ts
-console.log(node.mode) // 'fork' or 'normal'
-
-if (node.mode === 'fork') {
-  // fork-specific features like impersonation
-} else {
-  // local-only features
-}
-```
-
-### Logger
-
-```ts
-node.logger.trace('Extremely detailed information')
-node.logger.debug('Detailed debugging information')
-node.logger.info('General information')
-node.logger.warn('Warning messages')
-node.logger.error('Error information')
-node.logger.fatal('Critical errors that stop execution')
-
-node.logger.info('Transaction processed', {
-  hash: '0x1234...',
-  from: '0x5678...',
-  to: '0x9abc...',
-  value: '1 ETH'
-})
-```
-
-## Advanced Actions
-
-The `tevm`-prefixed actions provide direct EVM execution with debugging hooks.
-
-### tevmCall
-
-Low-level EVM call with execution tracing:
-
-```ts
-import { encodeFunctionData } from 'viem'
-import { bytesToHex, createMemoryClient } from 'tevm'
-
-const client = createMemoryClient()
-
-const result = await client.tevmCall({
-  to: '0x1234...',
-  data: encodeFunctionData({ abi, functionName: 'myFunction', args: [arg1, arg2] }),
-  onStep: (step, next) => {
-    console.log(`Opcode: ${step.opcode.name}, PC: ${step.pc}`)
-    next?.()
-  },
-  onNewContract: (data, next) => {
-    console.log(`New contract at: ${data.address.toString()}`)
-    next?.()
-  },
-  onBeforeMessage: (message, next) => {
-    console.log(`Call to: ${message.to?.toString()}`)
-    next?.()
-  },
-  onAfterMessage: (result, next) => {
-    console.log(`Return: ${bytesToHex(result.execResult.returnValue)}`)
-    next?.()
-  }
-})
-```
-
-:::tip
-`onStep` fires for every EVM instruction, enabling opcode-level tracing.
-:::
-
-### tevmContract
-
-High-level contract interaction with event monitoring:
-
-```ts
-import { tevmContract } from 'tevm'
-import { createMemoryClient } from 'tevm'
-
-const client = createMemoryClient()
-
-const result = await tevmContract(client, {
-  abi,
-  to: '0x1234567890123456789012345678901234567890',
-  functionName: 'myFunction',
-  args: [arg1, arg2],
-  onStep: (step, next) => {
-    console.log(`Opcode: ${step.opcode.name}, Stack: ${step.stack.length}`)
-    next?.()
-  },
-  onNewContract: (data, next) => {
-    console.log(`New contract: ${data.address.toString()}`)
-    next?.()
-  }
-})
-```
-
-### tevmDeploy
-
-Contract deployment with execution monitoring:
-
-```ts
-import { tevmDeploy } from 'tevm'
-import { createMemoryClient } from 'tevm'
-
-const client = createMemoryClient()
-
-const deployResult = await tevmDeploy(client, {
-  abi,
-  bytecode,
-  args: [constructorArg1, constructorArg2],
-  onStep: (step, next) => {
-    console.log(`Executing: ${step.opcode.name}`)
-    next?.()
-  },
-  onNewContract: (data, next) => {
-    console.log(`Deployed at: ${data.address.toString()}`)
-    next?.()
-  }
-})
-
-console.log('Deployed:', deployResult.createdAddress)
-console.log('Gas used:', deployResult.executionGasUsed)
-```
-
-Debug use cases: gas profiling, contract testing, security auditing, educational EVM visualizers.
-
-## Extensibility
-
-### Custom Methods
-
-```ts
-const enhancedNode = node.extend((baseNode) => ({
-  async getBalance(address: string) {
-    const vm = await baseNode.getVm()
-    const account = await vm.stateManager.getAccount(address)
-    return account.balance
-  },
-}))
-
-const balance = await enhancedNode.getBalance('0x1234...')
-```
-
-:::tip
-Extension methods have full access to the base node's functionality.
-:::
-
-### State Cloning
-
-`await node.deepCopy()` creates an independent copy of the node's blockchain,
-state manager, txpool, and receipt data. State copying is useful for alternative
-execution paths and expensive test setup. Use the higher-level
-`client.snapshot()` and `client.revert({ id })` actions when a test only needs
-to restore one client.
-
-## JSON-RPC Support
-
-Tevm Node implements standard Ethereum JSON-RPC methods.
-
-### EIP-1193 Interface
-
-```ts
-import { requestEip1193 } from 'tevm/decorators'
-
-const node = createTevmNode().extend(requestEip1193())
-
-const blockNumber = await node.request({ method: 'eth_blockNumber', params: [] })
-
-const balance = await node.request({
-  method: 'eth_getBalance',
-  params: ['0x1234...', 'latest']
-})
-```
-
-The EIP-1193 interface is compatible with libraries like Ethers.js.
-
-### Action Methods
-
-```ts
-import { ethActions } from 'tevm/decorators'
-
-const node = createTevmNode().extend(ethActions())
-
-const blockNumber = await node.eth.getBlockNumber()
-const balance = await node.eth.getBalance('0x1234...')
-
-const hash = await node.eth.sendTransaction({
-  from: '0x1234...',
-  to: '0x5678...',
-  value: 1000000000000000000n
-})
-```
-
-Action methods provide ergonomic TypeScript-typed alternatives to raw JSON-RPC.
-
-### Common JSON-RPC Methods
-
-For the exhaustive list, see the [JSON-RPC Guide](./json-rpc#supported-methods).
-
-**State Access**
-- `eth_getBalance`
-- `eth_getCode`
-- `eth_getStorageAt`
-- `eth_getTransactionCount`
-
-**Block Methods**
-- `eth_blockNumber`
-- `eth_getBlockByHash`
-- `eth_getBlockByNumber`
-
-**Transaction Methods**
-- `eth_sendTransaction`
-- `eth_sendRawTransaction`
-- `eth_getTransactionByHash`
-- `eth_getTransactionReceipt`
-
-**Anvil Methods**
-- `anvil_impersonateAccount`
-- `anvil_stopImpersonatingAccount`
-- `anvil_mine`
-- `anvil_setBalance`
-
-**Tevm Methods**
-- `tevm_snapshot`
-- `tevm_revert`
-- `tevm_mine`
-- `tevm_setAccount`
-
-See [Complete JSON-RPC API](../api/json-rpc).
+Next: [Call, contract & deploy](./tevm-call) · [Engine API](../core/tevm-node-interface) · [JSON-RPC reference](./json-rpc)

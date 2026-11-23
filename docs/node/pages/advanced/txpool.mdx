@@ -1,224 +1,36 @@
 ---
 title: Transaction Pool
-description: A powerful transaction pool (mempool) for managing pending Ethereum transactions
+description: Inspect pending and queued transactions with txpool_* JSON-RPC methods
 ---
 
-# Transaction Pool
+# Transaction pool
 
-The TxPool manages pending transactions before block inclusion. Tevm's facade is backed by `@evmts/zevm/txpool` and adds Tevm-specific fee handling for modern fee-market transactions.
+ZEVM manages pending and queued transactions natively. When `mining: { auto: false }`, submitted transactions stay in the pool until mined with `tevmMine()` or `mine()`.
 
-## Quick Start
-
-```ts
-import { createTevmNode, PREFUNDED_ACCOUNTS } from 'tevm'
-import { createAddress } from 'tevm/address'
-import { createImpersonatedTx } from 'tevm/tx'
-
-const node = createTevmNode()
-const txPool = await node.getTxPool()
-
-const tx = createImpersonatedTx({
-  impersonatedAddress: createAddress(PREFUNDED_ACCOUNTS[0].address),
-  to: createAddress('0x2345678901234567890123456789012345678901'),
-  value: 1000000000000000000n, // 1 ETH
-  gasLimit: 21000n,
-  maxFeePerGas: 20000000000n,
-  maxPriorityFeePerGas: 20000000000n,
-  nonce: 0n,
-})
-
-await txPool.addUnverified(tx)
-```
-
-## Key Features
-
-- **Transaction Validation** — nonce, balance, gas checks
-- **Transaction Replacement** — replace pending tx with higher gas price
-- **Nonce Ordering** — correct sequence per account
-- **Automatic Pruning** — removes stale txs
-- **Performance Optimized** — handles large volumes
-- **Modern Transaction Support** — legacy, EIP-2930, EIP-1559, EIP-4844, EIP-7702, and Tevm impersonated transactions
-- **JSON-RPC Access** — `txpool_content`, `txpool_contentFrom`, `txpool_inspect`, `txpool_status`
-
-## Core Concepts
-
-### Pool Limits
+## Inspecting pending transactions
 
 ```ts
-const LIMITS = {
-  MAX_POOL_SIZE: 5000,           // Maximum total transactions
-  MAX_TXS_PER_ACCOUNT: 100,      // Maximum per account
-  MIN_GAS_PRICE: 100000000n,     // 0.1 GWei minimum
-  TX_MAX_DATA_SIZE: 128 * 1024,  // 128KB max transaction size
-}
-```
+import { createMemoryClient, parseEther, PREFUNDED_ACCOUNTS } from 'tevm'
 
-### Transaction Lifecycle
-
-1. **Addition** — via `add()` or `addUnverified()`
-2. **Validation** — optional nonce, balance, gas checks
-3. **Storage** — stored and ordered by nonce
-4. **Pruning** — removed after `POOLED_STORAGE_TIME_LIMIT` (20 minutes)
-
-## Detailed Usage
-
-### Adding Transactions
-
-```ts
-// Full validation
+const client = createMemoryClient({ mining: { auto: false } })
 try {
-  await txPool.add(tx)
-} catch (error) {
-  if (error.message.includes('insufficient balance')) {
-    console.error('Account has insufficient funds')
-  }
-}
+  await client.tevmCall({
+    from: PREFUNDED_ACCOUNTS[0].address,
+    to: '0x1111111111111111111111111111111111111111',
+    value: parseEther('1'),
+    addToMempool: true,
+  })
 
-// No validation (faster)
-await txPool.addUnverified(tx)
-```
+  const status = await client.transport.tevm.request({ method: 'txpool_status' })
+  const content = await client.transport.tevm.request({ method: 'txpool_content' })
+  console.log({ status, content })
 
-### Transaction Replacement
-
-Submit a new tx with the same nonce and higher gas price (>= 10% bump):
-
-```ts
-const originalTx = createImpersonatedTx({
-  // ... base transaction params ...
-  maxFeePerGas: 20000000000n,
-  nonce: 0n,
-})
-
-const replacementTx = createImpersonatedTx({
-  // ... same params as original ...
-  maxFeePerGas: 30000000000n, // At least 10% higher
-  nonce: 0n,
-})
-
-await txPool.addUnverified(originalTx)
-await txPool.addUnverified(replacementTx) // Replaces originalTx
-```
-
-:::note
-Replacements must bump gas price by at least `MIN_GAS_PRICE_BUMP_PERCENT` (10%).
-:::
-
-### Querying Transactions
-
-```ts
-const senderTxs = await txPool.getBySenderAddress(senderAddress)
-
-const txHashes = [hash1, hash2]
-const specificTxs = txPool.getByHash(txHashes)
-
-const orderedTxs = await txPool.txsByPriceAndNonce({
-  baseFee: currentBaseFee,
-  allowedBlobs: 6, // For EIP-4844
-})
-```
-
-### Block Processing
-
-```ts
-import { mineHandler } from 'tevm/actions'
-
-await mineHandler(node)()
-txPool.removeNewBlockTxs(newBlocks)
-```
-
-## Advanced Features
-
-### Pool Management
-
-```ts
-txPool.start()    // Start processing
-txPool.stop()     // Stop (keep transactions)
-txPool.close()    // Clear all
-txPool.cleanup()  // Manual cleanup of old txs
-```
-
-### Transaction Types
-
-Supports: Legacy, EIP-2930 (Access Lists), EIP-1559 (Fee Market), EIP-4844 (Blob), EIP-7702 (EOA Code), and Tevm Impersonated Transactions.
-
-## Best Practices
-
-### 1. Transaction Creation
-
-```ts
-import { PREFUNDED_ACCOUNTS, parseEther, parseGwei } from 'tevm'
-import { createAddress } from 'tevm/address'
-import { createImpersonatedTx } from 'tevm/tx'
-
-const tx = createImpersonatedTx({
-  impersonatedAddress: createAddress(PREFUNDED_ACCOUNTS[0].address),
-  to: createAddress('0x2345678901234567890123456789012345678901'),
-  value: parseEther('1'),
-  gasLimit: 21000n,
-  maxFeePerGas: parseGwei('20'),
-  maxPriorityFeePerGas: parseGwei('2'),
-  nonce: 0n,
-})
-```
-
-### 2. Error Handling
-
-```ts
-try {
-  await txPool.add(tx)
-} catch (error) {
-  switch (true) {
-    case error.message.includes('insufficient balance'):
-      break
-    case error.message.includes('nonce too low'):
-      break
-    case error.message.includes('gas price too low'):
-      break
-    default:
-      // unknown error
-  }
+  await client.tevmMine({ blocks: 1 })
+} finally {
+  await client.tevmClose()
 }
 ```
 
-### 3. Performance Optimization
+Supported RPC methods: `txpool_status`, `txpool_content`, `txpool_contentFrom`, `txpool_inspect`.
 
-- Use `addUnverified` for bulk operations
-- Run cleanup cycles
-- Monitor pool size and tx age
-
-### 4. Memory Management
-
-```ts
-setInterval(() => {
-  txPool.cleanup()
-}, 5 * 60 * 1000) // Every 5 minutes
-
-const poolSize = txPool.txsInPool
-if (poolSize > MAX_POOL_SIZE * 0.8) {
-  console.warn('Pool approaching capacity')
-}
-```
-
-## API Reference
-
-```ts
-class TxPool {
-  constructor(options: { vm: Vm })
-  async add(tx: Transaction): Promise<void>
-  async addUnverified(tx: Transaction): Promise<void>
-  async getBySenderAddress(address: Address): Promise<TxPoolObject[]>
-  getByHash(hashes: Uint8Array[]): Transaction[]
-  removeByHash(hash: string): void
-  removeNewBlockTxs(blocks: Block[]): void
-  start(): boolean
-  stop(): boolean
-  cleanup(): void
-  close(): void
-}
-```
-
-## Related Topics
-
-- [JSON-RPC Support](../api/json-rpc)
-- [VM & Submodules](../api/vm-and-submodules)
-- [Receipts & Logs](./receipts-and-logs)
+See [Mining & block production](/core/mining-modes) and [JSON-RPC reference](/api/json-rpc).

@@ -1,69 +1,89 @@
 ---
 title: Getting started
-description: Install tevm rc.151 and choose the right core API
+description: Install tevm, create an isolated native memory client, deploy bytecode, and pick your API surface
 ---
+
+import { CoreCallFlowDiagram, QaBox, WatchOut } from '../components/Diagrams'
 
 # Getting started
 
-This site targets `tevm@1.0.0-rc.151`. Install it with the `viem` peer dependency using `pnpm add tevm@1.0.0-rc.151 viem`, or the equivalent command for your package manager.
+Requires **Node.js 24 or later**. Install `tevm` alongside `viem`:
+
+```bash
+pnpm add tevm viem
+```
 
 ## Create a client
 
-`createMemoryClient()` is synchronous. The EVM initializes on the first action. Call `tevmReady()` when initialization should be explicit, especially for a fork.
+`createMemoryClient()` allocates an isolated native ZEVM chain synchronously (default chain ID `31337`, block `0`, automining enabled). Call `tevmReady()` when you want startup configuration — especially a fork — to finish eagerly.
 
 ```ts
 import assert from 'node:assert/strict'
 import { createMemoryClient } from 'tevm'
 
 const client = createMemoryClient()
-
-await client.tevmReady()
-assert.equal(await client.getBlockNumber(), 0n)
-assert.equal(await client.getChainId(), 900)
+try {
+  await client.tevmReady()
+  assert.equal(await client.getBlockNumber(), 0n)
+  assert.equal(await client.getChainId(), 31337)
+} finally {
+  await client.tevmClose()
+}
 ```
 
-The client combines five useful surfaces:
+<WatchOut title="Always call tevmClose()">
+Each client holds a native ZEVM handle outside V8's garbage collector. Wrap usage in `try { ... } finally { await client.tevmClose() }` so native memory and interval timers shut down cleanly.
+</WatchOut>
 
-| Surface | Use it for | Examples |
+One client exposes five surfaces over the exact same native chain:
+
+| Surface | Use it for | Representative methods |
 | --- | --- | --- |
-| Public actions | Read chain data | `getBalance`, `getBlock`, `getLogs` |
-| Wallet actions | Submit signed work | `sendTransaction`, `writeContract` |
-| Test actions | Prepare a scenario | `setCode`, `snapshot`, `increaseTime` |
-| tevm actions | Control tevm directly | `tevmCall`, `tevmMine`, `tevmDumpState` |
-| EIP-1193 | Integrate providers and tools | `request({ method, params })` |
+| Public actions | Read chain state | `getBalance`, `getBlock`, `getLogs`, `readContract` |
+| Wallet actions | Submit transactions | `sendTransaction`, `writeContract`, `deployContract` |
+| Test actions | Prepare scenarios | `setBalance`, `setCode`, `mine`, `snapshot`, `revert` |
+| TEVM actions | Direct engine helpers | `tevmCall`, `tevmContract`, `tevmDeploy`, `tevmDumpState` |
+| EIP-1193 | Raw JSON-RPC | `request({ method, params })` |
 
-## Install contract code
+## Deploy and call a contract
 
-For a test, installing deployed bytecode is often clearer than creating a deployment transaction.
+<CoreCallFlowDiagram />
+
+Deploy creation bytecode with `tevmDeploy`, then decode typed return values with `tevmContract`:
 
 ```ts
 import assert from 'node:assert/strict'
-import { createMemoryClient } from 'tevm'
-import { SimpleContract } from 'tevm/contract'
+import { createMemoryClient, parseAbi } from 'tevm'
 
 const client = createMemoryClient()
-const contract = SimpleContract.withAddress('0x2222222222222222222222222222222222222222')
+try {
+  const deployed = await client.tevmDeploy({
+    bytecode: '0x600a600c600039600a6000f3602a60005260206000f3',
+  })
+  assert.ok(deployed.createdAddress)
 
-await client.setCode({
-  address: contract.address,
-  bytecode: contract.deployedBytecode,
-})
+  const result = await client.tevmContract({
+    address: deployed.createdAddress,
+    abi: parseAbi(['function answer() view returns (uint256)']),
+    functionName: 'answer',
+  })
 
-const value = await client.readContract({
-  address: contract.address,
-  abi: contract.abi,
-  functionName: 'get',
-})
-
-assert.equal(value, 0n)
+  assert.equal(result.data, 42n)
+} finally {
+  await client.tevmClose()
+}
 ```
+
+<QaBox question="When should I use setCode / tevmSetAccount instead of tevmDeploy?">
+When a test does not need constructor logic, installing runtime bytecode directly with `tevmSetAccount({ address, deployedBytecode })` or `setCode({ address, bytecode })` places code at a deterministic address with zero transaction overhead.
+</QaBox>
 
 ## Choose the next page
 
-| If you need to | Read |
+| If you need to… | Read |
 | --- | --- |
-| Understand the execution layers | [The EVM in tevm](./concepts/evm) |
-| Work at the viem-compatible level | [Memory client](./guides/memory-client) |
-| Choose between client, handler, and JSON-RPC actions | [Actions](./guides/actions) |
-| Read or write raw accounts, code, and storage | [State manager](./guides/state-manager) |
-| Overlay local execution on an existing chain | [Forking](./guides/forking) |
+| Understand the native ZEVM + Voltaire + Guillotine Mini stack | [The EVM in tevm](./concepts/evm) |
+| Work at the viem client level | [Memory client](./guides/memory-client) |
+| Choose between client methods, standalone actions, and JSON-RPC | [Actions](./guides/actions) |
+| Manage accounts, storage, snapshots, and state blobs | [State & snapshots](./guides/state-manager) |
+| Fork an upstream chain with a local write overlay | [Forking](./guides/forking) |

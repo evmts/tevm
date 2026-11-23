@@ -1,133 +1,114 @@
 ---
-title: Forking
-description: Overlay local Tevm state and blocks on an upstream EVM chain
+title: Forking Upstream Chains
+description: Overlay local native execution on an upstream EVM JSON-RPC endpoint at a pinned block
 ---
 
-# Forking
+import { ForkOverlayDiagram, QaBox, WatchOut } from '../../components'
 
-A Tevm fork reads historical chain data from an upstream EIP-1193 transport and stores local changes in an in-memory overlay. It does not copy the entire remote chain and never writes upstream.
+# Forking upstream chains
 
-## Create a Reproducible Fork
+A Tevm fork reads accounts, contract bytecode, and storage slots lazily from an upstream JSON-RPC endpoint and stores every local write in an in-memory overlay. It never copies the entire chain and never writes upstream.
+
+<ForkOverlayDiagram />
+
+## Create a reproducible fork
+
+Pass `fork: { url, blockNumber }` alongside the matching `chainId` and `common`:
 
 ```ts
-import { createMemoryClient, http } from 'tevm'
+import { createMemoryClient } from 'tevm'
 import { mainnet } from 'tevm/common'
 
 const client = createMemoryClient({
+  chainId: mainnet.id,
   common: mainnet,
   fork: {
-    transport: http('https://ethereum-rpc.publicnode.com')({}),
-    blockTag: 20_000_000n,
+    url: 'https://ethereum-rpc.publicnode.com',
+    blockNumber: 20_000_000,
   },
 })
 
-await client.tevmReady()
+try {
+  await client.tevmReady()
 
-const block = await client.getBlock({ blockNumber: 20_000_000n })
-console.log(block.hash)
+  const vitalik = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+  const balance = await client.getBalance({ address: vitalik })
+  console.log('Forked balance:', balance)
+} finally {
+  await client.tevmClose()
+}
 ```
 
-`fork.transport` is an EIP-1193 request function. viem's `http(url)` returns a transport factory, so invoke it with `({})` before passing it to Tevm.
+- **`url`** — any HTTP(S) Ethereum JSON-RPC endpoint.
+- **`blockNumber`** — optional unsigned safe integer (`number`). Pin it in tests so every run sees identical state. Omit it to fork from the upstream head at startup.
+- **`chainId` / `common`** — configure the chain ID (for example `mainnet.id` = `1`) so signed transactions and EIP-712 domain separators match the forked network.
 
-Set `common` when the chain is known. This avoids an extra chain-ID request and selects the correct hardfork and chain behavior. Pin `blockTag` for tests; omit it only when following the current upstream head is intended.
+## Read upstream, mutate locally
 
-## Read Remote State, Write Locally
-
-Missing accounts, code, storage, and blocks are fetched lazily and cached. Test actions modify only the overlay.
+The first uncached read fetches the account, code, or storage slot from the upstream endpoint and caches it locally. Any write (`tevmSetAccount`, `tevmDeal`, `setBalance`, `setCode`, or a mined transaction) updates only the local overlay.
 
 ```ts
-import { createMemoryClient, http } from 'tevm'
+import { createMemoryClient, parseEther } from 'tevm'
 import { mainnet } from 'tevm/common'
 
 const client = createMemoryClient({
+  chainId: mainnet.id,
   common: mainnet,
   fork: {
-    transport: http('https://ethereum-rpc.publicnode.com')({}),
-    blockTag: 20_000_000n,
+    url: 'https://ethereum-rpc.publicnode.com',
+    blockNumber: 20_000_000,
   },
 })
 
-const account = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
-const remoteBalance = await client.getBalance({
-  address: account,
-  blockNumber: 20_000_000n,
-})
+try {
+  await client.tevmReady()
 
-await client.setBalance({
-  address: account,
-  value: remoteBalance + 1n,
-})
+  const target = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+  const before = await client.getBalance({ address: target })
 
-console.log(await client.getBalance({ address: account }))
+  await client.tevmDeal({ address: target, amount: before + parseEther('100') })
+  const after = await client.getBalance({ address: target })
+
+  console.log({ before, after, delta: after - before })
+} finally {
+  await client.tevmClose()
+}
 ```
 
-Historical reads at or before the fork block can still resolve remotely. New local blocks, receipts, and state roots are owned by Tevm.
+## Isolate fork tests with snapshots
 
-:::warning[Arbitrum custom transaction types]
-Optimism deposit transactions (type `0x7e`) are reconstructed with exact block
-fidelity. Arbitrum transaction types `0x6a`–`0x6f` are not implemented yet;
-Tevm throws `UnsupportedForkTransactionError` rather than constructing a block
-whose transactions differ from upstream.
-:::
-
-## Fork Through a Viem Transport
-
-The `fork.transport` option accepts the transport object returned by a viem
-transport factory:
+Fetching state from a remote RPC takes a network round trip on the first cache miss. Combine a shared fork setup with `snapshot()` and `revert()` so each test rewinds local writes without reforking:
 
 ```ts
-import { createMemoryClient, http } from 'tevm'
-import { mainnet } from 'tevm/common'
-
-const upstream = http('https://ethereum-rpc.publicnode.com')({})
-
-const client = createMemoryClient({
-  common: mainnet,
-  fork: {
-    transport: upstream,
-    blockTag: 20_000_000n,
-  },
-})
-
-await client.tevmReady()
-console.log(await client.getBlockNumber())
-```
-
-Pass the transport object, not an already-created viem client.
-
-## Test a Fork with Snapshots
-
-Snapshots isolate local changes without refetching the fork:
-
-```ts
-import { createMemoryClient, http } from 'tevm'
-import { mainnet } from 'tevm/common'
-
-const client = createMemoryClient({
-  common: mainnet,
-  fork: {
-    transport: http('https://ethereum-rpc.publicnode.com')({}),
-    blockTag: 20_000_000n,
-  },
-})
-
 const snapshotId = await client.snapshot()
 
 await client.setCode({
   address: '0x1111111111111111111111111111111111111111',
-  bytecode: '0x6001600055',
+  bytecode: '0x602a60005260206000f3',
 })
 
 await client.revert({ id: snapshotId })
 ```
 
-## Failure and Cache Behavior
+## Two critical fork semantics
 
-- The first uncached read can fail if the upstream transport is unavailable.
-- Cached fork data and all local state remain usable without another network request.
-- An invalid `blockTag` fails during initialization or the first read.
-- rc.151 does not provide an automatic rebase mode. Create a new client when a test needs a different fork block.
+<QaBox question="Why does getBlockNumber() return 0n right after forking block 20,000,000?">
+ZEVM forks upstream **state** at your pinned `blockNumber` into a fresh local chain starting at block height `0`. It does not import historical upstream block headers. Accounts, code, and storage slots read lazily from the pinned upstream block, while blocks mined locally increment from `0` → `1` → `2`.
+</QaBox>
 
-## Related
+<WatchOut title="Never fork a server running on the same Node.js event loop">
+ZEVM performs fork HTTP requests **synchronously inside native Zig code**. If a test spawns an HTTP mock server on the same Node.js event loop and tries to fork it from the same process, the native HTTP call blocks the JS thread that would have answered the request — causing a deadlock.
 
-[Architecture Overview](../introduction/architecture-overview) · [Managing State](./managing-state) · [Local Testing](../examples/local-testing)
+In tests that fork a local upstream server, run the upstream server in a **child process** (`node:child_process` `fork()` or `spawn()`).
+</WatchOut>
+
+## Operational summary
+
+| Behavior | Detail |
+| --- | --- |
+| Startup | `createZevmEngine` runs `anvil_reset` with `{ forking: { jsonRpcUrl, blockNumber } }`. |
+| Invalid URL / unreachable RPC | `tevmReady()` rejects with a `NativeRpcError` and releases the native handle automatically. |
+| Repeated reads | Served from the local cache without another network round trip. |
+| Switching fork blocks | Call `anvil_reset` with new `forking` params, or create a new client. |
+
+Next: [Forking mainnet cookbook](../examples/forking-mainnet) · [Accounts, storage & snapshots](./managing-state) · [Engine API](./tevm-node-interface)

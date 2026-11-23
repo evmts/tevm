@@ -1,141 +1,129 @@
 ---
-title: EVM Events
-description: Observe opcode, message, contract-creation, and mining events in Tevm calls
+title: Tracing & Engine Events
+description: Capture native Guillotine Mini opcode traces with debug_traceCall and subscribe to ZevmEngine lifecycle events
 ---
 
-# EVM Events
+import { TracePipelineDiagram, UnderTheHood, WatchOut } from '../../components'
 
-Tevm call actions accept callbacks for live execution inspection. They are useful for debuggers, tracers, profilers, and test assertions.
+# Tracing & engine events
 
-## Call Events
+Tevm exposes two observability surfaces:
 
-The four callbacks are:
+1. **Opcode-level execution traces** via native `debug_traceCall` (executed in Guillotine Mini).
+2. **Engine lifecycle events** (`request`, `response`, `block`, `close`) on `ZevmEngine.events`.
 
-- `onStep(step, next)` before each opcode;
-- `onBeforeMessage(message, next)` before an EVM call frame;
-- `onAfterMessage(result, next)` after an EVM call frame;
-- `onNewContract(contract, next)` when execution creates a contract.
+## Native opcode tracing (`debug_traceCall`)
 
-Callbacks use a middleware continuation. Always call `next?.()` or execution will stop at that callback.
+<TracePipelineDiagram />
 
-```ts
-import {
-  bytesToHex,
-  createMemoryClient,
-  PREFUNDED_ACCOUNTS,
-} from 'tevm'
+`debug_traceCall` runs a call inside Guillotine Mini's native tracer and returns structured pre-opcode execution steps — including failing and reverting calls.
 
-const client = createMemoryClient()
-const contract = '0x4444444444444444444444444444444444444444'
+### Supported tracer options
 
-await client.tevmSetAccount({
-  address: contract,
-  deployedBytecode: '0x6001600055',
-})
+| Option | Type | Default | Effect |
+| --- | --- | --- | --- |
+| `disableStack` | `boolean` | `false` | Omit the EVM stack array from each step. |
+| `enableMemory` | `boolean` | `false` | Include 32-byte memory words before each opcode. |
+| `enableReturnData` | `boolean` | `false` | Include the active return-data buffer on each step. |
+| `disableStorage` | `boolean` | `true` | Only `true` is supported (storage diffs are not recorded per step). |
 
-const opcodes: string[] = []
-const result = await client.tevmCall({
-  from: PREFUNDED_ACCOUNTS[0].address,
-  to: contract,
-  createTrace: true,
-  onStep(step, next) {
-    opcodes.push(step.opcode.name)
-    console.log(step.pc, step.gasLeft, Array.from(step.stack))
-    next?.()
-  },
-  onBeforeMessage(message, next) {
-    console.log('call', message.to?.toString(), message.value)
-    next?.()
-  },
-  onAfterMessage(messageResult, next) {
-    console.log(
-      messageResult.execResult.executionGasUsed,
-      bytesToHex(messageResult.execResult.returnValue),
-    )
-    next?.()
-  },
-})
-
-console.log(opcodes, result.executionGasUsed, result.trace?.structLogs)
-```
-
-The live `step` object contains interpreter state, including memory and the mutable stack. Copy values with `Array.from(step.stack)` before retaining them in a UI.
-
-## Tree-Shakable Calls
-
-The standalone action works with a viem client using a Tevm transport.
-
-```ts
-import { createTevmTransport, tevmCall } from 'tevm'
-import { createClient } from 'viem'
-
-const client = createClient({
-  transport: createTevmTransport(),
-})
-
-const result = await tevmCall(client, {
-  deployedBytecode: '0x6001600055',
-  createTrace: true,
-})
-
-console.log(result.trace?.structLogs)
-```
-
-Standalone Tevm action functions are exported from `tevm`. `tevm/actions` exports lower-level handler factories and types.
-
-## Returned Traces
-
-`createTrace: true` adds a Geth-style trace to the call result:
+### Example: Trace a contract call
 
 ```ts
 import { createMemoryClient } from 'tevm'
 
 const client = createMemoryClient()
-const result = await client.tevmCall({
-  deployedBytecode: '0x6001600055',
-  createTrace: true,
-})
 
-for (const step of result.trace?.structLogs ?? []) {
-  console.log({
-    pc: step.pc,
-    opcode: step.op,
-    gasLeft: step.gas,
-    gasCost: step.gasCost,
-    depth: step.depth,
-    stack: step.stack,
+try {
+  const target = '0x0000000000000000000000000000000000000123'
+  // PUSH1 0x2a; PUSH1 0x00; MSTORE; PUSH1 0x20; PUSH1 0x00; RETURN
+  await client.tevmSetAccount({
+    address: target,
+    deployedBytecode: '0x602a60005260206000f3',
   })
+
+  const trace = (await client.transport.tevm.request({
+    method: 'debug_traceCall',
+    params: [
+      { to: target },
+      'latest',
+      { enableMemory: true, enableReturnData: true },
+    ],
+  })) as {
+    gas: number
+    failed: boolean
+    returnValue: string
+    truncated: boolean
+    structLogs: Array<{
+      pc: number
+      op: string
+      gas: number
+      gasCost: number
+      depth: number
+      stack: string[]
+      memory?: string[]
+      returnData?: string
+    }>
+  }
+
+  console.log({
+    gas: trace.gas,
+    failed: trace.failed,
+    returnValue: trace.returnValue,
+    truncated: trace.truncated,
+    opcodes: trace.structLogs.map((s) => `${s.pc}:${s.op}(-${s.gasCost})`),
+  })
+  // opcodes: ['0:PUSH1(-3)', '2:PUSH1(-3)', '4:MSTORE(-6)', '5:PUSH1(-3)', '7:PUSH1(-3)', '9:RETURN(-0)']
+} finally {
+  await client.tevmClose()
 }
 ```
 
-The returned trace is easier to serialize than live interpreter objects. Use callbacks when updates must stream during execution and `result.trace` when post-processing is enough.
+### Trace payload fields
 
-## Mining Events
+| Field | Type | Description |
+| --- | --- | --- |
+| `gas` | `number` | Total gas used by the traced call (including intrinsic gas). |
+| `failed` | `boolean` | `true` if the call reverted or hit an EVM exception. |
+| `returnValue` | `Hex` | Raw return data (or revert payload when `failed` is `true`). |
+| `truncated` | `boolean` | `true` if execution exceeded the 100,000-step native retention cap. |
+| `structLogs` | `Array<StructLog>` | Per-opcode trace entries (`pc`, `op`, `gas`, `gasCost`, `depth`, `stack`, optional `memory`, optional `returnData`). |
 
-`tevmMine` can report each block as it is produced:
+<WatchOut title="Current native tracer bounds">
+`debug_traceCall` retains at most **100,000 steps** and sets `truncated: true` when clipped. Custom JS tracer programs and historical `debug_traceTransaction` replay are not supported by the native tracer.
+</WatchOut>
+
+## Engine lifecycle events (`engine.events`)
+
+Access the engine's `EventEmitter` via `client.transport.tevm.events` (or `engine.events` when using `createZevmEngine`):
 
 ```ts
 import { createMemoryClient } from 'tevm'
 
-const client = createMemoryClient()
-const blockNumbers: bigint[] = []
+const client = createMemoryClient({ mining: { auto: false } })
+const { events } = client.transport.tevm
 
-await client.tevmMine({
-  blockCount: 2,
-  onBlock(block, next) {
-    blockNumbers.push(block.header.number)
-    next?.()
-  },
-})
+events.on('request', (req) => console.log('->', req.method))
+events.on('response', ({ request }) => console.log('<-', request.method))
+events.on('block', (block) => console.log('block mined:', block.number))
+events.on('close', () => console.log('engine closed'))
 
-console.log(blockNumbers)
+try {
+  await client.tevmMine({ blocks: 1 })
+} finally {
+  await client.tevmClose()
+}
 ```
 
-Query canonical results with viem actions such as `getBlock`, `getTransactionReceipt`, and `getLogs`.
+| Event | Fires when |
+| --- | --- |
+| `request` | Before `engine.request()` dispatches to ZEVM. |
+| `response` | After `engine.request()` resolves. |
+| `block` | Whenever chain height advances — including autonomous blocks mined on the native interval thread. |
+| `close` | Once when `tevmClose()` / `engine.close()` frees the native handle. |
 
-## Related
+<UnderTheHood>
+To observe interval-mined blocks without polling in user code, `ZevmEngine` runs an unreferenced 50 ms check only while at least one `'block'` listener is registered, and clears it as soon as the last `'block'` listener is removed or the engine closes.
+</UnderTheHood>
 
-- [Call API](./tevm-call)
-- [Building a Debugger UI](../examples/debugger-ui)
-- [Performance Profiler](../advanced/performance-profiler)
-- [Mining Modes](../core/mining-modes)
+Next: [Browser trace viewer cookbook](../examples/debugger-ui) · [Engine API](../core/tevm-node-interface) · [MCP server](./mcp)

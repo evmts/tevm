@@ -1,416 +1,146 @@
 ---
-title: Using with Viem
-description: Connect Tevm Node to Viem as a custom transport
+title: Viem Cookbook
+description: Practical patterns for using viem public, wallet, test, and TEVM actions on one native engine
 ---
 
-# Using with Viem
+# Viem cookbook
 
-Tevm integrates with [viem](https://viem.sh) as a local Ethereum environment with viem's familiar API surface.
+Every snippet on this page runs directly against `createMemoryClient()` (or a custom viem client with `createTevmTransport()`).
 
-## Integration Options
-
-Two approaches:
+## Batteries-included vs. tree-shakeable
 
 :::code-group
-```ts [Tree-shakable (Recommended)]
-// For production frontends — minimize bundle size
+
+```ts [Batteries-included]
+import { createMemoryClient } from 'tevm'
+
+const client = createMemoryClient()
+try {
+  const blockNumber = await client.getBlockNumber()
+  const blob = await client.tevmDumpState()
+  console.log(blockNumber, blob.slice(0, 18))
+} finally {
+  await client.tevmClose()
+}
+```
+
+```ts [Tree-shakeable]
 import { createTevmTransport, tevmDumpState } from 'tevm'
 import { createClient } from 'viem'
 import { getBlockNumber } from 'viem/actions'
 
-const tevmTransport = createTevmTransport()
-
-const client = createClient({ transport: tevmTransport })
-
-// Import viem actions individually
-await getBlockNumber(client)
-
-// Import tevm actions individually
-await tevmDumpState(client)
-```
-
-```ts [Batteries-included]
-// All actions pre-attached — convenient for testing
-import { createMemoryClient } from 'tevm'
-
-const client = createMemoryClient()
-
-await client.getBlockNumber()
-await client.tevmDumpState()
-```
-:::
-
-:::tip
-The tree-shakable approach enables smaller bundles since only imported actions are included.
-:::
-
-## Core Functionality
-
-- **Public Actions** — read blockchain state, query contracts, estimate gas ([below](#public-actions))
-- **Wallet Actions** — send transactions, sign messages ([below](#wallet-actions))
-- **Test Actions** — manipulate state for testing ([below](#test-actions))
-- **Tevm Actions** — Tevm-specific EVM extensions ([below](#tevm-actions))
-
-## Public Actions
-
-Use [viem's public actions](https://viem.sh/docs/actions/public/introduction) to read from your local Tevm environment:
-
-```ts
-import { createMemoryClient } from "tevm";
-import { ERC20 } from "tevm/contract";
-import { encodeFunctionData, parseAbi } from "viem";
-
-const client = createMemoryClient();
-const tokenAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-const holderAddress = "0x1234567890123456789012345678901234567890";
-
-const block = await client.getBlock();
-console.log(`Block number: ${block.number}`);
-
-const balance = await client.getBalance({
-  address: holderAddress,
-});
-
-const nonce = await client.getTransactionCount({
-  address: holderAddress,
-});
-
-await client.setCode({
-  address: tokenAddress,
-  bytecode: ERC20.deployedBytecode,
-});
-
-const result = await client.readContract({
-  address: tokenAddress,
-  abi: parseAbi(["function balanceOf(address) view returns (uint256)"]),
-  functionName: "balanceOf",
-  args: [holderAddress],
-});
-```
-
-## Wallet Actions
-
-Tevm supports all [viem wallet actions](https://viem.sh/docs/actions/wallet/introduction) with prefunded accounts:
-
-```ts
-import { createMemoryClient, PREFUNDED_ACCOUNTS } from "tevm";
-import { parseEther } from "viem";
-
-const client = createMemoryClient({
-  account: PREFUNDED_ACCOUNTS[0], // 10000 ETH
-  miningConfig: { type: "manual" },
-});
-
-const hash = await client.sendTransaction({
-  to: "0x1234567890123456789012345678901234567890",
-  value: parseEther("1"),
-});
-
-await client.mine({ blocks: 1 });
-const receipt = await client.getTransactionReceipt({ hash });
-console.log(receipt.status);
-```
-
-<details>
-<summary>Working with Custom Accounts</summary>
-
-```ts
-import { createMemoryClient } from "tevm";
-import { parseEther } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
-
-const account = privateKeyToAccount(
-  "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-);
-
-const client = createMemoryClient({ account });
-
-await client.setBalance({ address: account.address, value: parseEther("10") });
-
-const hash = await client.sendTransaction({
-  to: "0x1234567890123456789012345678901234567890",
-  value: parseEther("1"),
-});
-```
-</details>
-
-## Test Actions
-
-All [viem test actions](https://viem.sh/docs/actions/test/introduction) are supported (Anvil/Hardhat compatible):
-
-```ts
-import { createMemoryClient } from "tevm";
-import { parseEther } from "viem";
-
-const client = createMemoryClient();
-
-await client.mine({ blocks: 5 });
-
-await client.setBalance({
-  address: "0x1234567890123456789012345678901234567890",
-  value: parseEther("100"),
-});
-
-await client.setNextBlockTimestamp({ timestamp: 1695311333n });
-await client.mine({ blocks: 1 });
-
-// Snapshot and revert
-const snapshotId = await client.snapshot();
-
-await client.setBalance({
-  address: "0x1234567890123456789012345678901234567890",
-  value: parseEther("999"),
-});
-
-await client.revert({ id: snapshotId });
-
-const balance = await client.getBalance({
-  address: "0x1234567890123456789012345678901234567890",
-});
-```
-
-## Tevm Actions
-
-Tevm-specific actions for enhanced EVM control.
-
-### Contract Interactions
-
-```ts
-import { createMemoryClient } from "tevm";
-import { ERC20 } from "tevm/contract";
-import { encodeFunctionData, parseAbi } from "viem";
-
-const client = createMemoryClient();
-const tokenAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-const holderAddress = "0x1234567890123456789012345678901234567890";
-
-const result = await client.tevmContract({
-  abi: parseAbi(["function balanceOf(address) view returns (uint256)"]),
-  to: tokenAddress,
-  deployedBytecode: ERC20.deployedBytecode,
-  functionName: "balanceOf",
-  args: [holderAddress],
-});
-
-// Low-level call
-const callResult = await client.tevmCall({
-  to: tokenAddress,
-  deployedBytecode: ERC20.deployedBytecode,
-  data: encodeFunctionData({
-    abi: parseAbi(["function balanceOf(address) view returns (uint256)"]),
-    functionName: "balanceOf",
-    args: [holderAddress],
-  }),
-});
-```
-
-### Account Management
-
-```ts
-import { createMemoryClient } from "tevm";
-import { parseEther } from "viem";
-
-const client = createMemoryClient();
-
-const account = await client.tevmGetAccount({
-  address: "0x1234567890123456789012345678901234567890",
-});
-
-// Set complex account state (EOA or contract)
-await client.tevmSetAccount({
-  address: "0xabcdef1234567890abcdef1234567890abcdef12",
-  balance: parseEther("100"),
-  nonce: 5n,
-  deployedBytecode: "0x6080604052348015600e575f80fd5b00",
-  state: {
-    "0x0000000000000000000000000000000000000000000000000000000000000000":
-      "0x0000000000000000000000000000000000000000000000000000000000000001",
-    "0x0000000000000000000000000000000000000000000000000000000000000001":
-      "0x0000000000000000000000000000000000000000000000000000000000000002",
-  },
-});
-
-// Native ETH
-await client.tevmDeal({
-  account: "0x1234567890123456789012345678901234567890",
-  amount: parseEther("10"),
-});
-
-// ERC20
-await client.tevmDeal({
-  erc20: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", // USDC
-  account: "0x1234567890123456789012345678901234567890",
-  amount: 1000000n, // 1 USDC (6 decimals)
-});
-```
-
-### State Management
-
-```ts
-import { createMemoryClient } from "tevm";
-
-const client = createMemoryClient();
-
-const state = await client.tevmDumpState();
-
-const savedState = await client.tevmDumpState();
-
-await client.setBalance({
-  address: "0x1234567890123456789012345678901234567890",
-  value: 123456789n,
-});
-
-await client.tevmLoadState({ state: savedState.state });
-
-await client.tevmMine({ blockCount: 5 });
-```
-
-:::warning
-`tevmDumpState` / `tevmLoadState` capture the complete VM state including the fork cache — more powerful than regular snapshots.
-:::
-
-## Inside the Memory Client
-
-A MemoryClient is a viem client with Tevm functionality. Build one from scratch:
-
-```ts
-import { createTevmTransport } from "tevm";
-import { tevmViemActions } from "tevm/memory-client";
-import { createClient, publicActions, testActions, walletActions } from "viem";
-
-const rpcUrl = process.env.OPTIMISM_RPC_URL ?? "https://mainnet.optimism.io";
-const memoryClient = createClient({
+const client = createClient({
+  cacheTime: 0,
   transport: createTevmTransport(),
 })
-  .extend(tevmViemActions())
-  .extend(publicActions)
-  .extend(walletActions)
-  .extend(testActions({ mode: "anvil" }));
+
+try {
+  const blockNumber = await getBlockNumber(client)
+  const blob = await tevmDumpState(client)
+  console.log(blockNumber, blob.slice(0, 18))
+} finally {
+  await client.transport.tevm.close()
+}
 ```
 
-Key architectural components:
+:::
 
-1. **EIP-1193 Compatibility Layer** — standard Ethereum provider interface
-2. **In-Memory EVM** — full Ethereum Virtual Machine locally
-3. **Viem Integration** — extends viem with EVM-specific capabilities
+## Impersonating any address
 
-## Complete Action Reference
+Send transactions from any address (such as a mainnet whale or multisig) without knowing its private key:
 
-<details>
-<summary><strong>Public Actions</strong> — Read blockchain state</summary>
+```ts
+import { createMemoryClient, parseEther } from 'tevm'
 
-#### Contract Interactions
+const client = createMemoryClient()
+try {
+  const whale = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+  const receiver = '0x1111111111111111111111111111111111111111'
 
-- [`call`](https://viem.sh/docs/actions/public/call) — Call without sending a transaction
-- [`readContract`](https://viem.sh/docs/contract/readContract) — Read a constant/view method
-- [`simulateContract`](https://viem.sh/docs/contract/simulateContract) — Simulate a write without executing
-- [`estimateContractGas`](https://viem.sh/docs/contract/estimateContractGas) — Estimate gas for a contract call
-- [`estimateGas`](https://viem.sh/docs/actions/public/estimateGas) — Estimate gas for a transaction
-- [`getBytecode`](https://viem.sh/docs/contract/getBytecode) — Get a contract's bytecode
+  await client.setBalance({ address: whale, value: parseEther('10') })
+  await client.impersonateAccount({ address: whale })
 
-#### Block & Transaction
+  const hash = await client.sendTransaction({
+    account: whale,
+    to: receiver,
+    value: parseEther('1'),
+  })
 
-- [`getBlock`](https://viem.sh/docs/actions/public/getBlock) — Get a block by number or hash
-- [`getBlockNumber`](https://viem.sh/docs/actions/public/getBlockNumber) — Latest block number
-- [`getBlockTransactionCount`](https://viem.sh/docs/actions/public/getBlockTransactionCount) — Tx count for a block
-- [`getTransaction`](https://viem.sh/docs/actions/public/getTransaction) — Tx details by hash
-- [`getTransactionCount`](https://viem.sh/docs/actions/public/getTransactionCount) — Tx count (nonce) for address
-- [`getTransactionReceipt`](https://viem.sh/docs/actions/public/getTransactionReceipt) — Receipt by hash
-- [`waitForTransactionReceipt`](https://viem.sh/docs/actions/public/waitForTransactionReceipt) — Wait for mining
+  const receipt = await client.getTransactionReceipt({ hash })
+  console.log(receipt.status, await client.getBalance({ address: receiver }))
 
-#### Account & Chain
+  await client.stopImpersonatingAccount({ address: whale })
+} finally {
+  await client.tevmClose()
+}
+```
 
-- [`getBalance`](https://viem.sh/docs/actions/public/getBalance) — Balance of an address
-- [`getChainId`](https://viem.sh/docs/actions/public/getChainId) — Chain ID
-- [`getGasPrice`](https://viem.sh/docs/actions/public/getGasPrice) — Current gas price
-- [`estimateFeesPerGas`](https://viem.sh/docs/actions/public/estimateFeesPerGas) — Estimate fees per gas unit
-- [`getStorageAt`](https://viem.sh/docs/actions/public/getStorageAt) — Storage slot value
+## Signing with a custom private key
 
-</details>
+```ts
+import { createMemoryClient, parseEther } from 'tevm'
+import { privateKeyToAccount } from 'viem/accounts'
 
-<details>
-<summary><strong>Test Actions</strong> — Manipulate blockchain state</summary>
+const account = privateKeyToAccount(
+  '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
+)
 
-#### Block & Mining
+const client = createMemoryClient({ account })
+try {
+  const hash = await client.sendTransaction({
+    to: '0x1111111111111111111111111111111111111111',
+    value: parseEther('0.5'),
+  })
+  const receipt = await client.getTransactionReceipt({ hash })
+  console.log('Mined in block:', receipt.blockNumber)
+} finally {
+  await client.tevmClose()
+}
+```
 
-- [`mine`](https://viem.sh/docs/actions/test/mine) — Mine blocks
-- [`setAutomine`](https://viem.sh/docs/actions/test/setAutomine) — Enable/disable automatic mining
-- [`setIntervalMining`](https://viem.sh/docs/actions/test/setIntervalMining) — Mine at intervals
-- [`setBlockGasLimit`](https://viem.sh/docs/actions/test/setBlockGasLimit) — Block gas limit
-- [`setBlockTimestampInterval`](https://viem.sh/docs/actions/test/setBlockTimestampInterval) — Timestamp increment
-- [`setNextBlockBaseFeePerGas`](https://viem.sh/docs/actions/test/setNextBlockBaseFeePerGas) — Next block base fee
-- [`setNextBlockTimestamp`](https://viem.sh/docs/actions/test/setNextBlockTimestamp) — Next block timestamp
+## Cloning state across two clients
 
-#### Account & State
+Export ZEVM's opaque hex blob from one client and load it into a second independent client:
 
-- [`setBalance`](https://viem.sh/docs/actions/test/setBalance) — Set address balance
-- [`setCode`](https://viem.sh/docs/actions/test/setCode) — Set contract bytecode
-- [`setNonce`](https://viem.sh/docs/actions/test/setNonce) — Set nonce
-- [`setStorageAt`](https://viem.sh/docs/actions/test/setStorageAt) — Set storage slot
-- [`setCoinbase`](https://viem.sh/docs/actions/test/setCoinbase) — Set miner address
-- [`setMinGasPrice`](https://viem.sh/docs/actions/test/setMinGasPrice) — Minimum gas price
+```ts
+import { createMemoryClient, parseEther } from 'tevm'
 
-#### State Management
+const clientA = createMemoryClient()
+const clientB = createMemoryClient()
 
-- [`snapshot`](https://viem.sh/docs/actions/test/snapshot) — Snapshot current state
-- [`revert`](https://viem.sh/docs/actions/test/revert) — Revert to snapshot
-- [`reset`](https://viem.sh/docs/actions/test/reset) — Reset fork
-- [`dumpState`](https://viem.sh/docs/actions/test/dumpState) — Export state
-- [`loadState`](https://viem.sh/docs/actions/test/loadState) — Import state
+try {
+  const addr = '0x2222222222222222222222222222222222222222'
+  await clientA.tevmDeal({ address: addr, amount: parseEther('5') })
 
-</details>
+  const stateBlob = await clientA.tevmDumpState()
+  await clientB.tevmLoadState(stateBlob)
 
-<details>
-<summary><strong>Wallet Actions</strong> — Send transactions, interact with accounts</summary>
+  console.log(await clientB.getBalance({ address: addr })) // 5000000000000000000n
+} finally {
+  await clientA.tevmClose()
+  await clientB.tevmClose()
+}
+```
 
-#### Account Management
+## Composing `MemoryClient` manually
 
-- [`getAddresses`](https://viem.sh/docs/actions/wallet/getAddresses) — Get available addresses
-- [`requestAddresses`](https://viem.sh/docs/actions/wallet/requestAddresses) — Request address permission
+Under the hood, `createMemoryClient()` is five lines of viem composition:
 
-#### Transaction Operations
+```ts
+import { createTevmTransport } from 'tevm'
+import { tevmViemActions } from 'tevm/memory-client'
+import { createClient, publicActions, testActions, walletActions } from 'viem'
+import { foundry } from 'viem/chains'
 
-- [`prepareTransactionRequest`](https://viem.sh/docs/actions/wallet/prepareTransactionRequest) — Prepare tx
-- [`sendTransaction`](https://viem.sh/docs/actions/wallet/sendTransaction) — Send tx
-- [`sendRawTransaction`](https://viem.sh/docs/actions/wallet/sendRawTransaction) — Send signed tx
-- [`signTransaction`](https://viem.sh/docs/actions/wallet/signTransaction) — Sign tx
+const client = createClient({
+  chain: foundry,
+  cacheTime: 0,
+  transport: createTevmTransport(),
+})
+  .extend(publicActions)
+  .extend(walletActions)
+  .extend(testActions({ mode: 'anvil' }))
+  .extend(tevmViemActions())
+```
 
-#### Signing
-
-- [`signMessage`](https://viem.sh/docs/actions/wallet/signMessage) — Sign a message
-- [`signTypedData`](https://viem.sh/docs/actions/wallet/signTypedData) — Sign typed data (EIP-712)
-
-#### Chain Management
-
-- [`addChain`](https://viem.sh/docs/actions/wallet/addChain) — Add a chain
-- [`switchChain`](https://viem.sh/docs/actions/wallet/switchChain) — Switch chain
-
-#### Permissions & Assets
-
-- [`getPermissions`](https://viem.sh/docs/actions/wallet/getPermissions) — Get permissions
-- [`requestPermissions`](https://viem.sh/docs/actions/wallet/requestPermissions) — Request permissions
-- [`watchAsset`](https://viem.sh/docs/actions/wallet/watchAsset) — Add a token
-
-</details>
-
-<details>
-<summary><strong>Tevm Actions</strong> — Enhanced EVM capabilities</summary>
-
-- `tevmCall` — Low-level EVM call
-- `tevmContract` — Contract call with detailed EVM info
-- `tevmDeploy` — Deploy with detailed results
-- `tevmGetAccount` — Detailed account info
-- `tevmSetAccount` — Set complex account state
-- `tevmDeal` — Add native ETH or ERC20 tokens
-- `tevmDumpState` — Export complete EVM state
-- `tevmLoadState` — Import complete EVM state
-- `tevmMine` — Mine blocks with options
-
-</details>
-
-## Next Steps
-
-- [Using with Ethers.js](/examples/ethers)
-- [Forking Mainnet](/examples/forking-mainnet)
-- [Local Testing](/examples/local-testing)
-- [TevmNode Interface](/core/tevm-node-interface)
+Next: [Tutorial: Viem](../getting-started/viem) · [Client methods map](../api/methods) · [Testing with Vitest](./local-testing)

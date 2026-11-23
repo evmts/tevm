@@ -1,140 +1,172 @@
 ---
-title: Getting Started
-description: Install tevm@1.0.0-rc.151 and run an in-memory Ethereum transaction
+title: Quickstart
+description: Install Tevm, run your first in-process Ethereum transaction, deploy bytecode, and fork a live chain in 60 seconds
 ---
 
-# Getting Started
+import { ExecutionFlowDiagram, QaBox, UnderTheHood, WatchOut } from '../../components'
 
-These docs target `tevm@1.0.0-rc.151`.
+# Quickstart
 
-## Install
+You want to deploy a contract, inspect its state, or test a transaction against live mainnet contracts — without booting Docker, managing a background Anvil port, or burning RPC rate limits.
+
+With Tevm, the Ethereum node lives inside your Node.js process.
+
+## 1. Install Tevm and viem
+
+Requires **Node.js 24 or later**.
 
 :::code-group
 
-```bash [npm]
-npm install tevm@1.0.0-rc.151 viem
+```bash [pnpm]
+pnpm add tevm viem
 ```
 
-```bash [pnpm]
-pnpm add tevm@1.0.0-rc.151 viem
+```bash [npm]
+npm install tevm viem
 ```
 
 ```bash [yarn]
-yarn add tevm@1.0.0-rc.151 viem
+yarn add tevm viem
 ```
 
 ```bash [bun]
-bun add tevm@1.0.0-rc.151 viem
+bun add tevm viem
 ```
 
 :::
 
-Tevm re-exports the viem helpers used by the examples. Install `viem` separately only when your application imports directly from `viem`.
+## 2. Boot an in-process chain and send ETH
 
-## Run a Local Transaction
+Save this as `quickstart.mjs` and run `node quickstart.mjs`:
 
 ```ts
-import {
-  createMemoryClient,
-  parseEther,
-  PREFUNDED_ACCOUNTS,
-} from 'tevm'
+import { createMemoryClient, parseEther, PREFUNDED_ACCOUNTS } from 'tevm'
 
 const client = createMemoryClient({
-  miningConfig: { type: 'manual' },
+  mining: { auto: false },
 })
 
-const sender = PREFUNDED_ACCOUNTS[0].address
-const recipient = '0x1111111111111111111111111111111111111111'
+try {
+  const sender = PREFUNDED_ACCOUNTS[0].address
+  const recipient = '0x1111111111111111111111111111111111111111'
 
-const { txHash } = await client.tevmCall({
-  from: sender,
-  to: recipient,
-  value: parseEther('1'),
-  addToMempool: true,
-})
+  // 1. Submit a transaction to the mempool (not mined yet)
+  const { txHash } = await client.tevmCall({
+    from: sender,
+    to: recipient,
+    value: parseEther('1'),
+    addToMempool: true,
+  })
 
-if (!txHash) throw new Error('transaction was not added to the txpool')
+  // 2. Mine a single block so the transaction becomes canonical
+  await client.tevmMine({ blocks: 1 })
 
-await client.tevmMine({ blockCount: 1 })
+  // 3. Query the mined receipt and new balance with standard viem actions
+  const receipt = await client.getTransactionReceipt({ hash: txHash! })
+  const balance = await client.getBalance({ address: recipient })
 
-const receipt = await client.getTransactionReceipt({ hash: txHash })
-const balance = await client.getBalance({ address: recipient })
-
-console.log(receipt.status, balance)
+  console.log({ status: receipt.status, balance })
+  // { status: 'success', balance: 1000000000000000000n }
+} finally {
+  // Always release the native engine handle when done
+  await client.tevmClose()
+}
 ```
 
-`createMemoryClient()` is synchronous. The first action initializes the node lazily. Use `await client.tevmReady()` when initialization itself should finish before a measurement or forked read.
+### What just happened?
 
-## What Just Happened?
+1. `createMemoryClient({ mining: { auto: false } })` allocated an isolated native ZEVM chain (chain ID `31337`, block `0`, 10 prefunded accounts with 10,000 ETH each) and attached viem public, wallet, test, and TEVM actions.
+2. `client.tevmCall({ ..., addToMempool: true })` dispatched `eth_sendTransaction` and placed the transfer in the pending pool.
+3. `client.tevmMine({ blocks: 1 })` ran `anvil_mine`, committed the state transition, and indexed the receipt.
+4. `getTransactionReceipt` and `getBalance` read the canonical state back through viem.
+5. `client.tevmClose()` freed the native Zig runtime.
 
-1. `createMemoryClient` created an in-process Ethereum chain and a viem-compatible client.
-2. `tevmCall({ addToMempool: true })` executed the transfer and added its transaction to the txpool.
-3. `tevmMine({ blockCount: 1 })` built a canonical block.
-4. viem actions read the receipt and final balance.
+<ExecutionFlowDiagram />
 
-Without `addToMempool`, `tevmCall` is a simulation and does not change canonical state.
+<QaBox question="Why did I pass mining: { auto: false }? What happens if I omit it?">
+Automining is **enabled by default** (`mining: { auto: true }`). If you omit `mining`, every transaction you submit mines its own block immediately and you do not need to call `tevmMine()`.
 
-## Install Contract Code
+Turn automining off when you want to inspect the mempool, batch multiple transactions into the same block, or control block boundaries explicitly in a test.
+</QaBox>
 
-Use viem test actions to prepare state and public actions to query it.
+<WatchOut title="Always close the client">
+Each `createMemoryClient()` owns an isolated native ZEVM handle. Call `await client.tevmClose()` in a `finally` block (or `afterEach` in tests) to release native memory and stop any background interval-mining timer.
+</WatchOut>
+
+## 3. Deploy and call a contract
+
+You can either deploy real creation bytecode with `tevmDeploy`, or inject runtime bytecode at any address with `tevmSetAccount` for instant unit tests.
+
+```ts
+import { createMemoryClient, parseAbi } from 'tevm'
+
+const client = createMemoryClient()
+
+try {
+  // Creation bytecode that deploys a contract returning uint256(42)
+  const deployed = await client.tevmDeploy({
+    bytecode: '0x600a600c600039600a6000f3602a60005260206000f3',
+  })
+
+  const result = await client.tevmContract({
+    address: deployed.createdAddress!,
+    abi: parseAbi(['function answer() view returns (uint256)']),
+    functionName: 'answer',
+  })
+
+  console.log('Deployed at:', deployed.createdAddress)
+  console.log('answer() =>', result.data) // 42n
+} finally {
+  await client.tevmClose()
+}
+```
+
+<UnderTheHood>
+`tevmDeploy` encodes constructor arguments if you pass `abi` and `args`, submits the creation transaction, and mines it automatically unless you pass `addToMempool: true`. Once mined, `deployed.createdAddress` holds the new contract address from the native receipt.
+</UnderTheHood>
+
+## 4. Fork an upstream chain
+
+Point `fork.url` at any JSON-RPC endpoint and pin `blockNumber` for reproducible tests. Missing accounts, code, and storage load lazily on first access; local writes stay inside your process.
 
 ```ts
 import { createMemoryClient } from 'tevm'
-import { SimpleContract } from 'tevm/contract'
-
-const client = createMemoryClient()
-const contract = SimpleContract.withAddress(
-  '0x2222222222222222222222222222222222222222',
-)
-
-await client.setCode({
-  address: contract.address,
-  bytecode: contract.deployedBytecode,
-})
-
-const value = await client.readContract({
-  address: contract.address,
-  abi: contract.abi,
-  functionName: 'get',
-})
-
-console.log(value)
-```
-
-## Fork an Existing Chain
-
-The fork transport must be an EIP-1193 request function. Invoke the viem HTTP transport factory with `({})` when passing it directly.
-
-```ts
-import { createMemoryClient, http } from 'tevm'
 import { mainnet } from 'tevm/common'
 
 const client = createMemoryClient({
+  chainId: mainnet.id,
   common: mainnet,
   fork: {
-    transport: http('https://ethereum-rpc.publicnode.com')({}),
-    blockTag: 20_000_000n,
+    url: 'https://ethereum-rpc.publicnode.com',
+    blockNumber: 20_000_000,
   },
 })
 
-await client.tevmReady()
+try {
+  await client.tevmReady()
 
-const balance = await client.getBalance({
-  address: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
-  blockNumber: 20_000_000n,
-})
+  const vitalik = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+  const balance = await client.getBalance({ address: vitalik })
+  console.log('Forked balance:', balance)
 
-console.log(balance)
+  // Mutate locally — never touches mainnet
+  await client.tevmDeal({ address: vitalik, amount: balance + 1n })
+  console.log('Local balance:', await client.getBalance({ address: vitalik }))
+} finally {
+  await client.tevmClose()
+}
 ```
 
-Pin `blockTag` for reproducible tests. Local writes are stored in an overlay and never sent upstream.
+<QaBox question="Wait — why is await client.getBlockNumber() equal to 0n on a fork?">
+ZEVM forks upstream **state** at your pinned `blockNumber` into a fresh local chain starting at height `0`. It does not import historical upstream block headers. Reading accounts, contract code, and storage slots falls through to the upstream RPC at the fork block, while every new block you mine starts at `1`, `2`, `3`, and so on.
+</QaBox>
 
-## Choose an API Surface
+## Pick your next step
 
-- Use [MemoryClient with viem](./viem) for most apps and tests.
-- Use [Ethers](./ethers) through the EIP-1193 provider surface.
-- Use [TevmNode](../core/tevm-node-interface) for low-level runtime integrations.
-- Use [the bundler](./bundler) to import Solidity files into TypeScript.
-
-Next: [Architecture Overview](../introduction/architecture-overview) · [Mining Modes](../core/mining-modes) · [Local Testing](../examples/local-testing)
+| If you want to… | Go to |
+| --- | --- |
+| Drive Tevm with viem actions or build a tree-shakeable client | [Tutorial: Viem](./viem) |
+| Connect an existing ethers v6 codebase | [Tutorial: Ethers v6](./ethers) |
+| Import `.sol` files directly as typed TypeScript modules | [Tutorial: Solidity bundler](./bundler) |
+| Expose Tevm to a browser app or external wallet over HTTP/WS | [HTTP, WebSocket & IPC server](../api/server) |
+| Understand the native ZEVM + Voltaire + Guillotine Mini stack | [Architecture](../introduction/architecture-overview) |

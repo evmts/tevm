@@ -2,73 +2,113 @@
 layout: landing
 ---
 
-import { HomePage } from "vocs/components";
-import "../styles/index.css";
+import { Button, HomePage } from 'vocs/components'
+import { ArchitectureDiagram, Card } from '../components'
+import '../styles/index.css'
 
 <HomePage.Root>
-  <div style={{ textAlign: 'center', margin: '0 auto', maxWidth: '200px' }}>
+  <div style={{ textAlign: 'center', margin: '0 auto', maxWidth: '180px' }}>
     <img src="/tevm-logo-dark.png" alt="Tevm Logo" style={{ width: '100%', height: 'auto' }} />
   </div>
 
-  <HomePage.Tagline>Tevm 1.0 Release Candidate</HomePage.Tagline>
+  <HomePage.Tagline>Native Ethereum Node for TypeScript</HomePage.Tagline>
 
   <HomePage.Description>
-    An in-process Ethereum node and viem-compatible client for browsers, Node.js, Bun, and Deno. These docs target <code>tevm@1.0.0-rc.151</code>.
+    Embed the native ZEVM engine directly in Node.js — with a viem-compatible client, HTTP/WebSocket/IPC servers, opcode tracing, and direct Solidity imports.
   </HomePage.Description>
 
-  <div className="code-snippet" style={{ maxWidth: '800px', margin: '1.5rem 0', backgroundColor: 'var(--vocs-color_background2)', borderRadius: 'var(--vocs-borderRadius_4)', padding: '1rem', overflow: 'auto', textAlign: 'left' }}>
+  <div className="code-snippet" style={{ maxWidth: '760px', margin: '1.25rem auto', backgroundColor: 'var(--vocs-color_background2)', borderRadius: 'var(--vocs-borderRadius_4)', padding: '0.85rem 1rem', overflow: 'auto', textAlign: 'left' }}>
     ```bash
-    npm install tevm@1.0.0-rc.151 viem
+    pnpm add tevm viem
     ```
   </div>
 
-  <div className="code-snippet" style={{ maxWidth: '800px', margin: '1.5rem 0', backgroundColor: 'var(--vocs-color_background2)', borderRadius: 'var(--vocs-borderRadius_4)', padding: '1rem', overflow: 'auto', textAlign: 'left' }}>
+  <div className="code-snippet" style={{ maxWidth: '760px', margin: '1.25rem auto', backgroundColor: 'var(--vocs-color_background2)', borderRadius: 'var(--vocs-borderRadius_4)', padding: '1rem', overflow: 'auto', textAlign: 'left' }}>
     ```ts
-    import { createMemoryClient, PREFUNDED_ACCOUNTS } from "tevm";
+    import { createMemoryClient, parseAbi } from 'tevm'
 
-    const client = createMemoryClient({
-      miningConfig: { type: "manual" },
-    });
+    const client = createMemoryClient()
+    try {
+      // Deploy a minimal contract that returns 42
+      const deployed = await client.tevmDeploy({
+        bytecode: '0x600a600c600039600a6000f3602a60005260206000f3',
+      })
 
-    const { txHash } = await client.tevmCall({
-      from: PREFUNDED_ACCOUNTS[0].address,
-      to: "0x1111111111111111111111111111111111111111",
-      value: 1n,
-      addToMempool: true,
-    });
+      // Call it with typed ABI decoding, or use any viem public/wallet/test action
+      const result = await client.tevmContract({
+        address: deployed.createdAddress!,
+        abi: parseAbi(['function answer() view returns (uint256)']),
+        functionName: 'answer',
+      })
 
-    if (!txHash) throw new Error("transaction was not added to the txpool");
-
-    await client.tevmMine({ blockCount: 1 });
-    const receipt = await client.getTransactionReceipt({ hash: txHash });
-
-    console.log(receipt.status);
+      console.log(result.data) // 42n
+    } finally {
+      await client.tevmClose()
+    }
     ```
   </div>
 
   <HomePage.Buttons>
-    <HomePage.Button href="https://node.tevm.sh/getting-started/overview" variant="accent">
-      Read the 1.0 docs
+    <HomePage.Button href="/getting-started/overview" variant="accent">
+      Get started
     </HomePage.Button>
-    <HomePage.Button href="https://node.tevm.sh/getting-started/viem">
-      Viem guide
+    <HomePage.Button href="/getting-started/viem">
+      Viem tutorial
+    </HomePage.Button>
+    <HomePage.Button href="/introduction/architecture-overview">
+      Architecture
     </HomePage.Button>
     <HomePage.Button href="https://github.com/evmts/tevm">
       GitHub
     </HomePage.Button>
   </HomePage.Buttons>
 
-  <div className="max-w-[900px] mx-auto my-12">
-    <ul>
-      <li><strong>In-memory or forked execution</strong> — run a local chain or overlay local state on an upstream EVM network.</li>
-      <li><strong>Viem-compatible</strong> — use public, wallet, and Anvil-style test actions on the same client.</li>
-      <li><strong>Real blocks and receipts</strong> — submit pending transactions, mine canonical blocks, and query indexed receipts and logs.</li>
-      <li><strong>Execution inspection</strong> — collect opcode hooks, traces, access lists, gas data, and state overrides.</li>
-      <li><strong>Direct Solidity imports</strong> — compile <code>.sol</code> modules with the Tevm bundler plugins.</li>
-    </ul>
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-[920px] mx-auto my-12 text-left">
+    <Card title="In-Process Native Engine">
+      <p className="mb-3">Runs ZEVM, Voltaire, and Guillotine Mini over Node-API. Each client owns isolated chain state with no external daemon.</p>
+      <Button href="/introduction/architecture-overview" variant="text" size="small">Architecture →</Button>
+    </Card>
+
+    <Card title="Viem &amp; Ethers Native">
+      <p className="mb-3">Full viem public, wallet, and Anvil test actions out of the box, plus <code>TevmProvider</code> for ethers v6.</p>
+      <Button href="/getting-started/viem" variant="text" size="small">Viem tutorial →</Button>
+    </Card>
+
+    <Card title="Lazy Mainnet Forking">
+      <p className="mb-3">Fork any EVM RPC at a pinned block. State loads lazily on cache miss; local writes never leave your process.</p>
+      <Button href="/core/forking" variant="text" size="small">Forking guide →</Button>
+    </Card>
+
+    <Card title="HTTP, WebSocket &amp; IPC">
+      <p className="mb-3">Expose any local client over HTTP, WebSocket subscriptions, or Unix IPC for browser apps and external tools.</p>
+      <Button href="/api/server" variant="text" size="small">Server guide →</Button>
+    </Card>
+
+    <Card title="Direct Solidity Imports">
+      <p className="mb-3">Import <code>.sol</code> files as typed TypeScript modules in Vite, Rollup, esbuild, Webpack, Rspack, and Bun.</p>
+      <Button href="/getting-started/bundler" variant="text" size="small">Bundler tutorial →</Button>
+    </Card>
+
+    <Card title="Native Tracing &amp; MCP">
+      <p className="mb-3">Record opcode traces with <code>debug_traceCall</code> or give AI coding agents isolated EVM sessions via <code>@tevm/mcp</code>.</p>
+      <Button href="/api/evm-events" variant="text" size="small">Tracing &amp; events →</Button>
+    </Card>
   </div>
 
-  <div className="mt-12 text-sm opacity-80">
-    LLM-friendly versions: <a href="https://node.tevm.sh/llms.txt">llms.txt</a> and <a href="https://node.tevm.sh/llms-full.txt">llms-full.txt</a>.
+  <div className="max-w-[820px] mx-auto my-10 text-left">
+    <ArchitectureDiagram />
+  </div>
+
+  <div className="max-w-[780px] mx-auto my-10 p-6 rounded-xl border border-gray-200 dark:border-gray-700 text-left">
+    <blockquote className="m-0 text-base border-l-4 border-blue-500 pl-4">
+      "If you're building a blockchain application on the web, I'm almost certain there is a use case for Tevm. It might change everything, and at worse it would most likely improve your devX."
+      <div className="mt-3 text-sm font-medium">
+        polarzero · <a href="https://twitter.com/0xpolarzero" className="text-blue-500">@0xpolarzero</a> · <a href="/getting-started/testimonials" className="text-blue-500">More from the community →</a>
+      </div>
+    </blockquote>
+  </div>
+
+  <div className="mt-8 text-sm opacity-80">
+    Plain-text docs for LLMs: <a href="/llms.txt">llms.txt</a> · <a href="/llms-full.txt">llms-full.txt</a>
   </div>
 </HomePage.Root>

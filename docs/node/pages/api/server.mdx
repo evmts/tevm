@@ -1,0 +1,152 @@
+---
+title: HTTP, WebSocket & IPC Server
+description: Expose a native Tevm engine over HTTP, WebSocket subscriptions, Unix IPC, Express, and Next.js with @tevm/server and @tevm/http-client
+---
+
+import { QaBox, ServerTransportsDiagram, WatchOut } from '../../components'
+
+# HTTP, WebSocket & IPC server
+
+`@tevm/server` (also exported as `tevm/server`) exposes any `MemoryClient` over HTTP, WebSocket, Unix IPC sockets, Express middleware, or Next.js API routes. All transports share one native engine.
+
+<ServerTransportsDiagram />
+
+## Quick start: HTTP + WebSocket server
+
+`createServer(client)` starts a Node.js `http.Server` with WebSocket upgrade support attached on the same port:
+
+```ts
+import { createMemoryClient } from 'tevm'
+import { createServer } from 'tevm/server'
+
+const client = createMemoryClient()
+await client.tevmReady()
+
+const server = createServer(client, {}, {
+  cors: true,
+  maxBodySize: 1024 * 1024, // 1 MiB
+  maxBatchSize: 100,
+  requestTimeout: 30_000,
+})
+
+server.listen(8545, '127.0.0.1', () => {
+  console.log('Listening on http://127.0.0.1:8545 (HTTP + WS)')
+})
+
+process.once('SIGINT', () => {
+  server.close(() => {
+    void client.tevmClose()
+  })
+})
+```
+
+### HTTP protocol behavior
+
+| Case | HTTP Status | Body |
+| --- | --- | --- |
+| Single JSON-RPC request | `200` | Exact native JSON-RPC response (`result` or `error`) |
+| JSON-RPC batch array | `200` | JSON-RPC batch array (rejects with `413` if above `maxBatchSize`) |
+| JSON-RPC notification (no `id`) | `204` | Empty body |
+| `OPTIONS` preflight (with `cors: true`) | `204` | CORS headers |
+| Non-`POST` method (e.g. `GET`) | `405` | Method Not Allowed |
+| Payload above `maxBodySize` | `413` | Payload Too Large |
+| Closed / unavailable native engine | `503` | `{"jsonrpc":"2.0","id":null,"error":{"code":-32603,"message":"Native engine unavailable"}}` |
+
+## WebSocket subscriptions (`eth_subscribe`)
+
+Every server created by `createServer` (or `createWebSocketServer`) supports native per-connection subscriptions:
+
+- `newHeads` — streams block headers as blocks are mined.
+- `logs` — streams matching logs (accepts standard `{ address, topics }` filter object).
+- `newPendingTransactions` — streams pending transaction hashes.
+- `syncing` — emits current sync status (`false`).
+
+Subscriptions are scoped to the WebSocket connection; disconnecting automatically uninstalls the underlying native ZEVM filters.
+
+```ts
+import { createPublicClient, webSocket } from 'viem'
+
+// Works in both Node.js and the browser
+const publicClient = createPublicClient({
+  transport: webSocket('ws://127.0.0.1:8545'),
+})
+
+const unwatch = publicClient.watchBlockNumber({
+  onBlockNumber: (blockNumber) => console.log('New block:', blockNumber),
+})
+```
+
+## Unix IPC server
+
+Use `createIpcServer(client)` for local tools that speak newline-delimited JSON-RPC over Unix domain sockets (or TCP):
+
+```ts
+import { createMemoryClient } from 'tevm'
+import { createIpcServer } from 'tevm/server'
+
+const client = createMemoryClient()
+await client.tevmReady()
+
+const ipc = createIpcServer(client)
+ipc.listen('/tmp/tevm.sock')
+```
+
+`createIpcServer` handles split frames, concatenated JSON objects in one chunk, and rejects oversized frames without crashing the server.
+
+## Express and Next.js adapters
+
+Mount Tevm on an existing web server without opening a second port:
+
+:::code-group
+
+```ts [Express]
+import express from 'express'
+import { createMemoryClient } from 'tevm'
+import { createExpressMiddleware } from 'tevm/server'
+
+const app = express()
+const client = createMemoryClient()
+
+app.use('/rpc', createExpressMiddleware(client))
+app.listen(3000)
+```
+
+```ts [Next.js Pages API]
+import { createMemoryClient } from 'tevm'
+import { createNextApiHandler } from 'tevm/server'
+
+const client = createMemoryClient()
+
+export default createNextApiHandler(client)
+```
+
+:::
+
+## Remote client: `createHttpClient`
+
+Connect a remote Node.js script or browser app to a running TEVM HTTP server with typed `client.tevm.*` convenience helpers:
+
+```ts
+import { createHttpClient } from 'tevm/http-client'
+
+const remote = createHttpClient({ url: 'http://127.0.0.1:8545' })
+
+const blockNumber = await remote.getBlockNumber()
+const account = await remote.tevm.getAccount({
+  address: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+})
+
+console.log(blockNumber, account.balance)
+```
+
+`createHttpClient` attaches viem's public client plus `remote.tevm.{ call, contract, deploy, getAccount, setAccount, mine, deal, dumpState, loadState }` (via `@tevm/viem`'s `tevmViemExtension()`).
+
+<QaBox question="How do browser frontends use Tevm?">
+Start a local native server in Node.js (`createServer(client)` or `pnpm native:server` inside the monorepo) and connect from the browser using viem's `http('http://127.0.0.1:8545')`, `webSocket('ws://127.0.0.1:8545')`, or `createHttpClient({ url })`. All browser-safe helpers in `tevm/actions` and `tevm/bundler/*` work directly in the browser.
+</QaBox>
+
+<WatchOut title="Shut down cleanly">
+Close the HTTP/IPC server first, then call `await client.tevmClose()`. Requests arriving after `tevmClose()` return HTTP `503` (or WebSocket close code `1011`).
+</WatchOut>
+
+Next: [Browser trace viewer cookbook](../examples/debugger-ui) · [JSON-RPC reference](./json-rpc) · [Package reference: @tevm/server](../reference/server)

@@ -13,7 +13,7 @@ const packageJson = S.file('package.json')
 const vocsConfig = S.file('vocs.config.ts')
 
 const srcs = S.Filegroup({
-	srcs: S.glob(['pages/**', 'styles.css']),
+	srcs: S.glob(['pages/**', 'components/**', 'styles.css']),
 })
 
 const scripts = S.Filegroup({

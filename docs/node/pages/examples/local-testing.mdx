@@ -1,207 +1,195 @@
 ---
-title: Local Testing Flow
-description: Test transactions, contracts, snapshots, time, and traces with Tevm and Vitest
+title: Testing with Vitest
+description: Write fast, isolated, deterministic smart-contract tests with Tevm and Vitest — snapshots, time travel, deployments, and revert traces
 ---
 
-# Local Testing
+import { QaBox, StateRollbackDiagram, WatchOut } from '../../components'
 
-Tevm runs a deterministic Ethereum chain in the same process as your test runner. The examples below use the viem-compatible `MemoryClient`, which is the recommended testing surface in `tevm@1.0.0-rc.151`.
+# Cookbook: Testing with Vitest
+
+With Tevm, every Vitest test file — or even every individual `test()` block — can spin up its own native EVM chain in milliseconds with zero shared ports or daemon orchestration.
 
 ## Setup
 
 ```bash
-npm install tevm@1.0.0-rc.151 viem
-npm install --save-dev vitest
+pnpm add tevm viem
+pnpm add -D vitest
 ```
 
-No RPC server or separate chain process is required.
+## Pattern 1: Isolated client per test (recommended)
 
-## Transfer, Mine, and Read a Receipt
-
-Tevm actions can simulate a call without changing canonical state. Set `addToMempool: true` to create a pending transaction, then mine it explicitly.
+Create a small factory helper that tracks every client opened during a test and closes them all in `afterEach`:
 
 ```ts
-import { createMemoryClient, parseEther, PREFUNDED_ACCOUNTS } from 'tevm'
-import { expect, test } from 'vitest'
+import { createMemoryClient, type MemoryClient, parseEther, PREFUNDED_ACCOUNTS } from 'tevm'
+import { afterEach, describe, expect, test } from 'vitest'
 
-test('mines an ETH transfer', async () => {
-  const client = createMemoryClient({
-    miningConfig: { type: 'manual' },
+const clients: MemoryClient[] = []
+const createClient = (options?: Parameters<typeof createMemoryClient>[0]) => {
+  const client = createMemoryClient(options)
+  clients.push(client)
+  return client
+}
+
+afterEach(async () => {
+  await Promise.all(clients.splice(0).map((c) => c.tevmClose()))
+})
+
+describe('ETH transfers', () => {
+  test('mines a queued transfer and updates balances', async () => {
+    const client = createClient({ mining: { auto: false } })
+    const alice = PREFUNDED_ACCOUNTS[0].address
+    const bob = '0x1111111111111111111111111111111111111111'
+
+    const { txHash } = await client.tevmCall({
+      from: alice,
+      to: bob,
+      value: parseEther('1'),
+      addToMempool: true,
+    })
+
+    // Still pending before mining
+    expect(txHash).toBeDefined()
+    expect(await client.getBalance({ address: bob })).toBe(0n)
+
+    await client.tevmMine({ blocks: 1 })
+
+    const receipt = await client.getTransactionReceipt({ hash: txHash! })
+    expect(receipt.status).toBe('success')
+    expect(await client.getBalance({ address: bob })).toBe(parseEther('1'))
   })
-
-  const alice = PREFUNDED_ACCOUNTS[0].address
-  const bob = '0x1111111111111111111111111111111111111111'
-
-  const { txHash } = await client.tevmCall({
-    from: alice,
-    to: bob,
-    value: parseEther('1'),
-    addToMempool: true,
-  })
-
-  expect(txHash).toBeDefined()
-  if (!txHash) throw new Error('transaction was not added to the txpool')
-
-  await client.tevmMine({ blockCount: 1 })
-
-  const receipt = await client.getTransactionReceipt({ hash: txHash })
-  expect(receipt.status).toBe('success')
-  expect(await client.getBalance({ address: bob })).toBe(parseEther('1'))
 })
 ```
 
-`createMemoryClient()` is synchronous. Await `client.tevmReady()` only when a test wants to finish initialization eagerly, especially before reading from a fork.
+<WatchOut title="Never leak native handles across test files">
+Tracking created clients in an array and calling `await client.tevmClose()` inside `afterEach` guarantees native memory is freed even if an assertion throws mid-test.
+</WatchOut>
 
-## Test a Contract
+## Pattern 2: Deploy, write, and read a contract
 
-This example installs Tevm's bundled `SimpleContract` bytecode, writes through viem, mines the pending transaction, and reads the resulting state.
+Use `SimpleContract` (or any contract imported via the [Tevm Bundler](../getting-started/bundler)):
 
 ```ts
 import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
 import { SimpleContract } from 'tevm/contract'
 import { expect, test } from 'vitest'
 
-test('writes and reads contract state', async () => {
-  const client = createMemoryClient({
-    miningConfig: { type: 'manual' },
-  })
-  const contract = SimpleContract.withAddress(
-    '0x2222222222222222222222222222222222222222',
-  )
+test('deploys and updates SimpleContract', async () => {
+  const client = createMemoryClient({ account: PREFUNDED_ACCOUNTS[0] })
+  try {
+    const deployHash = await client.deployContract(SimpleContract.deploy(7n))
+    const receipt = await client.getTransactionReceipt({ hash: deployHash })
+    const contract = SimpleContract.withAddress(receipt.contractAddress!)
 
-  await client.setCode({
-    address: contract.address,
-    bytecode: contract.deployedBytecode,
-  })
+    expect(await client.readContract(contract.read.get())).toBe(7n)
 
-  const hash = await client.writeContract({
-    account: PREFUNDED_ACCOUNTS[0],
-    address: contract.address,
-    abi: contract.abi,
-    functionName: 'set',
-    args: [42n],
-  })
-
-  await client.mine({ blocks: 1 })
-  await client.waitForTransactionReceipt({ hash })
-
-  const value = await client.readContract({
-    address: contract.address,
-    abi: contract.abi,
-    functionName: 'get',
-  })
-
-  expect(value).toBe(42n)
+    await client.writeContract(contract.write.set(42n))
+    expect(await client.readContract(contract.read.get())).toBe(42n)
+  } finally {
+    await client.tevmClose()
+  }
 })
 ```
 
-Notice the two mining APIs:
+## Pattern 3: Reuse expensive setup with snapshots
 
-- `client.tevmMine({ blockCount: 1 })` is the Tevm action.
-- `client.mine({ blocks: 1 })` is viem's Anvil-compatible test action.
+When setup deploys a full protocol (or forks mainnet), take a snapshot once in `beforeAll` / `beforeEach` and revert in `afterEach`:
 
-## Isolate Tests with Snapshots
-
-Use viem test actions to snapshot and restore the complete local chain.
+<StateRollbackDiagram />
 
 ```ts
 import { createMemoryClient } from 'tevm'
-import { expect, test } from 'vitest'
+import { afterAll, afterEach, beforeEach, describe, expect, test } from 'vitest'
 
-test('restores a snapshot', async () => {
+describe('snapshot isolation', () => {
   const client = createMemoryClient()
   const account = '0x3333333333333333333333333333333333333333'
-  const snapshotId = await client.snapshot()
+  let snapshotId: `0x${string}`
 
-  await client.setBalance({ address: account, value: 100n })
-  expect(await client.getBalance({ address: account })).toBe(100n)
+  beforeEach(async () => {
+    snapshotId = await client.snapshot()
+  })
 
-  await client.revert({ id: snapshotId })
-  expect(await client.getBalance({ address: account })).toBe(0n)
+  afterEach(async () => {
+    await client.revert({ id: snapshotId })
+  })
+
+  afterAll(async () => {
+    await client.tevmClose()
+  })
+
+  test('mutates balance without leaking', async () => {
+    await client.setBalance({ address: account, value: 100n })
+    expect(await client.getBalance({ address: account })).toBe(100n)
+  })
+
+  test('starts back at zero', async () => {
+    expect(await client.getBalance({ address: account })).toBe(0n)
+  })
 })
 ```
 
-Create a fresh client per test when possible. Snapshots are useful when setup is expensive or several assertions need the same baseline.
+<QaBox question="Why take a new snapshot in beforeEach instead of reusing one snapshot ID from beforeAll?">
+EVM snapshots are consumed when reverted (`evm_revert` pops the snapshot off the stack). Taking a fresh snapshot in `beforeEach` after the previous `afterEach` revert guarantees every test starts from the exact same clean state.
+</QaBox>
 
-## Control Block Time
+## Pattern 4: Time travel and hardfork activation
 
-The viem test actions control the next block without mutating block objects directly.
+Local genesis starts at timestamp `0`. Jump forward deterministically to test timelocks, vesting schedules, or timestamp-gated EIPs (like mainnet Osaka at `1764798551`):
 
 ```ts
 import { createMemoryClient } from 'tevm'
 import { expect, test } from 'vitest'
 
-test('sets the next block timestamp', async () => {
+test('advances next block timestamp', async () => {
   const client = createMemoryClient()
-  const timestamp = 2_000_000_000n
+  try {
+    const targetTimestamp = 2_000_000_000n
+    await client.setNextBlockTimestamp({ timestamp: targetTimestamp })
+    await client.mine({ blocks: 1 })
 
-  await client.setNextBlockTimestamp({ timestamp })
-  await client.mine({ blocks: 1 })
-
-  const block = await client.getBlock({ blockTag: 'latest' })
-  expect(block.timestamp).toBe(timestamp)
+    const block = await client.getBlock({ blockTag: 'latest' })
+    expect(block.timestamp).toBe(targetTimestamp)
+  } finally {
+    await client.tevmClose()
+  }
 })
 ```
 
-For automatic interval mining, configure seconds with `miningConfig: { type: 'interval', blockTime: 2 }`. Use manual mining in tests that need deterministic transaction boundaries.
+## Pattern 5: Assert revert bytes and opcode traces
 
-## Inspect Execution
-
-`tevmCall` exposes opcode hooks and a Geth-style trace. This is useful for gas assertions and debugger tests.
+Check exact custom error selectors or inspect a reverting call with `debug_traceCall`:
 
 ```ts
-import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
+import { createMemoryClient, NativeRpcError } from 'tevm'
 import { expect, test } from 'vitest'
 
-test('collects an execution trace', async () => {
+test('captures revert data and opcode trace', async () => {
   const client = createMemoryClient()
-  const contract = '0x4444444444444444444444444444444444444444'
+  try {
+    const target = '0x4444444444444444444444444444444444444444'
+    await client.tevmSetAccount({
+      address: target,
+      deployedBytecode: '0x63deadbeef6000526004601cfd',
+    })
 
-  await client.tevmSetAccount({
-    address: contract,
-    deployedBytecode: '0x6001600055',
-  })
+    await expect(client.tevmCall({ to: target })).rejects.toMatchObject({
+      code: 3,
+      data: '0xdeadbeef',
+    })
 
-  const opcodes: string[] = []
-  const result = await client.tevmCall({
-    from: PREFUNDED_ACCOUNTS[0].address,
-    to: contract,
-    createTrace: true,
-    onStep(step, next) {
-      opcodes.push(step.opcode.name)
-      next?.()
-    },
-  })
+    const trace = (await client.transport.tevm.request({
+      method: 'debug_traceCall',
+      params: [{ to: target }, 'latest', { enableReturnData: true }],
+    })) as { failed: boolean; returnValue: string; structLogs: Array<{ op: string }> }
 
-  expect(result.errors).toBeUndefined()
-  expect(opcodes).toEqual(['PUSH1', 'PUSH1', 'SSTORE'])
-  expect(result.trace?.structLogs).toHaveLength(3)
+    expect(trace.failed).toBe(true)
+    expect(trace.returnValue).toBe('0xdeadbeef')
+    expect(trace.structLogs.at(-1)?.op).toBe('REVERT')
+  } finally {
+    await client.tevmClose()
+  }
 })
 ```
 
-## Use the EIP-1193 Surface
-
-The client's `request` method accepts the EIP-1193 shape: `{ method, params? }`. It does not accept a JSON-RPC envelope with `id` or `jsonrpc`.
-
-```ts
-import { createMemoryClient } from 'tevm'
-import { expect, test } from 'vitest'
-
-test('serves EIP-1193 requests', async () => {
-  const client = createMemoryClient()
-
-  const chainId = await client.request({ method: 'eth_chainId' })
-  const blockNumber = await client.request({ method: 'eth_blockNumber' })
-
-  expect(chainId).toBe('0x384')
-  expect(blockNumber).toBe('0x0')
-})
-```
-
-## Related Topics
-
-- [Viem Integration](./viem)
-- [Mining Modes](../core/mining-modes)
-- [Call API](../api/tevm-call)
-- [Receipts and Logs](../advanced/receipts-and-logs)
-- [Managing State](../core/managing-state)
+Next: [Forking mainnet cookbook](./forking-mainnet) · [Viem cookbook](./viem) · [Tracing & engine events](../api/evm-events)

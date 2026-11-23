@@ -1,109 +1,49 @@
-# @tevm/contract
+---
+title: "@tevm/contract"
+description: Type-safe contract descriptors (createContract) and bundled test fixtures (SimpleContract, ERC20, ERC721, ErrorContract)
+---
 
-Type-safe contract interactions, deployments, events, and pre-built ERC20/ERC721 contracts.
+# `@tevm/contract`
 
-Full API: [packages/contract/docs](https://github.com/evmts/tevm/tree/main/packages/contract/docs).
+Subpath: `tevm/contract` (also re-exported from `tevm`).
 
-## Installation
+Builds typed contract objects whose `read.*`, `write.*`, `events.*`, and `deploy(...)` methods produce parameter objects directly consumable by viem and Tevm actions.
 
-```bash
-npm install @tevm/contract@1.0.0-rc.151 viem
-```
+## Exports
 
-## API Reference
+| Symbol | Description |
+| --- | --- |
+| `createContract(params)` | Create a typed `Contract` from an ABI (or `humanReadableAbi`), optional `address`, `bytecode`, and `deployedBytecode`. |
+| `SimpleContract` | Minimal `uint256` getter/setter fixture (`get()`, `set(uint256)`). |
+| `ERC20` | Standard ERC-20 contract fixture with ABI and bytecode. |
+| `ERC721` | Standard ERC-721 contract fixture with ABI and bytecode. |
+| `ErrorContract` | Fixture exposing custom revert cases for error-handling tests. |
+| `AdvancedContract` | Complex Solidity types fixture (structs, arrays, events). |
 
-### Type Aliases
+## Example
 
-- [Contract](https://github.com/evmts/tevm/tree/main/packages/contract/docs/type-aliases/Contract.md)
-- [CreateContractFn](https://github.com/evmts/tevm/tree/main/packages/contract/docs/type-aliases/CreateContractFn.md)
-- [CreateContractParams](https://github.com/evmts/tevm/tree/main/packages/contract/docs/type-aliases/CreateContractParams.md)
-- [EventActionCreator](https://github.com/evmts/tevm/tree/main/packages/contract/docs/type-aliases/EventActionCreator.md)
-- [MaybeExtractEventArgsFromAbi](https://github.com/evmts/tevm/tree/main/packages/contract/docs/type-aliases/MaybeExtractEventArgsFromAbi.md)
-- [ReadActionCreator](https://github.com/evmts/tevm/tree/main/packages/contract/docs/type-aliases/ReadActionCreator.md)
-- [ValueOf](https://github.com/evmts/tevm/tree/main/packages/contract/docs/type-aliases/ValueOf.md)
-- [WriteActionCreator](https://github.com/evmts/tevm/tree/main/packages/contract/docs/type-aliases/WriteActionCreator.md)
+```ts
+import { createContract, createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
+import { SimpleContract } from 'tevm/contract'
 
-### Functions
-
-- [createContract](https://github.com/evmts/tevm/tree/main/packages/contract/docs/functions/createContract.md)
-
-### Pre-built Contracts
-
-- [ERC20](https://github.com/evmts/tevm/tree/main/packages/contract/docs/variables/ERC20.md)
-- [ERC721](https://github.com/evmts/tevm/tree/main/packages/contract/docs/variables/ERC721.md)
-- [SimpleContract](https://github.com/evmts/tevm/tree/main/packages/contract/docs/variables/SimpleContract.md)
-
-## Usage Examples
-
-```typescript
-import { createContract, ERC20, ERC721 } from '@tevm/contract'
-
-const contract = createContract({
+const custom = createContract({
+  name: 'Counter',
   humanReadableAbi: [
-    'function balanceOf(address) view returns (uint256)',
-    'function transfer(address to, uint256 amount) returns (bool)',
-    'event Transfer(address indexed from, address indexed to, uint256 value)',
-  ] as const,
-  name: 'MyToken',
+    'function get() view returns (uint256)',
+    'function set(uint256 value)',
+  ],
 })
 
-const readAction = contract.read.balanceOf('0x...')
-const writeAction = contract.write.transfer('0x...', 1000n)
+const client = createMemoryClient({ account: PREFUNDED_ACCOUNTS[0] })
+try {
+  const hash = await client.deployContract(SimpleContract.deploy(10n))
+  const receipt = await client.getTransactionReceipt({ hash })
+  const deployed = custom.withAddress(receipt.contractAddress!)
 
-const token = contract.withAddress('0x1234...')
-const balance = token.read.balanceOf('0x...')
-
-const erc20 = ERC20.withAddress('0x...')
-const nameAction = erc20.read.name()
-const transferAction = erc20.write.transfer('0x...', 1000n)
-
-const nft = ERC721.withAddress('0x...')
-const ownerAction = nft.read.ownerOf(1n)
+  console.log(await client.readContract(deployed.read.get())) // 10n
+} finally {
+  await client.tevmClose()
+}
 ```
 
-### Event Filters
-
-```typescript
-const filter = contract.events.Transfer({ fromBlock: 'latest' })
-
-client.watchEvent(filter, (event) => {
-  console.log(event.args.from, event.args.to, event.args.value)
-})
-```
-
-## Best Practices
-
-Use `as const` with ABIs for full type inference:
-
-```typescript
-const abi = ['function example(uint256 value) returns (bool)'] as const
-const contract = createContract({ humanReadableAbi: abi, name: 'Example' })
-```
-
-Set explicit gas for writes that need it:
-
-```typescript
-const tx = contract.write.complexOperation('0x...', {
-  gas: 500000n,
-  maxFeePerGas: 30000000000n,
-})
-```
-
-## Exported Types
-
-```typescript
-import type {
-  CreateContractFn,
-  CreateContractParams,
-  EventActionCreator,
-  ReadActionCreator,
-  WriteActionCreator,
-} from '@tevm/contract'
-```
-
-## See Also
-
-- [ERC-20](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)
-- [ERC-721](https://ethereum.org/en/developers/docs/standards/tokens/erc-721/)
-- [OpenZeppelin Contracts](https://docs.openzeppelin.com/contracts/)
-- [Full API Reference](https://github.com/evmts/tevm/tree/main/packages/contract/docs/globals.md)
+See also: [Tutorial: Solidity bundler](/getting-started/bundler) · [Tutorial: Viem](/getting-started/viem)

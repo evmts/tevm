@@ -1,108 +1,51 @@
 ---
-title: Memory Client
-description: Reference for the viem-compatible in-memory Tevm client
+title: "@tevm/memory-client"
+description: API reference for createMemoryClient, createTevmTransport, tevmViemActions, and tevmReady
 ---
 
-# Memory Client
+# `@tevm/memory-client`
 
-Install the rc.151 client through the main package:
+Subpath: `tevm/memory-client` (also re-exported from `tevm`).
 
-```bash
-npm install tevm@1.0.0-rc.151 viem
-```
+Wraps `ZevmEngine` as a viem transport (`cacheTime: 0`) and attaches viem `publicActions`, `walletActions`, `testActions({ mode: 'anvil' })`, and `tevmViemActions()`.
 
-`createMemoryClient` returns synchronously and combines a Tevm transport with viem public, wallet, test, and Tevm actions.
+## Exports
 
-## Create a Client
+| Symbol | Signature | Description |
+| --- | --- | --- |
+| `createMemoryClient` | `(options?: MemoryClientOptions) => MemoryClient` | Batteries-included viem client backed by an isolated (or supplied) native ZEVM engine. |
+| `createTevmTransport` | `(options?: ZevmEngineOptions & { engine?: ZevmEngine }) => Transport` | Tree-shakeable viem transport backed by `ZevmEngine` (exposed on `client.transport.tevm`). |
+| `tevmViemActions` | `() => (client) => TevmViemActions` | Viem client extension attaching `tevmReady`, `tevmClose`, `tevmCall`, `tevmContract`, `tevmDeploy`, `tevmSetAccount`, `tevmGetAccount`, `tevmMine`, `tevmDumpState`, `tevmLoadState`, `tevmDeal`. |
+| `tevmReady` | `(client) => Promise<void>` | Awaits initialization of `client.transport.tevm`. |
+
+## Options (`MemoryClientOptions`)
 
 ```ts
-import { createMemoryClient } from 'tevm'
+export type MemoryClientOptions = ZevmEngineOptions & {
+  engine?: ZevmEngine
+  common?: Chain
+  account?: Account | Hex
+  name?: string
+  key?: string
+}
+```
+
+## Example
+
+```ts
+import { createMemoryClient } from 'tevm/memory-client'
 
 const client = createMemoryClient({
-  miningConfig: { type: 'manual' },
+  chainId: 31337,
+  mining: { auto: true },
 })
 
-await client.tevmReady()
-console.log(await client.getBlockNumber())
+try {
+  await client.tevmReady()
+  console.log(await client.getChainId(), await client.getBlockNumber())
+} finally {
+  await client.tevmClose()
+}
 ```
 
-`tevmReady()` is optional for local clients and useful for eagerly initializing a fork.
-
-## Action Groups
-
-- **Public:** `getBalance`, `getBlock`, `getTransaction`, `getTransactionReceipt`, `getLogs`, `readContract`
-- **Wallet:** `sendTransaction`, `writeContract`, `deployContract`, signing actions
-- **Test:** `setBalance`, `setCode`, `setStorageAt`, `mine`, `snapshot`, `revert`
-- **Tevm:** `tevmCall`, `tevmContract`, `tevmDeploy`, `tevmGetAccount`, `tevmSetAccount`, `tevmMine`, `tevmDumpState`, `tevmLoadState`
-
-## State and Mining
-
-```ts
-import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
-
-const client = createMemoryClient({
-  miningConfig: { type: 'manual' },
-})
-const recipient = '0x1111111111111111111111111111111111111111'
-
-await client.tevmSetAccount({
-  address: recipient,
-  balance: 10n,
-})
-
-const account = await client.tevmGetAccount({ address: recipient })
-
-const { txHash } = await client.tevmCall({
-  from: PREFUNDED_ACCOUNTS[0].address,
-  to: recipient,
-  value: 1n,
-  addToMempool: true,
-})
-
-if (!txHash) throw new Error('transaction was not added to the txpool')
-
-await client.tevmMine({ blockCount: 1 })
-const receipt = await client.getTransactionReceipt({ hash: txHash })
-
-console.log(account.balance, receipt.status)
-```
-
-Use `client.mine({ blocks: 1 })` for the viem test action and `client.tevmMine({ blockCount: 1 })` for the Tevm action.
-
-## Forking
-
-```ts
-import { createMemoryClient, http } from 'tevm'
-import { mainnet } from 'tevm/common'
-
-const client = createMemoryClient({
-  common: mainnet,
-  fork: {
-    transport: http('https://ethereum-rpc.publicnode.com')({}),
-    blockTag: 20_000_000n,
-  },
-})
-
-await client.tevmReady()
-console.log(await client.getBlockNumber())
-```
-
-## Persistence
-
-`createSyncStoragePersister` is exported from `tevm` and `tevm/sync-storage-persister`. Pass the persister through client options when an application needs state hydration and synchronous persistence.
-
-## Low-Level Node
-
-The underlying node is available as `client.transport.tevm`. This is an advanced escape hatch:
-
-```ts
-import { createMemoryClient } from 'tevm'
-
-const client = createMemoryClient()
-const node = client.transport.tevm
-const vm = await node.getVm()
-
-console.log((await vm.blockchain.getCanonicalHeadBlock()).header.number)
-```
-
-Prefer the client actions unless direct VM, txpool, or receipt-manager access is required.
+See also: [Client & engine options](/core/create-tevm-node) · [Client methods map](/api/methods)

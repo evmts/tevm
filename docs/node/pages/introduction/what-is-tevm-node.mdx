@@ -1,109 +1,54 @@
 ---
-title: What is Tevm Node?
-description: Overview of Tevm Node - A complete JavaScript Ethereum Virtual Machine with full node capabilities
+title: What is Tevm?
+description: An in-process native Ethereum node for Node.js, backed by ZEVM, Voltaire, and Guillotine Mini, with viem-native APIs and Solidity bundler plugins
 authors:
   - "[William Cory](https://x.com/fucory)"
   - "[Tevm Team](https://github.com/evmts)"
 ---
 
-## What is Tevm Node?
+import { ArchitectureDiagram } from '../../components'
 
-:::tip[Ethereum in JavaScript]
-Tevm Node is a complete Ethereum execution environment for JavaScript, backed by `@evmts/zevm` execution primitives and exposed through viem-compatible APIs. It runs in-memory in any JS environment with no native client binary, and includes buildtime tooling for importing EVM contracts into TypeScript.
-:::
+# What is Tevm?
 
-Conceptually similar to Anvil/Hardhat but with more powerful TypeScript-native interop. Tevm is backed by ZEVM packages but is not the native ZEVM CLI client — see [Runtime Model and ZEVM](../core/runtime-model) and the [ZEVM docs](https://zevm.sh/docs).
+Tevm embeds a native Ethereum execution node directly inside Node.js and exposes it through viem-compatible clients, an event emitter, and HTTP, WebSocket, and IPC JSON-RPC servers.
 
-:::tip[You might already know most of the Tevm API!]
-If you know `viem` or `ethers`, you can use Tevm Node immediately — Tevm extends your library of choice.
-:::
+Underneath the TypeScript surface sits a native Zig stack loaded via Node-API:
 
-## What Makes Tevm Unique?
+- **Guillotine Mini** executes EVM bytecode, enforces hardfork rules, and records opcode traces.
+- **Voltaire** owns Ethereum primitives, cryptography, RLP, and account/storage state.
+- **ZEVM** implements the node runtime: chain state, mempool, mining, receipts, filters, snapshots, fork backend, and JSON-RPC dispatcher.
 
-- **Cross-Platform Compatibility** — Same code works everywhere JavaScript runs, including the browser, with zero native dependencies
-- **Fine-grained EVM Control** — Access execution at any level, from high-level transactions to individual opcodes and debug traces
-- **Enhanced User Experience** — Instantaneous gas estimation, optimistic UI, fork-backed reads, account impersonation, transaction simulation
-- **Type-safe Interactions** — Full TypeScript across the API, powered by `abitype`
-- **Direct Solidity Imports** — Write Solidity that interops with TypeScript via the [Tevm Bundler](/getting-started/bundler)
-- **Development Node Compatibility** — `tevm_*`, `eth_*`, `debug_*`, `txpool_*`, `engine_*`, `anvil_*`, `hardhat_*`, `ganache_*`, `evm_*` JSON-RPC methods
+<ArchitectureDiagram />
 
-## Universal JavaScript Compatibility
+## What Tevm provides
 
-Runs in every JavaScript runtime:
+- **Isolated in-process chains** — `createMemoryClient()` allocates an independent local chain in milliseconds with no external daemon or port collisions.
+- **Viem-native client** — public, wallet, Anvil-compatible test actions, and `tevm*` helpers share one client with `cacheTime: 0`.
+- **Lazy state forking** — fork any upstream EVM JSON-RPC endpoint at a pinned block; writes remain local.
+- **Multi-transport JSON-RPC server** — serve any client over HTTP, WebSocket subscriptions, Unix IPC, Express, or Next.js via `tevm/server`. Browser apps connect to this server with standard viem transports.
+- **Direct Solidity imports** — compile `.sol` files into typed ES modules at build time with `tevm/bundler/*` and `@tevm/ts-plugin`.
+- **Native opcode tracing and MCP** — capture structured Guillotine Mini traces via `debug_traceCall`, or expose isolated EVM sessions to AI coding agents with `@tevm/mcp`.
 
-- **Node.js** — local dev, testing, CI/CD
-- **Browser** — advanced dApps with offline capability and real-time simulation
-- **Any JS Runtime** — Deno, Bun, Edge Functions, or any modern JS environment
+## How Tevm compares
 
-## Integration With Popular Libraries
+| Capability | Tevm | Anvil | Hardhat Network |
+| --- | --- | --- | --- |
+| **Execution engine** | Native Zig (ZEVM / Voltaire / Guillotine Mini) | Native Rust (revm) | Rust (EDR) / JS |
+| **In-process Node.js API** | Yes (Node-API, isolated per client) | External process over HTTP | In-process via Hardhat runtime |
+| **Viem integration** | Native (`createMemoryClient`) | External RPC transport | External RPC transport |
+| **Ethers v6 integration** | Native (`TevmProvider` / `BrowserProvider`) | External RPC transport | Hardhat plugin |
+| **HTTP / WS / IPC server** | Built-in (`tevm/server`) | HTTP / WS | HTTP |
+| **Mainnet state forking** | Lazy read-through overlay | Lazy read-through overlay | Lazy read-through overlay |
+| **Direct `.sol` imports in TS** | Built-in (`tevm/bundler/*`) | No | No |
+| **AI agent MCP server** | Built-in (`@tevm/mcp`) | No | No |
 
-Tevm works with `viem`, `wagmi`, and `ethers`:
+## Library compatibility
 
-:::code-group
+| Library | Integration |
+| --- | --- |
+| [**viem**](../getting-started/viem) | First-class client via `createMemoryClient()` or tree-shakeable `createTevmTransport()` |
+| [**ethers.js v6**](../getting-started/ethers) | Direct `TevmProvider` (`@tevm/ethers`) or `BrowserProvider(client, undefined, { cacheTimeout: -1 })` |
+| **Browser apps (viem / wagmi)** | Connect over HTTP or WebSocket to `createServer(client)` from `tevm/server` |
+| **Any EIP-1193 or JSON-RPC client** | `client.request({ method, params })`, `engine.rpc(json)`, or `tevm/server` |
 
-```ts [viem]
-import { createMemoryClient, http } from "tevm";
-
-const client = createMemoryClient();
-
-const balance = await client.getBalance({ address: "0x..." });
-const blockNumber = await client.getBlockNumber();
-
-await client.tevmMine({ blockCount: 1 });
-await client.tevmSetAccount({
-  address: "0x...",
-  balance: 100000000000000000n,
-});
-```
-
-```ts [ethers]
-import { createMemoryClient } from "tevm";
-import { requestEip1193 } from "tevm/decorators";
-import { BrowserProvider, Wallet } from "ethers";
-
-const client = createMemoryClient();
-client.transport.tevm.extend(requestEip1193());
-
-const provider = new BrowserProvider(client.transport.tevm);
-const signer = Wallet.createRandom().connect(provider);
-
-const blockNumber = await provider.getBlockNumber();
-
-// Don't forget to mine after transactions
-await client.mine({ blocks: 1 });
-```
-
-:::
-
-## How Tevm Compares
-
-| Feature                           | Tevm            | Anvil    | Hardhat         | Ganache    |
-| --------------------------------- | --------------- | -------- | --------------- | ---------- |
-| **Language**                      | JavaScript/Wasm | Rust     | JavaScript/Rust | JavaScript |
-| **Browser Compatible**            | ✅              | ❌       | ❌              | ❌         |
-| **Minimal Dependencies**          | ✅              | ✅       | ❌              | ❌         |
-| **Mainnet Forking**               | ✅              | ✅       | ✅              | ✅         |
-| **EVM Event Hooks**               | ✅              | ❌       | ❌              | ❌         |
-| **Custom Precompiles**            | ✅              | ✅       | ❌              | ❌         |
-| **viem Integration**              | Native          | Some     | Minimal         | Minimal    |
-| **ethers Integration**            | Native          | Minimal  | Minimal         | Some       |
-| **Debugging**                     | Advanced        | Advanced | Advanced        | Basic      |
-| **TypeScript Support**            | Full            | Limited  | Full            | Full       |
-| **Serverless Compatible**         | ✅              | ❌       | ❌              | ✅         |
-| **Optimized forking performance** | ✅              | ❌       | ❌              | ❌         |
-
-## Library Compatibility
-
-| Library                                                             | Support Level | Notes                                                                                                                                                          |
-| ------------------------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [**viem**](../getting-started/viem.mdx)                             | Native        | First-class native integration with all viem features                                                                                                          |
-| [**ethers.js**](../getting-started/ethers.mdx)                      | Full          | Both v5 and v6 via EIP-1193 provider                                                                                                                           |
-| [**web3.js**](https://github.com/web3/web3.js)                      | Full          | Via EIP-1193 provider                                                                                                                                          |
-| [**wagmi**](https://wagmi.sh/)                                      | Full          | Works as a wagmi connector                                                                                                                                     |
-| [**thirdweb**](https://thirdweb.com/)                               | Full          | Compatible with thirdweb's SDK                                                                                                                                 |
-| [**Ponder**](https://ponder.sh/)                                    | Full          | Can be used to do advanced tracing in ponder handlers and import contracts into ponder config                                                                  |
-| [**ZEVM**](https://zevm.sh/docs)                                    | Native        | Tevm's VM, transaction, receipt, txpool, common, RLP, trie, and utility facades are backed by `@evmts/zevm` packages                                                    |
-| Legacy low-level consumers                                          | Compatible    | Several Tevm low-level APIs keep familiar shapes for migration, but new docs and integrations should target Tevm and ZEVM-backed packages                             |
-| Any EIP-1193 library                                                | Full          | Standard provider interface                                                                                                                                    |
-
-Next: [Why JS?](./why-run-ethereum-in-js) · [Architecture Overview](./architecture-overview) · [Create a Tevm Node](../core/create-tevm-node)
+Next: [Why embed an EVM?](./why-run-ethereum-in-js) · [Architecture](./architecture-overview) · [Quickstart](../getting-started/overview)

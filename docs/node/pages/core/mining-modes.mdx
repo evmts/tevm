@@ -1,126 +1,159 @@
 ---
-title: Mining Modes
-description: Configure block production in Tevm Node
+title: Mining & Block Production
+description: Configure automining, manual mining, and interval mining in Tevm, and observe mined blocks
 ---
 
-# Mining Modes
+import { MiningModesDiagram, QaBox, WatchOut } from '../../components'
 
-Mining controls when pending transactions become part of the canonical chain. `tevm@1.0.0-rc.151` supports manual, automatic, and interval mining.
+# Mining & block production
 
-## Configure a Mode
+Mining turns pending transactions in the txpool into canonical blocks with receipts and logs. Tevm supports three modes: **auto** (default), **manual**, and **interval**.
+
+<MiningModesDiagram />
+
+## Configuring mining at startup
 
 ```ts
 import { createMemoryClient } from 'tevm'
 
+// 1. Auto (default): each transaction mines its own block immediately
+const autoClient = createMemoryClient()
+
+// 2. Manual: transactions stay in the txpool until you mine explicitly
 const manualClient = createMemoryClient({
-  miningConfig: { type: 'manual' },
+  mining: { auto: false },
 })
 
-const autoClient = createMemoryClient({
-  miningConfig: { type: 'auto' },
-})
-
+// 3. Interval: background Zig thread mines a block every N whole seconds
 const intervalClient = createMemoryClient({
-  miningConfig: {
-    type: 'interval',
-    blockTime: 12, // seconds
-  },
+  mining: { auto: false, interval: 2 },
 })
 ```
 
-- **Manual** keeps submitted transactions in the txpool until a mine action runs. Use it for deterministic tests.
-- **Auto** mines a block after each submitted transaction. Use it for fast local development.
-- **Interval** mines on a timer. `blockTime` is measured in seconds; `0` disables the timer while preserving manual mining.
+| Mode | Config | When blocks are produced | Typical use |
+| --- | --- | --- | --- |
+| **Auto** | `{ auto: true }` (default) | Immediately on every transaction | Unit tests, scripts, simple flows |
+| **Manual** | `{ auto: false }` | Only when `tevmMine` / `mine` / `evm_mine` is called | Multi-tx blocks, mempool inspection, exact block timing |
+| **Interval** | `{ auto: false, interval: N }` | Every `N` whole seconds on a native thread (`0` disables timer) | Local dev servers, frontend polling, time-dependent apps |
 
-Gas-threshold mining is not a supported rc.151 mining mode.
+## Submitting and mining manually
 
-## Submit and Mine Manually
+With `mining: { auto: false }`, submitted transactions wait in the mempool and `getTransactionReceipt` returns `null` until you mine:
 
 ```ts
-import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
+import { createMemoryClient, parseEther, PREFUNDED_ACCOUNTS } from 'tevm'
 
 const client = createMemoryClient({
-  miningConfig: { type: 'manual' },
+  mining: { auto: false },
 })
 
-const { txHash } = await client.tevmCall({
-  from: PREFUNDED_ACCOUNTS[0].address,
-  to: '0x1111111111111111111111111111111111111111',
-  value: 1n,
-  addToMempool: true,
-})
+try {
+  const { txHash } = await client.tevmCall({
+    from: PREFUNDED_ACCOUNTS[0].address,
+    to: '0x1111111111111111111111111111111111111111',
+    value: parseEther('1'),
+    addToMempool: true,
+  })
 
-if (!txHash) throw new Error('transaction was not added to the txpool')
+  // Mine 1 block, advancing timestamp by 12 seconds
+  await client.tevmMine({ blocks: 1, interval: 12 })
 
-await client.tevmMine({ blockCount: 1, interval: 1 })
-const receipt = await client.getTransactionReceipt({ hash: txHash })
-
-console.log(receipt.blockNumber)
+  const receipt = await client.getTransactionReceipt({ hash: txHash! })
+  console.log(receipt.blockNumber, receipt.status) // 1n 'success'
+} finally {
+  await client.tevmClose()
+}
 ```
 
-`interval` on `tevmMine` is the number of seconds added between the timestamps of blocks created by that call. It is separate from the interval mining policy's `blockTime`.
+### `tevmMine` vs. viem `mine`
 
-## Tevm and Viem Mining Actions
+Both methods accept the same parameter names and forward to `anvil_mine`:
 
-The memory client exposes both APIs:
+```ts
+// TEVM action (defaults: blocks = 1, interval = 1)
+await client.tevmMine({ blocks: 2, interval: 12 })
+
+// viem Anvil test action
+await client.mine({ blocks: 2, interval: 12 })
+```
+
+Here `interval` is the timestamp delta in seconds between each mined block in that call — distinct from `mining.interval`, which sets the background wall-clock timer.
+
+## Switching modes at runtime
+
+Toggle automining or interval mining on a running engine through standard Anvil/EVM RPC methods or viem test actions:
 
 ```ts
 import { createMemoryClient } from 'tevm'
 
 const client = createMemoryClient()
+try {
+  // Disable automining
+  await client.setAutomine(false)
 
-// Tevm action
-await client.tevmMine({ blockCount: 2, interval: 1 })
+  // Start mining every 5 seconds
+  await client.setIntervalMining({ interval: 5 })
 
-// viem's Anvil-compatible test action
-await client.mine({ blocks: 2, interval: 1 })
+  // Stop the interval timer (0 disables it)
+  await client.setIntervalMining({ interval: 0 })
+
+  // Re-enable automining
+  await client.setAutomine(true)
+} finally {
+  await client.tevmClose()
+}
 ```
 
-Do not mix the parameter names: Tevm uses `blockCount`; viem uses `blocks`.
+## Controlling block timestamps
 
-## Change the Policy at Runtime
-
-The low-level node owns the current policy and the interval timer.
-
-```ts
-import { createTevmNode } from 'tevm'
-
-const node = createTevmNode({
-  miningConfig: { type: 'manual' },
-})
-
-node.setMiningConfig({ type: 'interval', blockTime: 5 })
-node.setMiningConfig({ type: 'auto' })
-node.setMiningConfig({ type: 'manual' })
-
-await node.close()
-```
-
-Call `node.close()` when an application is finished with an interval-mining node so its timer is stopped.
-
-## Observe Mining
-
-The Tevm mine action accepts execution callbacks. Each callback must call `next?.()` to continue.
+Use viem test actions (or `evm_setNextBlockTimestamp` / `evm_increaseTime`) to test timelocks, vesting, and hardfork activation timestamps:
 
 ```ts
 import { createMemoryClient } from 'tevm'
 
 const client = createMemoryClient()
-const mined: bigint[] = []
+try {
+  await client.setNextBlockTimestamp({ timestamp: 2_000_000_000n })
+  await client.mine({ blocks: 1 })
 
-await client.tevmMine({
-  blockCount: 2,
-  onBlock(block, next) {
-    mined.push(block.header.number)
-    next?.()
-  },
-})
-
-console.log(mined)
+  const block = await client.getBlock({ blockTag: 'latest' })
+  console.log(block.timestamp) // 2000000000n
+} finally {
+  await client.tevmClose()
+}
 ```
 
-For application-level results, prefer viem queries such as `getBlock`, `getTransaction`, `getTransactionReceipt`, and `getLogs` after mining.
+## Observing mined blocks
 
-## Related
+Subscribe to `block` on `client.transport.tevm.events`. Listeners fire for both explicit `mine()` calls and blocks mined autonomously by ZEVM's interval thread:
 
-[Transaction Pool](../advanced/txpool) · [Receipts and Logs](../advanced/receipts-and-logs) · [Call API](../api/tevm-call)
+```ts
+import { once } from 'node:events'
+import { createMemoryClient } from 'tevm'
+
+const client = createMemoryClient({
+  mining: { auto: false, interval: 1 },
+})
+
+// The internal block poller is unref'd; keep the event loop alive in a standalone script.
+const keepAlive = setTimeout(() => {}, 3_000)
+
+try {
+  await client.tevmReady()
+  const [block] = await once(client.transport.tevm.events, 'block')
+  console.log('Interval-mined block:', block.number) // '0x1'
+} finally {
+  clearTimeout(keepAlive)
+  await client.tevmClose()
+}
+```
+
+<QaBox question="Why does tevmDeploy mine automatically even when mining.auto is false?">
+`tevmDeploy` defaults to `addToBlockchain: true` so `deployed.createdAddress` is populated immediately. Pass `addToMempool: true` to `tevmDeploy` when you want the deployment transaction to stay pending in manual mode.
+</QaBox>
+
+<WatchOut title="Stop interval timers before exiting">
+Always call `await client.tevmClose()` when finished with an interval-mining client so the background Zig thread shuts down cleanly.
+</WatchOut>
+
+Next: [Call, contract & deploy](../api/tevm-call) · [Engine API](./tevm-node-interface) · [Testing with Vitest](../examples/local-testing)

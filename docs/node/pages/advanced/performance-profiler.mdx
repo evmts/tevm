@@ -1,91 +1,41 @@
 ---
-title: Performance Profiler
-description: Measure opcode execution and gas with Tevm traces and profiler logs
+title: Performance Profiling
+description: Profile opcode gas consumption with native debug_traceCall traces
 ---
 
-# Performance Profiler
+import { TracePipelineDiagram } from '../../components'
 
-Tevm provides two inspection levels:
+# Performance profiling
 
-- `createTrace: true` returns a serializable per-opcode trace for one call.
-- `profiler: true` enables the low-level EVM performance log collector.
+Aggregate per-opcode gas usage directly from native Guillotine Mini `debug_traceCall` traces:
 
-Use traces for application tooling and profiler logs when investigating the EVM implementation itself.
-
-## Profile a Call with a Trace
+<TracePipelineDiagram />
 
 ```ts
-import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
+import { createMemoryClient } from 'tevm'
 
 const client = createMemoryClient()
-const contract = '0x4444444444444444444444444444444444444444'
+try {
+  const target = '0x0000000000000000000000000000000000000123'
+  await client.tevmSetAccount({
+    address: target,
+    deployedBytecode: '0x602a60005260206000f3',
+  })
 
-await client.tevmSetAccount({
-  address: contract,
-  deployedBytecode: '0x6001600055',
-})
+  const trace = (await client.transport.tevm.request({
+    method: 'debug_traceCall',
+    params: [{ to: target }, 'latest', { disableStack: true }],
+  })) as { gas: number; structLogs: Array<{ op: string; gasCost: number }> }
 
-const result = await client.tevmCall({
-  from: PREFUNDED_ACCOUNTS[0].address,
-  to: contract,
-  createTrace: true,
-})
+  const gasByOpcode = new Map<string, number>()
+  for (const step of trace.structLogs) {
+    gasByOpcode.set(step.op, (gasByOpcode.get(step.op) ?? 0) + step.gasCost)
+  }
 
-const gasByOpcode = new Map<string, bigint>()
-for (const step of result.trace?.structLogs ?? []) {
-  gasByOpcode.set(
-    step.op,
-    (gasByOpcode.get(step.op) ?? 0n) + step.gasCost,
-  )
+  console.log({ totalGas: trace.gas, gasByOpcode })
+} finally {
+  await client.tevmClose()
 }
-
-console.log(result.executionGasUsed, gasByOpcode)
 ```
 
-`executionGasUsed` covers EVM execution. `totalGasSpent` also includes intrinsic transaction costs when available.
-
-## Stream Live Steps
-
-```ts
-import { createMemoryClient } from 'tevm'
-
-const client = createMemoryClient()
-let stepCount = 0
-
-await client.tevmCall({
-  deployedBytecode: '0x6001600055',
-  onStep(step, next) {
-    stepCount += 1
-    console.log(step.pc, step.opcode.name, step.gasLeft)
-    next?.()
-  },
-})
-
-console.log(stepCount)
-```
-
-Live callbacks avoid retaining a full trace but add work to every opcode. Keep handlers small and always call `next?.()`.
-
-## Low-Level Profiler Logs
-
-```ts
-import { createMemoryClient } from 'tevm'
-
-const client = createMemoryClient({ profiler: true })
-await client.tevmReady()
-
-await client.tevmCall({
-  deployedBytecode: '0x6001600055',
-})
-
-const vm = await client.transport.tevm.getVm()
-const logs = vm.evm.getPerformanceLogs()
-
-console.log(logs)
-```
-
-Profiler mode has runtime and memory overhead. Enable it only around measurements, warm up initialization before timing, and compare the same bytecode and chain configuration.
-
-## Related
-
-[EVM Events](../api/evm-events) · [Building a Debugger UI](../examples/debugger-ui) · [Call API](../api/tevm-call)
+Pass `disableStack: true` when you only need opcode counts and gas costs to keep trace payloads small. See [Tracing & engine events](/api/evm-events).

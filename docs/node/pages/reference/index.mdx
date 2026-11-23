@@ -1,23 +1,21 @@
 ---
-title: Package Reference Documentation
-description: Reference documentation for all Tevm packages
+title: Package Reference
+description: Reference index for all active Tevm packages
 ---
 
-# Package Reference Documentation
+# Package reference
 
-- [@tevm/actions](/reference/actions) - Core action handlers for interacting with the EVM
-- [@tevm/address](/reference/address) - Ethereum address utilities
-- [@tevm/block](/reference/block) - Block creation and manipulation
-- [@tevm/blockchain](/reference/blockchain) - Blockchain data structures and utilities
-- [@tevm/common](/reference/common) - Shared utilities and constants
-- [@tevm/contract](/reference/contract) - Library for using contracts in typesafe way
-- [Contract Bundler](/reference/bundler) - Import Solidity files directly in TypeScript
-- [@tevm/decorators](/reference/decorators) - Extension decorators
-- [@tevm/evm](/reference/evm) - Core EVM implementation
-- [@tevm/memory-client](/reference/memory-client) - Batteries included viem client along with tree shakable actions
-- [@tevm/receipt-manager](/reference/receipt-manager) - Transaction receipt handling
-- [@tevm/state](/reference/state) - State management utilities
-- [@tevm/tx](/reference/tx) - Transaction handling utilities
-- [@tevm/txpool](/reference/txpool) - Transaction pool management
-- [@tevm/utils](/reference/utils) - General utility functions
-- [@tevm/vm](/reference/vm) - Virtual Machine implementation
+Every active package is also re-exported through the umbrella `tevm` package.
+
+| Package | Subpath | Summary |
+| --- | --- | --- |
+| [`@tevm/memory-client`](/reference/memory-client) | `tevm/memory-client` | Viem-compatible in-process client (`createMemoryClient`, `createTevmTransport`, `tevmViemActions`) |
+| [`@tevm/node`](/reference/node) | `tevm/node` | Native ZEVM Node-API wrapper (`createZevmEngine`, `createTevmNode`, `NativeRpcError`) |
+| [`@tevm/actions`](/reference/actions) | `tevm/actions` | Browser-safe typed RPC helpers (`tevmCall`, `tevmContract`, `tevmDeploy`, `tevmDeal`, `tevmMine`, …) |
+| [`@tevm/server`](/reference/server) | `tevm/server` | HTTP, WebSocket, Unix IPC, Express, and Next.js JSON-RPC servers |
+| [`@tevm/contract`](/reference/contract) | `tevm/contract` | `createContract` and bundled contract fixtures (`SimpleContract`, `ERC20`, `ERC721`, `ErrorContract`) |
+| [`@tevm/common`](/reference/common) | `tevm/common` | Viem chain presets and `tevmDefault` (`foundry`) |
+| [`@tevm/utils`](/reference/utils) | `tevm/utils` | ABI/hex/RLP helpers and `PREFUNDED_ACCOUNTS` |
+| [Bundler plugins](/reference/bundler) | `tevm/bundler/*` | Direct `.sol` import plugins for Vite, Rollup, esbuild, Webpack, Rspack, and Bun |
+
+See also: [Package overview](/api/packages) · [CLI reference](/reference/cli) · [Migrating from the JS engine](/core/migration-from-js-engine)

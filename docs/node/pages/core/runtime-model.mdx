@@ -1,91 +1,53 @@
 ---
-title: Runtime Model and ZEVM
-description: How Tevm's JavaScript runtime model maps to ZEVM's native client docs
+title: Runtime Model & ZEVM
+description: How Tevm embeds ZEVM, Voltaire, and Guillotine Mini, and where Tevm's responsibilities end and ZEVM's begin
 ---
 
-# Runtime Model and ZEVM
+import { ArchitectureDiagram } from '../../components'
 
-Tevm and [ZEVM](https://zevm.sh/docs) share execution primitives but are different products with different public interfaces.
+# Runtime model & ZEVM
 
-- Tevm is a JavaScript-first in-memory node, viem transport, EIP-1193 provider, and package family.
-- ZEVM is the native Zig client with CLI/runtime docs for trusted mode and light mode.
-- Tevm docs should describe Tevm APIs first, then link to ZEVM for the native client contract.
+Tevm and [ZEVM](https://zevm.sh/docs) share the same native execution engine, packaged for two different workflows:
 
-## Tevm Runtime Shapes
+- **ZEVM** is the standalone Zig Ethereum client and native execution library.
+- **Tevm** embeds ZEVM's `NodeRuntime` inside Node.js over Node-API and wraps it in TypeScript/viem ergonomics, HTTP/WS/IPC servers, ethers adapters, MCP tooling, and Solidity bundler plugins.
 
-### Local writable node
+<ArchitectureDiagram />
 
-The default Tevm node is a writable local Ethereum execution environment. It supports local accounts, state mutation, transaction submission, mining controls, snapshots, traces, and the full JSON-RPC method set in the [JSON-RPC Guide](../api/json-rpc#supported-methods).
+## Ownership split
 
-This is the Tevm equivalent of ZEVM's trusted-mode development-node docs, with Tevm's JavaScript APIs and broader compatibility namespaces.
+| Component | Owned by | What it does |
+| --- | --- | --- |
+| **Guillotine Mini** | Native Zig | EVM bytecode execution, hardfork rules (including Prague & Osaka), gas metering, `debug_traceCall` opcode tracer |
+| **Voltaire** | Native Zig | Account & storage state, Ethereum primitives, RLP, cryptography, standard precompiles |
+| **ZEVM (`NodeRuntime`)** | Native Zig | Chain management, mempool, automine/manual/interval mining, receipts, filters, snapshots, state blobs, fork backend, JSON-RPC dispatcher |
+| **`@tevm/node`** | Tevm (JS/TS) | Node-API handle wrapper (`createZevmEngine`), serialized request queue, `NativeRpcError`, `EventEmitter`, `ready()` / `close()` |
+| **`@tevm/memory-client`** | Tevm (JS/TS) | Viem client (`createMemoryClient`) and transport (`createTevmTransport`) over `ZevmEngine` |
+| **`@tevm/actions`** | Tevm (JS/TS) | Browser-safe typed RPC helpers (`tevmCall`, `tevmContract`, `tevmDeploy`, etc.) |
+| **`@tevm/server`** | Tevm (JS/TS) | HTTP, WebSocket subscriptions, Unix IPC, Express, and Next.js transport adapters |
 
-Start here: [Creating a Tevm Node](./create-tevm-node) · [Mining Modes](./mining-modes) · [Managing State](./managing-state) · [Local Testing Flow](../examples/local-testing)
+## Runtime modes in Tevm
 
-### Forked local node
+### 1. Local in-process node (default)
 
-Forking is configuration on top of the writable local node, not a separate runtime. Tevm fetches remote state lazily, caches it locally, and stores local writes in an overlay.
+`createMemoryClient()` or `createZevmEngine()` starts a deterministic local chain at block `0`, timestamp `0`, chain ID `31337`, with 10 prefunded dev accounts and automining enabled.
 
-Start here: [Forking and Reforking](./forking) · [Forking Mainnet](../examples/forking-mainnet) · [Managing State](./managing-state)
+### 2. Forked local node
 
-This matches the boundary in ZEVM's [State Fork and Snapshots](https://zevm.sh/docs/concepts/state-fork-and-snapshots/) docs: the fork source is a read source; local writes belong to the local overlay.
+Passing `fork: { url, blockNumber }` configures ZEVM's fork backend via `anvil_reset`. State loads lazily from the upstream endpoint at `blockNumber`; all local mutations, transactions, and mined blocks remain in memory starting at local height `0`.
 
-### Optional light-client consensus service
+### 3. Networked server for browsers & external clients
 
-Tevm can be configured with an injected consensus service for proof-aware reads. This is not the same as running the native ZEVM light-mode binary. In Tevm, the consensus service affects specific read paths and light-sync status inside a JavaScript node.
+Because the native addon runs in Node.js (`>=24`) rather than WebAssembly in the browser, browser frontends connect to a local `@tevm/server` over HTTP or WebSocket using viem's `http()` or `webSocket()` transport.
 
-When `consensus.mode` is `light-client`, these RPC paths use consensus/readiness/proof hooks:
+## Hardfork activation & deterministic timestamps
 
-- `eth_chainId`
-- `eth_blockNumber`
-- `eth_getBalance`
-- `eth_getCode`
-- `eth_getStorageAt`
-- `eth_getTransactionCount`
-- `tevm_lightSyncStatus`
-- `zevm_lightSyncStatus`
+Local genesis starts at timestamp `0`, independent of wall-clock time. Hardfork rules (such as mainnet Osaka EIP-7939 `CLZ`, ModExp pricing bounds, and the 16,777,216 transaction gas cap at timestamp `1764798551`) activate deterministically when block timestamps cross the chain's activation threshold.
 
-The rest of the Tevm node remains Tevm's JavaScript runtime surface unless the application restricts it. For the native ZEVM light-mode contract (startup checkpoints, selector rules, readiness gating, mode-unsupported error codes), see ZEVM's [Light Mode](https://zevm.sh/docs/concepts/light-mode/) and [Verified Light-Mode Reads](https://zevm.sh/docs/reference/json-rpc/verified-light-mode-reads/) docs.
+You can test pre-fork and post-fork behavior in the same suite by advancing the timestamp with `evm_setNextBlockTimestamp` (or viem's `setNextBlockTimestamp`).
 
-## ZEVM Docs Cross-Reference
+## Where to look for native client docs
 
-ZEVM has a strong docs split that Tevm mirrors through Tevm-specific guides rather than copying native CLI details directly.
+For standalone Zig CLI usage, light-mode startup checkpoints, or native ZEVM internals, see the [ZEVM documentation](https://zevm.sh/docs).
 
-| ZEVM docs area | Tevm version |
-| --- | --- |
-| [Installation](https://zevm.sh/docs/quickstart/installation/) | [Getting Started](../getting-started/overview), [Creating a Tevm Node](./create-tevm-node), and package docs. Tevm installs from npm; native Zig build steps belong to ZEVM. |
-| [Run Trusted Mode](https://zevm.sh/docs/quickstart/run-trusted-mode/) | [Creating a Tevm Node](./create-tevm-node), [Local Testing Flow](../examples/local-testing), [Mining Modes](./mining-modes). |
-| [Forked Dev Node](https://zevm.sh/docs/quickstart/forked-dev-node/) | [Forking and Reforking](./forking), [Forking Mainnet](../examples/forking-mainnet). |
-| [Run Light Mode](https://zevm.sh/docs/quickstart/run-light-mode/) | Tevm's injectable consensus service and `tevm_lightSyncStatus`/`zevm_lightSyncStatus` compatibility docs. Use ZEVM's page for the native CLI light client. |
-| [Troubleshooting](https://zevm.sh/docs/quickstart/troubleshooting/) | Split by surface: [Bundler Troubleshooting](../reference/bundler/troubleshooting), [Forking and Reforking](./forking), JSON-RPC errors in [JSON-RPC Guide](../api/json-rpc#error-handling). |
-| [Runtime Modes](https://zevm.sh/docs/concepts/runtime-modes/) | This page. Tevm has local, forked local, and optional injected light-client consensus — not the same CLI mode selector as ZEVM. |
-| [Trusted Mode](https://zevm.sh/docs/concepts/trusted-mode/) | Tevm's local writable node docs: [Creating a Tevm Node](./create-tevm-node), [Mining Modes](./mining-modes), [Managing State](./managing-state), [Account Management](../api/account-management). |
-| [Light Mode](https://zevm.sh/docs/concepts/light-mode/) | Tevm's light-client consensus notes on this page plus `tevm_lightSyncStatus` in [JSON-RPC Guide](../api/json-rpc#tevm-and-zevm-compatibility). Use ZEVM docs for full native light-mode operation. |
-| [State Fork and Snapshots](https://zevm.sh/docs/concepts/state-fork-and-snapshots/) | [Forking and Reforking](./forking), [Managing State](./managing-state), including checkpoint, dump/load, snapshot, and revert flows. |
-| [Method Support by Mode](https://zevm.sh/docs/concepts/method-support-by-mode/) | [JSON-RPC Guide](../api/json-rpc#supported-methods). Tevm documents every registered method and calls out compatibility stubs/aliases. |
-| [Architecture and Upstream Ownership](https://zevm.sh/docs/concepts/architecture-and-upstream-ownership/) | [Architecture Overview](../introduction/architecture-overview), [VM and Submodules](../api/vm-and-submodules), and package references explaining which Tevm facades are backed by ZEVM packages. |
-| [Configuration Reference](https://zevm.sh/docs/reference/configuration/overview/) | [Creating a Tevm Node](./create-tevm-node#complete-configuration-reference), [Forking and Reforking](./forking), [Mining Modes](./mining-modes). Tevm config is JS options, not a ZEVM CLI JSON config. |
-| [JSON-RPC Overview](https://zevm.sh/docs/reference/json-rpc/overview/) | [JSON-RPC Guide](../api/json-rpc): EIP-1193 usage, error handling, exhaustive method index. |
-| [Core Reads](https://zevm.sh/docs/reference/json-rpc/core-reads/) | [Methods Overview](../api/methods), [JSON-RPC Guide](../api/json-rpc), and viem-compatible read actions on `createMemoryClient`. |
-| [Managed Dev Wallet](https://zevm.sh/docs/reference/json-rpc/managed-dev-wallet/) | [Account Management](../api/account-management), [Methods Overview](../api/methods), [JSON-RPC Guide](../api/json-rpc). |
-| [Simulation](https://zevm.sh/docs/reference/json-rpc/simulation/) | [Call API](../api/tevm-call), [Methods Overview](../api/methods), `eth_call`/`eth_estimateGas` in [JSON-RPC Guide](../api/json-rpc). |
-| [Transactions and Mining](https://zevm.sh/docs/reference/json-rpc/transactions-and-mining/) | [Mining Modes](./mining-modes), [Transaction Pool](../advanced/txpool), tx methods in [JSON-RPC Guide](../api/json-rpc). |
-| [Blocks, Receipts, and Logs](https://zevm.sh/docs/reference/json-rpc/blocks-receipts-and-logs/) | [Receipts and Logs](../advanced/receipts-and-logs), [Block reference](../reference/block), block/log methods in [JSON-RPC Guide](../api/json-rpc). |
-| [ZEVM Controls](https://zevm.sh/docs/reference/json-rpc/dev-controls/) | Control methods in [JSON-RPC Guide](../api/json-rpc#tevm-and-zevm-compatibility), [Account Management](../api/account-management), [Managing State](./managing-state), [Mining Modes](./mining-modes). |
-| [Unsupported and Deferred](https://zevm.sh/docs/reference/json-rpc/unsupported-and-deferred/) | Tevm does not inherit ZEVM's unsupported list. Tevm supports many debug, filter, subscription, txpool, Engine API, Anvil, Hardhat, Ganache, and EVM compatibility methods ZEVM marks deferred. Source of truth: [JSON-RPC Guide](../api/json-rpc#supported-methods). |
-
-## Compatibility Rules
-
-Tevm's canonical custom namespace is `tevm_*`. ZEVM's canonical native namespace is `zevm_*`.
-
-Tevm exposes only low-risk `zevm_*` aliases where semantics match. Today that means `zevm_lightSyncStatus` as an alias for `tevm_lightSyncStatus`. Other ZEVM-native control names should not be assumed to work in Tevm unless they appear in [JSON-RPC Guide](../api/json-rpc#supported-methods).
-
-When writing Tevm docs:
-
-- Use `tevm_*` for Tevm-specific methods.
-- Mention `zevm_lightSyncStatus` only as a compatibility alias.
-- Link to [ZEVM docs](https://zevm.sh/docs) for native CLI mode selection, trusted/light mode operation, release metadata, and exact ZEVM JSON-RPC contracts.
-- Keep Tevm method support grounded in Tevm's registered handler map and JSON-RPC guide.
-
-## Next Steps
-
-[Creating a Tevm Node](./create-tevm-node) · [Forking and Reforking](./forking) · [Managing State](./managing-state) · [JSON-RPC Guide](../api/json-rpc) · [ZEVM Docs](https://zevm.sh/docs)
+Next: [Engine API (`ZevmEngine`)](./tevm-node-interface) · [Migrating from the JS engine](./migration-from-js-engine) · [JSON-RPC reference](../api/json-rpc)

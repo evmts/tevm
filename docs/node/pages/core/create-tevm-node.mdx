@@ -1,220 +1,109 @@
 ---
-title: Creating a Tevm Node
-description: Learn how to create and configure a Tevm Node
+title: Client & Engine Options
+description: Complete configuration reference for createMemoryClient, createTevmTransport, and createZevmEngine
 ---
 
-# Creating a MemoryClient
+import { WatchOut } from '../../components'
 
-`createMemoryClient` bootstraps a complete Ethereum execution environment in JavaScript.
+# Client & engine options
 
-## Basic usage
+`createMemoryClient`, `createTevmTransport`, and `createZevmEngine` (`createTevmNode`) all share the same core engine options (`ZevmEngineOptions`). `createMemoryClient` adds viem client fields on top.
+
+## Basic initialization
 
 ```ts
-import { createMemoryClient } from "tevm";
+import { createMemoryClient } from 'tevm'
 
-const client = createMemoryClient();
-
-// Optional: eagerly finish lazy initialization
-await client.tevmReady();
+const client = createMemoryClient()
+try {
+  // Optional: wait eagerly for fork/mining initialization
+  await client.tevmReady()
+  console.log(await client.getChainId(), await client.getBlockNumber())
+  // 31337 0n
+} finally {
+  await client.tevmClose()
+}
 ```
 
-## With configuration
+Construction is synchronous. The engine runs its startup configuration (fork reset, automine, interval mining) on an internal promise queue; `await client.tevmReady()` resolves when that setup completes and rejects immediately if setup fails (for example, an unreachable fork URL).
+
+## Complete option reference
+
+### `ZevmEngineOptions`
+
+Accepted by `createZevmEngine`, `createTevmNode`, `createTevmTransport`, and `createMemoryClient`:
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `chainId` | `number` | `31337` | Unsigned safe integer chain ID passed to ZEVM (`chain_id`). |
+| `mining` | `{ auto?: boolean; interval?: number }` | `{ auto: true }` | Automine flag and optional background interval in whole seconds (`0` disables the timer). |
+| `fork` | `{ url: string; blockNumber?: number }` | `undefined` | Upstream JSON-RPC URL and optional pinned block number (unsigned safe integer). |
+
+### `MemoryClientOptions` (extends `ZevmEngineOptions`)
+
+Accepted by `createMemoryClient`:
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `engine` | `ZevmEngine` | new engine | Supply an existing `ZevmEngine` instead of creating one. `tevmClose()` still closes it. |
+| `common` | `Chain` (viem) | `foundry` (with `chainId`) | Viem `Chain` metadata attached to the client (name, currency, contracts). Does not alter ZEVM's hardfork schedule. |
+| `account` | `Account \| Hex` | `undefined` | Default account for viem wallet actions (`sendTransaction`, `writeContract`, `deployContract`). |
+| `name` | `string` | `'TEVM'` | Viem client display name. |
+| `key` | `string` | `'tevm'` | Viem client key. |
+
+<WatchOut title="Validation rules">
+`chainId`, `mining.interval`, and `fork.blockNumber` must be unsigned safe integers (`Number.isSafeInteger(v) && v >= 0`). Negative numbers, floats, or values above `Number.MAX_SAFE_INTEGER` throw a synchronous `TypeError`.
+</WatchOut>
+
+## Configuring chain identity
+
+Pass `chainId` to configure the native engine's chain ID, and optionally `common` for viem chain metadata:
 
 ```ts
-import { createMemoryClient, http } from "tevm";
-
-const rpcUrl = process.env.MAINNET_RPC_URL;
-if (!rpcUrl) {
-  throw new Error("MAINNET_RPC_URL is required for fork mode");
-}
+import { createMemoryClient } from 'tevm'
+import { optimism } from 'tevm/common'
 
 const client = createMemoryClient({
-  fork: { transport: http(rpcUrl)({}) },
-  miningConfig: { type: "auto" },
-  loggingLevel: "debug",
-});
-
-await client.tevmReady();
-```
-
-:::tip
-All options for `createMemoryClient` also apply to `createTevmNode` and `createTevmTransport`.
-:::
-
-## Configuration Options
-
-### Fork Configuration
-
-```ts
-import { createMemoryClient, http } from "tevm";
-
-const rpcUrl = process.env.MAINNET_RPC_URL;
-if (!rpcUrl) {
-  throw new Error("MAINNET_RPC_URL is required for fork mode");
-}
-
-const node = createMemoryClient({
-  fork: {
-    transport: http(rpcUrl)({}),
-    blockTag: 17_000_000n, // optional
-  },
-});
-await node.tevmReady();
-```
-
-:::note
-Forked state is fetched lazily and cached locally. First access is slow, subsequent accesses are fast.
-:::
-
-### Mining Configuration
-
-```ts
-// Auto: mine after each tx
-const node = createMemoryClient({ miningConfig: { type: "auto" } });
-
-// Interval: mine every N seconds
-const intervalNode = createMemoryClient({
-  miningConfig: { type: "interval", blockTime: 12 },
-});
-```
-
-### Chain Configuration
-
-```ts
-import { createMemoryClient } from "tevm";
-import { createCommon } from "tevm/common";
-
-const customNode = createMemoryClient({
-  common: createCommon({
-    id: 1337,
-    name: "Local chain",
-    nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-    rpcUrls: { default: { http: ["http://localhost:8545"] } },
-  }),
-});
-```
-
-Or use a preset:
-
-```ts
-import { createMemoryClient } from "tevm";
-import { mainnet, optimism, arbitrum, base } from "tevm/common";
-
-const optimismNode = createMemoryClient({ common: optimism });
-```
-
-<details>
-  <summary>Want to add your own network?</summary>
-  Add it to `viem/chains` first, then open an issue on the Tevm repo to request inclusion.
-</details>
-
-### Logging Configuration
-
-```ts
-const node = createMemoryClient({
-  loggingLevel: "debug", // 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace'
-});
-
-node.logger.debug("Detailed debugging information");
-node.logger.info("Informational message");
-node.logger.warn("Warning!");
-node.logger.error("Error encountered", { details: "Something went wrong" });
-```
-
-### Custom Precompiles
-
-```ts
-import { createContract, createMemoryClient, definePrecompile, parseAbi } from "tevm";
-
-const calculatorPrecompile = definePrecompile({
-  contract: createContract({
-    abi: parseAbi([
-      "function add(uint256 a, uint256 b) returns (uint256)",
-      "function subtract(uint256 a, uint256 b) returns (uint256)",
-    ]),
-    address: "0x0000000000000000000000000000000000000100",
-  }),
-  call: async ({ data, gasLimit }) => {
-    return {
-      returnValue: new Uint8Array([0x01]),
-      executionGasUsed: 200n,
-    };
-  },
-});
-
-const node = createMemoryClient({
-  customPrecompiles: [calculatorPrecompile.precompile()],
-});
-```
-
-### Performance Profiling
-
-```ts
-const node = createMemoryClient({ profiler: true });
-await node.tevmReady();
-
-const vm = await node.transport.tevm.getVm();
-const performanceLogs = vm.evm.getPerformanceLogs();
-```
-
-## Complete Configuration Reference
-
-| Property                     | Type                                                           | Default            | Description                                                  |
-| ---------------------------- | -------------------------------------------------------------- | ------------------ | ------------------------------------------------------------ |
-| `fork`                       | `{ transport: EIP1193RequestFn; blockTag?: BlockTag; }`        | -                  | Enables forking from a live network or another Tevm instance |
-| `common`                     | `Common`                                                       | `tevmDevnet`       | Chain configuration object                                   |
-| `loggingLevel`               | `"fatal" \| "error" \| "warn" \| "info" \| "debug" \| "trace"` | `"info"`           | Logging verbosity level                                      |
-| `miningConfig`               | `{ type: 'manual' } \| { type: 'auto' } \| { type: 'interval', blockTime: number }` | `{ type: 'manual' }` | Block mining behavior |
-| `customPrecompiles`          | `Precompile[]`                                                 | `[]`               | Additional precompiled contracts                             |
-| `allowUnlimitedContractSize` | `boolean`                                                      | `false`            | Disables EIP-170 contract size checks                        |
-
-## Best Practices
-
-### Always pass a `common` when forking
-
-- Faster init (no chainId fetch).
-- Correct hardfork/EIP behavior per chain.
-
-Without one, `tevmDefault` is used.
-
-```typescript
-import { createMemoryClient, http } from "tevm";
-import { optimism } from "tevm/common";
-
-const rpcUrl = process.env.OPTIMISM_RPC_URL;
-if (!rpcUrl) throw new Error("OPTIMISM_RPC_URL is required");
-
-const client = createMemoryClient({
+  chainId: optimism.id,
   common: optimism,
-  fork: { transport: http(rpcUrl)({}) },
-});
+})
 
-const block = await client.getBlock({ blockTag: "latest" });
+try {
+  console.log(await client.getChainId()) // 10
+} finally {
+  await client.tevmClose()
+}
 ```
 
-### Choose the right mining config
+Passing `common` alone sets the viem `Chain` object on the client; set `chainId` explicitly when the native engine's `eth_chainId` must match a specific network (such as mainnet `1` or Optimism `10`).
 
-Default is manual mining. `auto` mines submitted transactions immediately; `interval` uses `blockTime` in seconds.
+## Sharing an engine with a custom viem client
+
+Create the engine once and pass it into `createMemoryClient({ engine })` or `createTevmTransport({ engine })`:
 
 ```ts
-const testNode = createMemoryClient({ miningConfig: { type: "auto" } });
-const simulationNode = createMemoryClient({
-  miningConfig: { type: "interval", blockTime: 12 },
-});
+import { createMemoryClient, createZevmEngine } from 'tevm'
+
+const engine = createZevmEngine({
+  chainId: 31337,
+  mining: { auto: false },
+})
+
+const client = createMemoryClient({ engine })
+
+try {
+  await client.tevmReady()
+  console.log(await client.getBlockNumber()) // 0n
+} finally {
+  // Also closes the supplied engine
+  await client.tevmClose()
+}
 ```
 
-### Use debug logging when stuck
+## Closing and cleanup
 
-Tevm produces many debug logs — pipe them through an LLM to triage.
+Every engine holds native memory and, in interval mode, a background Zig thread. Always call `await client.tevmClose()` (or `await engine.close()`) when finished.
 
-```ts
-const client = createMemoryClient({ loggingLevel: "debug" });
-```
+If initialization fails (for example, an invalid `fork.url`), `createZevmEngine` closes the native handle automatically and rejects both `ready()` and any subsequent `request()` with the startup `NativeRpcError`.
 
-### Call `client.tevmReady()` when profiling
-
-Otherwise the first action absorbs init time. Tevm init is fast (no sync).
-
-## Next Steps
-
-[Runtime Model](./runtime-model) · [Node Interface](./tevm-node-interface) · [Forking](./forking) · [State](./managing-state) · [Custom Precompiles](../advanced/custom-precompiles)
+Next: [Mining & block production](./mining-modes) · [Forking upstream chains](./forking) · [Engine API](./tevm-node-interface)

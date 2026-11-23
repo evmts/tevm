@@ -1,89 +1,36 @@
 ---
-title: "Common"
-description: "Chain-specific configuration and utilities for Tevm clients"
+title: "@tevm/common"
+description: Viem chain presets and tevmDefault chain configuration
 ---
 
-# @tevm/common
+# `@tevm/common`
 
-Chain-specific configuration. Combines viem chain definitions with a ZEVM-backed `Common` instance the VM uses for hardfork, EIP, consensus, and gas-parameter lookups. Includes custom crypto hooks such as KZG for blob transaction testing.
+Subpath: `tevm/common`.
 
-Full API: [packages/common/docs](https://github.com/evmts/tevm/tree/main/packages/common/docs).
+Re-exports all chain definitions from `viem/chains`, the `Common` type alias (`Chain`), and `tevmDefault` (an alias for viem's `foundry` chain, ID `31337`).
 
-## Installation
+## Exports
 
-```bash
-npm install @tevm/common@1.0.0-rc.151 viem
+```ts
+export type { Chain as Common } from 'viem'
+export * from 'viem/chains'
+export { foundry as tevmDefault } from 'viem/chains'
 ```
 
-## API Reference
+## Example
 
-### Enumerations
+```ts
+import { createMemoryClient } from 'tevm'
+import { mainnet, optimism, tevmDefault } from 'tevm/common'
 
-- [ConsensusAlgorithm](https://github.com/evmts/tevm/tree/main/packages/common/docs/enumerations/ConsensusAlgorithm.md)
-- [ConsensusType](https://github.com/evmts/tevm/tree/main/packages/common/docs/enumerations/ConsensusType.md)
-
-### Interfaces
-
-- [CustomCrypto](https://github.com/evmts/tevm/tree/main/packages/common/docs/interfaces/CustomCrypto.md)
-- [EvmStateManagerInterface](https://github.com/evmts/tevm/tree/main/packages/common/docs/interfaces/EvmStateManagerInterface.md)
-- [StorageDump](https://github.com/evmts/tevm/tree/main/packages/common/docs/interfaces/StorageDump.md)
-- [StorageRange](https://github.com/evmts/tevm/tree/main/packages/common/docs/interfaces/StorageRange.md)
-
-### Type Aliases
-
-- [AccountFields](https://github.com/evmts/tevm/tree/main/packages/common/docs/type-aliases/AccountFields.md)
-- [CliqueConfig](https://github.com/evmts/tevm/tree/main/packages/common/docs/type-aliases/CliqueConfig.md)
-- [Common](https://github.com/evmts/tevm/tree/main/packages/common/docs/type-aliases/Common.md)
-- [CommonOptions](https://github.com/evmts/tevm/tree/main/packages/common/docs/type-aliases/CommonOptions.md)
-- [Hardfork](https://github.com/evmts/tevm/tree/main/packages/common/docs/type-aliases/Hardfork.md)
-- [MockKzg](https://github.com/evmts/tevm/tree/main/packages/common/docs/type-aliases/MockKzg.md)
-
-### Functions
-
-- [createCommon](https://github.com/evmts/tevm/tree/main/packages/common/docs/functions/createCommon.md)
-- [createMockKzg](https://github.com/evmts/tevm/tree/main/packages/common/docs/functions/createMockKzg.md)
-
-### Supported Networks
-
-**Layer 1**: [mainnet](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/mainnet.md), [sepolia](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/sepolia.md), [goerli](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/goerli.md), [holesky](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/holesky.md).
-
-**Layer 2**: [arbitrum](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/arbitrum.md), [optimism](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/optimism.md), [base](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/base.md), [zksync](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/zksync.md), [polygon](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/polygon.md), [polygonZkEvm](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/polygonZkEvm.md).
-
-**Alternative**: [bsc](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/bsc.md), [avalanche](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/avalanche.md), [fantom](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/fantom.md), [gnosis](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/gnosis.md).
-
-**Dev**: [hardhat](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/hardhat.md), [foundry](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/foundry.md), [anvil](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/anvil.md), [localhost](https://github.com/evmts/tevm/tree/main/packages/common/docs/variables/localhost.md).
-
-## Usage Examples
-
-```typescript
-import { createCommon, createMockKzg, mainnet, optimism, arbitrum } from '@tevm/common'
-
-const common = createCommon({ ...mainnet, hardfork: 'shanghai' })
-
-const custom = createCommon({
-  name: 'Custom Chain',
-  id: 1337,
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-  rpcUrls: { default: { http: ['http://localhost:8545'] } },
-  hardfork: 'shanghai',
+const local = createMemoryClient({ common: tevmDefault })
+const opFork = createMemoryClient({
+  chainId: optimism.id,
+  common: optimism,
+  fork: { url: 'https://mainnet.optimism.io' },
 })
-
-const withKzg = createCommon({
-  ...mainnet,
-  customCrypto: { kzg: createMockKzg() },
-})
-
-const optimismCommon = createCommon({ ...optimism })
-const arbitrumCommon = createCommon({ ...arbitrum })
 ```
 
-The returned `Common` is a viem chain object plus:
+Pass `chainId` explicitly alongside `common` whenever the native ZEVM engine's `eth_chainId` should match a non-default network (`mainnet.id`, `optimism.id`, `base.id`, etc.).
 
-- `ethjsCommon` - ZEVM-backed Common instance used internally by the VM.
-- `copy()` - isolated copy for a new VM or client.
-
-## See Also
-
-- [VM & Submodules](../api/vm-and-submodules)
-- [Viem Chains](https://viem.sh/docs/chains/introduction.html)
-- [Full API Reference](https://github.com/evmts/tevm/tree/main/packages/common/docs/globals.md)
+See also: [Client & engine options](/core/create-tevm-node) · [Forking upstream chains](/core/forking)

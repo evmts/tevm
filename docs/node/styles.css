@@ -1,14 +1,293 @@
 @import "tailwindcss";
 
-/* Custom variables */
 :root {
 	--tevm-primary: #0085ff;
 	--tevm-secondary: #00c2ff;
 	--tevm-accent: #3bc9db;
+	--tevm-surface: #f8fafc;
+	--tevm-surface-2: #ffffff;
+	--tevm-border: #d8e1eb;
+	--tevm-text: #0f172a;
+	--tevm-muted: #475569;
+	--tevm-accent-bg: rgba(0, 133, 255, 0.08);
+	--tevm-accent-border: rgba(0, 133, 255, 0.45);
+	--tevm-emerald-bg: rgba(16, 185, 129, 0.09);
+	--tevm-emerald-border: rgba(16, 185, 129, 0.48);
+	--tevm-amber-bg: rgba(245, 158, 11, 0.1);
+	--tevm-amber-border: rgba(245, 158, 11, 0.5);
 }
 
-/* Dark mode adjustments if needed */
 :root.dark {
-	--tevm-primary: #0085ff;
+	--tevm-primary: #38a3ff;
 	--tevm-secondary: #00aaff;
+	--tevm-surface: #11161f;
+	--tevm-surface-2: #161d29;
+	--tevm-border: #2b3648;
+	--tevm-text: #f1f5f9;
+	--tevm-muted: #94a3b8;
+	--tevm-accent-bg: rgba(56, 163, 255, 0.13);
+	--tevm-accent-border: rgba(56, 163, 255, 0.55);
+	--tevm-emerald-bg: rgba(16, 185, 129, 0.14);
+	--tevm-emerald-border: rgba(16, 185, 129, 0.52);
+	--tevm-amber-bg: rgba(245, 158, 11, 0.14);
+	--tevm-amber-border: rgba(245, 158, 11, 0.55);
+}
+
+/* Diagram figure container */
+.tevm-diagram {
+	margin: 1.75rem 0;
+	border: 1px solid var(--tevm-border);
+	border-radius: 12px;
+	background: var(--tevm-surface);
+	overflow: hidden;
+}
+
+.tevm-diagram__header {
+	padding: 0.6rem 1rem;
+	font-size: 0.78rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--tevm-muted);
+	border-bottom: 1px solid var(--tevm-border);
+	background: var(--tevm-surface-2);
+}
+
+.tevm-diagram__canvas {
+	padding: 0.75rem;
+	color: var(--tevm-muted);
+}
+
+.tevm-diagram__caption {
+	padding: 0.65rem 1rem;
+	font-size: 0.85rem;
+	line-height: 1.45;
+	color: var(--tevm-muted);
+	border-top: 1px solid var(--tevm-border);
+	background: var(--tevm-surface-2);
+}
+
+/* SVG diagram classes */
+.tevm-svg {
+	display: block;
+	height: auto;
+	font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+.tevm-svg .svg-band-subtle {
+	fill: var(--tevm-surface-2);
+	stroke: var(--tevm-border);
+	stroke-width: 1;
+}
+
+.tevm-svg .svg-box {
+	fill: var(--tevm-surface);
+	stroke: var(--tevm-border);
+	stroke-width: 1.25;
+}
+
+.tevm-svg .svg-box-strong {
+	fill: var(--tevm-surface-2);
+	stroke: var(--tevm-primary);
+	stroke-width: 1.75;
+}
+
+.tevm-svg .svg-box-accent {
+	fill: var(--tevm-accent-bg);
+	stroke: var(--tevm-accent-border);
+	stroke-width: 1.4;
+}
+
+.tevm-svg .svg-box-emerald {
+	fill: var(--tevm-emerald-bg);
+	stroke: var(--tevm-emerald-border);
+	stroke-width: 1.4;
+}
+
+.tevm-svg .svg-box-amber {
+	fill: var(--tevm-amber-bg);
+	stroke: var(--tevm-amber-border);
+	stroke-width: 1.4;
+}
+
+.tevm-svg .svg-bg-chip {
+	fill: var(--tevm-surface);
+}
+
+.tevm-svg .svg-pill-accent {
+	fill: var(--tevm-primary);
+}
+
+.tevm-svg .svg-pill-text {
+	fill: #ffffff;
+	font-size: 11px;
+	font-weight: 600;
+}
+
+.tevm-svg .svg-eyebrow {
+	fill: var(--tevm-muted);
+	font-size: 10.5px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+}
+
+.tevm-svg .svg-title {
+	fill: var(--tevm-text);
+	font-size: 13.5px;
+	font-weight: 700;
+}
+
+.tevm-svg .svg-label-sm {
+	fill: var(--tevm-text);
+	font-size: 12.25px;
+	font-weight: 600;
+}
+
+.tevm-svg .svg-sub {
+	fill: var(--tevm-muted);
+	font-size: 11.5px;
+}
+
+.tevm-svg .svg-pill-muted {
+	fill: var(--tevm-muted);
+	font-size: 10.75px;
+	font-weight: 500;
+}
+
+.tevm-svg .svg-mono {
+	fill: var(--tevm-text);
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 11.75px;
+	font-weight: 600;
+}
+
+.tevm-svg .svg-mono-muted {
+	fill: var(--tevm-muted);
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 11px;
+}
+
+.tevm-svg .svg-line {
+	stroke: var(--tevm-muted);
+	stroke-width: 1.5;
+}
+
+.tevm-svg .svg-line-accent {
+	stroke: var(--tevm-primary);
+	stroke-width: 1.75;
+}
+
+.tevm-svg .svg-line-emerald {
+	stroke: #10b981;
+	stroke-width: 1.75;
+}
+
+.tevm-svg .svg-line-amber {
+	stroke: #f59e0b;
+	stroke-width: 1.75;
+}
+
+.tevm-svg .svg-divider {
+	stroke: var(--tevm-border);
+	stroke-width: 1.25;
+}
+
+/* Head First visual callouts */
+.tevm-callout {
+	margin: 1.5rem 0;
+	padding: 0.95rem 1.15rem;
+	border-radius: 10px;
+	border: 1px solid var(--tevm-border);
+	border-left-width: 4px;
+	background: var(--tevm-surface);
+}
+
+.tevm-callout--hood {
+	border-left-color: var(--tevm-primary);
+	background: var(--tevm-accent-bg);
+}
+
+.tevm-callout--warn {
+	border-left-color: #f59e0b;
+	background: var(--tevm-amber-bg);
+}
+
+.tevm-callout--qa {
+	border-left-color: #10b981;
+	background: var(--tevm-emerald-bg);
+}
+
+.tevm-callout__label {
+	font-size: 0.85rem;
+	font-weight: 700;
+	letter-spacing: 0.01em;
+	color: var(--tevm-text);
+	margin-bottom: 0.35rem;
+}
+
+.tevm-callout__body {
+	font-size: 0.94rem;
+	line-height: 1.55;
+	color: var(--tevm-text);
+}
+
+.tevm-callout__body > p:first-child {
+	margin-top: 0;
+}
+
+.tevm-callout__body > p:last-child {
+	margin-bottom: 0;
+}
+
+/* Side-by-side comparison cards */
+.tevm-compare-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+	gap: 0.9rem;
+	margin: 1.5rem 0;
+}
+
+.tevm-compare-card {
+	border: 1px solid var(--tevm-border);
+	border-radius: 10px;
+	background: var(--tevm-surface);
+	padding: 0.95rem 1.05rem;
+}
+
+.tevm-compare-card__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.tevm-compare-card__title {
+	font-weight: 700;
+	font-size: 0.96rem;
+	color: var(--tevm-text);
+}
+
+.tevm-compare-card__badge {
+	font-size: 0.72rem;
+	font-weight: 600;
+	padding: 0.12rem 0.5rem;
+	border-radius: 999px;
+	background: var(--tevm-accent-bg);
+	color: var(--tevm-primary);
+	border: 1px solid var(--tevm-accent-border);
+}
+
+.tevm-compare-card__body {
+	font-size: 0.89rem;
+	line-height: 1.5;
+	color: var(--tevm-muted);
+}
+
+.tevm-compare-card__body > p:first-child {
+	margin-top: 0;
+}
+
+.tevm-compare-card__body > p:last-child {
+	margin-bottom: 0;
 }

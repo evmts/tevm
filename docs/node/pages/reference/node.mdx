@@ -1,8 +1,42 @@
-# @tevm/node API Reference
+---
+title: "@tevm/node"
+description: API reference for createZevmEngine, createTevmNode, NativeRpcError, and ZevmEngine types
+---
 
-Full API on GitHub: [packages/node/docs/globals.md](https://github.com/evmts/tevm/tree/main/packages/node/docs/globals.md).
+# `@tevm/node`
 
-- [Type Aliases](https://github.com/evmts/tevm/tree/main/packages/node/docs/type-aliases)
-- [Classes](https://github.com/evmts/tevm/tree/main/packages/node/docs/classes)
-- [Functions](https://github.com/evmts/tevm/tree/main/packages/node/docs/functions)
-- [Variables](https://github.com/evmts/tevm/tree/main/packages/node/docs/variables)
+Subpath: `tevm/node` (also re-exported from `tevm`).
+
+Provides the serialized Node-API bridge over `@evmts/zevm`'s native `NodeRuntime`.
+
+## Exports
+
+| Symbol | Kind | Description |
+| --- | --- | --- |
+| `createZevmEngine` | Function | Creates an isolated native ZEVM engine (`{ events, ready, request, rpc, close }`). |
+| `createTevmNode` | Function | Alias for `createZevmEngine`. |
+| `NativeRpcError` | Class | `Error` subclass carrying native JSON-RPC `code: number` and optional `data?: JsonValue`. |
+| `ZevmEngine` / `TevmNode` | Type | Engine instance interface. |
+| `ZevmEngineOptions` / `TevmNodeOptions` | Type | `{ chainId?: number; mining?: { auto?: boolean; interval?: number }; fork?: { url: string; blockNumber?: number } }`. |
+| `EngineRequest` | Type | `{ method: string; params?: JsonValue[] }`. |
+| `JsonValue` | Type | Strict JSON-serializable wire value union. |
+
+## Example
+
+```ts
+import { createZevmEngine, NativeRpcError } from 'tevm/node'
+
+const engine = createZevmEngine({ mining: { auto: false } })
+try {
+  await engine.ready()
+  console.log(await engine.request({ method: 'eth_chainId' })) // '0x7a69'
+} catch (error) {
+  if (error instanceof NativeRpcError) {
+    console.error(error.code, error.message, error.data)
+  }
+} finally {
+  await engine.close()
+}
+```
+
+See also: [Engine API guide](/core/tevm-node-interface) · [Runtime model & ZEVM](/core/runtime-model)

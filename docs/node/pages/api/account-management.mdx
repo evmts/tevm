@@ -1,161 +1,125 @@
 ---
 title: Account Management
-description: Documentation for getAccount and setAccount APIs
+description: Read and write account balance, nonce, bytecode, and storage slots with tevmGetAccount, tevmSetAccount, tevmDeal, and PREFUNDED_ACCOUNTS
 ---
 
-# Account Management
+import { WatchOut } from '../../components'
 
-Two actions manage account state: `getAccountHandler` and `setAccountHandler`.
+# Account management
 
-## getAccountHandler
+Three helpers manage account state directly over native RPC: `tevmGetAccount`, `tevmSetAccount`, and `tevmDeal`. All three are available on `createMemoryClient()` and as standalone functions in `tevm` and `tevm/actions`.
 
-Retrieve the current state of an account.
+## Prefunded dev accounts
 
-### Parameters
+Every local chain initializes 10 standard Foundry/Anvil dev accounts with 10,000 ETH each. Import them from `tevm` (or `tevm/utils`):
 
 ```ts
-import type { GetAccountParams } from 'tevm'
+import { PREFUNDED_ACCOUNTS, PREFUNDED_PRIVATE_KEYS } from 'tevm'
+
+console.log(PREFUNDED_ACCOUNTS[0].address)
+// 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 ```
 
-### Return Type
+You can also query managed accounts directly from the engine via `client.getAddresses()` or `eth_accounts`.
+
+## `tevmSetAccount`
+
+Updates any combination of `balance`, `nonce`, `deployedBytecode`, and `storage`. Omitted fields remain unchanged.
 
 ```ts
-import type { GetAccountResult } from 'tevm'
-```
-
-### Example
-
-```ts
-import { createTevmNode } from 'tevm'
-import { getAccountHandler, setAccountHandler } from 'tevm/actions'
-import { parseEther } from 'viem'
-
-const node = createTevmNode()
-const address = '0x1234567890123456789012345678901234567890'
-
-await setAccountHandler(node)({
-  address,
-  balance: parseEther('1')
-})
-
-const account = await getAccountHandler(node)({
-  address,
-  blockTag: 'latest',
-  returnStorage: true
-})
-
-console.log('Balance:', account.balance)
-console.log('Nonce:', account.nonce)
-if (account.isContract) {
-  console.log('Code:', account.deployedBytecode)
-  console.log('Storage:', account.storage)
+type SetAccountParams = {
+  address: Address
+  balance?: bigint
+  nonce?: bigint
+  deployedBytecode?: Hex
+  storage?: Record<Hex, Hex>
 }
 ```
 
-## setAccountHandler
-
-Modify account state directly.
-
-### Parameters
-
 ```ts
-import type { SetAccountParams } from 'tevm'
-```
+import { createMemoryClient, parseEther, toHex } from 'tevm'
 
-### Return Type
+const client = createMemoryClient()
+try {
+  const address = '0x0000000000000000000000000000000000000123'
 
-```ts
-import type { SetAccountResult } from 'tevm'
-```
-
-### Examples
-
-#### Setting Balance
-
-```ts
-import { setAccountHandler } from 'tevm/actions'
-
-await setAccountHandler(node)({
-  address: '0x...',
-  balance: parseEther('100')
-})
-```
-
-#### Deploying Contract Code
-
-```ts
-await setAccountHandler(node)({
-  address: contractAddress,
-  deployedBytecode: '0x...',
-  state: {
-    '0x0000...': '0x0000...'
-  }
-})
-```
-
-#### Modifying Multiple Properties
-
-```ts
-await setAccountHandler(node)({
-  address: '0x...',
-  nonce: 5n,
-  balance: parseEther('10'),
-  state: {
-    [slot1]: value1,
-    [slot2]: value2
-  }
-})
-```
-
-## Best Practices
-
-Skip storage fetches unless needed:
-
-```ts
-const account = await getAccountHandler(node)({
-  address: '0x...',
-  returnStorage: false // default
-})
-```
-
-Check existence before modifying:
-
-```ts
-const account = await getAccountHandler(node)({
-  address,
-  throwOnFail: false
-})
-
-if (account.errors) {
-  await setAccountHandler(node)({
+  await client.tevmSetAccount({
     address,
-    balance: amount
+    balance: parseEther('10'),
+    nonce: 3n,
+    deployedBytecode: '0x602a60005260206000f3',
+    storage: {
+      [toHex(0n, { size: 32 })]: toHex(42n, { size: 32 }),
+    },
   })
-} else if (!account.isEmpty) {
-  await setAccountHandler(node)({
-    address,
-    balance: account.balance + amount
-  })
+} finally {
+  await client.tevmClose()
 }
 ```
 
-By default, `getAccountHandler` throws when an account is missing. Use `throwOnFail: false` when probing for existence.
+<WatchOut title="Not atomic across multiple fields">
+`tevmSetAccount` calls `anvil_setBalance`, `anvil_setNonce`, `anvil_setCode`, and `anvil_setStorageAt` sequentially. If you need multi-field rollback on failure, take a snapshot with `const id = await client.snapshot()` first and call `await client.revert({ id })` in a `catch` block.
+</WatchOut>
 
-Error handling:
+## `tevmGetAccount`
+
+Calls `zevm_getAccount` and converts hex `balance` and `nonce` quantities to `bigint`:
 
 ```ts
-const result = await setAccountHandler(node)({
-  address: '0x...',
-  balance: newBalance,
-  throwOnFail: false
-})
-
-if (result.errors) {
-  console.error('Failed to set account:', result.errors)
+type GetAccountResult = {
+  address: Address
+  balance: bigint
+  nonce: bigint
+  deployedBytecode: Hex
+  storage: Record<Hex, Hex>
 }
 ```
 
-## Related Topics
-- [State Management](../core/managing-state)
-- [Call API](./tevm-call)
-- [JSON-RPC Support](./json-rpc)
+```ts
+import { createMemoryClient } from 'tevm'
+
+const client = createMemoryClient()
+try {
+  const address = '0x0000000000000000000000000000000000000123'
+  await client.tevmDeal({ address, amount: 500n })
+
+  const account = await client.tevmGetAccount({ address })
+  console.log(account.balance, account.nonce, account.deployedBytecode)
+  // 500n 0n '0x'
+} finally {
+  await client.tevmClose()
+}
+```
+
+## `tevmDeal`
+
+Shorthand for setting an account's native ETH balance via `anvil_setBalance`:
+
+```ts
+await client.tevmDeal({
+  address: '0x0000000000000000000000000000000000000123',
+  amount: parseEther('100'),
+})
+```
+
+## Standalone usage over `ZevmEngine`
+
+All three functions work directly with `createZevmEngine()` without constructing a viem client:
+
+```ts
+import { createZevmEngine, tevmDeal, tevmGetAccount, tevmSetAccount } from 'tevm'
+
+const engine = createZevmEngine()
+try {
+  const address = '0x0000000000000000000000000000000000000123'
+  await tevmSetAccount(engine, { address, nonce: 1n })
+  await tevmDeal(engine, { address, amount: 42n })
+
+  const account = await tevmGetAccount(engine, { address })
+  console.log(account.balance, account.nonce) // 42n 1n
+} finally {
+  await engine.close()
+}
+```
+
+Next: [Accounts, storage & snapshots](../core/managing-state) · [Call, contract & deploy](./tevm-call)

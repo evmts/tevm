@@ -28,7 +28,7 @@ export default defineConfig(
 				items: [
 					{ text: 'Memory client', link: '/guides/memory-client' },
 					{ text: 'Actions', link: '/guides/actions' },
-					{ text: 'State manager', link: '/guides/state-manager' },
+					{ text: 'State & snapshots', link: '/guides/state-manager' },
 					{ text: 'Forking', link: '/guides/forking' },
 				],
 			},

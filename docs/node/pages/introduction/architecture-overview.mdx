@@ -1,198 +1,81 @@
 ---
-title: Architecture Overview
-description: How Tevm's memory client, node, state, EVM, txpool, mining, receipts, and fork proxy work together
+title: Architecture
+description: How MemoryClient, ZevmEngine, Server transports, ZEVM, Voltaire, and Guillotine Mini divide ownership and process requests
 authors:
   - "[William Cory](https://x.com/fucory)"
   - "[Tevm Team](https://github.com/evmts)"
 ---
 
-# Tevm Architecture Overview
+import { ArchitectureDiagram, ExecutionFlowDiagram } from '../../components'
 
-Tevm is an Ethereum execution node embedded in JavaScript. The batteries-included `MemoryClient` presents a viem-compatible API, while a `TevmNode` owns the EVM, state, blockchain, transaction pool, receipts, mining policy, and optional fork connection underneath it.
+# Architecture
 
-## The Runtime at a Glance
+Tevm is structured as a thin, typed JavaScript host layer over a native Zig Ethereum node. Every host API — `MemoryClient`, `TevmProvider`, `@tevm/server`, `@tevm/mcp`, and standalone actions — routes through one serialized boundary: `ZevmEngine`.
 
-```text
-Application, viem action, or EIP-1193 consumer
-                       │
-                 MemoryClient
-        (viem public/wallet/test + tevm* actions)
-                       │
-                 Tevm transport
-                       │
-                    TevmNode
-       ┌───────────────┼────────────────┐
-       │               │                │
-    TxPool         Mining policy    ReceiptsManager
-       │               │                ▲
-       └──────────► VM / EVM ───────────┘
-                       │
-             StateManager + Blockchain
-                       │
-            optional fork transport proxy
-                       │
-                 upstream JSON-RPC
-```
+<ArchitectureDiagram />
 
-`createMemoryClient()` constructs this stack synchronously. The underlying node initializes lazily; `client.tevmReady()` lets callers eagerly wait for initialization, which is useful for forks.
+## Layer ownership
 
-## MemoryClient and the Transport Boundary
+| Layer | Package / Repo | Owns |
+| --- | --- | --- |
+| **EVM interpreter** | Guillotine Mini (Zig) | Opcode execution, hardfork rules, gas accounting, `debug_traceCall` tracer |
+| **Primitives & state** | Voltaire (Zig) | Accounts, bytecode, storage slots, crypto, RLP, precompiles |
+| **Node runtime** | ZEVM (Zig) | `NodeRuntime`, chain, mempool, mining, receipts, filters, snapshots, fork backend, JSON-RPC dispatcher |
+| **Native bridge** | `@tevm/node` | Node-API handle, serialized request queue, `NativeRpcError`, `events`, `ready()`, `close()` |
+| **Viem client** | `@tevm/memory-client` | `createMemoryClient`, `createTevmTransport`, `tevmViemActions` (`cacheTime: 0`) |
+| **Actions** | `@tevm/actions` | Browser-safe typed RPC helpers (`tevmCall`, `tevmContract`, `tevmDeploy`, `tevmSetAccount`, etc.) |
+| **Servers** | `@tevm/server` | HTTP POST/batch, WebSocket subscriptions, Unix IPC framing, Express & Next.js adapters |
 
-`MemoryClient` is a viem client configured with a Tevm transport. It includes:
+Each `ZevmEngine` owns one native `NodeRuntime` handle. Two engines never share state.
 
-- viem public actions such as `getBlock`, `getBalance`, `getLogs`, and `getTransactionReceipt`;
-- viem wallet and Anvil-compatible test actions such as `sendTransaction`, `setBalance`, `mine`, `snapshot`, and `revert`;
-- Tevm actions such as `tevmCall`, `tevmSetAccount`, `tevmDumpState`, and `tevmMine`.
+## The `ZevmEngine` boundary
 
-Each action becomes an EIP-1193-style request or a direct Tevm action at the transport boundary. The transport routes it to the same `TevmNode`, so viem, Ethers, raw `request`, and Tevm actions observe one chain.
+`createZevmEngine(options)` (also exported as `createTevmNode`) instantiates `NativeNode` from `@evmts/zevm` and wraps it with five members:
 
-```ts
-import { createMemoryClient } from 'tevm'
+| Member | Contract |
+| --- | --- |
+| `ready()` | Resolves once initial fork and mining configuration completes. Rejects and frees the native handle if initialization fails. |
+| `request({ method, params })` | Enqueues one JSON-RPC call, returns the parsed `result`, or throws `NativeRpcError` (`code`, `message`, optional `data`). |
+| `rpc(jsonString)` | Enqueues raw JSON-RPC wire text (single requests, batches, or notifications) and returns the exact response JSON string, or `null` for notifications. |
+| `events` | Node `EventEmitter` emitting `request`, `response`, `block`, and `close`. |
+| `close()` | Stops the block-poll timer, releases the native handle, emits `close`, and removes listeners. Idempotent. |
 
-const client = createMemoryClient()
+### Request serialization
 
-const blockNumber = await client.getBlockNumber()
-const chainId = await client.request({ method: 'eth_chainId' })
+JavaScript callers may invoke `request()` and `rpc()` concurrently with `Promise.all`. Inside `ZevmEngine`, an internal promise queue executes every call against the native handle strictly one at a time in FIFO order. This guarantees deterministic state transitions without requiring manual locks in user code.
 
-console.log(blockNumber, chainId)
-```
+### Block observation
 
-The `request` shape is `{ method, params? }`. JSON-RPC envelope fields such as `id` and `jsonrpc` belong to HTTP serialization, not EIP-1193 calls.
+When at least one listener is attached to `engine.events.on('block', ...)`, `ZevmEngine` checks `eth_blockNumber` after each dispatched RPC and on a lightweight unreferenced 50 ms timer (so blocks mined on ZEVM's background interval-mining Zig thread are observed without polling from user code). Removing all `block` listeners stops the timer immediately.
 
-## StateManager and the EVM
+## `MemoryClient` and the transport boundary
 
-The `StateManager` owns Ethereum account state: nonce, balance, bytecode, and storage. It supports checkpoints, commits, reverts, state dumps, and fork-backed reads.
+`createMemoryClient(options)` builds a viem client configured with `cacheTime: 0` and `createTevmTransport(options)`, then extends it with:
 
-The EVM executes bytecode against that state. A call can:
+1. viem `publicActions` (`getBlock`, `getBalance`, `getLogs`, `getTransactionReceipt`, `readContract`, …)
+2. viem `walletActions` (`sendTransaction`, `writeContract`, `deployContract`, …)
+3. viem `testActions({ mode: 'anvil' })` (`setBalance`, `setCode`, `mine`, `snapshot`, `revert`, `increaseTime`, …)
+4. `tevmViemActions()` (`tevmReady`, `tevmClose`, `tevmCall`, `tevmContract`, `tevmDeploy`, `tevmSetAccount`, `tevmGetAccount`, `tevmDeal`, `tevmMine`, `tevmDumpState`, `tevmLoadState`)
 
-1. checkpoint the current state;
-2. execute opcodes and precompiles;
-3. collect logs, created addresses, gas data, and an optional trace;
-4. commit when execution becomes canonical or revert when it is only a simulation.
+Every action translates to one or more JSON-RPC calls dispatched through `client.transport.tevm`. Because every surface shares that single engine, a balance set with `client.setBalance()` is immediately visible to `client.tevmGetAccount()`, `client.request({ method: 'eth_getBalance', ... })`, and any attached `@tevm/server`.
 
-`tevmCall` is a simulation by default. With `addToMempool: true`, Tevm also creates a pending transaction. State only becomes canonical when that transaction is mined.
+## Execution paths
 
-## TxPool, Mining, Blocks, and Receipts
+<ExecutionFlowDiagram />
 
-The txpool holds valid pending transactions and orders executable transactions by sender nonce and fees. The configured mining policy decides when a miner drains it:
+1. **Read / simulate (`eth_call`, `tevmCall`)** — executes against current state (plus optional `stateOverride`), discards state changes, and returns raw bytes (`rawData`). Reverts throw `NativeRpcError` with `code: 3` and revert `data`.
+2. **Queue (`addToMempool: true` with `mining: { auto: false }`)** — submits via `eth_sendTransaction`, leaves the transaction pending in ZEVM's txpool, and returns `{ rawData: '0x', txHash }`. `getTransactionReceipt` returns `null` until mined.
+3. **Mine (`addToBlockchain: true`, automine, or `tevmMine()`)** — executes pending transactions in Guillotine Mini, commits the state transition in Voltaire, appends a canonical block, and indexes receipts and logs.
 
-- `{ type: 'manual' }` keeps transactions pending until a mine action.
-- `{ type: 'auto' }` mines submitted transactions immediately.
-- `{ type: 'interval', blockTime: seconds }` mines on a timer.
+## Resource lifecycle
 
-During mining, Tevm selects executable transactions, runs each through the VM, commits the resulting state root, builds a canonical block, removes included transactions from the pool, and indexes receipts and logs. This ordering is why a receipt is unavailable before mining and queryable afterward.
+Native handles live outside V8's garbage collector. Always close what you open:
 
-```ts
-import { createMemoryClient, PREFUNDED_ACCOUNTS } from 'tevm'
+- `MemoryClient`: `await client.tevmClose()` (also closes an externally supplied `engine`).
+- `ZevmEngine`: `await engine.close()`.
+- `TevmProvider` (`@tevm/ethers`): `provider.destroy()`.
+- `createServer` / `createIpcServer`: close the server, then call `await client.tevmClose()`.
 
-const client = createMemoryClient({
-  miningConfig: { type: 'manual' },
-})
+Calling `request()` or `rpc()` on a closed engine rejects with `Error('engine is closed')`.
 
-const { txHash } = await client.tevmCall({
-  from: PREFUNDED_ACCOUNTS[0].address,
-  to: '0x1111111111111111111111111111111111111111',
-  value: 1n,
-  addToMempool: true,
-})
-
-if (!txHash) throw new Error('transaction was not added to the txpool')
-
-const beforeMining = await client.request({ method: 'txpool_status' })
-await client.tevmMine({ blockCount: 1 })
-const transaction = await client.getTransaction({ hash: txHash })
-const receipt = await client.getTransactionReceipt({ hash: txHash })
-const block = await client.getBlock({ blockHash: receipt.blockHash })
-
-console.log(beforeMining.pending, transaction.blockNumber, receipt.status, block.number)
-```
-
-Tevm exposes two deliberately different mining parameter shapes:
-
-- Tevm action: `client.tevmMine({ blockCount: 2, interval: 1 })`
-- viem test action: `client.mine({ blocks: 2, interval: 1 })`
-
-The receipt manager stores receipts by block and transaction hash and provides the log index used by `eth_getLogs` and viem's `getLogs`.
-
-## The Forking Proxy
-
-A fork does not download the entire remote chain. It keeps a local overlay and asks the upstream transport for missing data:
-
-1. the local blockchain resolves the fork block and older remote blocks through the transport;
-2. the state manager fetches missing accounts, code, and storage at the fork block;
-3. fetched values are cached locally;
-4. local writes, pending transactions, and mined blocks live in the overlay and never modify the upstream chain.
-
-```ts
-import { createMemoryClient, http } from 'tevm'
-import { mainnet } from 'tevm/common'
-
-const client = createMemoryClient({
-  common: mainnet,
-  fork: {
-    transport: http('https://eth.drpc.org')({}),
-    blockTag: 20_000_000n,
-  },
-})
-
-await client.tevmReady()
-
-const remoteBalance = await client.getBalance({
-  address: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
-  blockNumber: 20_000_000n,
-})
-
-await client.setBalance({
-  address: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
-  value: remoteBalance + 1n,
-})
-```
-
-Setting `common` avoids a chain-ID discovery request. Pin `blockTag` in repeatable tests; omit it when the latest upstream state is intentional.
-
-## Low-Level Access
-
-`TevmNode` is the ownership boundary for the runtime. Advanced integrations can inspect its components directly:
-
-```ts
-import { createTevmNode } from 'tevm'
-
-const node = createTevmNode()
-await node.ready()
-
-const vm = await node.getVm()
-const txPool = await node.getTxPool()
-const receipts = await node.getReceiptsManager()
-const head = await vm.blockchain.getCanonicalHeadBlock()
-
-console.log(head.header.number, txPool.pool.size, receipts.GET_LOGS_LIMIT)
-```
-
-Prefer `MemoryClient` for application code. Low-level components use Ethereum-native byte arrays, address objects, typed transactions, and explicit checkpoint rules; they are intended for custom execution tools and Tevm contributors.
-
-## Execution and Data Flow
-
-### Read
-
-`getBalance` → viem action → Tevm transport → node handler → state manager → local cache or fork proxy.
-
-### Simulate
-
-`tevmCall` → checkpoint → EVM execution → result and optional trace → revert checkpoint.
-
-### Submit and Mine
-
-`sendTransaction` or `tevmCall({ addToMempool: true })` → txpool → mining policy → VM execution → state commit → block → receipt and log indexes.
-
-### Query History
-
-`getBlock`, `getTransactionReceipt`, or `getLogs` → local blockchain and receipt indexes, falling back to the upstream transport only for fork history that is not local.
-
-## Where to Go Next
-
-- [Create a Tevm Node](../core/create-tevm-node)
-- [Mining Modes](../core/mining-modes)
-- [Forking](../core/forking)
-- [Managing State](../core/managing-state)
-- [Receipts and Logs](../advanced/receipts-and-logs)
-- [Transaction Pool](../advanced/txpool)
+Next: [Client & engine options](../core/create-tevm-node) · [Runtime model & ZEVM](../core/runtime-model) · [Engine API](../core/tevm-node-interface)
