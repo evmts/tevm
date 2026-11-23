@@ -73,7 +73,7 @@ pub fn resolve_imports_detailed(
     let arena = solar::ast::Arena::new();
 
     let _ = SOLAR_SESSION
-        .enter(|| -> Result<_, ErrorGuaranteed> {
+        .enter_sequential(|| -> Result<_, ErrorGuaranteed> {
             let mut parser = Parser::from_source_code(
                 &SOLAR_SESSION,
                 &arena,

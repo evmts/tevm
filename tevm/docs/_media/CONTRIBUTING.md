@@ -10,7 +10,7 @@ corepack prepare pnpm@10.33.4 --activate
 pnpm --version
 ```
 
-Use Node `24.12.0` from `.nvmrc` (for example with `nvm use`).
+Use the Node version in `.nvmrc` (for example with `nvm use`).
 
 2. Install mise, which installs the pinned Bun and Foundry releases from `mise.toml`
 
@@ -176,8 +176,6 @@ For more information the [reference docs](https://tevm.sh) are a useful resource
 #### Rust packages
 
 - [packages/my_rust_node_lib](./packages/my_rust_node_lib) is a sample Rust library using napi-rs for Node.js bindings.
-- [lib/helios](./lib/helios) is a Rust-based Ethereum client embedded as a submodule.
-- [lib/revm](./lib/revm) is a Rust implementation of the Ethereum Virtual Machine.
 
 To build Rust packages, use:
 

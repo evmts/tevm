@@ -20,6 +20,9 @@ const typedocConfig = S.file('typedoc.json')
 const vitestConfig = S.file('vitest.config.ts')
 const biomeConfig = S.file('biome.json')
 const rootBiomeConfig = S.file('//biome.json')
+// The ../zevm addon is outside the workspace. build-native.mjs records its
+// SHA-256 here, so a rebuilt addon re-keys the native test targets.
+const nativeAddon = S.file('//factory/native-addon.sha256')
 
 const srcs = S.Filegroup({
 	srcs: S.glob(['src/**', '!src/**/*.spec.ts', '!src/**/*.test.ts', '!src/**/__snapshots__/**']),
@@ -64,7 +67,7 @@ const typecheck = Shell.Test({
 const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
-	data: [srcs, tests, deps, vitestConfig, tsconfig],
+	data: [srcs, tests, deps, vitestConfig, tsconfig, nativeAddon],
 })
 
 // vitest.config.ts sets `autoUpdate: true`; see packages/contract/PACKAGE.ts for
@@ -72,7 +75,7 @@ const test = Shell.Test({
 const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
-	data: [srcs, tests, deps, vitestConfig, tsconfig],
+	data: [srcs, tests, deps, vitestConfig, tsconfig, nativeAddon],
 })
 
 const coverageGate = S.Alias(testCoverage)

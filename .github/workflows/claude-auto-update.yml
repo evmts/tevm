@@ -20,8 +20,12 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-      
+        uses: actions/checkout@v5
+
+      - name: Checkout pinned native sources
+        run: node scripts/factory/checkout-native.mjs
+
+      # The shared setup installs Zig via mise before pnpm runs postinstall.
       - name: Setup
         uses: ./.github/actions/setup
       

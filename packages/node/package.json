@@ -64,7 +64,8 @@
 	},
 	"dependencies": {
 		"@evmts/zevm": "workspace:*",
-		"@tevm/errors": "workspace:^"
+		"@tevm/errors": "workspace:^",
+		"@tevm/utils": "workspace:^"
 	},
 	"devDependencies": {
 		"@tevm/tsconfig": "workspace:^",

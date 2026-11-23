@@ -1,5 +1,5 @@
 import { createDocsConfig } from '@tevm/docs-shared'
-import { defineConfig } from 'vocs'
+import { defineConfig } from 'vocs/config'
 
 export default defineConfig(
 	createDocsConfig({

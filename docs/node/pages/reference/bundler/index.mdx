@@ -21,3 +21,5 @@ The bundler is optional. You can also generate contract types with `npx tevm gen
 At build time, the bundler reads `.sol` files, runs solc on the dependency graph, extracts ABI and (for `.s.sol`) bytecode, and emits a TypeScript module exporting a [Tevm Contract](/reference/contract) instance.
 
 For a quickstart, see [Bundler Quickstart](/getting-started/bundler).
+
+The supported surface is direct `.sol` imports through the package-specific plugins described in the overview. The reference does not document unreleased inline-Solidity or chain-address loaders.

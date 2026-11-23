@@ -72,7 +72,7 @@
 		"@tevm/contract": "workspace:^",
 		"@tevm/tsconfig": "workspace:^",
 		"@tevm/tsupconfig": "workspace:^",
-		"bun-types": "^1.3.14"
+		"bun-types": "^1.4.5"
 	},
 	"publishConfig": {
 		"access": "public"

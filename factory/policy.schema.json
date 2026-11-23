@@ -4,6 +4,27 @@
 	"type": "object",
 	"additionalProperties": false,
 	"required": ["schemaVersion", "repository", "toolchain", "issues", "approvals", "gates"],
+	"$defs": {
+		"corpusPin": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["url", "sha256", "extractPath"],
+			"properties": {
+				"url": {
+					"type": "string",
+					"format": "uri"
+				},
+				"sha256": {
+					"type": "string",
+					"pattern": "^[0-9a-f]{64}$"
+				},
+				"extractPath": {
+					"type": "string",
+					"minLength": 1
+				}
+			}
+		}
+	},
 	"properties": {
 		"$schema": {
 			"type": "string"
@@ -164,6 +185,19 @@
 				"uniqueItems": true
 			},
 			"required": ["intake", "candidate", "pullRequest"]
+		},
+		"corpus": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["ethereumTests", "executionSpecTests"],
+			"properties": {
+				"ethereumTests": {
+					"$ref": "#/$defs/corpusPin"
+				},
+				"executionSpecTests": {
+					"$ref": "#/$defs/corpusPin"
+				}
+			}
 		}
 	}
 }

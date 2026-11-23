@@ -67,7 +67,7 @@
 		"@tevm/solc": "workspace:^",
 		"effect": "3.21.2",
 		"solc": "0.8.35",
-		"unplugin": "^3.0.0",
+		"unplugin": "^3.7.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {

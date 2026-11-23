@@ -1,4 +1,5 @@
 import type { EventEmitter } from 'node:events'
+import type { ConsoleLogHandler } from './ConsoleLogHandler.js'
 
 /** JSON values accepted by the native wire protocol. BigInts must be quantities. */
 export type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue }
@@ -31,13 +32,21 @@ export type ZevmEngineOptions = {
 	 * Defaults to `@evmts/zevm`'s `NativeNode` when omitted.
 	 */
 	backend?: ZevmBackend
+	/**
+	 * Print Hardhat `console.log` output from Solidity. `true` writes each message with
+	 * `console.log`; a function receives each message instead. Messages are drained after
+	 * `eth_call`, `eth_estimateGas`, `eth_sendTransaction` and `eth_sendRawTransaction`,
+	 * including failed calls, and also emitted as `consoleLog` events. Disabled by default.
+	 * A backend without `tevm_drainConsoleLogs` produces no messages.
+	 */
+	consoleLog?: boolean | ConsoleLogHandler
 }
 
 /**
  * Serialized access to a ZEVM or pluggable WASM JSON-RPC dispatcher.
  * `request` returns an RPC result or throws a structured error. `rpc` accepts
  * raw JSON, including batches and notifications, and returns the wire response.
- * Events: `request`, `response`, `block`, `close`. Close releases backend state.
+ * Events: `request`, `response`, `block`, `consoleLog` (when enabled), `close`. Close releases backend state.
  */
 export type ZevmEngine = {
 	events: EventEmitter

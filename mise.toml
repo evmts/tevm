@@ -3,6 +3,6 @@
 # executor installs these pins and leads PATH with them; the generated
 # CI setup action does the same through jdx/mise-action.
 [tools]
-bun = "1.2.13"
-foundry = "1.7.1"
+bun = "1.4.5"
+foundry = "1.10.0"
 zig = "0.15.2"

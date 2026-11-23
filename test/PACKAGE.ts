@@ -14,9 +14,9 @@ import { Package as root } from '../PACKAGE.js'
 // effect. The factory preflight reports missing fixture variables explicitly.
 // Materializes the pinned upstream corpora (factory/policy.json `corpus`)
 // under //.cache/conformance-corpus so the conformance runners find real
-// vectors on both executors. Idempotent: a stamp per pin set skips the
-// network. The corpus lives outside every Filegroup glob because it is too
-// large for content-addressed capture.
+// vectors on both executors. Each extracted corpus has a stamp for its pin
+// to skip repeat downloads. The corpus stays outside Filegroup globs because
+// it is too large for content-addressed capture.
 const conformanceCorpus = S.Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['scripts/factory/fetch-conformance-corpus.mjs'],

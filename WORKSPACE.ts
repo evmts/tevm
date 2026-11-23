@@ -73,8 +73,8 @@ const host = S.Host({
 // per target, makes an engine or model swap one edit and lets the loader
 // reject an unknown agent at graph load.
 const agents = S.Agents({
-	default: S.Agent.Codex({ model: 'gpt-5.6-sol' }),
-	luna: S.Agent.Codex({ model: 'gpt-5.6-luna' }),
+	default: S.Agent.Codex({ model: 'gpt-6.2-sol' }),
+	luna: S.Agent.Codex({ model: 'gpt-6.2-astra' }),
 	reviewPool: S.Agent.Pool(['luna', 'default']),
 })
 

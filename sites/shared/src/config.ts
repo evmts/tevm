@@ -105,15 +105,13 @@ export const createDocsConfig = ({ siteId, description, sidebar, topNav }: Creat
 		titleTemplate: `%s · ${site.name}`,
 		description,
 		baseUrl: process.env.VERCEL_ENV === 'production' ? site.url : previewUrl,
-		rootDir: '.',
+		// Vocs 2 resolves pages from `<rootDir>/<srcDir>/pages`; each site keeps them in `./pages`.
+		srcDir: '.',
+		// Vocs 2 defaults to `dynamic` (server-rendered). Keep the v1 static output for Vercel.
+		renderStrategy: 'full-static' as const,
 		checkDeadlinks: true,
-		theme: {
-			accentColor: '#5b5bd6',
-			colorScheme: 'system',
-		},
-		font: {
-			google: 'Inter',
-		},
+		accentColor: '#5b5bd6',
+		colorScheme: 'light dark' as const,
 		iconUrl:
 			'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%235b5bd6%22/%3E%3Cpath d=%22M15 20h34v8H36v22h-8V28H15z%22 fill=%22white%22/%3E%3C/svg%3E',
 		banner: {
@@ -130,37 +128,32 @@ export const createDocsConfig = ({ siteId, description, sidebar, topNav }: Creat
 		],
 		sidebar,
 		editLink: {
-			pattern: `https://github.com/evmts/tevm/edit/main/${site.repoPath}/pages/:path`,
+			link: `https://github.com/evmts/tevm/edit/main/${site.repoPath}/pages/:path`,
 			text: 'Edit this page on GitHub',
 		},
 		search: {
-			boostDocument(documentId: string) {
-				if (documentId.includes('getting-started') || documentId === 'index') return 2
-				return 1
+			query: {
+				boostDocument(documentId: string) {
+					if (documentId.includes('getting-started') || documentId === 'index') return 2
+					return 1
+				},
 			},
 		},
 		socials: [
 			{
-				icon: 'github',
+				icon: 'github' as const,
 				link: 'https://github.com/evmts/tevm',
-				label: 'GitHub',
 			},
 			{
-				icon: 'x',
+				icon: 'x' as const,
 				link: 'https://x.com/tevmtools',
-				label: 'X',
 			},
 		],
-		markdown: {
-			code: {
-				themes: {
-					light: 'github-light',
-					dark: 'github-dark',
-				},
+		codeHighlight: {
+			themes: {
+				light: 'github-light',
+				dark: 'github-dark',
 			},
-		},
-		llms: {
-			generateMarkdown: true,
 		},
 	}
 }

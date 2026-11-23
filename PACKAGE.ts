@@ -111,6 +111,7 @@ const zevm = S.Shell.Run({
 		workspaceConfig,
 		lockfile,
 		S.file('//scripts/factory/build-native.mjs'),
+		S.file('//scripts/factory/native-addon-stamp.mjs'),
 		S.file('//mise.toml'),
 		S.file('//factory/native-dependencies.json'),
 	],

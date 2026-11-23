@@ -16,7 +16,7 @@
 	},
 	"dependencies": {
 		"@tevm/contract": "workspace:^",
-		"viem": "^2.49.3",
+		"viem": "^2.58.4",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {

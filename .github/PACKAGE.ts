@@ -10,7 +10,7 @@ import '../tevm/PACKAGE.js'
 // Raw steps keep that ordering explicit while the pinned Flows renderer still
 // owns every workflow file and the shared toolchain setup action.
 const nativeSteps = (command: string): NonNullable<Parameters<typeof S.Github.Workflow>[0]['steps']> => [
-	{ uses: 'actions/checkout@v4', with: { 'fetch-depth': '0' } },
+	{ uses: 'actions/checkout@v5', with: { 'fetch-depth': '0' } },
 	{ name: 'Checkout pinned native sources', run: 'node scripts/factory/checkout-native.mjs' },
 	{ uses: './.github/actions/setup' },
 	{ run: command },

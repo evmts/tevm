@@ -15,10 +15,10 @@
 		"@codemirror/view": "^6.36.1",
 		"@replit/codemirror-lang-solidity": "^6.0.2",
 		"codemirror": "^6.0.1",
-		"viem": "^2.49.3"
+		"viem": "^2.58.4"
 	},
 	"devDependencies": {
 		"typescript": "^5.7.2",
-		"vite": "^6.0.7"
+		"vite": "^8.3.8"
 	}
 }

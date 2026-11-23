@@ -51,7 +51,7 @@
 	justify-content: center;
 	min-height: 44px;
 	padding: 0.65rem 1rem;
-	border: 1px solid var(--vocs-color_border, #d8d8e8);
+	border: 1px solid var(--vocs-border-color-primary, #d8d8e8);
 	border-radius: 0.6rem;
 	color: inherit;
 	font-weight: 650;
@@ -66,9 +66,9 @@
 
 .core-hero__code {
 	overflow: hidden;
-	border: 1px solid var(--vocs-color_border, #d8d8e8);
+	border: 1px solid var(--vocs-border-color-primary, #d8d8e8);
 	border-radius: 1rem;
-	background: var(--vocs-color_background2, #f7f7fb);
+	background: var(--vocs-background-color-surfaceTint, #f7f7fb);
 	box-shadow: 0 24px 70px rgb(43 43 85 / 12%);
 }
 
@@ -92,7 +92,7 @@
 .core-pillar {
 	padding: 1.25rem;
 	border-top: 2px solid var(--constellation-accent);
-	background: var(--vocs-color_background2, #f7f7fb);
+	background: var(--vocs-background-color-surfaceTint, #f7f7fb);
 }
 
 .core-pillar strong {
@@ -128,7 +128,7 @@
 	flex-direction: column;
 	min-height: 155px;
 	padding: 1.15rem;
-	border: 1px solid var(--vocs-color_border, #d8d8e8);
+	border: 1px solid var(--vocs-border-color-primary, #d8d8e8);
 	border-radius: 0.75rem;
 	color: inherit;
 	text-decoration: none;

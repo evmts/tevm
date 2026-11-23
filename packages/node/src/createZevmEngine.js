@@ -1,6 +1,11 @@
 import { EventEmitter } from 'node:events'
 import { createRequire } from 'node:module'
+import { decodeHardhatConsoleLog } from '@tevm/utils'
 import { NativeRpcError } from './NativeRpcError.js'
+
+/** Requests that execute EVM code and may capture Hardhat `console.log` calls. */
+const CONSOLE_LOG_METHODS = new Set(['eth_call', 'eth_estimateGas', 'eth_sendTransaction', 'eth_sendRawTransaction'])
+const CONSOLE_LOG_METHOD_PATTERN = /"method"\s*:\s*"(?:eth_call|eth_estimateGas|eth_sendTransaction|eth_sendRawTransaction)"/
 
 /**
  * Create an isolated ZEVM engine with serialized JSON-RPC and events.
@@ -14,6 +19,12 @@ import { NativeRpcError } from './NativeRpcError.js'
  * const engine = createZevmEngine({ chainId: 31337 })
  * console.log(await engine.request({ method: 'eth_blockNumber' }))
  * await engine.close()
+ * @example
+ * import { createZevmEngine } from '@tevm/node'
+ * // Print Solidity `console.log` output after eth_call and transaction requests.
+ * const engine = createZevmEngine({ consoleLog: (message) => console.log(`[sol] ${message}`) })
+ * engine.events.on('consoleLog', ({ signature, args }) => console.log(signature, args))
+ * await engine.close()
  */
 export function createZevmEngine(options = {}) {
 	for (const [name, value] of Object.entries({
@@ -24,6 +35,8 @@ export function createZevmEngine(options = {}) {
 		if (value !== undefined && (!Number.isSafeInteger(value) || value < 0))
 			throw new TypeError(`${name} must be an unsigned safe integer`)
 	}
+	if (options.consoleLog !== undefined && typeof options.consoleLog !== 'boolean' && typeof options.consoleLog !== 'function')
+		throw new TypeError('consoleLog must be a boolean or a function')
 	/** @type {import('./ZevmEngine.js').ZevmBackend} */
 	let backend
 	if (options.backend !== undefined) {
@@ -50,6 +63,39 @@ export function createZevmEngine(options = {}) {
 		)
 		if (response.error) throw new NativeRpcError(response.error)
 		return /** @type {import('./ZevmEngine.js').JsonValue} */ (response.result)
+	}
+	const consoleLog = options.consoleLog
+	// Cleared when the native engine predates console capture (-32601), so later requests skip the drain.
+	let consoleLogSupported = Boolean(consoleLog)
+	const drainConsoleLogs = async () => {
+		if (!consoleLogSupported) return
+		/** @type {import('./ZevmEngine.js').JsonValue} */
+		let entries
+		try {
+			entries = await execute({ method: 'tevm_drainConsoleLogs', params: [] })
+		} catch (error) {
+			if (error instanceof NativeRpcError && error.code === -32601) {
+				consoleLogSupported = false
+				return
+			}
+			throw error
+		}
+		if (!Array.isArray(entries)) return
+		for (const calldata of entries) {
+			if (typeof calldata !== 'string') continue
+			const decoded = decodeHardhatConsoleLog(/** @type {`0x${string}`} */ (calldata))
+			if (!decoded) continue
+			/** @type {import('./ConsoleLogEvent.js').ConsoleLogEvent} */
+			const event = {
+				message: decoded.formatted,
+				signature: decoded.signature,
+				calldata: /** @type {`0x${string}`} */ (calldata),
+				args: decoded.args,
+			}
+			events.emit('consoleLog', event)
+			if (typeof consoleLog === 'function') consoleLog(event.message, { calldata: event.calldata, args: event.args })
+			else console.log(event.message)
+		}
 	}
 	let lastBlock = 0n
 	// Poll only while subscribed: native interval mining happens on a background thread.
@@ -131,20 +177,29 @@ export function createZevmEngine(options = {}) {
 			return enqueue(async () => {
 				if (closed) throw new Error('engine is closed')
 				events.emit('request', request)
-				const response = JSON.parse(
-					/** @type {string} */ (await dispatch(JSON.stringify({ jsonrpc: '2.0', id: ++id, ...request }))),
-				)
-				if (response.error) throw new NativeRpcError(response.error)
-				const result = /** @type {import('./ZevmEngine.js').JsonValue} */ (response.result)
-				events.emit('response', { request, result })
-				return result
+				// Drain even when execution fails: Hardhat prints logs emitted before a revert.
+				try {
+					const response = JSON.parse(
+						/** @type {string} */ (await dispatch(JSON.stringify({ jsonrpc: '2.0', id: ++id, ...request }))),
+					)
+					if (response.error) throw new NativeRpcError(response.error)
+					const result = /** @type {import('./ZevmEngine.js').JsonValue} */ (response.result)
+					events.emit('response', { request, result })
+					return result
+				} finally {
+					if (CONSOLE_LOG_METHODS.has(request.method)) await drainConsoleLogs()
+				}
 			})
 		},
 		rpc: async (json) => {
 			await ready
 			return enqueue(async () => {
 				if (closed) throw new Error('engine is closed')
-				return dispatch(json)
+				try {
+					return await dispatch(json)
+				} finally {
+					if (consoleLogSupported && CONSOLE_LOG_METHOD_PATTERN.test(json)) await drainConsoleLogs()
+				}
 			})
 		},
 		close: () =>

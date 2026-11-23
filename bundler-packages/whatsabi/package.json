@@ -61,7 +61,7 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
-		"@shazow/whatsabi": "^0.26.0",
+		"@shazow/whatsabi": "^0.30.0",
 		"@tevm/config": "workspace:^",
 		"@tevm/utils": "workspace:^"
 	},

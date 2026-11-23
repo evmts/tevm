@@ -11,7 +11,7 @@ const vocsConfig = S.file('vocs.config.ts')
 const vitestConfig = S.file('vitest.config.ts')
 
 const srcs = S.Filegroup({
-	srcs: S.glob(['pages/**', 'components/**', 'styles/**', 'styles.css', 'public/**']),
+	srcs: S.glob(['pages/**', 'components/**', 'styles/**', 'public/**']),
 })
 
 const tests = S.Filegroup({

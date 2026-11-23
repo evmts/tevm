@@ -7,12 +7,12 @@
 		"defaultBranch": "main"
 	},
 	"toolchain": {
-		"node": "24.12.0",
+		"node": "24.22.3",
 		"pnpm": "10.33.4",
-		"codexCli": "0.150.1",
+		"codexCli": "0.169.1",
 		"models": {
-			"implementation": "gpt-5.6-sol",
-			"review": "gpt-5.6-luna"
+			"implementation": "gpt-6.2-sol",
+			"review": "gpt-6.2-astra"
 		},
 		"flows": {
 			"localPath": "vendor/flows",
@@ -66,8 +66,8 @@
 			"extractPath": "GeneralStateTests"
 		},
 		"executionSpecTests": {
-			"url": "https://github.com/ethereum/execution-spec-tests/releases/download/v5.4.0/fixtures_stable.tar.gz",
-			"sha256": "92cf1b47ad12fb27163261fc3c1cea5df72439cab507983d06b56c94f8741909",
+			"url": "https://github.com/ethereum/execution-specs/releases/download/tests%40v21.0.3/fixtures.tar.gz",
+			"sha256": "46bd48fb71a23da084218fe856fe442ab0c8d00c85c1c1aead0d2a965804fd24",
 			"extractPath": "fixtures/state_tests"
 		}
 	}

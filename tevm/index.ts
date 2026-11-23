@@ -1,6 +1,8 @@
 export * from '@tevm/contract'
 export * from '@tevm/memory-client'
 export type {
+	ConsoleLogEvent,
+	ConsoleLogHandler,
 	EngineRequest,
 	JsonValue,
 	TevmNode,

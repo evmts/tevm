@@ -1,0 +1,15 @@
+@@ -117,13 +117,12 @@
+ 		"nx": "22.7.2",
+ 		"publint": "^0.3.21",
+ 		"sort-package-json": "^3.6.1",
+-		"starlight-typedoc": "^0.22.0",
+ 		"tsup": "^8.5.1",
+ 		"typedoc": "^0.28.19",
+ 		"typedoc-plugin-markdown": "4.11.0",
+ 		"typescript": "^6.0.3",
+ 		"viem": "^2.49.3",
+-		"vite": "^8.0.13",
++		"vite": "^8.3.8",
+ 		"vitest": "^4.1.6"
+ 	},
+ 	"packageManager": "pnpm@10.33.4",

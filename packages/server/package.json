@@ -69,7 +69,7 @@
 		"@tevm/jsonrpc": "workspace:^",
 		"@tevm/memory-client": "workspace:^",
 		"@tevm/node": "workspace:^",
-		"ws": "^8.20.1"
+		"ws": "^8.23.0"
 	},
 	"devDependencies": {
 		"@tevm/tsconfig": "workspace:^",

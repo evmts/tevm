@@ -103,3 +103,5 @@ export type {
 	SerializeToJson,
 	SetToHex,
 } from './SerializeToJson.js'
+export { decodeHardhatConsoleLog } from './decodeHardhatConsoleLog.js'
+export { HARDHAT_CONSOLE_ADDRESS } from './HARDHAT_CONSOLE_ADDRESS.js'

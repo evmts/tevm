@@ -134,3 +134,6 @@ g/
 
 # Smithers target-graph cache (WORKSPACE.ts S.Cache)
 .flows/
+
+# Host-local SHA-256 of ../zevm's addon, written by scripts/factory/build-native.mjs
+/factory/native-addon.sha256

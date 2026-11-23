@@ -69,6 +69,18 @@ const changesetCandidateTest = S.Shell.Test({
 	data: [scripts],
 })
 
+const conformanceCorpusTest = S.Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['--test', 'scripts/factory/fetch-conformance-corpus.test.mjs'],
+	data: [scripts],
+})
+
+const nativeAddonStampTest = S.Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['--test', 'scripts/factory/native-addon-stamp.test.mjs'],
+	data: [scripts],
+})
+
 const labelsTest = S.Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['scripts/factory/labels.mjs'],
@@ -141,6 +153,8 @@ const check = S.Suite({
 		queueLint,
 		issueIntakeTest,
 		changesetCandidateTest,
+		conformanceCorpusTest,
+		nativeAddonStampTest,
 		labelsTest,
 		declarationsTypecheck,
 		shellScopeLint,
@@ -162,6 +176,8 @@ export const Package = S.Package({
 		issueForms,
 		issueIntakeTest,
 		changesetCandidateTest,
+		conformanceCorpusTest,
+		nativeAddonStampTest,
 		labelsTest,
 		policy,
 		policyLint,

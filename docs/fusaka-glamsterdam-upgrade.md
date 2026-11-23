@@ -193,9 +193,13 @@ The native addon rebuilt successfully after the header changes. The subsequent
 `//packages/node:testCoverage` result was a cache hit: its declared inputs omit
 sibling native source/artifact changes. A direct `vitest run --coverage` passed
 against the rebuilt addon (100% lines, 92.68% branches). The final factory coverage run also executed and passed all 10 tests.
-The pinned Flows CLI supports `--no-cache`; use it after sibling changes until
-the factory input contract includes native artifact content. `S.NodeModule`
-references key only the installed version and would not repair this gap.
+`scripts/factory/build-native.mjs` now writes the addon's SHA-256 to the
+gitignored `factory/native-addon.sha256`. The `test` and `testCoverage` targets
+of `packages/node`, `packages/memory-client` and `packages/server` declare that
+stamp, so a rebuilt addon re-keys them. After building `../zevm` by another
+route, run `node scripts/factory/native-addon-stamp.mjs` or use `--no-cache`.
+`S.NodeModule` references key only the installed version and would not repair
+this gap.
 
 ### EIP-7825 (in progress)
 

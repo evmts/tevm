@@ -9,7 +9,7 @@ use strum_macros::Display;
 mod fuzz_proptest;
 
 #[napi]
-#[derive(Debug, EnumString, Display)]
+#[derive(Debug, Clone, Copy, EnumString, Display)]
 #[strum(serialize_all = "lowercase")]
 pub enum ModuleType {
     Ts,

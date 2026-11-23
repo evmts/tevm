@@ -69,6 +69,9 @@ jobs:
           printf 'issue=%s\n' "$issue" >> "$GITHUB_OUTPUT"
           printf 'type=%s\n' "$type" >> "$GITHUB_OUTPUT"
 
+      - name: Checkout pinned native sources
+        run: node scripts/factory/checkout-native.mjs
+
       - name: Install the TEVM toolchain
         uses: ./.github/actions/setup
 
@@ -83,7 +86,8 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$OPENAI_API_KEY"
-          npm install --global @openai/codex@0.150.1
+          codex_version="$(node -p 'require("./factory/policy.json").toolchain.codexCli')"
+          npm install --global "@openai/codex@$codex_version"
           codex_home="$RUNNER_TEMP/codex-home"
           mkdir -p "$codex_home"
           chmod 700 "$codex_home"
@@ -194,6 +198,9 @@ jobs:
           git apply --check "$RUNNER_TEMP/factory-candidate/candidate.patch"
           git apply "$RUNNER_TEMP/factory-candidate/candidate.patch"
           git diff --check
+
+      - name: Checkout pinned native sources
+        run: node scripts/factory/checkout-native.mjs
 
       - name: Install the TEVM toolchain
         uses: ./.github/actions/setup

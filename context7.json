@@ -1,0 +1,14 @@
+{
+	"$schema": "https://context7.com/schema/context7.json",
+	"projectTitle": "TEVM",
+	"description": "Thin TypeScript wrapper around ZEVM with pluggable WASM and native EVM backends, viem v2 clients, and Solidity bundler plugins.",
+	"folders": ["docs", "tevm"],
+	"excludeFolders": ["node_modules", "vendor", "lib", "artifacts", "dist"],
+	"excludeFiles": ["fix-report.md", "review.md"],
+	"rules": [
+		"TEVM is a thin wrapper around ZEVM with a pluggable ZevmBackend interface ({ rpc, close }) that supports plugging in WASM-based EVMs as well as ZEVM's native addon.",
+		"Use createMemoryClient({ backend }) or createZevmEngine({ backend }) to plug in a WASM EVM or custom JSON-RPC runtime, or omit backend to use the default @evmts/zevm runtime in Node.js, Bun, or Deno.",
+		"Browser clients can plug in a WASM EVM backend directly via ZevmBackend or connect to a running TEVM server over HTTP/WebSocket JSON-RPC using viem v2 transports.",
+		"Use createMemoryClient() for viem v2 public, wallet, test, and TEVM actions, and call tevmClose() when finished."
+	]
+}

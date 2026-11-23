@@ -13,13 +13,14 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
     "ethers": "^6.16.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "tailwindcss": "^4.3.0",
     "tevm": "workspace:^",
     "viem": "^2.49.3",
     "vitest": "^4.1.6",
-    "vocs": "1.4.1"
+    "vocs": "^2.14.1",
+    "waku": "^1.0.0-rc.5"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
