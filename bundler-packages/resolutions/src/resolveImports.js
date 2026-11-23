@@ -1,6 +1,6 @@
 import { all, die, fail, map } from 'effect/Effect'
-import { maskBlockComments } from './utils/maskBlockComments.js'
 import { resolveImportPath } from './utils/resolveImportPath.js'
+import { scanSolidityImports } from './utils/scanSolidityImports.js'
 
 class ImportDoesNotExistError extends Error {
 	/**
@@ -50,9 +50,6 @@ class ImportDoesNotExistError extends Error {
  * ```
  */
 export const resolveImports = (absolutePath, code, remappings, libs, sync) => {
-	// The closing quote must match the opening quote: `import "./it's/A.sol"` is one path
-	const importRegEx = /^\s*import\b\s+[^'"]*(['"])((?:(?!\1).)*)\1\s*/gm
-
 	if (typeof absolutePath !== 'string') {
 		return die(`Type ${typeof absolutePath} is not of type string`)
 	}
@@ -62,12 +59,9 @@ export const resolveImports = (absolutePath, code, remappings, libs, sync) => {
 	if (typeof sync !== 'boolean') {
 		return die(`Type ${typeof sync} is not of type boolean`)
 	}
-	const codeWithoutBlockComments = maskBlockComments(code)
 	const allImports =
 		/** @type Array<import("effect/Effect").Effect<import("./types.js").ResolvedImport, import("./utils/resolveImportPath.js").CouldNotResolveImportError, >> */ ([])
-	let foundImport = importRegEx.exec(codeWithoutBlockComments)
-	while (foundImport != null) {
-		const importPath = foundImport[2]
+	for (const { path: importPath } of scanSolidityImports(code)) {
 		if (!importPath) {
 			return fail(new ImportDoesNotExistError())
 		}
@@ -80,7 +74,6 @@ export const resolveImports = (absolutePath, code, remappings, libs, sync) => {
 				})),
 			),
 		)
-		foundImport = importRegEx.exec(codeWithoutBlockComments)
 	}
 	return all(allImports)
 }

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import * as path from 'node:path'
 import { catchTag, die, fail, flatMap, logDebug, succeed, tap, try as tryEffect } from 'effect/Effect'
 import { validateUserConfig } from '../config/validateUserConfig.js'
+import { parseRemappings } from '../remappings/parseRemappings.js'
 
 /**
  * TypeError thrown when the user provided remappings is not properly formatted
@@ -46,48 +47,19 @@ export const loadRemappings = (configFilePath) => {
 			return succeed('')
 		}),
 		flatMap((remappings) => {
-			if (remappings.trim() === '') {
+			// remappings.txt may use LF, CRLF or lone CR line endings
+			const parsed = parseRemappings(remappings.split(/\r\n|\r|\n/), configFilePath)
+			if ('invalid' in parsed) {
+				return fail(
+					new InvalidRemappingsError(
+						`Invalid remapping ${parsed.invalid}. Remapping in remapping.txt should look like @solmate-utils/=lib/solmate/src/utils/`,
+					),
+				)
+			}
+			if (Object.keys(parsed.remappings).length === 0) {
 				return succeed({})
 			}
-			const remappingEntries = remappings
-				.trim()
-				// remappings.txt may use LF, CRLF or lone CR line endings
-				.split(/\r\n|\r|\n/)
-				.map((entry) => entry.trim())
-				.filter((entry) => entry.length > 0)
-
-			// validate remappings
-			for (const remapping of remappingEntries) {
-				// Like solc and foundry, only the first `=` separates prefix from target.
-				// The target path itself may contain `=`. An empty prefix would match every import.
-				if (remapping.indexOf('=') < 1) {
-					return fail(
-						new InvalidRemappingsError(
-							`Invalid remapping ${remapping}. Remapping in remapping.txt should look like @solmate-utils/=lib/solmate/src/utils/`,
-						),
-					)
-				}
-			}
-
-			// Turn remappings into a tevm config shape
-			const separator = configFilePath.includes('\\') && !configFilePath.includes('/') ? '\\' : '/'
-			const baseDir =
-				configFilePath.endsWith('/') || configFilePath.endsWith('\\') ? configFilePath : `${configFilePath}${separator}`
-			/**
-			 * @type {import('../types.js').CompilerConfig}
-			 */
-			const config = {
-				remappings: Object.fromEntries(
-					remappingEntries.map((remapping) => {
-						const separatorIndex = remapping.indexOf('=')
-						const from = remapping.slice(0, separatorIndex)
-						const to = remapping.slice(separatorIndex + 1)
-						const relativeTarget = to.replace(/^[/\\]+/, '')
-						return /** @type {[string, string]}*/ ([from, `${baseDir}${relativeTarget}`])
-					}),
-				),
-			}
-			return succeed(config)
+			return succeed(/** @type {import('../types.js').CompilerConfig} */ ({ remappings: parsed.remappings }))
 		}),
 		flatMap((cfg) => validateUserConfig(() => /** @type {import('../types.js').CompilerConfig}*/ (cfg))),
 		// it can't thrw. Could clean this up via making validateUserConfig take a config instead of a factory

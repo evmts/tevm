@@ -44,13 +44,16 @@ impl ContractPackage {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TevmContract {
-    #[serde(rename = "bytecode")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub bytecode: Option<Bytes>,
-    #[serde(rename = "deployedBytecode")]
+    #[serde(rename = "deployedBytecode", skip_serializing_if = "Option::is_none")]
     pub deployed_bytecode: Option<Bytes>,
     pub name: String,
     #[serde(rename = "humanReadableAbi")]
     pub human_readable_abi: Vec<String>,
+    /// Original JSON when human-readable signatures cannot encode anonymous events.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub abi: Option<serde_json::Value>,
 }
 
 fn format_abi_type(param: &serde_json::Value) -> String {
@@ -214,7 +217,9 @@ fn private_name(prefix: &str, name: &str, used: &mut HashSet<String>) -> String 
 
 /// Generates CJS, MJS, TypeScript or declarations in contract-name order.
 /// Original names remain keys of the artifacts export. Names that cannot serve
-/// as export bindings are encoded as described in the crate README.
+/// as export bindings are encoded as described in the crate README. Declarations
+/// retain ABI signatures and included bytecode as literals. Contracts with
+/// anonymous events also retain their JSON ABI for lossless event metadata.
 pub fn generate_runtime(
     contracts: Vec<(String, Contract)>,
     module_type: ModuleType,
@@ -241,12 +246,17 @@ pub fn generate_runtime(
         let abi_value = contract.abi.as_ref()
             .map(|abi| serde_json::to_value(abi).unwrap_or(serde_json::Value::Array(vec![])))
             .unwrap_or(serde_json::Value::Array(vec![]));
-            
+
+        let has_anonymous_event = contract
+            .abi
+            .as_ref()
+            .is_some_and(|abi| abi.events().any(|event| event.anonymous));
         let tevm_contract = TevmContract {
             bytecode,
             deployed_bytecode,
             name: name.clone(),
             human_readable_abi: format_abi(&abi_value),
+            abi: has_anonymous_event.then_some(abi_value),
         };
         tevm_contracts.insert(name, tevm_contract);
     }
@@ -279,31 +289,65 @@ pub fn generate_runtime(
     } else {
         "export const "
     };
+    let assertion = if matches!(module_type, ModuleType::Ts) { " as const" } else { "" };
     let mut entries = Vec::new();
     for (name, contract) in bindings {
         let key = serde_json::to_string(&contract.name).expect("serializable contract name");
+        let local = private_name("_", &name, &mut used);
         if matches!(module_type, ModuleType::Dts) {
-            let name_type = private_name("_name", &name, &mut used);
-            let abi_type = private_name("_abi", &name, &mut used);
+            let signatures =
+                serde_json::to_string(&contract.human_readable_abi).expect("ABI strings");
             output.push_str(&format!(
-                "// Contract name type\ndeclare const {name_type}: {key};\n// ABI type\ndeclare const {abi_type}: any[];\n\n"
+                "declare const {local}: {{\n  readonly name: {key};\n  readonly humanReadableAbi: readonly {signatures};\n"
             ));
-            output.push_str(&format!(
-                "export const {name}: {contract_type}<\n  typeof {name_type},\n  typeof {abi_type},\n  undefined,\n  `0x${{string}}`,\n  `0x${{string}}`,\n  undefined\n>;\n\n"
-            ));
+            let mut bytecode_type = |field: &str, bytes: &Option<Bytes>| {
+                if let Some(bytes) = bytes {
+                    output.push_str(&format!("  readonly {field}: \"{bytes}\";\n"));
+                    format!("typeof {local}.{field}")
+                } else {
+                    "undefined".to_owned()
+                }
+            };
+            let init = bytecode_type("bytecode", &contract.bytecode);
+            let deployed = bytecode_type("deployedBytecode", &contract.deployed_bytecode);
+            if let Some(abi) = &contract.abi {
+                output.push_str(&format!("  readonly abi: readonly {abi};\n"));
+            }
+            output.push_str("};\n");
+            let contract_decl = format!(
+                "{contract_type}<\n  typeof {local}.name,\n  typeof {local}.humanReadableAbi,\n  undefined,\n  {init},\n  {deployed},\n  undefined\n>"
+            );
+            if contract.abi.is_some() {
+                output.push_str(&format!("export const {name}: Omit<{contract_decl}, \"abi\"> & {{ abi: typeof {local}.abi }};\n\n"));
+            } else {
+                output.push_str(&format!("export const {name}: {contract_decl};\n\n"));
+            }
+            entries.push(format!("  {key}: typeof {local};"));
             continue;
         }
 
-        let local = private_name("_", &name, &mut used);
         let json = serde_json::to_string_pretty(contract).expect("serializable TevmContract");
-        let assertion = if matches!(module_type, ModuleType::Ts) {
-            " as const"
+        // createContract accepts exactly one ABI representation. Its string parser
+        // cannot round-trip the anonymous flag, so pass JSON for those contracts.
+        let args = if contract.abi.is_some() {
+            let mut value = serde_json::to_value(contract).expect("serializable TevmContract");
+            value
+                .as_object_mut()
+                .expect("contract object")
+                .remove("humanReadableAbi");
+            serde_json::to_string_pretty(&value).expect("serializable arguments")
         } else {
-            ""
+            json.clone()
         };
-        output.push_str(&format!("const {local} = {json}{assertion};\n\n"));
+        output.push_str(&format!("const {local} = {args}{assertion};\n\n"));
         output.push_str(&format!("/**\n * Contract implementation for {name}\n * @see [contract docs](https://tevm.sh/learn/contracts/) for more documentation\n */\n"));
-        output.push_str(&format!("{export}{name} = createContract({local});\n\n"));
+        if contract.abi.is_some() && matches!(module_type, ModuleType::Ts) {
+            output.push_str(&format!(
+                "{export}{name} = {{ ...createContract({local}), abi: {local}.abi }};\n\n"
+            ));
+        } else {
+            output.push_str(&format!("{export}{name} = createContract({local});\n\n"));
+        }
         // A computed key keeps __proto__ an ordinary own property in JS object literals.
         let property = if contract.name == "__proto__" {
             format!("[{key}]")
@@ -314,10 +358,13 @@ pub fn generate_runtime(
     }
 
     if matches!(module_type, ModuleType::Dts) {
-        output.push_str("export const artifacts: Record<string, any>;\n");
+        output.push_str(&format!(
+            "export const artifacts: {{\n{}\n}};\n",
+            entries.join("\n")
+        ));
     } else {
         output.push_str(&format!(
-            "{export}artifacts = {{\n{}\n}};\n",
+            "{export}artifacts = {{\n{}\n}}{assertion};\n",
             entries.join(",\n")
         ));
     }
@@ -333,65 +380,46 @@ mod tests {
     fn create_test_contracts(
         contracts_data: Vec<(String, serde_json::Value, String, String)>,
     ) -> Vec<(String, Contract)> {
-        let mut contracts = Vec::new();
-
-        for (name, abi, _bytecode, _deployed_bytecode) in contracts_data {
-            // Convert serde_json::Value to the necessary ABI format
-            // Create a Contract with all required fields using serde_json to directly
-            // serialize/deserialize to avoid compatibility issues
-            
-            // First, create the contract JSON structure with the provided ABI
-            let contract_json = serde_json::json!({
-                "abi": abi,
-                "userdoc": {},
-                "devdoc": {},
-                "evm": null,
-                "ewasm": null,
-                "ir": null,
-                "ir_optimized": null,
-                "metadata": null,
-                "storage_layout": null
-            });
-            
-            // Deserialize into a Contract
-            let contract: Contract = serde_json::from_value(contract_json).unwrap_or_else(|_| {
-                // If the direct conversion fails, create a minimal contract manually
-                // This is a backup approach with just empty/default values
-                let json_obj = serde_json::Map::new();
-                let contract: Contract = serde_json::from_value(serde_json::Value::Object(json_obj))
-                    .expect("Failed to create empty contract");
-                contract
-            });
-            
-            contracts.push((name, contract));
-        }
-
-        contracts
-    }
-
-    /// This test function logs the actual output
-    fn debug_bytecode_output(bytecode: &str) -> String {
-        if !bytecode.is_empty() {
-            let bytes_obj = format!("0x{}", bytecode)
-                .parse::<Bytes>()
-                .unwrap_or_default();
-            let tevmcontract = TevmContract {
-                bytecode: Some(bytes_obj.clone()),
-                deployed_bytecode: None,
-                name: "TestContract".to_string(),
-                human_readable_abi: vec![],
-            };
-            return serde_json::to_string_pretty(&tevmcontract).unwrap_or_default();
-        }
-        "".to_string()
+        contracts_data
+            .into_iter()
+            .map(|(name, abi, bytecode, deployed_bytecode)| {
+                let contract = serde_json::from_value(json!({
+                    "abi": abi, "evm": {
+                        "bytecode": {"object": bytecode},
+                        "deployedBytecode": {"object": deployed_bytecode},
+                    }
+                }))
+                .expect("valid Foundry fixture");
+                (name, contract)
+            })
+            .collect()
     }
 
     #[test]
     fn test_bytecode_formatting() {
-        // Debug the bytecode formatting
-        let bytecode_str = "mainBytecode";
-        let json_output = debug_bytecode_output(bytecode_str);
-        println!("Bytecode JSON format: {}", json_output);
+        let wire = json!({"C": {"evm": {
+            "bytecode":{"object":"0060FF"}, "deployedBytecode":{"object":"0x00aB"}
+        }}});
+        for include in [false, true] {
+            let source = generate_runtime_js(
+                wire.to_string(),
+                "mjs".into(),
+                include,
+                "tevm/contract".into(),
+            )
+            .unwrap();
+            let (_, literal) = source.split_once("export const artifacts = ").unwrap();
+            let artifacts: serde_json::Value =
+                serde_json::from_str(literal.trim_end_matches(";\n")).unwrap();
+            let artifact = &artifacts["C"];
+            if include {
+                assert_eq!(artifact["bytecode"], "0x0060ff");
+                assert_eq!(artifact["deployedBytecode"], "0x00ab");
+            } else {
+                assert!(artifact.get("bytecode").is_none());
+                assert!(artifact.get("deployedBytecode").is_none());
+            }
+        }
     }
 
     #[test]
@@ -470,7 +498,7 @@ mod tests {
         let contracts_data = vec![(
             "MyContract".to_string(),
             abi,
-            "420".to_string(),
+            "0420".to_string(),
             "420420".to_string(),
         )];
 
@@ -503,7 +531,7 @@ mod tests {
         let contracts_data = vec![(
             "MyContract".to_string(),
             abi,
-            "420".to_string(),
+            "0420".to_string(),
             "420420".to_string(),
         )];
 
@@ -533,7 +561,7 @@ mod tests {
         let contracts_data = vec![(
             "MyContract".to_string(),
             abi,
-            "420".to_string(),
+            "0420".to_string(),
             "420420".to_string(),
         )];
 
@@ -564,7 +592,7 @@ mod tests {
         let contracts_data = vec![(
             "MyContract".to_string(),
             abi,
-            "420".to_string(),
+            "0420".to_string(),
             "420420".to_string(),
         )];
 
@@ -595,7 +623,7 @@ mod tests {
         let contracts_data = vec![(
             "MyContract".to_string(),
             abi,
-            "420".to_string(),
+            "0420".to_string(),
             "420420".to_string(),
         )];
 
@@ -608,14 +636,12 @@ mod tests {
             false,
         );
 
-        // Assert expected DTS format
         assert!(result.contains("import type { Contract } from '@tevm/contract';"));
-        assert!(result.contains("// Contract name type"));
-        assert!(result.contains("declare const _nameMyContract: \"MyContract\";"));
-        assert!(result.contains("// ABI type"));
-        assert!(result.contains("declare const _abiMyContract: any[];"));
+        assert!(result.contains("readonly [\"constructor() payable\"]"));
         assert!(result.contains("export const MyContract: Contract<"));
-        assert!(result.contains("export const artifacts: Record<string, any>;"));
+        assert!(result.contains("  undefined,\n  undefined,\n  undefined,\n  undefined"));
+        assert!(result.contains("\"MyContract\": typeof "));
+        assert!(!result.contains("any"));
     }
 
     #[test]
@@ -645,14 +671,14 @@ mod tests {
             (
                 "MainContract".to_string(),
                 abi1,
-                "mainBytecode".to_string(),
-                "mainDeployedBytecode".to_string(),
+                "01".to_string(),
+                "02".to_string(),
             ),
             (
                 "HelperContract".to_string(),
                 abi2,
-                "helperBytecode".to_string(),
-                "helperDeployedBytecode".to_string(),
+                "03".to_string(),
+                "04".to_string(),
             ),
         ];
 
@@ -709,8 +735,8 @@ mod tests {
         let contracts_data = vec![(
             "ComplexABI".to_string(),
             complex_abi,
-            "complexBytecode".to_string(),
-            "complexDeployedBytecode".to_string(),
+            "05".to_string(),
+            "06".to_string(),
         )];
 
         let contracts = create_test_contracts(contracts_data);
@@ -750,10 +776,10 @@ mod tests {
             false,
         );
 
-        // The contract should be included with null bytecode
+        // The contract should be included without bytecode
         assert!(result.contains("EmptyBytecodeContract"));
-        assert!(result.contains("\"bytecode\": null"));
-        assert!(result.contains("\"deployedBytecode\": null"));
+        assert!(!result.contains("\"bytecode\""));
+        assert!(!result.contains("\"deployedBytecode\""));
     }
 
     #[test]
@@ -781,7 +807,7 @@ mod tests {
 
 /// Generate the JavaScript runtime code for a Solidity contract
 /// Now using Foundry Contract type
-#[napi]
+#[napi(catch_unwind)]
 pub fn generate_runtime_js(
     contracts_json: String,
     module_type: String,

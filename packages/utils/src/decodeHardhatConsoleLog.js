@@ -57,22 +57,42 @@ const utf8 = new TextDecoder('utf-8', { ignoreBOM: true })
 const formatValue = (value) => (typeof value === 'bigint' ? value.toString() : String(value))
 
 /**
- * Apply `util.format`-style `%s`, `%d`, `%i`, `%o` and `%%` substitution and append unused arguments.
+ * Render a `%d`, `%i` or `%f` argument with the coercion Node's `util.format` applies to strings:
+ * `%d` uses `Number`, `%i` uses `parseInt` and `%f` uses `parseFloat`. Integers decode as bigint and print exactly.
+ * @param {string} specifier One of `d`, `i` or `f`.
+ * @param {unknown} value
+ * @returns {string}
+ */
+const formatNumeric = (specifier, value) => {
+	if (typeof value === 'bigint') return value.toString()
+	if (typeof value !== 'number' && typeof value !== 'string') return 'NaN'
+	/** @type {number} */
+	let number
+	if (specifier === 'd') number = Number(value)
+	// biome-ignore lint/correctness/useParseIntRadix: util.format calls parseInt without a radix, so "0x10" prints 16.
+	else if (specifier === 'i') number = Number.parseInt(String(value))
+	else number = Number.parseFloat(String(value))
+	return Object.is(number, -0) ? '-0' : String(number)
+}
+
+/**
+ * Apply `util.format`-style `%s`, `%d`, `%i`, `%f`, `%o` and `%%` substitution and append unused arguments.
+ * As in `util.format`, a format string with no further arguments is returned unchanged, so `%%` stays `%%`.
  * @param {readonly unknown[]} args
  * @returns {string}
  */
 const formatArgs = (args) => {
 	const [first, ...rest] = args
 	if (typeof first !== 'string') return args.map(formatValue).join(' ')
+	if (rest.length === 0) return first
 	let index = 0
-	const head = first.replace(/%([sdio%])/g, (match, specifier) => {
+	const head = first.replace(/%([sdifo%])/g, (match, specifier) => {
 		if (specifier === '%') return '%'
 		if (index >= rest.length) return match
 		const value = rest[index++]
 		if (specifier === 's') return formatValue(value)
 		if (specifier === 'o') return typeof value === 'string' ? `'${value}'` : formatValue(value)
-		// The only numeric console overloads are 256-bit integers, decoded as bigint.
-		return typeof value === 'bigint' ? value.toString() : 'NaN'
+		return formatNumeric(specifier, value)
 	})
 	return [head, ...rest.slice(index).map(formatValue)].join(' ')
 }
@@ -81,7 +101,8 @@ const formatArgs = (args) => {
  * Decode calldata sent to Hardhat's console address (`HARDHAT_CONSOLE_ADDRESS`) by Hardhat `console.sol` or forge-std `console2.sol`.
  * Supports `log()`, the typed `logInt`/`logUint`/`logString`/`logBool`/`logAddress`/`logBytes`/`logBytes1`..`logBytes32`
  * helpers, `log(bytes)`, `log(bytes1..bytes32)`, and every `log` overload of one to four `uint256`, `int256`,
- * `string`, `bool` or `address` arguments. A leading string argument is treated as a format string.
+ * `string`, `bool` or `address` arguments. A leading string argument followed by more arguments is a
+ * `util.format` format string; a lone string is printed unchanged.
  * @param {`0x${string}`} calldata Raw calldata including the 4-byte selector.
  * @returns {{formatted: string; args: readonly unknown[]; signature: string} | null} Null for an unknown selector or malformed arguments.
  * @example

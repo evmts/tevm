@@ -40,8 +40,9 @@ proptest! {
 
         let prefix = if use_parent_prefix { "../" } else { "./" };
         let import_path = format!("{}{}.sol", prefix, rel_segments.join("/"));
-        let cfg = empty_config();
+        let cfg = Config::from((None, Some(vec![(prefix.to_owned(), PathBuf::from("/wrong"))])));
 
+        let without_remapping = resolve_import_path(context.clone(), &import_path, &empty_config()).unwrap();
         let resolved = resolve_import_path(context, &import_path, &cfg);
         prop_assert!(
             resolved.is_ok(),
@@ -49,6 +50,7 @@ proptest! {
             import_path
         );
         let path = resolved.unwrap();
+        prop_assert_eq!(&path, &without_remapping);
         for comp in path.components() {
             prop_assert!(
                 !matches!(comp, Component::CurDir | Component::ParentDir),
@@ -63,12 +65,15 @@ proptest! {
         prefix in "[a-z@][a-z0-9_-]{1,10}/",
         target in "/[a-z]{1,8}/[a-z]{1,8}",
         tail in "[a-zA-Z0-9_/-]{1,20}\\.sol",
+        reverse in any::<bool>(),
     ) {
-        let cfg = Config::from((
-            Some(Vec::<String>::new()),
-            Some(vec![(prefix.clone(), target.clone())]),
-        ));
-        let import_path = format!("{}{}", prefix, tail);
+        let specific = format!("{prefix}nested/");
+        let mut mappings = vec![(prefix, "/fallback".to_string()), (specific.clone(), target.clone())];
+        if reverse {
+            mappings.reverse();
+        }
+        let cfg = Config::from((None, Some(mappings)));
+        let import_path = format!("{specific}{tail}");
         let resolved =
             resolve_import_path(PathBuf::from("/workspace/src/Main.sol"), &import_path, &cfg);
         prop_assert!(resolved.is_ok());

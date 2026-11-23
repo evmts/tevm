@@ -1,3 +1,4 @@
+import { format } from 'node:util'
 import { encodeAbiParameters, encodeFunctionData, type Hex, parseAbi, toFunctionSelector } from 'viem'
 import { describe, expect, it } from 'vitest'
 import { decodeHardhatConsoleLog } from './decodeHardhatConsoleLog.js'
@@ -88,9 +89,7 @@ describe('decodeHardhatConsoleLog', () => {
 	})
 
 	it('applies %s, %d, %i, %o and %% format specifiers', () => {
-		expect(decodeHardhatConsoleLog(encode('log(string,uint256)', ['balance: %d', 42n]))?.formatted).toBe(
-			'balance: 42',
-		)
+		expect(decodeHardhatConsoleLog(encode('log(string,uint256)', ['balance: %d', 42n]))?.formatted).toBe('balance: 42')
 		expect(decodeHardhatConsoleLog(encode('log(string,int256,string)', ['%i is %s', -4n, 'neg']))?.formatted).toBe(
 			'-4 is neg',
 		)
@@ -102,6 +101,38 @@ describe('decodeHardhatConsoleLog', () => {
 		expect(decodeHardhatConsoleLog(encode('log(string,string)', ['%s %s', 'one']))?.formatted).toBe('one %s')
 		expect(decodeHardhatConsoleLog(encode('log(string)', ['%s']))?.formatted).toBe('%s')
 		expect(decodeHardhatConsoleLog(encode('log(uint256,string)', [1n, '%s']))?.formatted).toBe('1 %s')
+	})
+
+	it('leaves a format string without arguments unchanged, like util.format', () => {
+		for (const text of ['100%%', '%%', '%% %s %d %%', '50%% of %i'])
+			expect(decodeHardhatConsoleLog(encode('log(string)', [text]))?.formatted).toBe(format(text))
+		expect(decodeHardhatConsoleLog(encode('log(string)', ['100%%']))?.formatted).toBe('100%%')
+		// With an argument, %% collapses.
+		expect(decodeHardhatConsoleLog(encode('log(string,uint256)', ['100%% of %d', 7n]))?.formatted).toBe('100% of 7')
+	})
+
+	it('coerces numeric strings for %d, %i and %f, like util.format', () => {
+		for (const [specifiers, value] of [
+			['%d', '42'],
+			['%d', '3.14'],
+			['%i', '3.14'],
+			['%f', '3.14'],
+			['%d', ''],
+			['%d', 'abc'],
+			['%i', '42abc'],
+			['%f', '1e3'],
+			['%d', '-0'],
+			['%d', '0x10'],
+			['%d%% %s', '5'],
+		] as const)
+			expect(decodeHardhatConsoleLog(encode('log(string,string)', [specifiers, value]))?.formatted).toBe(
+				format(specifiers, value),
+			)
+		expect(decodeHardhatConsoleLog(encode('log(string,string)', ['%d', '42']))?.formatted).toBe('42')
+		expect(decodeHardhatConsoleLog(encode('log(string,string)', ['%d', '3.14']))?.formatted).toBe('3.14')
+		expect(decodeHardhatConsoleLog(encode('log(string,string)', ['%i', '3.14']))?.formatted).toBe('3')
+		expect(decodeHardhatConsoleLog(encode('log(string,string)', ['%f', '3.14']))?.formatted).toBe('3.14')
+		expect(decodeHardhatConsoleLog(encode('log(string,uint256)', ['%f', 42n]))?.formatted).toBe('42')
 	})
 
 	it('accepts uppercase hex selectors', () => {

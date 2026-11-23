@@ -16,6 +16,7 @@ export const parseUri = (uri) => {
 	const query = match.groups?.['query']
 
 	const params = new URLSearchParams(query || '')
+	const followProxies = params.get('followProxies')
 
 	return {
 		chainId: /** @type {import('./KnownChainIds.js').KnownChainIds}*/ (chainId),
@@ -23,6 +24,7 @@ export const parseUri = (uri) => {
 		rpcUrl: params.get('rpcUrl') || undefined,
 		etherscanApiKey: params.get('etherscanApiKey') || undefined,
 		etherscanBaseUrl: params.get('etherscanBaseUrl') || undefined,
-		followProxies: params.get('followProxies') === 'true' || undefined,
+		// `followProxies=false` must reach the resolver; only an absent or unrecognized value defaults
+		followProxies: followProxies === 'true' ? true : followProxies === 'false' ? false : undefined,
 	}
 }

@@ -2,36 +2,45 @@
 
 ***
 
-<p align="center">
-  <a href="https://tevm.sh/">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/35039927/218812217-92f0f784-cb85-43b9-9ca6-e2b9effd9eb2.png">
-      <img alt="wagmi logo" src="https://user-images.githubusercontent.com/35039927/218812217-92f0f784-cb85-43b9-9ca6-e2b9effd9eb2.png" width="auto" height="300">
-    </picture>
-  </a>
-</p>
+# @tevm/contract
 
-<p align="center">
-  Execute solidity scripts in browser
-</p>
+Type-safe contract action creators and ABI wrappers for Tevm.
 
-[![CI](https://github.com/evmts/tevm/actions/workflows/e2e.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/e2e.yml)
-[![CI](https://github.com/evmts/tevm/actions/workflows/unit.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/unit.yml)
-<a href="https://www.npmjs.com/package/@tevm/contracts" target="\_parent">
-<img alt="" src="https://img.shields.io/npm/dm/@tevm/contracts.svg" />
-</a>
-<a href="https://bundlephobia.com/package/@tevm/contracts@latest" target="\_parent">
-<img alt="" src="https://badgen.net/bundlephobia/minzip/@tevm/contracts" />
-</a>
+## Installation
 
-# tevm-monorepo
+Available via `tevm/contract` or as a standalone package:
 
-tevm enables direct evm execution clientside with forge cheat codes and direct solidity file imports.
+```bash
+pnpm add @tevm/contract viem
+```
 
-## Visit [Docs](https://tevm.sh/) for docs, guides, API and more!
+## Usage
 
-## See [Tevm Beta project board](https://github.com/orgs/tevm/projects/1) for progress on the upcoming beta release
+```ts
+import { createContract } from '@tevm/contract'
 
-## License 📄
+const Counter = createContract({
+  name: 'Counter',
+  humanReadableAbi: [
+    'function count() view returns (uint256)',
+    'function increment()',
+  ],
+  address: '0x0000000000000000000000000000000000000123',
+})
 
-<a href="_media/LICENSE"><img src="https://user-images.githubusercontent.com/35039927/231030761-66f5ce58-a4e9-4695-b1fe-255b1bceac92.png" width="200" /></a>
+const readParams = Counter.read.count()
+console.log(readParams.functionName) // 'count'
+console.log(Counter.write.increment.functionName) // 'increment'
+```
+
+When a name has both read and write overloads, each action creator includes the overloads with its own mutability.
+
+## Documentation
+
+Visit [tevm.sh](https://tevm.sh/) for full documentation.
+
+## License
+
+[MIT](_media/LICENSE)
+
+Read and write actions include `address` and `to` when a contract address is configured. Their readonly ABI contains the matching function overloads and the contract’s custom errors.

@@ -284,7 +284,7 @@
 		"build": "nx run-many --targets=build:dist,build:types --projects=tevm",
 		"build:dist": "bun run generate:dist && git status --porcelain",
 		"build:types": "bun run generate:types && git status --porcelain",
-		"clean": "rm -rf node_modules artifacts dist cache && find . -name '*.js' -not -name 'tsup.config.js' -not -path './node_modules/*' -delete && rm -f **/*.d.ts **/*.d.cts **/*.cjs **/*.cjs.map",
+		"clean": "rm -rf node_modules artifacts dist cache && find . -type f \\( -name 'index.js' -o -name 'index.js.map' -o -name 'index.cjs' -o -name 'index.cjs.map' -o -name 'index.d.ts' -o -name 'index.d.cts' \\) -delete",
 		"generate": "nx run-many --targets=generate:dist,generate:types --projects=tevm && bun generate:docs",
 		"generate:dist": "tsup",
 		"generate:docs": "typedoc",

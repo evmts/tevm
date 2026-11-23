@@ -3,7 +3,22 @@ set -euo pipefail
 
 real_pnpm="${TEVM_REAL_PNPM:-}"
 if [ -z "${real_pnpm}" ]; then
-	real_pnpm="$(command -v pnpm)"
+	# -ef compares device and inode after following symlinks, including directory aliases.
+	IFS=: read -r -a dirs <<< "$PATH"
+	for dir in "${dirs[@]}"; do
+		candidate="${dir:-.}/pnpm"
+		if [[ -f "$candidate" && -x "$candidate" && ! "$candidate" -ef "$0" ]]; then
+			real_pnpm="$candidate"
+			break
+		fi
+	done
+elif [[ "$real_pnpm" != */* ]]; then
+	real_pnpm="$(type -P -- "$real_pnpm" || true)"
+fi
+
+if [[ ! -f "$real_pnpm" || ! -x "$real_pnpm" || "$real_pnpm" -ef "$0" ]]; then
+	echo "pnpm publish wrapper requires a distinct pnpm executable on PATH or in TEVM_REAL_PNPM" >&2
+	exit 1
 fi
 
 if [ "${1:-}" != "publish" ]; then

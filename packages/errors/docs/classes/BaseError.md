@@ -59,14 +59,14 @@ This class is abstract and should be extended by other error classes.
 
 ### Constructor
 
-> **new BaseError**(`shortMessage`, `args`, `_tag`, `code?`): `BaseError`
+> **new BaseError**(`shortMessage`, `args?`, `_tag`, `code?`): `BaseError`
 
 #### Parameters
 
 | Parameter | Type | Default value | Description |
 | ------ | ------ | ------ | ------ |
 | `shortMessage` | `string` | `undefined` | A short, human-readable summary of the error. |
-| `args` | [`BaseErrorParameters`](../interfaces/BaseErrorParameters.md) | `undefined` | - |
+| `args` | [`BaseErrorParameters`](../interfaces/BaseErrorParameters.md) \| `undefined` | `{}` | Additional parameters for the error. |
 | `_tag` | `string` | `undefined` | Internal tag for the error. |
 | `code?` | `number` | `0` | Error code analogous to the code in JSON RPC error. |
 
@@ -93,6 +93,21 @@ This class is abstract and should be extended by other error classes.
 
 ## Methods
 
+### toJSON()
+
+> **toJSON**(): `Record`\<`string`, `unknown`\>
+
+Return the enumerable error fields as JSON diagnostics. Bigints use decimal strings
+and references back to an ancestor use `[Circular]`. Live causes and data retain their types.
+
+#### Returns
+
+`Record`\<`string`, `unknown`\>
+
+A serializable snapshot including subclass fields.
+
+***
+
 ### walk()
 
 > **walk**(`fn?`): `unknown`
@@ -109,4 +124,4 @@ Walks through the error chain.
 
 `unknown`
 
-The first error that matches the function, or the original error.
+The first match, or null if none matches. Without a predicate, returns the terminal or first repeated cause.

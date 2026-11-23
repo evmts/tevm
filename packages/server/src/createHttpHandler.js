@@ -18,7 +18,10 @@ export function createHttpHandler(client, options = {}) {
 		if (req.method !== 'POST') return void res.writeHead(405, { Allow: 'POST' }).end()
 		req.setTimeout(options.requestTimeout ?? 30_000, () => req.destroy())
 		const body = await getRequestBody(req, { maxBodySize: options.maxBodySize ?? 1024 * 1024 })
-		if (typeof body !== 'string') return void res.writeHead(413).end()
+		if (typeof body !== 'string') {
+			const status = { oversized: 413, invalid: 400, read_error: 500 }[body.kind]
+			return void res.writeHead(status).end()
+		}
 		if (options.maxBatchSize !== undefined) {
 			try {
 				const parsed = JSON.parse(body)

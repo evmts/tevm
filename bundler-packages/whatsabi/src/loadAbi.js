@@ -5,12 +5,13 @@ import { tolerantSignatureLookup } from './tolerantSignatureLookup.js'
  * @param {object} options
  * @param {import('@tevm/utils').Address} options.address
  * @param {import('viem').Client} options.client
+ * @param {number} options.chainId - Chain ID from the contract URI, also for chains viem does not know
  * @param {string | undefined} options.explorerUrl
  * @param {boolean} options.followProxies
  * @param {string | undefined} options.etherscanApiKey
  * @returns {ReturnType<typeof import('@shazow/whatsabi').autoload>}
  */
-export const loadAbi = async ({ address, client, explorerUrl, followProxies, etherscanApiKey }) => {
+export const loadAbi = async ({ address, client, chainId, explorerUrl, followProxies, etherscanApiKey }) => {
 	return whatsabi.autoload(address, {
 		provider: client,
 		followProxies,
@@ -20,9 +21,7 @@ export const loadAbi = async ({ address, client, explorerUrl, followProxies, eth
 			new loaders.MultiSignatureLookup([new loaders.OpenChainSignatureLookup(), new loaders.FourByteSignatureLookup()]),
 		),
 		abiLoader: new loaders.MultiABILoader([
-			new loaders.SourcifyABILoader({
-				chainId: client.chain?.id ?? 1,
-			}),
+			new loaders.SourcifyABILoader({ chainId }),
 			...(explorerUrl !== undefined
 				? [
 						new loaders.EtherscanV1ABILoader({

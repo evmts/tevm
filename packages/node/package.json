@@ -2,7 +2,7 @@
 	"name": "@tevm/node",
 	"version": "1.0.0-rc.153",
 	"private": false,
-	"description": "Native ZEVM Node-API engine wrapper with serialized JSON-RPC and block events",
+	"description": "Serialized JSON-RPC engine over ZEVM: native Node-API addon by default, pluggable WASM backend for browsers",
 	"keywords": [
 		"solidity",
 		"sol",
@@ -40,8 +40,7 @@
 	"files": [
 		"dist",
 		"src",
-		"!src/**/*.spec.ts",
-		"types"
+		"!src/**/*.spec.ts"
 	],
 	"scripts": {
 		"all": "pnpm i  && bun run build && bun lint && bun format && bun test:run && bun generate:docs && bun lint:deps && bun lint:package",
@@ -63,16 +62,19 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@evmts/zevm": "workspace:*",
 		"@tevm/errors": "workspace:^",
 		"@tevm/utils": "workspace:^"
 	},
 	"devDependencies": {
 		"@tevm/tsconfig": "workspace:^",
-		"@tevm/tsupconfig": "workspace:^"
-	},
-	"peerDependencies": {
+		"@tevm/tsupconfig": "workspace:^",
 		"viem": "^2.58.4"
+	},
+	"optionalDependencies": {
+		"@evmts/zevm": "workspace:*"
+	},
+	"engines": {
+		"node": ">=22.12.0"
 	},
 	"publishConfig": {
 		"access": "public"

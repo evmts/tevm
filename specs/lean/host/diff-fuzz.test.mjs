@@ -1,22 +1,34 @@
 // Differential fuzz: the compiled Lean oracle (`host-spec`) against TEVM's live JavaScript.
-// Run: node --test specs/lean/host/diff-fuzz.test.mjs      (HOST_SPEC_SEED=<n> to vary the seed)
+// Run:   node --test specs/lean/host/diff-fuzz.test.mjs      (HOST_SPEC_SEED=<n> to vary the seed)
+// Setup: see ../oracle.mjs for LEAN_SKIP_BUILD and ELAN_HOME.
 import assert from 'node:assert/strict'
-import { execFileSync, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { registerHooks } from 'node:module'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { join } from 'node:path'
 import { after, before, describe, it } from 'node:test'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { pathToFileURL } from 'node:url'
 import { encodeFunctionData, getAddress, parseAbi, toFunctionSelector } from 'viem'
+import { buildOracle, REPO_ROOT } from '../oracle.mjs'
 
-const here = dirname(fileURLToPath(import.meta.url))
-const repoRoot = resolve(here, '../../..')
-const binary = join(here, '.lake/build/bin/host-spec')
-const load = (relative) => import(pathToFileURL(join(repoRoot, relative)).href)
+const here = import.meta.dirname
+const load = (relative) => import(pathToFileURL(join(REPO_ROOT, relative)).href)
+
+// `effect` is a dependency of `@tevm/config`, not of this directory. Resolve this file's
+// `effect` imports from that package with Node's own resolution, so the suite runs the
+// exact module instance `loadRemappings` builds its effects with.
+const configPackage = pathToFileURL(join(REPO_ROOT, 'bundler-packages/config/package.json')).href
+registerHooks({
+	resolve: (specifier, context, nextResolve) =>
+		context.parentURL === import.meta.url && (specifier === 'effect' || specifier.startsWith('effect/'))
+			? nextResolve(specifier, { ...context, parentURL: configPackage })
+			: nextResolve(specifier, context),
+})
 
 const { extractJsonRpcFrames } = await load('packages/server/src/internal/extractJsonRpcFrames.js')
 const { loadRemappings } = await load('bundler-packages/config/src/json/loadRemappingstxt.js')
-const { either, runSync } = await load('bundler-packages/config/node_modules/effect/dist/esm/Effect.js')
+const { either, runSync } = await import('effect/Effect')
 const { decodeHardhatConsoleLog } = await load('packages/utils/src/decodeHardhatConsoleLog.js')
 const { parseSemver, resolveWorkspaceRange, satisfiesRange, validatePackageManifests } = await load(
 	'scripts/prepare-changeset-publish.mjs',
@@ -163,11 +175,74 @@ try {
 
 // 3. Hardhat console.log format strings
 
-const FORMAT_ALPHABET = [...'%%%%sdiox ab', '%s', '%d', '%i', '%o', '%%', '%%s', '%', 'é', '😀', "'", '\u0000', '﻿']
+const FORMAT_ALPHABET = [
+	...'%%%%sdifox ab',
+	'%s',
+	'%d',
+	'%i',
+	'%f',
+	'%o',
+	'%%',
+	'%%s',
+	'%',
+	'é',
+	'😀',
+	"'",
+	'\u0000',
+	'﻿',
+]
 const LOG_TYPES = ['uint256', 'int256', 'string', 'bool', 'address']
 const randomBigInt = (signed) => {
 	const magnitude = BigInt(`0x${text([...'0123456789abcdef'], pick([1, 4, 16, 63]))}0`) >> 4n
 	return signed && chance(0.5) ? -magnitude : magnitude
+}
+const digits = (min, max) => text([...'0123456789'], max - min).padEnd(min, pick([...'0123456789']))
+/** Text near the grammars of `Number`, `parseInt` and `parseFloat`: valid literals and near misses. */
+const numericText = () => {
+	const roll = int(20)
+	if (roll === 0)
+		return pick([
+			'',
+			' ',
+			'42',
+			'-0',
+			'+5',
+			'007',
+			'.5',
+			'5.',
+			'.',
+			'1e21',
+			'1e-7',
+			'0.000001',
+			'Infinity',
+			'-Infinity',
+		])
+	if (roll === 1)
+		return pick([
+			'NaN',
+			'infinity',
+			'1_000',
+			'0x',
+			'0b102',
+			'0o78',
+			'--1',
+			'+-1',
+			'1e',
+			'1e+',
+			'.e5',
+			'e5',
+			'1.2.3',
+			'12px',
+			'0x1g',
+		])
+	if (roll === 2) return `${pick(['0x', '0X', '0b', '0o'])}${text([...'0123456789abcdefABCDEF'], 14)}`
+	let value = chance(0.3) ? pick(['-', '+']) : ''
+	value += chance(0.85) ? digits(1, pick([1, 3, 15, 16, 17, 22])) : ''
+	if (chance(0.4)) value += `.${chance(0.9) ? digits(1, pick([1, 3, 8])) : ''}`
+	if (chance(0.25)) value += `${pick(['e', 'E'])}${pick(['', '+', '-'])}${chance(0.9) ? digits(1, 3) : ''}`
+	if (chance(0.15)) value = `${pick([' ', '\t', '\n', '\u00a0', '\ufeff'])}${value}`
+	if (chance(0.15)) value += pick([' ', '\n', 'x', '.', 'e', '%', '0x1'])
+	return value
 }
 const randomHex = (bytes) => `0x${Array.from({ length: bytes * 2 }, () => pick([...'0123456789abcdef'])).join('')}`
 /** @returns {{value: unknown, arg: string}} the ABI value and its oracle encoding */
@@ -188,9 +263,31 @@ const randomArg = (type) => {
 		const value = randomHex(int(40))
 		return { value, arg: `s${hex(value)}` }
 	}
-	const value = text(FORMAT_ALPHABET, 10)
+	// A third of the string arguments are numeric text, which `%d`, `%i` and `%f` coerce.
+	const value = chance(0.35) ? numericText() : text(FORMAT_ALPHABET, 10)
 	return { value, arg: `s${hex(value)}` }
 }
+/**
+ * Console cases the oracle declined: the printed text of a `%d`, `%i` or `%f` string
+ * coercion depends on binary rounding, which `HostSpec.ConsoleFmt` does not model.
+ * @type {Record<string, number>}
+ */
+const unmodeled = {}
+/** Queue one `formatArgs` case. The oracle answers the formatted text, or `U` when it makes no claim. */
+const addConsole = (domain, signature, args, formatted, also = () => {}) =>
+	add(
+		domain,
+		['C', ...args.map(({ arg }) => arg)].join(','),
+		{ signature, args: args.map(({ arg }) => arg) },
+		(answer) => {
+			if (answer === 'U') {
+				unmodeled[domain] = (unmodeled[domain] ?? 0) + 1
+				return
+			}
+			assert.equal(unhex(answer), formatted)
+			also(answer)
+		},
+	)
 const TYPED_HELPERS = [
 	['logInt', 'int256'],
 	['logUint', 'uint256'],
@@ -215,11 +312,38 @@ for (let i = 0; i < 700; i++) {
 	assert.equal(calldata.slice(0, 10), toFunctionSelector(signature))
 	const decoded = decodeHardhatConsoleLog(calldata)
 	assert.ok(decoded, `decodeHardhatConsoleLog rejected ${signature}`)
-	add(
-		'console',
-		['C', ...args.map(({ arg }) => arg)].join(','),
-		{ signature, args: args.map(({ arg }) => arg) },
-		(answer) => assert.equal(unhex(answer), decoded.formatted),
+	addConsole('console', signature, args, decoded.formatted)
+}
+
+// A lone string is printed unchanged: it is not a format string, so `%%` stays `%%`.
+for (let i = 0; i < 150; i++) {
+	const value = chance(0.2) ? pick(['100%%', '%%', '%', '%d', '%s %s', '50%% of %d', '']) : text(FORMAT_ALPHABET, 12)
+	const decoded = decodeHardhatConsoleLog(
+		encodeFunctionData({ abi: parseAbi(['function log(string)']), args: [value] }),
+	)
+	assert.ok(decoded, 'decodeHardhatConsoleLog rejected log(string)')
+	addConsole('console-lone', 'log(string)', [{ value, arg: `s${hex(value)}` }], decoded.formatted, (answer) =>
+		assert.equal(unhex(answer), value, 'the oracle prints a lone string unchanged'),
+	)
+}
+
+// Every case coerces one string through `%d`, `%i` or `%f`.
+for (let i = 0; i < 400; i++) {
+	const specifier = pick(['%d', '%i', '%f'])
+	const format = chance(0.8) ? specifier : `${text([...'ab %'], 3)}${specifier}${pick(['', '%%', ' x'])}`
+	const value = numericText()
+	const decoded = decodeHardhatConsoleLog(
+		encodeFunctionData({ abi: parseAbi(['function log(string,string)']), args: [format, value] }),
+	)
+	assert.ok(decoded, 'decodeHardhatConsoleLog rejected log(string,string)')
+	addConsole(
+		'console-numeric',
+		'log(string,string)',
+		[
+			{ value: format, arg: `s${hex(format)}` },
+			{ value, arg: `s${hex(value)}` },
+		],
+		decoded.formatted,
 	)
 }
 
@@ -354,13 +478,8 @@ for (let i = 0; i < 350; i++) {
 /** @type {string[]} */
 let answers = []
 before(() => {
-	if (!existsSync(binary)) {
-		execFileSync('lake', ['build'], {
-			cwd: here,
-			stdio: 'inherit',
-			env: { ...process.env, PATH: `${process.env.HOME}/.elan/bin:${process.env.PATH}` },
-		})
-	}
+	// Always an incremental `lake build`: an edited `.lean` file is never tested as a stale binary.
+	const binary = buildOracle(here, 'host-spec')
 	const run = spawnSync(binary, { input: `${cases.map(({ query }) => query).join('\n')}\n`, maxBuffer: 1 << 28 })
 	assert.equal(run.status, 0, `host-spec exited with ${run.status}: ${run.stderr}`)
 	answers = run.stdout.toString('utf8').split('\n').slice(0, -1)
@@ -388,5 +507,17 @@ describe(`Lean host-spec oracle vs TEVM JavaScript (seed ${seed})`, () => {
 	it('runs at least 2,000 differential cases', () => {
 		assert.ok(cases.length >= 2000, `only ${cases.length} cases`)
 		console.log(`differential cases: ${cases.length}`)
+	})
+	// Declared after the domain tests, so every console answer has been classified.
+	it('the oracle decides nearly every console case', () => {
+		const total = (domain) => cases.filter((entry) => entry.domain === domain).length
+		assert.equal(unmodeled['console-lone'] ?? 0, 0, 'a lone string never needs a numeric coercion')
+		// Only a string whose value a double cannot hold exactly is left undecided.
+		assert.ok((unmodeled.console ?? 0) <= total('console') * 0.05, `console: ${unmodeled.console} undecided`)
+		assert.ok(
+			(unmodeled['console-numeric'] ?? 0) <= total('console-numeric') * 0.35,
+			`console-numeric: ${unmodeled['console-numeric']} of ${total('console-numeric')} undecided`,
+		)
+		console.log(`console cases the oracle leaves to binary rounding: ${JSON.stringify(unmodeled)}`)
 	})
 })

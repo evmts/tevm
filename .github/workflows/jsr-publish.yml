@@ -21,4 +21,7 @@ jobs:
       - name: Checkout pinned native sources
         run: node scripts/factory/checkout-native.mjs
       - uses: "./.github/actions/setup"
+      - run: pnpm exec smthrs target //tevm:publishJsrDryRun
+        if: "${{ inputs.dry_run }}"
       - run: pnpm exec smthrs target //tevm:publishJsr
+        if: "${{ !inputs.dry_run }}"

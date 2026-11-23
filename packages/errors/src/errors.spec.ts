@@ -1,5 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import * as errors from './index.js'
+
+// Snapshot the diagnostic format independently of the package release number.
+vi.mock('../package.json', () => ({ default: { version: '<package version>' } }))
 
 describe('Error Classes', () => {
 	it('should have all error classes available with expected shape', () => {

@@ -5,7 +5,7 @@ Executable Lean 4 models of four host-side parsers, each paired with the JavaScr
 
 1. `Framing`    : `packages/server/src/internal/extractJsonRpcFrames.js`
 2. `Remappings` : `bundler-packages/config/src/json/loadRemappingstxt.js`
-3. `ConsoleFmt` : `packages/utils/src/decodeHardhatConsoleLog.js` (`formatArgs`)
+3. `ConsoleFmt` : `packages/utils/src/decodeHardhatConsoleLog.js` (`formatArgs`, `formatNumeric`)
 4. `Semver`     : `scripts/prepare-changeset-publish.mjs` (semver ranges, #2097 protocol leaks)
 
 All models work on `List Char`. The JavaScript works on UTF-16 code units, and every
@@ -306,12 +306,15 @@ def invalidMessage (entry : List Char) : List Char :=
   "Invalid remapping ".toList ++ entry ++
     ". Remapping in remapping.txt should look like @solmate-utils/=lib/solmate/src/utils/".toList
 
-/-- One trimmed entry: split on the first `=`, reject an empty prefix, strip leading slashes. -/
+/-- One trimmed entry: split on the first `=`, trim both halves, reject an empty prefix, strip leading slashes. -/
 def parseEntry (base entry : List Char) : Except (List Char) Entry :=
   match splitFirst '=' entry with
   | ([], _) => .error (invalidMessage entry)
   | (_, none) => .error (invalidMessage entry)
-  | (c :: cs, some target) => .ok (c :: cs, base ++ target.dropWhile isSlash)
+  | (c :: cs, some target) =>
+    let key := jsTrim (c :: cs)
+    if key.isEmpty then .error (invalidMessage entry)
+    else .ok (key, base ++ (jsTrim target).dropWhile isSlash)
 
 def parseEntries (base : List Char) : List (List Char) → Except (List Char) (List Entry)
   | [] => .ok []
@@ -365,6 +368,23 @@ theorem head_dropWhile_isSlash (l : List Char) :
       simp only [List.dropWhile, h', List.head?_cons]
       constructor <;> intro hc <;> injection hc with hc <;> subst hc <;> simp [isSlash] at h'
 
+theorem mem_dropWhile {α : Type} (p : α → Bool) {l : List α} {x : α} (h : x ∈ l.dropWhile p) : x ∈ l := by
+  induction l with
+  | nil => simpa using h
+  | cons a as ih =>
+    by_cases hp : p a = true
+    · simp only [List.dropWhile, hp] at h
+      exact List.mem_cons_of_mem _ (ih h)
+    · have hp' : p a = false := by simpa using hp
+      simpa [List.dropWhile, hp'] using h
+
+theorem mem_jsTrim {l : List Char} {c : Char} (h : c ∈ jsTrim l) : c ∈ l := by
+  unfold jsTrim at h
+  have h1 := List.mem_reverse.mp h
+  have h2 := mem_dropWhile isJsSpace h1
+  have h3 := List.mem_reverse.mp h2
+  exact mem_dropWhile isJsSpace h3
+
 theorem parseEntry_wf {base entry : List Char} {p : Entry} (h : parseEntry base entry = .ok p) :
     EntryWF base p := by
   unfold parseEntry at h
@@ -373,9 +393,14 @@ theorem parseEntry_wf {base entry : List Char} {p : Entry} (h : parseEntry base 
   · cases h
   · cases h
   · rename_i c cs target heq
-    cases h
     rw [heq] at hne
-    exact ⟨by simp, hne, target.dropWhile isSlash, rfl, head_dropWhile_isSlash target⟩
+    dsimp only at h
+    split at h
+    · cases h
+    · rename_i hneKey
+      cases h
+      refine ⟨by simpa [List.isEmpty_iff] using hneKey, fun hmem => hne (mem_jsTrim hmem),
+        (jsTrim target).dropWhile isSlash, rfl, head_dropWhile_isSlash (jsTrim target)⟩
 
 theorem parseEntries_wf {base : List Char} {lines : List (List Char)} {ps : List Entry}
     (h : parseEntries base lines = .ok ps) : ∀ p ∈ ps, EntryWF base p := by
@@ -567,54 +592,287 @@ def Val.render : Val → List Char
   | .bool true => "true".toList
   | .bool false => "false".toList
 
-/-- The replacement for one consumed specifier. -/
-def substitute (spec : Char) (v : Val) : List Char :=
-  if spec = 's' then v.render
+/-! ### Numeric coercion of strings: `Number`, `parseInt`, `parseFloat`
+
+`%d`, `%i` and `%f` coerce a string argument the way Node's `util.format` does: `%d` with
+`Number`, `%i` with `parseInt` and `%f` with `parseFloat`. The model keeps the exact decimal
+value the text denotes and prints it with ECMAScript `Number::toString`.
+
+A JavaScript number is a binary64 double. The exact decimal value and the double print the
+same text when the value survives the round trip through a double: it has at most 15
+significant digits and a decimal exponent well inside the double range, or it is an integer
+below `2^53`. Outside that set the printed text depends on binary rounding, which this
+specification does not model: `Num.render` answers `none` and makes no claim.
+-/
+
+/-- The value a numeric coercion denotes. `fin neg mant exp` is `± mant × 10^exp`. -/
+inductive Num where
+  | nan
+  | inf (neg : Bool)
+  | fin (neg : Bool) (mant : Nat) (exp : Int)
+  deriving Repr, DecidableEq
+
+def isDec (c : Char) : Bool := '0' ≤ c && c ≤ '9'
+
+/-- The value of one digit in bases up to 16, or `none`. -/
+def digitValue (c : Char) : Option Nat :=
+  if '0' ≤ c && c ≤ '9' then some (c.toNat - '0'.toNat)
+  else if 'a' ≤ c && c ≤ 'f' then some (c.toNat - 'a'.toNat + 10)
+  else if 'A' ≤ c && c ≤ 'F' then some (c.toNat - 'A'.toNat + 10)
+  else none
+
+def isRadixDigit (radix : Nat) (c : Char) : Bool :=
+  match digitValue c with
+  | some v => v < radix
+  | none => false
+
+/-- The number a digit string denotes in `radix`. -/
+def radixValue (radix : Nat) (l : List Char) : Nat :=
+  l.foldl (fun n c => n * radix + (digitValue c).getD 0) 0
+
+/-- The longest prefix that is a `StrUnsignedDecimalLiteral` other than `Infinity`:
+`digits [. digits?] [exponent]` or `. digits [exponent]`. Returns the mantissa, the decimal
+exponent and the unread text. An exponent marker without digits is left unread. -/
+def scanUnsigned (l : List Char) : Option (Nat × Int × List Char) :=
+  let intPart := l.takeWhile isDec
+  let afterInt := l.dropWhile isDec
+  let (fracPart, afterFrac) :=
+    match afterInt with
+    | '.' :: t => (t.takeWhile isDec, t.dropWhile isDec)
+    | _ => ([], afterInt)
+  if intPart.isEmpty && fracPart.isEmpty then none
+  else
+    let mant := radixValue 10 (intPart ++ fracPart)
+    let exp : Int := -(fracPart.length : Int)
+    match afterFrac with
+    | c :: t =>
+      if c == 'e' || c == 'E' then
+        let (negExp, afterSign) :=
+          match t with
+          | '+' :: u => (false, u)
+          | '-' :: u => (true, u)
+          | _ => (false, t)
+        let expDigits := afterSign.takeWhile isDec
+        if expDigits.isEmpty then some (mant, exp, afterFrac)
+        else
+          let e : Int := radixValue 10 expDigits
+          some (mant, if negExp then exp - e else exp + e, afterSign.dropWhile isDec)
+      else some (mant, exp, afterFrac)
+    | [] => some (mant, exp, [])
+
+/-- The longest prefix that is a `StrDecimalLiteral`: an optional sign, then `Infinity` or
+an unsigned decimal literal. Returns the value and the unread text. -/
+def scanDecimal (l : List Char) : Option (Num × List Char) :=
+  let (neg, body) :=
+    match l with
+    | '+' :: t => (false, t)
+    | '-' :: t => (true, t)
+    | _ => (false, l)
+  if "Infinity".toList.isPrefixOf body then some (.inf neg, body.drop 8)
+  else (scanUnsigned body).map fun (mant, exp, rest) => (.fin neg mant exp, rest)
+
+/-- `0x`, `0o` and `0b` integer literals, which take no sign. -/
+def radixLiteral (l : List Char) : Option Num :=
+  let literal (radix : Nat) (digits : List Char) : Num :=
+    if !digits.isEmpty && digits.all (isRadixDigit radix) then .fin false (radixValue radix digits) 0
+    else .nan
+  match l with
+  | '0' :: 'x' :: t | '0' :: 'X' :: t => some (literal 16 t)
+  | '0' :: 'o' :: t | '0' :: 'O' :: t => some (literal 8 t)
+  | '0' :: 'b' :: t | '0' :: 'B' :: t => some (literal 2 t)
+  | _ => none
+
+/-- `Number(string)`: the whole trimmed text must be one numeric literal. Empty text is `0`. -/
+def toNumber (s : List Char) : Num :=
+  let t := jsTrim s
+  if t.isEmpty then .fin false 0 0
+  else
+    match radixLiteral t with
+    | some n => n
+    | none =>
+      match scanDecimal t with
+      | some (n, []) => n
+      | _ => .nan
+
+/-- `parseFloat(string)`: the longest decimal-literal prefix after leading white space. -/
+def parseFloat (s : List Char) : Num :=
+  match scanDecimal (s.dropWhile isJsSpace) with
+  | some (n, _) => n
+  | none => .nan
+
+/-- `parseInt(string)` without a radix: the longest digit prefix after leading white space
+and an optional sign. A `0x` prefix selects base 16. -/
+def parseInt (s : List Char) : Num :=
+  let t := s.dropWhile isJsSpace
+  let (neg, body) :=
+    match t with
+    | '+' :: u => (false, u)
+    | '-' :: u => (true, u)
+    | _ => (false, t)
+  let (radix, digits) :=
+    match body with
+    | '0' :: 'x' :: u | '0' :: 'X' :: u => (16, u)
+    | _ => (10, body)
+  let prefixDigits := digits.takeWhile (isRadixDigit radix)
+  if prefixDigits.isEmpty then .nan else .fin neg (radixValue radix prefixDigits) 0
+
+/-- ECMAScript `Number::toString` for the digits `d₁…dₖ` and the point position `n`, where
+the value is `0.d₁…dₖ × 10^n`. -/
+def renderDigits (digits : List Char) (n : Int) : List Char :=
+  let k : Int := digits.length
+  if k ≤ n && n ≤ 21 then digits ++ List.replicate (n - k).toNat '0'
+  else if 0 < n && n ≤ 21 then digits.take n.toNat ++ '.' :: digits.drop n.toNat
+  else if -6 < n && n ≤ 0 then '0' :: '.' :: List.replicate (-n).toNat '0' ++ digits
+  else
+    let e := n - 1
+    let exponent := (if e < 0 then '-' else '+') :: (toString e.natAbs).toList
+    match digits with
+    | [d] => d :: 'e' :: exponent
+    | d :: rest => d :: '.' :: rest ++ 'e' :: exponent
+    | [] => []
+
+/-- The largest count of significant decimal digits every double preserves. -/
+def exactDigits : Nat := 15
+
+/-- The printed text of a coerced value, or `none` when it depends on binary rounding.
+Negative zero prints `-0`, as `util.format` prints it. -/
+def Num.render : Num → Option (List Char)
+  | .nan => some "NaN".toList
+  | .inf false => some "Infinity".toList
+  | .inf true => some "-Infinity".toList
+  | .fin neg mant exp =>
+    if mant = 0 then some (if neg then "-0".toList else "0".toList)
+    else
+      let all := Nat.toDigits 10 mant
+      let zeros := (all.reverse.takeWhile (· == '0')).length
+      let digits := all.take (all.length - zeros)
+      let n : Int := (all.length : Int) + exp
+      let short := digits.length ≤ exactDigits && -300 ≤ n && n ≤ 300
+      let safeInteger := 0 ≤ exp && n ≤ 16 && mant * 10 ^ exp.toNat < 2 ^ 53
+      if short || safeInteger then
+        some ((if neg then ['-'] else []) ++ renderDigits digits n)
+      else none
+
+/-- `formatNumeric`: the replacement for one consumed `%d`, `%i` or `%f`. Integers decode
+as bigint and print exactly. A boolean prints `NaN`. A string is coerced. -/
+def numeric (spec : Char) : Val → Option (List Char)
+  | .int i => some (toString i).toList
+  | .bool _ => some "NaN".toList
+  | .str s =>
+    (if spec = 'd' then toNumber s else if spec = 'i' then parseInt s else parseFloat s).render
+
+/-- The replacement for one consumed specifier, or `none` when it is a numeric coercion
+whose text depends on binary rounding. -/
+def substitute (spec : Char) (v : Val) : Option (List Char) :=
+  if spec = 's' then some v.render
   else if spec = 'o' then
     match v with
-    | .str s => '\'' :: s ++ ['\'']
-    | _ => v.render
-  else
-    match v with
-    | .int i => (toString i).toList
-    | _ => "NaN".toList
+    | .str s => some ('\'' :: s ++ ['\''])
+    | _ => some v.render
+  else numeric spec v
 
-def isSpec (c : Char) : Bool := c == 's' || c == 'd' || c == 'i' || c == 'o'
+def isSpec (c : Char) : Bool := c == 's' || c == 'd' || c == 'i' || c == 'f' || c == 'o'
 
-/-- `first.replace(/%([sdio%])/g, ...)`: the expanded head and the arguments left unconsumed. -/
-def expand : List Char → List Val → List Char × List Val
-  | [], args => ([], args)
-  | [c], args => ([c], args)
+/-- `first.replace(/%([sdifo%])/g, ...)`: the expanded head and the arguments left unconsumed. -/
+def expand : List Char → List Val → Option (List Char × List Val)
+  | [], args => some ([], args)
+  | [c], args => some ([c], args)
   | c :: d :: rest, args =>
     if c = '%' then
-      if d = '%' then
-        let r := expand rest args
-        ('%' :: r.1, r.2)
+      if d = '%' then (expand rest args).map fun r => ('%' :: r.1, r.2)
       else if isSpec d then
         match args with
-        | [] =>
-          let r := expand rest []
-          ('%' :: d :: r.1, r.2)
+        | [] => (expand rest []).map fun r => ('%' :: d :: r.1, r.2)
         | v :: vs =>
-          let r := expand rest vs
-          (substitute d v ++ r.1, r.2)
-      else
-        let r := expand rest args
-        ('%' :: d :: r.1, r.2)
-    else
-      let r := expand (d :: rest) args
-      (c :: r.1, r.2)
+          match substitute d v, expand rest vs with
+          | some text, some r => some (text ++ r.1, r.2)
+          | _, _ => none
+      else (expand rest args).map fun r => ('%' :: d :: r.1, r.2)
+    else (expand (d :: rest) args).map fun r => (c :: r.1, r.2)
 
-/-- `formatArgs`: a leading string is a format string; leftover arguments are appended. -/
-def format : List Val → List Char
-  | .str f :: rest =>
-    let r := expand f rest
-    joinWith [' '] (r.1 :: r.2.map Val.render)
-  | args => joinWith [' '] (args.map Val.render)
+/-- `formatArgs`. A leading string followed by more arguments is a format string, and
+leftover arguments are appended. A lone string is printed unchanged, as `util.format`
+prints it: no specifier is read, so `%%` stays `%%`. -/
+def format : List Val → Option (List Char)
+  | [.str f] => some f
+  | .str f :: rest => (expand f rest).map fun r => joinWith [' '] (r.1 :: r.2.map Val.render)
+  | args => some (joinWith [' '] (args.map Val.render))
 
 /-- A format string without `%` is printed verbatim and consumes no argument. -/
-theorem expand_plain (f : List Char) (args : List Val) (h : '%' ∉ f) : expand f args = (f, args) := by
-  fun_induction expand f args <;> simp_all (config := { zetaDelta := true })
+theorem expand_plain (f : List Char) (args : List Val) (h : '%' ∉ f) :
+    expand f args = some (f, args) := by
+  fun_induction expand f args <;> simp_all
+
+/-- **A lone string is never a format string.** It prints unchanged, whatever it contains. -/
+theorem format_lone (s : List Char) : format [.str s] = some s := rfl
+
+/-- `"100%%"` alone stays `"100%%"`. -/
+theorem format_lone_percent : format [.str "100%%".toList] = some "100%%".toList := rfl
+
+/-- With a further argument the same text is a format string: `%%` prints one `%`. -/
+theorem format_percent_with_argument :
+    format [.str "100%% %s".toList, .str "sure".toList] = some "100% sure".toList := by
+  decide
+
+/-- With arguments present, `%%` prints one `%` and consumes nothing. -/
+theorem expand_percent (rest : List Char) (args : List Val) :
+    expand ('%' :: '%' :: rest) args = (expand rest args).map fun r => ('%' :: r.1, r.2) := by
+  simp [expand]
+
+/-- A specifier with no argument left stays in the output verbatim. -/
+theorem expand_no_argument (d : Char) (rest : List Char) (hd : isSpec d = true) :
+    expand ('%' :: d :: rest) [] = (expand rest []).map fun r => ('%' :: d :: r.1, r.2) := by
+  have hne : d ≠ '%' := by
+    intro h
+    subst h
+    simp [isSpec] at hd
+  simp [expand, hne, hd]
+
+/-- **Integers print exactly** under `%d`, `%i` and `%f`: a 256-bit value never goes
+through a double. -/
+theorem numeric_int (spec : Char) (i : Int) : numeric spec (.int i) = some (toString i).toList := rfl
+
+/-- A boolean is not a number: it prints `NaN` under `%d`, `%i` and `%f`. -/
+theorem numeric_bool (spec : Char) (b : Bool) : numeric spec (.bool b) = some "NaN".toList := rfl
+
+/-- **`%d`, `%i` and `%f` coerce a numeric string.** `"42"` prints `42` under each. -/
+theorem numeric_string_42 :
+    substitute 'd' (.str "42".toList) = some "42".toList ∧
+    substitute 'i' (.str "42".toList) = some "42".toList ∧
+    substitute 'f' (.str "42".toList) = some "42".toList := by
+  decide
+
+/-- The three coercions differ where JavaScript's differ: `Number` reads the whole text,
+`parseInt` reads an integer prefix and `parseFloat` reads a decimal prefix. -/
+theorem numeric_string_coercions :
+    substitute 'd' (.str "1.50".toList) = some "1.5".toList ∧
+    substitute 'i' (.str "1.50".toList) = some "1".toList ∧
+    substitute 'f' (.str "1.50".toList) = some "1.5".toList ∧
+    substitute 'd' (.str "12px".toList) = some "NaN".toList ∧
+    substitute 'i' (.str "12px".toList) = some "12".toList ∧
+    substitute 'f' (.str "12px".toList) = some "12".toList ∧
+    substitute 'd' (.str "0x10".toList) = some "16".toList ∧
+    substitute 'i' (.str "0x10".toList) = some "16".toList ∧
+    substitute 'f' (.str "0x10".toList) = some "0".toList ∧
+    substitute 'd' (.str []) = some "0".toList ∧
+    substitute 'i' (.str []) = some "NaN".toList ∧
+    substitute 'd' (.str "-0".toList) = some "-0".toList ∧
+    substitute 'd' (.str "1e21".toList) = some "1e+21".toList ∧
+    substitute 'f' (.str ".000001".toList) = some "0.000001".toList ∧
+    substitute 'f' (.str "1e-7".toList) = some "1e-7".toList := by
+  decide
+
+/-- A value that binary rounding would change is outside the model, not misreported:
+`2^53 + 1` has 16 significant digits and is not a double. -/
+theorem numeric_rounding_unmodeled :
+    substitute 'd' (.str "9007199254740993".toList) = none ∧
+    substitute 'd' (.str "9007199254740991".toList) = some "9007199254740991".toList := by
+  decide
+
+/-- The full pipeline: a numeric string under `%d` prints as a number. -/
+theorem format_numeric_string :
+    format [.str "balance: %d".toList, .str "42".toList] = some "balance: 42".toList := by
+  decide
 
 end ConsoleFmt
 
@@ -728,9 +986,12 @@ def satisfies (version range : List Char) : Bool :=
     else r.major > 0 || (r.minor > 0 && v.minor == r.minor)
   | _, _ => false
 
-/-- `resolveWorkspaceRange`. -/
+/-- `resolveWorkspaceRange`: the specifier pnpm publishes for a `workspace:` dependency.
+`workspace:*` pins the exact target version, `workspace:^` and `workspace:~` publish a
+caret and a tilde range, and an explicit range is published as written. -/
 def resolveWorkspaceRange (spec target : List Char) : List Char :=
-  if spec = "workspace:*".toList || spec = "workspace:^".toList then '^' :: target
+  if spec = "workspace:*".toList then target
+  else if spec = "workspace:^".toList then '^' :: target
   else if spec = "workspace:~".toList then '~' :: target
   else
     let explicit := spec.drop "workspace:".length
@@ -771,10 +1032,40 @@ theorem satisfies_major {version range : List Char} (h : satisfies version range
 theorem comparePrerelease_self (p : Option (List Char)) : comparePrerelease p p = 0 := by
   cases p <;> simp [comparePrerelease]
 
-/-- `workspace:*` publishes as a caret range on the target version. -/
-theorem workspace_star_caret (target : List Char) :
-    resolveWorkspaceRange "workspace:*".toList target = '^' :: target := by
+/-- **`workspace:*` publishes the exact target version**, with no range operator. -/
+theorem workspace_star_exact (target : List Char) :
+    resolveWorkspaceRange "workspace:*".toList target = target := by
   simp [resolveWorkspaceRange]
+
+/-- `workspace:*` never publishes a caret or tilde range: lockstep packages cannot drift
+to a later sibling release (#2097). -/
+theorem workspace_star_not_a_range (target : List Char) :
+    resolveWorkspaceRange "workspace:*".toList target ≠ '^' :: target ∧
+    resolveWorkspaceRange "workspace:*".toList target ≠ '~' :: target := by
+  rw [workspace_star_exact]
+  constructor <;> intro h <;> have := congrArg List.length h <;> simp at this
+
+/-- `workspace:^` publishes a caret range and `workspace:~` a tilde range on the target version. -/
+theorem workspace_caret_tilde (target : List Char) :
+    resolveWorkspaceRange "workspace:^".toList target = '^' :: target ∧
+    resolveWorkspaceRange "workspace:~".toList target = '~' :: target := by
+  unfold resolveWorkspaceRange
+  constructor
+  · rw [if_neg (by decide), if_pos rfl]
+  · rw [if_neg (by decide), if_neg (by decide), if_pos rfl]
+
+/-- An explicit `workspace:<range>` publishes `<range>` as written. -/
+theorem workspace_explicit :
+    resolveWorkspaceRange "workspace:^1.2.3".toList "9.9.9".toList = "^1.2.3".toList ∧
+    resolveWorkspaceRange "workspace:1.0.0".toList "9.9.9".toList = "1.0.0".toList := by
+  decide
+
+/-- The published exact pin is satisfied by the target version itself. -/
+theorem workspace_star_admits_target :
+    satisfies "1.2.3".toList (resolveWorkspaceRange "workspace:*".toList "1.2.3".toList) = true ∧
+    satisfies "1.2.4".toList (resolveWorkspaceRange "workspace:*".toList "1.2.3".toList) = false ∧
+    satisfies "1.3.0".toList (resolveWorkspaceRange "workspace:*".toList "1.2.3".toList) = false := by
+  decide
 
 end Semver
 

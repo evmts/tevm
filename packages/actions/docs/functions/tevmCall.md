@@ -8,7 +8,7 @@
 
 > **tevmCall**(`client`, `params`): `Promise`\<[`CallResult`](../type-aliases/CallResult.md)\>
 
-Defined in: tevmCall.js:10
+Defined in: [packages/actions/src/tevmCall.js:11](https://github.com/evmts/tevm/blob/main/packages/actions/src/tevmCall.js#L11)
 
 Simulate an EVM call, or submit and optionally mine a native transaction.
 
@@ -25,4 +25,5 @@ Simulate an EVM call, or submit and optionally mine a native transaction.
 
 ## Throws
 
-Native RPC error, including revert data, on failure.
+Native RPC diagnostic on failure. If a submitted transaction stays pending after mining or its
+receipt indicates a revert, the error includes the submitted txHash and any reverted receipt.

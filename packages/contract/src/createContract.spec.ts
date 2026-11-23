@@ -329,12 +329,16 @@ describe(createContract.name, () => {
 	})
 
 	it('should throw if no abi or humanReadableAbi is provided', () => {
-		expect(() => createContract({ name: 'ContractWithConstructor' } as any)).toThrowErrorMatchingInlineSnapshot(`
-			[InvalidParams: Must provide either humanReadableAbi or abi
-
-			Docs: https://tevm.sh/learn/contracts/
-			Version: 1.0.0-next.148]
-		`)
+		expect(() => createContract({ name: 'ContractWithConstructor' } as any)).toThrowError(
+			expect.objectContaining({
+				name: 'InvalidParams',
+				docsPath: '/learn/contracts/',
+				shortMessage: 'Must provide either humanReadableAbi or abi',
+				message: expect.stringMatching(
+					/^Must provide either humanReadableAbi or abi\n\nDocs: https:\/\/tevm\.sh\/learn\/contracts\/\nVersion: .+$/,
+				),
+			}),
+		)
 	})
 
 	it('should optionally take an abi rather than a humanReadableAbi', () => {

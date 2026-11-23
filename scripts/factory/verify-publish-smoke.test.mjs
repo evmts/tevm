@@ -1,14 +1,13 @@
 import assert from 'node:assert/strict'
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { tmpdir } from 'node:os'
 import { test } from 'node:test'
 import { verifyPack, verifyStatic, workspacePackages } from './verify-publish-smoke.mjs'
 
 function fixture(t) {
-	// Live preflight scans for tarballs concurrently with these pack tests.
-	const artifacts = join(import.meta.dirname, '../../artifacts')
-	mkdirSync(artifacts, { recursive: true })
-	const root = mkdtempSync(join(artifacts, 'publish-smoke-test-'))
+	const root = mkdtempSync(join(tmpdir(), 'publish-smoke-test-'))
+	symlinkSync(join(import.meta.dirname, '../../node_modules'), join(root, 'node_modules'), 'dir')
 	t.after(() => rmSync(root, { recursive: true, force: true }))
 	const packages = []
 	function write(path, content) {
@@ -105,7 +104,7 @@ test('reports an undeclared build output and a nested tarball, and ignores depen
 function packFixture(t) {
 	const repo = fixture(t)
 	repo.write('package.json', JSON.stringify({ name: 'smoke-test-workspace', private: true }))
-	repo.write('pnpm-workspace.yaml', 'packages:\n  - common\n  - facade\n')
+	repo.write('pnpm-workspace.yaml', 'packages:\n  - common\n  - facade\n  - runner\n')
 	repo.add('common', '@tevm/common', './index.js')
 	repo.write('common/index.js', 'export const getBlockNumber = () => Promise.resolve(0n);')
 	repo.add(
@@ -149,5 +148,29 @@ test('rejects an exports target excluded from the packed file list', (t) => {
 	assert.throws(
 		() => verifyPack(root, workspacePackages(root), root),
 		/@tevm\/common exports \.: missing target \.\/index\.js/,
+	)
+})
+
+test('checks every declared entry point of the packed, unscoped tevm-run', (t) => {
+	const { root, add, write } = packFixture(t)
+	add('runner', 'tevm-run', './index.js', {
+		files: ['index.js'],
+		bin: { 'tevm-run': 'cli.js' },
+		main: 'main.cjs',
+		module: 'esm.js',
+		types: 'index.d.ts',
+	})
+	write('runner/index.js', 'export {}')
+	// Each entry exists locally, but only the export and npm's mandatory main/bin files are shipped.
+	for (const file of ['cli.js', 'main.cjs', 'esm.js', 'index.d.ts']) write(`runner/${file}`, '')
+	assert.throws(
+		() => verifyPack(root, workspacePackages(root), root),
+		(error) => error.message.includes('tevm-run module:') && error.message.includes('tevm-run types:'),
+	)
+	rmSync(join(root, 'runner/cli.js'))
+	rmSync(join(root, 'runner/main.cjs'))
+	assert.throws(
+		() => verifyPack(root, workspacePackages(root), root),
+		(error) => error.message.includes('tevm-run bin.tevm-run:') && error.message.includes('tevm-run main:'),
 	)
 })

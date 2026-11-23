@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/predeploys",
-	"version": "1.0.0-rc.151",
+	"version": "1.0.0-rc.153",
 	"private": false,
 	"description": "Type-safe predeploy contract definitions for Tevm",
 	"keywords": [

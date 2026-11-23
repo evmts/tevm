@@ -32,7 +32,7 @@ const srcs = S.Filegroup({
 })
 
 const tests = S.Filegroup({
-	srcs: [...S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**', 'fixtures/**']), pkg_utils.srcs],
+	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**', 'fixtures/**']),
 })
 
 const benches = S.Filegroup({
@@ -40,8 +40,14 @@ const benches = S.Filegroup({
 })
 
 // Workspace dependencies as data: the build outputs of every workspace:*
-// dependency in this manifest, in topological order.
-const deps = S.Filegroup({ srcs: [packageJson, pkg_errors.build, S.file('//factory/native-dependencies.json')] })
+// dependency in this manifest, in topological order. createZevmEngine.js
+// imports decodeHardhatConsoleLog from @tevm/utils, so its build is key
+// material for build, types, typecheck and docs. Its sources are included
+// because vitest.config.ts and src/browserBundle.spec.ts alias @tevm/utils to
+// ../utils/src, so the test targets read them directly.
+const deps = S.Filegroup({
+	srcs: [packageJson, pkg_errors.build, pkg_utils.build, pkg_utils.srcs, S.file('//factory/native-dependencies.json')],
+})
 
 // build:dist.
 const build = Shell.Build({

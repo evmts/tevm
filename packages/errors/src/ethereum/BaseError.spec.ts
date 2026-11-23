@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import manifest from '../../package.json' with { type: 'json' }
 import { BaseError } from './BaseError.js'
 
 describe('BaseError', () => {
@@ -29,14 +30,14 @@ describe('BaseError', () => {
 		expect(error.shortMessage).toBe('Short message')
 		expect(error.docsPath).toBe('/errors/custom-error')
 		expect(error.metaMessages).toEqual(['Meta message 1', 'Meta message 2'])
-		expect(error.details).toBe('An internal cause')
-		expect(error.version).toBe('1.0.0-next.148')
+		expect(error.details).toBe('Detailed information about the error')
+		expect(error.version).toBe(manifest.version)
 		expect(error.message).toContain('Short message')
 		expect(error.message).toContain('Meta message 1')
 		expect(error.message).toContain('Meta message 2')
 		expect(error.message).toContain('Docs: https://docs.example.com/errors/custom-error#details')
-		expect(error.message).toContain('Details: An internal cause')
-		expect(error.message).toContain('Version: 1.0.0-next.148')
+		expect(error.message).toContain('Details: Detailed information about the error')
+		expect(error.message).toContain(`Version: ${manifest.version}`)
 	})
 
 	it('should handle cause as an instance of BaseError', () => {
@@ -59,11 +60,11 @@ describe('BaseError', () => {
 		expect(error.name).toBe('CustomError')
 		expect(error.shortMessage).toBe('Short message')
 		expect(error.docsPath).toBe('/errors/cause-error')
-		expect(error.details).toBe('/errors/cause-error')
+		expect(error.details).toBe('Cause message')
 		expect(error.message).toContain('Short message')
 		expect(error.message).toContain('Docs: https://tevm.sh/errors/cause-error')
-		expect(error.message).toContain('Details: /errors/cause-error')
-		expect(error.message).toContain('Version: 1.0.0-next.148')
+		expect(error.message).toContain('Details: Cause message')
+		expect(error.message).toContain(`Version: ${manifest.version}`)
 	})
 
 	it('should handle cause as an instance of Error', () => {
@@ -88,7 +89,7 @@ describe('BaseError', () => {
 		expect(error.message).toContain('Short message')
 		expect(error.message).toContain('Docs: https://tevm.sh/errors/custom-error')
 		expect(error.message).toContain('Details: Standard error message')
-		expect(error.message).toContain('Version: 1.0.0-next.148')
+		expect(error.message).toContain(`Version: ${manifest.version}`)
 	})
 
 	it('should handle cause as a string', () => {
@@ -111,7 +112,7 @@ describe('BaseError', () => {
 		expect(error.message).toContain('Short message')
 		expect(error.message).toContain('Docs: https://tevm.sh/errors/custom-error')
 		expect(error.message).toContain('Details: String cause')
-		expect(error.message).toContain('Version: 1.0.0-next.148')
+		expect(error.message).toContain(`Version: ${manifest.version}`)
 	})
 
 	it('should handle cause as an unknown type', () => {
@@ -136,7 +137,7 @@ describe('BaseError', () => {
 		expect(error.message).toContain('Short message')
 		expect(error.message).toContain('Docs: https://tevm.sh/errors/custom-error')
 		expect(error.message).toContain('Details: {"some":"unknown object"}')
-		expect(error.message).toContain('Version: 1.0.0-next.148')
+		expect(error.message).toContain(`Version: ${manifest.version}`)
 	})
 
 	it('should walk through the error chain', () => {

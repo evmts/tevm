@@ -78,8 +78,10 @@ export const readFactory = ({ methods, errors, address, code }) =>
 				creator.functionName = /** @type {import('@tevm/utils').AbiFunction} */ (method).name
 				creator.humanReadableAbi = formatAbi([method])
 				creator.code = code
-				creator.address = address
-				creator.to = address
+				if (address !== undefined) {
+					creator.address = address
+					creator.to = address
+				}
 				return [/**@type {import('@tevm/utils').AbiFunction}*/ (method).name, creator]
 			}),
 	)

@@ -42,6 +42,7 @@ import { Package as nodePkg } from './packages/node/PACKAGE.js'
 import { Package as predeploys } from './packages/predeploys/PACKAGE.js'
 import { Package as server } from './packages/server/PACKAGE.js'
 import { Package as utils } from './packages/utils/PACKAGE.js'
+import { Package as scripts } from './scripts/PACKAGE.js'
 import { Package as tevmFacade } from './tevm/PACKAGE.js'
 
 // PACKAGE.ts files are discovered automatically: the CLI globs the tree and
@@ -306,16 +307,27 @@ const allFixtures = S.Shell.Test({
 	sandbox: { network: true },
 })
 
+const cargoInputs = [
+	cargoManifest,
+	cargoLockfile,
+	S.Filegroup({
+		srcs: [
+			S.glob('bundler-packages/*-rs/**/*.rs', { exclude: ['**/target/**', '**/node_modules/**'] }),
+			S.glob('bundler-packages/*-rs/Cargo.toml'),
+		],
+	}),
+]
+
 const cargoBuilds = S.Shell.Test({
 	bin: S.Host.bin('cargo'),
 	args: ['build', '--workspace'],
-	data: [cargoManifest, cargoLockfile],
+	data: cargoInputs,
 })
 
 const cargoTests = S.Shell.Test({
 	bin: S.Host.bin('cargo'),
 	args: ['test', '--workspace'],
-	data: [cargoManifest, cargoLockfile],
+	data: cargoInputs,
 })
 
 // CI's "Validate Cargo workspace" step: `cargo check --workspace --quiet`,
@@ -323,11 +335,7 @@ const cargoTests = S.Shell.Test({
 const cargoCheck = S.Shell.Test({
 	bin: S.Host.bin('cargo'),
 	args: ['check', '--workspace', '--quiet'],
-	data: [
-		cargoManifest,
-		cargoLockfile,
-		S.Filegroup({ srcs: S.glob(['bundler-packages/*-rs/src/**', 'bundler-packages/*-rs/Cargo.toml']) }),
-	],
+	data: cargoInputs,
 })
 
 // Every PR touching a publishable package needs a changeset; status against
@@ -544,7 +552,7 @@ const mechanicalPrePush = S.Shell.Test({
 })
 
 const prePush = S.Suite({
-	tests: [mechanicalPrePush, externalIntegrationTests, agentLints],
+	tests: [mechanicalPrePush, scripts.prepareChangesetPublishTest, externalIntegrationTests, agentLints],
 })
 
 // Every commit is retained as a memory fact, so agent targets see recent
@@ -580,6 +588,8 @@ const ci = S.Suite({
 		cargoBuilds,
 		cargoCheck,
 		factory.check,
+		scripts.prepareChangesetPublishTest,
+		scripts.zigFuzzRunnerTest,
 		changesetCheck,
 	],
 })
@@ -598,10 +608,9 @@ const versionPackages = S.Changesets.Version({
 })
 
 const version = S.Shell.Diff({
-	bin: S.PackageManager.bin,
-	args: ['install', '--lockfile-only'],
-	data: [versionPackages, packageJson, workspaceConfig],
-	changes: ['pnpm-lock.yaml'],
+	command: 'node scripts/prepare-changeset-publish.mjs --sync-jsr && pnpm install --lockfile-only',
+	data: [versionPackages, packageJson, workspaceConfig, S.file('//scripts/prepare-changeset-publish.mjs')],
+	changes: ['tevm/jsr.json', 'pnpm-lock.yaml'],
 	sandbox: { network: true },
 })
 
@@ -648,7 +657,8 @@ const prerelease = S.Shell.Run({
 // snapshot.yml: a one-off snapshot release of every package from the
 // current tree (changesets-snapshot), on dispatch only.
 const snapshot = S.Shell.Run({
-	command: 'pnpm exec changeset version --snapshot snapshot && pnpm run release:publish',
+	command:
+		'if [ -f .changeset/pre.json ]; then pnpm exec changeset pre exit; fi && pnpm exec changeset version --snapshot snapshot && node scripts/prepare-changeset-publish.mjs --sync-jsr && pnpm run release:publish --tag snapshot --no-git-tag',
 	data: [allBuilds, allTypes, allDeclarations],
 	env: nxEnvironment,
 	gates: [ci],
@@ -740,11 +750,7 @@ const benchReport = S.Shell.Build({
 	bin: S.Runtime.bin,
 	args: ['scripts/bench/report.mjs', ...allBenchSpecs.map(([path]) => path)],
 	data: [...allBenchSpecs.map(([, target]) => target), benchReportScript, benchBaselineFile],
-	outFiles: [
-		'artifacts/benchmarks/report.json',
-		'artifacts/benchmarks/summary.md',
-		'artifacts/benchmarks/report.html',
-	],
+	outFiles: ['artifacts/benchmarks/report.json', 'artifacts/benchmarks/summary.md', 'artifacts/benchmarks/report.html'],
 })
 
 const bench = S.Shell.Run({
@@ -753,49 +759,21 @@ const bench = S.Shell.Run({
 	data: [benchReport, benchShowScript],
 })
 
-const benchCore = S.Shell.Build({
-	bin: S.Runtime.bin,
-	args: ['scripts/bench/report.mjs', ...coreBenchSpecs.map(([path]) => path)],
-	data: [...coreBenchSpecs.map(([, target]) => target), benchReportScript, benchBaselineFile],
-	outFiles: [
-		'artifacts/benchmarks/report.json',
-		'artifacts/benchmarks/summary.md',
-		'artifacts/benchmarks/report.html',
-	],
-})
+function benchSubset(name: string, specs: ReadonlyArray<(typeof allBenchSpecs)[number]>) {
+	const dir = `artifacts/benchmarks/${name}`
+	return S.Shell.Build({
+		bin: S.Runtime.bin,
+		args: ['scripts/bench/report.mjs', ...specs.map(([path]) => path)],
+		env: { TEVM_BENCH_REPORT_DIR: dir },
+		data: [...specs.map(([, target]) => target), benchReportScript, benchBaselineFile],
+		outFiles: [`${dir}/report.json`, `${dir}/summary.md`, `${dir}/report.html`],
+	})
+}
 
-const benchBundlers = S.Shell.Build({
-	bin: S.Runtime.bin,
-	args: ['scripts/bench/report.mjs', ...bundlerBenchSpecs.map(([path]) => path)],
-	data: [...bundlerBenchSpecs.map(([, target]) => target), benchReportScript, benchBaselineFile],
-	outFiles: [
-		'artifacts/benchmarks/report.json',
-		'artifacts/benchmarks/summary.md',
-		'artifacts/benchmarks/report.html',
-	],
-})
-
-const benchRust = S.Shell.Build({
-	bin: S.Runtime.bin,
-	args: ['scripts/bench/report.mjs', ...rustBenchSpecs.map(([path]) => path)],
-	data: [...rustBenchSpecs.map(([, target]) => target), benchReportScript, benchBaselineFile],
-	outFiles: [
-		'artifacts/benchmarks/report.json',
-		'artifacts/benchmarks/summary.md',
-		'artifacts/benchmarks/report.html',
-	],
-})
-
-const benchTooling = S.Shell.Build({
-	bin: S.Runtime.bin,
-	args: ['scripts/bench/report.mjs', ...toolingBenchSpecs.map(([path]) => path)],
-	data: [...toolingBenchSpecs.map(([, target]) => target), benchReportScript, benchBaselineFile],
-	outFiles: [
-		'artifacts/benchmarks/report.json',
-		'artifacts/benchmarks/summary.md',
-		'artifacts/benchmarks/report.html',
-	],
-})
+const benchCore = benchSubset('core', coreBenchSpecs)
+const benchBundlers = benchSubset('bundlers', bundlerBenchSpecs)
+const benchRust = benchSubset('rust', rustBenchSpecs)
+const benchTooling = benchSubset('tooling', toolingBenchSpecs)
 
 const benchBaseline = S.Shell.Diff({
 	bin: S.Runtime.bin,

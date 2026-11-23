@@ -1,10 +1,6 @@
-// This code is originally from viem
-/**
- * Utility function to get the version.
- * @returns {string} The version string.
- */
-const getVersion = () => '1.0.0-next.148'
+import manifest from '../../package.json' with { type: 'json' }
 
+// Originally adapted from viem.
 /**
  * @typedef {Object} BaseErrorParameters
  * @property {string} [docsBaseUrl]
@@ -34,43 +30,45 @@ const getVersion = () => '1.0.0-next.148'
 export class BaseError extends Error {
 	/**
 	 * @param {string} shortMessage - A short, human-readable summary of the error.
-	 * @param {BaseErrorParameters} args={} - Additional parameters for the error.
+	 * @param {BaseErrorParameters | undefined} args - Additional parameters for the error.
 	 * @param {string} _tag - Internal tag for the error.
 	 * @param {number} [code] - Error code analogous to the code in JSON RPC error.
 	 */
-	constructor(shortMessage, args, _tag, code = 0) {
+	constructor(shortMessage, args = {}, _tag, code = 0) {
 		if (new.target === BaseError) {
 			throw new TypeError('Cannot construct BaseError instances directly')
 		}
 		super()
 
-		const details = (() => {
-			if (args.cause === null || args.cause === undefined) {
-				return ''
-			}
-			if (args.cause instanceof BaseError) {
-				return args.cause.docsPath
-			}
-			if (typeof args.cause === 'string') {
-				return args.cause
-			}
-			if (typeof args.cause !== 'object') {
-				return String(args.cause)
-			}
-			if ('message' in args.cause) {
-				return /** @type {string}*/ (args.cause.message)
-			}
-			if (args.cause instanceof Error) {
-				if ('errorType' in args.cause) {
-					return args.cause.errorType
+		const details =
+			args.details ??
+			(() => {
+				if (args.cause === null || args.cause === undefined) {
+					return ''
 				}
-			}
-			try {
-				return JSON.stringify(args.cause)
-			} catch (_e) {
-				return 'Unable to parse error details'
-			}
-		})()
+				if (args.cause instanceof BaseError) {
+					return args.cause.details ?? args.cause.shortMessage
+				}
+				if (typeof args.cause === 'string') {
+					return args.cause
+				}
+				if (typeof args.cause !== 'object') {
+					return String(args.cause)
+				}
+				if ('message' in args.cause) {
+					return /** @type {string}*/ (args.cause.message)
+				}
+				if (args.cause instanceof Error) {
+					if ('errorType' in args.cause) {
+						return args.cause.errorType
+					}
+				}
+				try {
+					return JSON.stringify(args.cause)
+				} catch (_e) {
+					return 'Unable to parse error details'
+				}
+			})()
 		const docsPath = args.cause instanceof BaseError ? args.cause.docsPath || args.docsPath : args.docsPath
 		/**
 		 * @type {string}
@@ -101,7 +99,7 @@ export class BaseError extends Error {
 		/**
 		 * @type {string}
 		 */
-		this.version = getVersion()
+		this.version = manifest.version
 		/**
 		 * @type {number}
 		 */
@@ -138,7 +136,7 @@ export class BaseError extends Error {
 	/**
 	 * Walks through the error chain.
 	 * @param {Function} [fn] - A function to execute on each error in the chain.
-	 * @returns {Error|unknown} The first error that matches the function, or the original error.
+	 * @returns {Error|unknown} The first match, or null if none matches. Without a predicate, returns the terminal or first repeated cause.
 	 */
 	walk(fn) {
 		return walk(this, fn)
@@ -149,11 +147,16 @@ export class BaseError extends Error {
  * Helper function to walk through the error chain.
  * @param {unknown} err - The error to walk through.
  * @param {Function} [fn] - A function to execute on each error in the chain.
- * @returns {unknown} The first error that matches the function, or the original error.
+ * @returns {unknown} The first match, or null if none matches. Without a predicate, returns the terminal or first repeated cause.
  */
 function walk(err, fn) {
-	if (fn?.(err)) return err
-	if (err && typeof err === 'object' && 'cause' in err) return walk(err.cause, fn)
+	const visited = new Set()
+	while (!visited.has(err)) {
+		if (fn?.(err)) return err
+		if (!err || typeof err !== 'object' || !('cause' in err)) break
+		visited.add(err)
+		err = err.cause
+	}
 	return fn ? null : err
 }
 
@@ -170,9 +173,15 @@ function snapshot(value, ancestors, key) {
 			const json = value.toJSON(key)
 			if (json !== value) return snapshot(json, ancestors, key)
 		}
-		return Array.isArray(value)
-			? value.map((item, index) => snapshot(item, ancestors, String(index)))
-			: Object.fromEntries(Object.entries(value).map(([key, item]) => [key, snapshot(item, ancestors, key)]))
+		if (Array.isArray(value)) return value.map((item, index) => snapshot(item, ancestors, String(index)))
+		const fields = Object.fromEntries(Object.entries(value).map(([key, item]) => [key, snapshot(item, ancestors, key)]))
+		if (value instanceof Error) {
+			fields['name'] = value.name
+			fields['message'] = value.message
+			if ('cause' in value && !Object.hasOwn(fields, 'cause'))
+				fields['cause'] = snapshot(value.cause, ancestors, 'cause')
+		}
+		return fields
 	} finally {
 		ancestors.delete(value)
 	}

@@ -90,3 +90,27 @@ not-a-json
 		)
 	})
 })
+
+describe('loadFoundryConfig shared remapping parsing', () => {
+	beforeEach(() => {
+		mockExecFileSync.mockReset()
+	})
+
+	it('parses forge remappings exactly like remappings.txt', () => {
+		mockExecFileSync.mockReturnValueOnce(
+			Buffer.from(JSON.stringify({ remappings: [' @a/ = lib/a=b/ ', 'constructor=lib/c/', 'prototype=lib/t/'] })),
+		)
+		const res = runSync(loadFoundryConfig(true, '/project'))
+		expect(Object.entries(res.remappings ?? {})).toEqual([
+			['@a/', '/project/lib/a=b/'],
+			['constructor', '/project/lib/c/'],
+			['prototype', '/project/lib/t/'],
+		])
+		expect(Object.getPrototypeOf(res.remappings)).toBe(Object.prototype)
+	})
+
+	it('rejects a non-array remappings value', () => {
+		mockExecFileSync.mockReturnValueOnce(Buffer.from(JSON.stringify({ remappings: 'a=b' })))
+		expect(() => runSync(loadFoundryConfig(true, '/project'))).toThrow('Invalid remappings: a=b')
+	})
+})

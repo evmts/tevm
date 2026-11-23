@@ -1,11 +1,23 @@
 import assert from 'node:assert/strict'
-import { execFileSync } from 'node:child_process'
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { execFileSync, spawn, spawnSync } from 'node:child_process'
+import { once } from 'node:events'
+import {
+	chmodSync,
+	copyFileSync,
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	symlinkSync,
+	writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { describe, it } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import {
+	discoverWorkspacePackages,
 	isCoveredByNpmFiles,
 	parseCliArgs,
 	parseWorkspacePatterns,
@@ -13,6 +25,7 @@ import {
 	runPublishPrep,
 	satisfiesRange,
 	validateChangesetLockstep,
+	validatePackageManifests,
 } from './prepare-changeset-publish.mjs'
 
 const REPO_ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
@@ -141,6 +154,7 @@ function createFixtureWorkspace() {
 	})
 	writeJson(join(repoRoot, 'tevm', 'jsr.json'), {
 		name: '@tevm/tevm',
+		imports: { '@tevm/node': 'npm:@tevm/node@^1.0.0-rc.154', viem: 'npm:viem@^2.58.4' },
 		version: '1.0.0-rc.154',
 		exports: { '.': './index.js' },
 	})
@@ -171,7 +185,7 @@ describe('helpers', () => {
 		assert.equal(isCoveredByNpmFiles('./dist/index.js', ['dist']), true)
 		assert.equal(isCoveredByNpmFiles('./dist/index.spec.js', ['dist', '!dist/**/*.spec.js']), false)
 		assert.equal(isCoveredByNpmFiles('./package.json', ['dist']), true)
-		assert.equal(resolveWorkspaceRange('workspace:*', '0.1.0'), '^0.1.0')
+		assert.equal(resolveWorkspaceRange('workspace:*', '0.1.0'), '0.1.0')
 		assert.equal(resolveWorkspaceRange('workspace:~', '0.1.0'), '~0.1.0')
 		assert.equal(satisfiesRange('0.0.0', '^0.1.0'), false)
 		assert.equal(satisfiesRange('0.1.0', '^0.1.0'), true)
@@ -207,7 +221,7 @@ describe('publish preflight & lifecycle', () => {
 
 			const applied = await runPublishPrep({ repoRoot: fx.repoRoot, mode: 'apply' })
 			assert.equal(applied.ok, true)
-			assert.equal(JSON.parse(readFileSync(nodePkgPath, 'utf8')).dependencies['@evmts/zevm'], '^0.1.0')
+			assert.equal(JSON.parse(readFileSync(nodePkgPath, 'utf8')).dependencies['@evmts/zevm'], '0.1.0')
 			assert.equal(JSON.parse(readFileSync(zevmPkgPath, 'utf8')).private, true)
 
 			// Double-apply must fail instead of clobbering the original backup
@@ -255,12 +269,44 @@ describe('publish preflight & lifecycle', () => {
 		}
 	})
 
-	it('blocks publish when @evmts/zevm@^0.1.0 is absent on npm and passes when 0.1.0 is published', async () => {
+	it('rejects different versions within the fixed group and skips private members', (t) => {
+		const fx = createFixtureWorkspace()
+		t.after(fx.cleanup)
+		const path = join(fx.repoRoot, 'packages', 'runner', 'package.json')
+		writeJson(path, { name: 'tevm-run', version: '0.9.0' })
+		assert.match(validateChangesetLockstep(fx.repoRoot).join('\n'), /tevm-run@0.9.0/)
+		writeJson(path, { name: 'tevm-run', version: '0.9.0', private: true })
+		assert.deepEqual(validateChangesetLockstep(fx.repoRoot), [])
+	})
+
+	it('syncs the JSR version and imports after versioning and preserves unrelated mappings', (t) => {
+		const fx = createFixtureWorkspace()
+		t.after(fx.cleanup)
+		const path = join(fx.repoRoot, 'tevm', 'jsr.json')
+		const jsr = JSON.parse(readFileSync(path))
+		writeJson(path, { ...jsr, version: '0.1.0', imports: { other: 'npm:other@2', '@tevm/old': 'npm:@tevm/old@1' } })
+		execFileSync(process.execPath, [
+			join(REPO_ROOT, 'scripts/prepare-changeset-publish.mjs'),
+			'--sync-jsr',
+			'--repo-root',
+			fx.repoRoot,
+		])
+		assert.deepEqual(JSON.parse(readFileSync(path)), {
+			...jsr,
+			imports: { other: 'npm:other@2', '@tevm/node': 'npm:@tevm/node@^1.0.0-rc.154', viem: 'npm:viem@^2.58.4' },
+		})
+	})
+
+	it('blocks publish when @evmts/zevm@0.1.0 is absent on npm and passes when 0.1.0 is published', async () => {
 		const fx = createFixtureWorkspace()
 		try {
 			/** @type {typeof fetch} */
 			const onlyZeroFetch = async () =>
-				/** @type {Response} */ ({ ok: true, status: 200, json: async () => ({ versions: { '0.0.0': {} } }) })
+				/** @type {Response} */ ({
+					ok: true,
+					status: 200,
+					json: async () => ({ versions: { '0.0.0': {}, '0.1.5': {} } }),
+				})
 			const blocked = await runPublishPrep({
 				repoRoot: fx.repoRoot,
 				mode: 'apply',
@@ -268,7 +314,7 @@ describe('publish preflight & lifecycle', () => {
 				fetchImpl: onlyZeroFetch,
 			})
 			assert.equal(blocked.ok, false)
-			assert.ok(blocked.errors.some((e) => e.includes('@evmts/zevm@^0.1.0 is not published')))
+			assert.ok(blocked.errors.some((e) => e.includes('@evmts/zevm@0.1.0 is not published')))
 			// Fail-closed: node manifest must NOT be mutated on failure
 			assert.equal(
 				JSON.parse(readFileSync(join(fx.repoRoot, 'packages', 'node', 'package.json'), 'utf8')).dependencies[
@@ -328,16 +374,51 @@ describe('publish preflight & lifecycle', () => {
 		}
 	})
 
+	it('excludes the native bundler parents and every platform manifest from dist validation', () => {
+		const packages = discoverWorkspacePackages(REPO_ROOT)
+		const parents = ['resolutions-rs', 'runtime-rs', 'solc-rs'].map((name) => `bundler-packages/${name}`)
+		const native = packages.filter(({ relDir }) =>
+			parents.some((dir) => relDir === dir || relDir.startsWith(`${dir}/npm/`)),
+		)
+		assert.equal(native.length, 23)
+		for (const { pkg } of native) assert.equal(pkg.private, true, pkg.name)
+		assert.deepEqual(validatePackageManifests(native, { repoRoot: REPO_ROOT, checkDist: true }), [])
+	})
+
 	it('validates the live TEVM monorepo in --dry-run mode cleanly', async () => {
 		const res = await runPublishPrep({ repoRoot: REPO_ROOT, mode: 'dry-run' })
 		assert.equal(res.ok, true, `Unexpected errors:\n${res.errors.join('\n')}`)
 		assert.ok(res.publishableCount >= 40)
 		assert.ok(res.chainCount > 100)
-		assert.ok(res.rewrites.some((r) => r.pkgName === '@tevm/node' && r.depName === '@evmts/zevm' && r.to === '^0.1.0'))
+		assert.ok(res.rewrites.some((r) => r.pkgName === '@tevm/node' && r.depName === '@evmts/zevm' && r.to === '0.1.0'))
 	})
 })
 
 describe('pnpm-publish-wrapper tarball guard', () => {
+	it('skips itself and symlink aliases in PATH and fails promptly without another pnpm', (t) => {
+		const sandbox = mkdtempSync(join(tmpdir(), 'tevm-pnpm-path-'))
+		t.after(() => rmSync(sandbox, { recursive: true, force: true }))
+		const wrapper = join(REPO_ROOT, 'scripts/pnpm-publish-wrapper/pnpm')
+		const tools = join(sandbox, 'tools')
+		mkdirSync(tools)
+		symlinkSync('/bin/bash', join(tools, 'bash'))
+		symlinkSync(wrapper, join(tools, 'pnpm'))
+		const env = { PATH: `${dirname(wrapper)}:${tools}` }
+		assert.throws(
+			() => execFileSync(wrapper, ['--version'], { env, timeout: 2000, stdio: 'pipe' }),
+			(error) => error.status === 1 && /distinct pnpm/.test(error.stderr),
+		)
+		writeFileSync(join(sandbox, 'pnpm'), '#!/bin/sh\necho distinct\n', { mode: 0o755 })
+		assert.equal(
+			execFileSync(wrapper, ['--version'], {
+				env: { PATH: `${env.PATH}:${sandbox}` },
+				timeout: 2000,
+				encoding: 'utf8',
+			}).trim(),
+			'distinct',
+		)
+	})
+
 	it('refuses to publish a packed tarball leaking workspace:* and allows clean tarballs', () => {
 		const sandbox = mkdtempSync(join(tmpdir(), 'tevm-wrapper-test-'))
 		try {
@@ -387,4 +468,94 @@ describe('pnpm-publish-wrapper tarball guard', () => {
 			rmSync(sandbox, { recursive: true, force: true })
 		}
 	})
+})
+
+describe('release:publish transaction', () => {
+	function setup(t, changeset) {
+		const fx = createFixtureWorkspace()
+		t.after(fx.cleanup)
+		const bin = join(fx.repoRoot, 'bin')
+		mkdirSync(bin)
+		const tools = {
+			pnpm: 'exit 0',
+			nx: 'exit 0',
+			node: 'if [ "$2" = --restore ] && [ -f fail-restore ]; then exit 73; fi\nexec "$NODE_BIN" "$PREP" "$2" --repo-root "$PWD"',
+			changeset,
+		}
+		for (const [name, body] of Object.entries(tools))
+			writeFileSync(join(bin, name), `#!/bin/sh\n${body}\n`, { mode: 0o755 })
+		mkdirSync(join(fx.repoRoot, 'scripts'))
+		copyFileSync(join(REPO_ROOT, 'scripts/publish-changesets.sh'), join(fx.repoRoot, 'scripts/publish-changesets.sh'))
+		const options = {
+			cwd: fx.repoRoot,
+			env: {
+				...process.env,
+				PATH: `${bin}:${process.env.PATH}`,
+				NODE_BIN: process.execPath,
+				PREP: join(REPO_ROOT, 'scripts/prepare-changeset-publish.mjs'),
+				GITHUB_ACTIONS: 'false',
+			},
+		}
+		const manifest = join(fx.repoRoot, 'packages/node/package.json')
+		const original = readFileSync(manifest, 'utf8')
+		const backup = join(fx.repoRoot, '.changeset/.publish-prep-backup.json')
+		const entry = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'))).scripts['release:publish']
+		return { ...fx, entry, options, manifest, original, backup }
+	}
+
+	for (const signal of ['SIGINT', 'SIGTERM']) {
+		it(`restores original bytes after ${signal} reaches the publishing shell`, { timeout: 10_000 }, async (t) => {
+			const fx = setup(t, 'echo publisher-ready\nexec sleep 20')
+			const child = spawn('sh', ['-c', fx.entry], { ...fx.options, stdio: ['ignore', 'pipe', 'pipe'] })
+			const exited = once(child, 'exit')
+			t.after(() => {
+				if (child.exitCode === null && child.signalCode === null) child.kill('SIGTERM')
+			})
+			let output = ''
+			let signalled = false
+			for await (const chunk of child.stdout) {
+				output += chunk
+				if (signalled || !output.includes('publisher-ready')) continue
+				assert.notEqual(readFileSync(fx.manifest, 'utf8'), fx.original)
+				child.kill(signal)
+				signalled = true
+			}
+			assert.deepEqual(await exited, [signal === 'SIGINT' ? 130 : 143, null])
+			assert.equal(readFileSync(fx.manifest, 'utf8'), fx.original)
+			assert.equal(existsSync(fx.backup), false)
+		})
+	}
+
+	it('preserves publish errors and fails on restore errors after a successful publish', (t) => {
+		const fx = setup(t, 'test "$*" = "publish --tag snapshot --no-git-tag" || exit 42')
+		assert.throws(
+			() => execFileSync('sh', ['-c', fx.entry], fx.options),
+			(error) => error.status === 42,
+		)
+		assert.equal(readFileSync(fx.manifest, 'utf8'), fx.original)
+		writeFileSync(join(fx.repoRoot, 'fail-restore'), '')
+		assert.throws(
+			() => execFileSync('sh', ['-c', `${fx.entry} --tag snapshot --no-git-tag`], fx.options),
+			(error) => error.status === 73,
+		)
+		assert.ok(existsSync(fx.backup))
+	})
+})
+
+it('facade clean preserves the installed CLI and the launcher does not print RPC arguments', (t) => {
+	const dir = mkdtempSync(join(tmpdir(), 'tevm-facade-cli-'))
+	t.after(() => rmSync(dir, { recursive: true, force: true }))
+	const { scripts } = JSON.parse(readFileSync(join(REPO_ROOT, 'tevm/package.json')))
+	copyFileSync(join(REPO_ROOT, 'tevm/cli.js'), join(dir, 'cli.js'))
+	execFileSync('sh', ['-c', scripts.clean], { cwd: dir })
+	const cli = join(dir, 'node_modules/@tevm/cli')
+	writeJson(join(cli, 'package.json'), { name: '@tevm/cli', main: './index.js' })
+	writeFileSync(join(cli, 'index.js'), 'console.log("CLI loaded")')
+	const result = spawnSync(process.execPath, ['cli.js', '--rpc', 'https://example.invalid/SENTINEL'], {
+		cwd: dir,
+		encoding: 'utf8',
+	})
+	assert.equal(result.status, 0)
+	assert.equal(result.stdout.trim(), 'CLI loaded')
+	assert.doesNotMatch(result.stderr, /SENTINEL/)
 })

@@ -8,9 +8,9 @@
 
 > **tevmDeploy**(`client`, `params`): `Promise`\<[`CallResult`](../type-aliases/CallResult.md) & `object`\>
 
-Defined in: tevmDeploy.js:10
+Defined in: [packages/actions/src/tevmDeploy.js:10](https://github.com/evmts/tevm/blob/main/packages/actions/src/tevmDeploy.js#L10)
 
-Submit contract creation through ZEVM and mine it unless explicitly queued.
+Submit contract creation through ZEVM, requiring a successful mined receipt unless explicitly queued.
 
 ## Parameters
 

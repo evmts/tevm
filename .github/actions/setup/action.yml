@@ -18,7 +18,7 @@ runs:
     - uses: pnpm/action-setup@v4
     - uses: actions/setup-node@v4
       with:
-        node-version-file: package.json
+        node-version-file: ".nvmrc"
     - uses: dtolnay/rust-toolchain@stable
     - uses: jdx/mise-action@v4
       with:
@@ -31,9 +31,12 @@ runs:
         restore-keys: pnpm-store-
     - run: pnpm install --frozen-lockfile
       shell: bash
-    - run: |
-        if [ -n "${{ inputs.cache-url }}" ]; then
-          echo "SMITHERS_CACHE_URL=${{ inputs.cache-url }}" >> "$GITHUB_ENV"
-          echo "SMITHERS_CACHE_TOKEN=${{ inputs.cache-token }}" >> "$GITHUB_ENV"
+    - shell: bash
+      env:
+        CACHE_URL: ${{ inputs.cache-url }}
+        CACHE_TOKEN: ${{ inputs.cache-token }}
+      run: |
+        if [[ -n "$CACHE_URL" ]]; then
+          [[ "$CACHE_URL$CACHE_TOKEN" != *$'\n'* && "$CACHE_URL$CACHE_TOKEN" != *$'\r'* ]] || exit 1
+          printf 'SMITHERS_CACHE_URL=%s\nSMITHERS_CACHE_TOKEN=%s\n' "$CACHE_URL" "$CACHE_TOKEN" >> "$GITHUB_ENV"
         fi
-      shell: bash

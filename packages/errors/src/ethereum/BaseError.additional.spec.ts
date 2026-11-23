@@ -119,3 +119,37 @@ describe('BaseError (additional cases)', () => {
 		expect(result).toBe(deepest)
 	})
 })
+
+it('walks a deep cause chain and visits each object in a cycle once', () => {
+	class TestError extends BaseError {
+		constructor() {
+			super('outer', undefined, 'TestError')
+		}
+	}
+	const error = new TestError()
+	const cause = new TypeError('inner', { cause: new Error('nested') })
+	error.cause = cause
+	expect(JSON.parse(JSON.stringify(error)).cause).toEqual({
+		name: 'TypeError',
+		message: 'inner',
+		cause: { name: 'Error', message: 'nested' },
+	})
+	for (const cycle of [error, cause]) {
+		cycle.cause = error
+		const visited: unknown[] = []
+		expect(
+			error.walk((current: unknown) => {
+				visited.push(current)
+				return false
+			}),
+		).toBeNull()
+		expect(visited).toEqual(cycle === error ? [error] : [error, cause])
+		expect(error.walk()).toBe(error)
+		error.cause = cause
+	}
+	let deep: Error = new Error()
+	const leaf = deep
+	for (let i = 0; i < 15000; i++) deep = new Error('', { cause: deep })
+	error.cause = deep
+	expect(error.walk()).toBe(leaf)
+})

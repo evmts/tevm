@@ -223,7 +223,7 @@ proptest! {
         ty in sol_type_strategy(), size in 1..12usize, name in "[A-Z][a-z]{0,8}",
         init in prop::collection::vec(any::<u8>(), 0..64),
         deployed in prop::option::of(prop::collection::vec(any::<u8>(), 0..64)),
-        indexed in any::<bool>(), include in any::<bool>(),
+        indexed in any::<bool>(), anonymous in any::<bool>(), include in any::<bool>(),
     ) {
         let tuple = json!({"type": format!("tuple[{size}]"), "name":"v",
                 "components":[{"name":"inner","type":"tuple[]","components":[{"name":"x","type":ty}]}]});
@@ -235,12 +235,13 @@ proptest! {
         let abi = json!([
             {"type":"constructor","inputs":[],"stateMutability":"payable"},
             {"type":"function","name":"f","inputs":[tuple],"outputs":[{"type":"bool","name":""}],"stateMutability":"view"},
-            {"type":"event","name":"E","anonymous":false,"inputs":[{"type":"address","name":"a","indexed":indexed}]},
+            {"type":"event","name":"E","anonymous":anonymous,"inputs":[{"type":"address","name":"a","indexed":indexed}]},
             {"type":"error","name":"Fail","inputs":[tuple]},
             {"type":"fallback","stateMutability":"payable"},
             {"type":"receive","stateMutability":"payable"}
         ]);
-        let src = generate(&json!({&name:{"abi":abi,"evm":evm}}), "mjs", include).unwrap();
+        let wire = json!({&name:{"abi":abi,"evm":evm}});
+        let src = generate(&wire, "mjs", include).unwrap();
         let literal = src
             .split_once("export const artifacts = ")
             .unwrap()
@@ -259,6 +260,25 @@ proptest! {
                 .filter(|_| include)
                 .map(|v| format!("0x{}", hex::encode(v))))
         );
+        let dts = generate(&wire, "dts", include).unwrap();
+        for field in ["bytecode", "deployedBytecode"] {
+            let declaration = format!("readonly {field}:");
+            prop_assert_eq!(dts.contains(&declaration), actual.get(field).is_some());
+            if let Some(bytes) = actual.get(field) {
+                let field_type = format!("{declaration} {bytes};");
+                prop_assert!(dts.contains(&field_type));
+            }
+        }
+        if anonymous {
+            let initializer = src.split_once(" = ").unwrap().1.split_once(";\n").unwrap().0;
+            let args: Value = serde_json::from_str(initializer).unwrap();
+            let event = args["abi"].as_array().unwrap().iter().find(|i| i["type"] == "event").unwrap();
+            prop_assert_eq!(&event["anonymous"], &json!(true));
+            prop_assert!(args.get("humanReadableAbi").is_none());
+            prop_assert_eq!(&actual["abi"], &args["abi"]);
+            let raw_type = format!("readonly abi: readonly {};", args["abi"]);
+            prop_assert!(dts.contains(&raw_type));
+        }
         let mut expected = vec![
             "constructor() payable".to_string(),
             "fallback() external payable".to_string(),

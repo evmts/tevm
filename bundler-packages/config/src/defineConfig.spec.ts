@@ -161,7 +161,8 @@ describe(defineConfig.name, () => {
 
 	it('should throw InvalidRemappingsError when forge remappings format is incorrect', () => {
 		const forgeCommandOutput = JSON.stringify({
-			remappings: ['invalid=remapping=format'],
+			// only the first `=` separates prefix from target, so a line needs a non-empty prefix
+			remappings: ['=remapping-without-prefix'],
 		})
 		mockExecFileSync.mockReturnValueOnce(Buffer.from(forgeCommandOutput))
 
@@ -177,7 +178,7 @@ describe(defineConfig.name, () => {
 		expect(e.name).toBe('InvalidRemappingsError')
 		expect(e.message).toMatchInlineSnapshot(`
 			"InvalidRemappingsError: Unable to resolve Tevm CompilerConfig at ./
-			Invalid remappings: invalid=remapping=format"
+			Invalid remappings: =remapping-without-prefix"
 		`)
 	})
 })

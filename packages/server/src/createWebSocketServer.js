@@ -13,6 +13,8 @@ export function createWebSocketServer(client, server, options = {}) {
 		maxPayload: options.maxPayload ?? 1024 * 1024,
 		...(options.path === undefined ? {} : { path: options.path }),
 	})
+	/** @type {Set<Promise<void>>} */
+	const cleanups = new Set()
 	wss.on('connection', (socket) => {
 		// ws closes malformed/oversized frames itself; consume its error event
 		// so a peer's protocol violation cannot terminate the host process.
@@ -28,13 +30,23 @@ export function createWebSocketServer(client, server, options = {}) {
 					socket.close(1011, 'Native engine unavailable')
 				})
 		})
-		socket.on('close', () => {
-			void queue.finally(() => connection.close())
-		})
+		const cleanup = new Promise((resolve) => socket.once('close', resolve))
+			.then(() => queue)
+			.then(() => connection.close())
+		cleanups.add(cleanup)
+		void cleanup.finally(() => cleanups.delete(cleanup))
 	})
-	server.on('close', () => {
+	const closeWs = wss.close.bind(wss)
+	wss.close = (callback) => {
+		closeWs(callback)
 		for (const socket of wss.clients) socket.terminate()
+	}
+	const closeHttp = server.close.bind(server)
+	server.close = (callback) => {
 		wss.close()
-	})
+		return closeHttp((error) => {
+			void Promise.all(cleanups).then(() => callback?.(error))
+		})
+	}
 	return wss
 }

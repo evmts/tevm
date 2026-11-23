@@ -11,7 +11,12 @@ const batchAddJsdocScript = S.file('jsdoc-helper/batch-add-jsdoc.js')
 const createBarrelFilesScript = S.file('createBarrelFiles.ts')
 const updateBiomeConfigScript = S.file('updateBiomeConfig.ts')
 const publishGuardSources = S.Filegroup({
-	srcs: S.glob(['prepare-changeset-publish.mjs', 'factory/verify-publish-smoke.mjs', 'factory/lib.mjs']),
+	srcs: S.glob([
+		'prepare-changeset-publish.mjs',
+		'factory/verify-publish-smoke.mjs',
+		'factory/lib.mjs',
+		'publish-changesets.sh',
+	]),
 })
 const publishGuardTests = S.Filegroup({
 	srcs: S.glob([
@@ -21,6 +26,11 @@ const publishGuardTests = S.Filegroup({
 	]),
 })
 const pnpmPublishWrapperScript = S.file('pnpm-publish-wrapper/pnpm')
+const zigFuzzRunnerTest = S.Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['--test', 'scripts/fuzz/run-zig-fuzz-remote.test.mjs'],
+	data: [S.Filegroup({ srcs: S.glob(['fuzz/run-zig-fuzz-*.mjs', 'fuzz/run-zig-fuzz-linux.sh']) })],
+})
 const publishJsrScript = S.file('publish-jsr.js')
 const tevmJsrJson = S.file('//tevm/jsr.json')
 const tevmPackageJson = S.file('//tevm/package.json')
@@ -100,7 +110,16 @@ const prepareChangesetPublish = S.Shell.Run({
 const prepareChangesetPublishTest = S.Shell.Test({
 	bin: S.PackageManager.bin,
 	args: ['-w', 'run', 'release:verify:test'],
-	data: [S.file('//package.json'), publishGuardSources, publishGuardTests, pnpmPublishWrapperScript],
+	data: [
+		S.file('//package.json'),
+		S.file('//pnpm-workspace.yaml'),
+		S.file('//.changeset/config.json'),
+		tevmJsrJson,
+		S.Filegroup({ srcs: S.glob(['//**/package.json', '//**/src/**', '//**/tsup.config.*', '//tevm/index.d.*']) }),
+		publishGuardSources,
+		publishGuardTests,
+		pnpmPublishWrapperScript,
+	],
 })
 
 // publish-jsr.js rewrites tevm/jsr.json to the workspace version and runs
@@ -109,8 +128,8 @@ const prepareChangesetPublishTest = S.Shell.Test({
 // //tevm:publishJsr is the declarative form of this publish.
 const publishJsr = S.Shell.Run({
 	bin: S.Runtime.bin,
-	args: ['publish-jsr.js'],
-	data: [publishJsrScript, tevmJsrJson, tevmPackageJson],
+	args: ['scripts/publish-jsr.js'],
+	data: [publishGuardSources, publishJsrScript, tevmJsrJson, tevmPackageJson],
 	sandbox: { network: true },
 	approval: 'required',
 })
@@ -126,5 +145,6 @@ export const Package = S.Package({
 		prepareChangesetPublishTest,
 		publishJsr,
 		updateBiomeConfig,
+		zigFuzzRunnerTest,
 	},
 })

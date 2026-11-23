@@ -5,10 +5,16 @@ on:
 concurrency:
   group: "snapshot-${{ github.ref }}"
   cancel-in-progress: false
+permissions:
+  contents: read
+  id-token: write
 env:
   TEVM_RPC_URLS_MAINNET: "${{ secrets.TEVM_RPC_URLS_MAINNET }}"
   TEVM_RPC_URLS_OPTIMISM: "${{ secrets.TEVM_RPC_URLS_OPTIMISM }}"
   TEVM_TEST_ALCHEMY_KEY: "${{ secrets.TEVM_TEST_ALCHEMY_KEY }}"
+  NPM_TOKEN: "${{ secrets.NPM_TOKEN }}"
+  GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+  NPM_CONFIG_PROVENANCE: "true"
 jobs:
   snapshot:
     runs-on: ubuntu-latest

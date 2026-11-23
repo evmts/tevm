@@ -1,6 +1,6 @@
 import { formatAbi } from 'abitype'
 import { succeed } from 'effect/Effect'
-import { needsExportAlias } from './needsExportAlias.js'
+import { planContractBindings } from './planContractBindings.js'
 
 /** @param {string | null | undefined} value */
 const escapeJSDoc = (value) =>
@@ -41,10 +41,16 @@ const escapeJSDoc = (value) =>
  * @internal This function is primarily used by generateTevmBody
  */
 export const generateDtsBody = (artifacts, includeBytecode) => {
+	const { exportsArtifacts, contracts } = planContractBindings(Object.keys(artifacts), ['_name', '_abi'])
 	return succeed(
 		`
 			${Object.entries(artifacts)
-				.flatMap(([contractName, { abi, userdoc = {}, evm }]) => {
+				.flatMap(([contractName, { abi, userdoc = {}, evm }], i) => {
+					const { binding, aliased, locals } = /** @type {import('./planContractBindings.js').ContractBindings} */ (
+						contracts[i]
+					)
+					const nameType = locals['_name']
+					const abiType = locals['_abi']
 					// Create contract metadata
 					const contract = {
 						name: contractName,
@@ -63,9 +69,8 @@ export const generateDtsBody = (artifacts, includeBytecode) => {
 
 					// Reserved words such as `class` are valid Solidity contract names but cannot be
 					// declared with `export const`. Declare them under an internal name and alias the export.
-					const aliased = needsExportAlias(contractName)
-					const declaration = aliased ? `declare const _tevm_${contractName}` : `export const ${contractName}`
-					const aliasExport = aliased ? `export { _tevm_${contractName} as ${contractName} };` : ''
+					const declaration = aliased ? `declare const ${binding}` : `export const ${contractName}`
+					const aliasExport = aliased ? `export { ${binding} as ${contractName} };` : ''
 
 					// Generate type declaration for contracts with bytecode
 					if (includeBytecode) {
@@ -78,8 +83,8 @@ export const generateDtsBody = (artifacts, includeBytecode) => {
 							bytecodeType === 'undefined' && deployedBytecodeType === 'undefined' ? 'no bytecode' : 'with bytecode'
 						return [
 							// Define constants for name and ABI with const assertions for type safety
-							`declare const _name${contractName}: ${JSON.stringify(contractName, null, 2)};`,
-							`declare const _abi${contractName}: readonly ${JSON.stringify(contract.humanReadableAbi, null, 2)};`,
+							`declare const ${nameType}: ${JSON.stringify(contractName, null, 2)};`,
+							`declare const ${abiType}: readonly ${JSON.stringify(contract.humanReadableAbi, null, 2)};`,
 
 							// JSDoc comments for the contract
 							'/**',
@@ -90,8 +95,8 @@ export const generateDtsBody = (artifacts, includeBytecode) => {
 
 							// Type declaration for the contract
 							`${declaration}: Contract<`,
-							`  typeof _name${contractName},`, // Contract name
-							`  typeof _abi${contractName},`, // ABI
+							`  typeof ${nameType},`, // Contract name
+							`  typeof ${abiType},`, // ABI
 							'  undefined,', // Address placeholder
 							`  ${bytecodeType},`, // Bytecode
 							`  ${deployedBytecodeType},`, // Deployed bytecode
@@ -104,8 +109,8 @@ export const generateDtsBody = (artifacts, includeBytecode) => {
 					// Generate type declaration for interface-only contracts (no bytecode)
 					return [
 						// Define constants for ABI and name with const assertions
-						`declare const _abi${contractName}: readonly ${JSON.stringify(contract.humanReadableAbi)};`,
-						`declare const _name${contractName}: ${JSON.stringify(contractName)};`,
+						`declare const ${abiType}: readonly ${JSON.stringify(contract.humanReadableAbi)};`,
+						`declare const ${nameType}: ${JSON.stringify(contractName)};`,
 
 						// JSDoc comments for the contract
 						'/**',
@@ -116,13 +121,11 @@ export const generateDtsBody = (artifacts, includeBytecode) => {
 						' */',
 
 						// Type declaration for the contract (without bytecode)
-						`${declaration}: Contract<typeof _name${contractName}, typeof _abi${contractName}, undefined, undefined, undefined, undefined>;`,
+						`${declaration}: Contract<typeof ${nameType}, typeof ${abiType}, undefined, undefined, undefined, undefined>;`,
 						aliasExport,
 					].filter(Boolean)
 				})
 				.join('\n')}
-// solc artifacts of compilation
-export declare const artifacts: ${JSON.stringify(artifacts, null, 2)};
-`,
+${exportsArtifacts ? `// solc artifacts of compilation\nexport declare const artifacts: ${JSON.stringify(artifacts, null, 2)};\n` : ''}`,
 	)
 }

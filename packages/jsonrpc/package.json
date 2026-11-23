@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/jsonrpc",
-	"version": "1.0.0-rc.151",
+	"version": "1.0.0-rc.153",
 	"private": false,
 	"description": "JSON-RPC 2.0 request, response, and HTTP fetcher utilities for Tevm",
 	"keywords": [

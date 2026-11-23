@@ -21,6 +21,7 @@ export function createSessionManager(options?: {
     }>;
     get: (handle: string) => import("@tevm/memory-client").MemoryClient;
     close: (handle: string) => Promise<boolean>;
+    closeAll: () => Promise<void>;
     size: () => number;
 };
 //# sourceMappingURL=createSessionManager.d.ts.map

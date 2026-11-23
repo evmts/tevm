@@ -20,6 +20,10 @@ pub enum ResolveImportsError {
         context_path: PathBuf,
         cause: ResolveImportPathError,
     },
+    InvalidImportSpan {
+        context_path: PathBuf,
+        span: Range<usize>,
+    },
     ReadError {
         context_path: PathBuf,
         message: String,

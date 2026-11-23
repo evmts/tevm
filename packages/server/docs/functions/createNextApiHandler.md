@@ -6,9 +6,9 @@
 
 # Function: createNextApiHandler()
 
-> **createNextApiHandler**(`client`): `NextApiHandler`\<`any`\>
+> **createNextApiHandler**(`client`, `options?`): `NextApiHandler`\<`any`\>
 
-Defined in: [adapters/createNextApiHandler.js:16](https://github.com/evmts/tevm/blob/main/packages/server/src/adapters/createNextApiHandler.js#L16)
+Defined in: [packages/server/src/adapters/createNextApiHandler.js:17](https://github.com/evmts/tevm/blob/main/packages/server/src/adapters/createNextApiHandler.js#L17)
 
 Creates a Next.js API handler for a Tevm JSON-RPC server
 
@@ -17,6 +17,11 @@ Creates a Next.js API handler for a Tevm JSON-RPC server
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `client` | [`Client`](../type-aliases/Client.md) | - |
+| `options?` | \{ `cors?`: `boolean`; `maxBatchSize?`: `number`; `maxBodySize?`: `number`; `requestTimeout?`: `number`; \} | HTTP handler options. |
+| `options.cors?` | `boolean` | - |
+| `options.maxBatchSize?` | `number` | - |
+| `options.maxBodySize?` | `number` | - |
+| `options.requestTimeout?` | `number` | - |
 
 ## Returns
 
@@ -29,5 +34,5 @@ import { createNextApiHandler } from 'tevm/server'
 import { createMemoryClient } from 'tevm'
 
 const tevm = createMemoryClient()
-export default createNextApiHandler({ request: tevm.request })
+export default createNextApiHandler(tevm)
 ```

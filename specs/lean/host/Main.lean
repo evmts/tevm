@@ -8,10 +8,11 @@ answer line per query. Text fields are hex-encoded UTF-8, so any character survi
 F,<input>                 -> <n>,<frame>...,<remaining>      extractJsonRpcFrames, one call
 G,<chunk>,...             -> <n>,<frame>...,<remaining>      extractJsonRpcFrames, buffered stream
 R,<configPath>,<text>     -> O,<n>,<prefix>,<target>... | E,<message>
-C,<arg>...                -> <formatted>                     arg = s<hex> | i<decimal> | b0 | b1
+C,<arg>...                -> <formatted> | U                 arg = s<hex> | i<decimal> | b0 | b1
+                                                             U: the text depends on binary rounding
 P,<version>               -> N | S,<major>,<minor>,<patch>,(-|p<prerelease>)
 S,<version>,<range>       -> 0 | 1
-W,<spec>,<targetVersion>  -> <range>
+W,<spec>,<targetVersion>  -> <published specifier>
 D,<spec>                  -> <unpublishable>,<workspace>
 ```
 -/
@@ -56,7 +57,10 @@ def answer (line : List Char) : String :=
     | .ok entries =>
       commaJoin ("O" :: toString entries.length ::
         entries.flatMap (fun p => [encodeHex p.1, encodeHex p.2]))
-  | ['C'] :: args => encodeHex (ConsoleFmt.format (args.map decodeArg))
+  | ['C'] :: args =>
+    match ConsoleFmt.format (args.map decodeArg) with
+    | some text => encodeHex text
+    | none => "U"
   | [['P'], version] =>
     match Semver.parse (decodeHex version) with
     | none => "N"

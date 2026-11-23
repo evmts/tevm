@@ -8,7 +8,7 @@
 // paths and TEVM_*_FIXTURES env vars still override them.
 import { createHash } from 'node:crypto'
 import { createReadStream, existsSync } from 'node:fs'
-import { mkdir, rename, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, rename, rm, symlink, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { command, readPolicy, repositoryRoot } from './lib.mjs'
 
@@ -31,27 +31,57 @@ const sha256File = (path) =>
 // Each corpus is a pinned tarball verified by sha256, then extracted.
 const materialize = async (name, pin) => {
 	const final = resolve(corpusRoot, name)
-	const stamp = `.stamp-${createHash('sha256').update(JSON.stringify(pin)).digest('hex').slice(0, 16)}`
-	if (existsSync(resolve(final, stamp)) && existsSync(resolve(final, pin.extractPath))) return final
-	const tarball = resolve(corpusRoot, `${name}.tar.gz`)
-	if (!existsSync(tarball) || (await sha256File(tarball)) !== pin.sha256) {
-		console.log(`downloading ${pin.url}`)
-		command('curl', ['-fsSL', '--retry', '3', '-o', tarball, pin.url])
+	const digest = createHash('sha256').update(JSON.stringify(pin)).digest('hex')
+	const stamp = `.stamp-${digest.slice(0, 16)}`
+	const complete = (dir) => existsSync(resolve(dir, stamp)) && existsSync(resolve(dir, pin.extractPath))
+	if (complete(final)) return final
+
+	const version = `.${name}-${digest}`
+	const destination = resolve(corpusRoot, version)
+	const stage = await mkdtemp(resolve(corpusRoot, `.${name}-${process.pid}-`))
+	try {
+		if (!complete(destination)) {
+			const tarball = resolve(stage, 'download.tar.gz')
+			command('curl', ['-fsSL', '--retry', '3', '-o', tarball, pin.url])
+			const actual = await sha256File(tarball)
+			if (actual !== pin.sha256) throw new Error(`${pin.url} sha256 ${actual}, policy pins ${pin.sha256}`)
+			const tree = resolve(stage, 'tree')
+			await mkdir(tree)
+			command('tar', ['-xzf', tarball, '-C', tree, pin.extractPath])
+			await writeFile(resolve(tree, stamp), '')
+			if (!complete(tree)) throw new Error(`Incomplete corpus at ${pin.extractPath}`)
+			try {
+				await rename(tree, destination)
+			} catch (error) {
+				// A concurrent fetch may have published the same verified version.
+				if (!['ENOTEMPTY', 'EEXIST'].includes(error.code) || !complete(destination)) throw error
+			}
+		}
+		const link = resolve(stage, 'current')
+		await symlink(version, link)
+		try {
+			await rename(link, final)
+		} catch (error) {
+			// Older releases used a real directory. Migrate it once, retaining it
+			// until the new pointer is installed. Later pin switches are atomic.
+			if (!['EISDIR', 'ENOTEMPTY', 'EEXIST'].includes(error.code)) throw error
+			const legacy = resolve(stage, 'legacy')
+			try {
+				await rename(final, legacy)
+			} catch (moved) {
+				if (moved.code !== 'ENOENT') throw moved
+			}
+			try {
+				await rename(link, final)
+			} catch (failed) {
+				if (existsSync(legacy) && !existsSync(final)) await rename(legacy, final)
+				throw failed
+			}
+		}
+		return final
+	} finally {
+		await rm(stage, { recursive: true, force: true })
 	}
-	const digest = await sha256File(tarball)
-	if (digest !== pin.sha256) {
-		await rm(tarball, { force: true })
-		throw new Error(`${pin.url} sha256 ${digest}, policy pins ${pin.sha256}`)
-	}
-	const work = `${final}.tmp`
-	await rm(work, { recursive: true, force: true })
-	await mkdir(work, { recursive: true })
-	command('tar', ['-xzf', tarball, '-C', work, pin.extractPath])
-	await writeFile(resolve(work, stamp), '')
-	await rm(final, { recursive: true, force: true })
-	await rename(work, final)
-	await rm(tarball, { force: true })
-	return final
 }
 
 const gstFinal = await materialize('ethereum-tests', pins.ethereumTests)

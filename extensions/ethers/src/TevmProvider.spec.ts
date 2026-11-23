@@ -1,5 +1,5 @@
 import { ContractFactory } from 'ethers'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { TevmProvider } from './TevmProvider.js'
 
 const providers: TevmProvider[] = []
@@ -43,4 +43,20 @@ describe('native ethers provider', () => {
 		expect(JSON.parse(JSON.stringify(result))).toEqual(result)
 		expect(await provider._send({ jsonrpc: '2.0', method: 'eth_chainId', params: [] } as never)).toEqual([])
 	})
+})
+
+it('consumes a rejected close during synchronous destroy', async () => {
+	const provider = await TevmProvider.createMemoryProvider()
+	const failure = Promise.reject(new Error('close failed'))
+	const handled = vi.spyOn(failure, 'catch')
+	const close = vi.spyOn(provider.tevm, 'tevmClose').mockReturnValueOnce(failure)
+	try {
+		provider.destroy()
+		expect(close).toHaveBeenCalledOnce()
+		expect(handled).toHaveBeenCalledOnce()
+	} finally {
+		await failure.catch(() => {})
+		close.mockRestore()
+		await provider.tevm.tevmClose()
+	}
 })

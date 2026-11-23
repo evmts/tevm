@@ -7,10 +7,6 @@ on:
     
 env:
   NODE_OPTIONS: "--max_old_space_size=4096"
-  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-  TEVM_RPC_URLS_MAINNET: ${{ secrets.TEVM_RPC_URLS_MAINNET }}
-  TEVM_RPC_URLS_OPTIMISM: ${{ secrets.TEVM_RPC_URLS_OPTIMISM }}
-  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   update:
@@ -18,9 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          ref: main
+          persist-credentials: false
 
       - name: Checkout pinned native sources
         run: node scripts/factory/checkout-native.mjs
@@ -33,14 +33,12 @@ jobs:
         run: npm install -g @anthropic-ai/claude-code
         shell: bash
 
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        shell: bash
-      
       - name: Run Claude Code on update files
         id: claude
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TEVM_RPC_URLS_MAINNET: ${{ secrets.TEVM_RPC_URLS_MAINNET }}
+          TEVM_RPC_URLS_OPTIMISM: ${{ secrets.TEVM_RPC_URLS_OPTIMISM }}
         run: |
           set -euo pipefail
 
@@ -88,23 +86,18 @@ jobs:
           echo "CHANGES_MADE=$CHANGES_MADE" >> "$GITHUB_OUTPUT"
         shell: bash
       
-      - name: Push changes to main
+      - name: Open maintenance pull request
         if: steps.claude.outputs.CHANGES_MADE == '1'
-        run: |
-          set -euo pipefail
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ github.token }}
+          base: main
+          branch: automation/daily-claude-updates
+          delete-branch: true
+          commit-message: "chore: apply daily Claude updates"
+          title: "chore: daily Claude updates"
+          body: "Automated maintenance changes for maintainer review."
 
-          git add -A
-
-          if git diff --cached --quiet; then
-            echo "No staged changes to commit"
-            exit 0
-          fi
-
-          git commit -m "chore: apply daily Claude updates"
-          git pull --rebase origin main
-          git push origin HEAD:main
-        shell: bash
-      
       - name: Cleanup if no changes
         if: steps.claude.outputs.CHANGES_MADE == '0'
         run: |

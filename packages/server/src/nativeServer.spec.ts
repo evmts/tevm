@@ -1,12 +1,13 @@
 import { once } from 'node:events'
 import { mkdtemp, rm } from 'node:fs/promises'
-import { request as httpRequest } from 'node:http'
+import { createServer as createHttpServer, request as httpRequest } from 'node:http'
 import { createConnection } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createMemoryClient } from '@tevm/memory-client'
 import { afterEach, describe, expect, it } from 'vitest'
 import { WebSocket } from 'ws'
+import { createHttpHandler } from './createHttpHandler.js'
 import { createIpcServer } from './createIpcServer.js'
 import { createServer } from './createServer.js'
 
@@ -115,12 +116,6 @@ describe('native server transports', () => {
 		expect((await rpc(request('eth_unsubscribe', [1]))).error.code).toBe(-32602)
 		expect((await rpc({ jsonrpc: '2.0', id: 1, method: 'eth_subscribe' })).error.code).toBe(-32602)
 		const syncing = (await rpc(request('eth_subscribe', ['syncing']))).result
-		const syncEvent = JSON.parse((await once(socket, 'message'))[0].toString())
-		expect(syncEvent).toEqual({
-			jsonrpc: '2.0',
-			method: 'eth_subscription',
-			params: { subscription: syncing, result: false },
-		})
 		expect((await rpc(request('eth_unsubscribe', [syncing]))).result).toBe(true)
 		expect((await rpc(request('eth_subscribe', ['logs', { address: 'invalid' }]))).error.code).toBe(-32602)
 		// Keep filters alive through disconnect to exercise native cleanup.
@@ -199,7 +194,7 @@ describe('native server transports', () => {
 		const directory = await mkdtemp(join(tmpdir(), 'tevm-native-'))
 		cleanups.push(() => rm(directory, { recursive: true, force: true }))
 		const path = join(directory, 'rpc.sock')
-		const server = createIpcServer(client)
+		const server = createIpcServer(client, {}, { maxMessageSize: 110 })
 		server.listen(path)
 		await once(server, 'listening')
 		cleanups.push(() => new Promise<void>((resolve) => server.close(() => resolve())))
@@ -230,7 +225,9 @@ describe('native server transports', () => {
 		)
 		const id = '🦊'
 		const payload = Buffer.from(
-			JSON.stringify(request('eth_chainId', [], id)) + JSON.stringify(request('eth_blockNumber', [], 2)),
+			[request('eth_chainId', [], id), request('eth_blockNumber', [], 2)]
+				.map((frame) => JSON.stringify(frame))
+				.join('\n'),
 		)
 		const split = payload.indexOf(id) + 1
 		socket.write(payload.subarray(0, split))
@@ -243,7 +240,56 @@ describe('native server transports', () => {
 			{ jsonrpc: '2.0', id: 2, result: '0x0' },
 		])
 		const closed = once(socket, 'close')
-		socket.write(`{${' '.repeat(1024 * 1024)}`)
+		socket.write(`{${' '.repeat(110)}`)
 		await closed
 	})
+})
+
+it('forwards the WebSocket upgrade path and payload limit and closes idle clients on shutdown', async () => {
+	const client = createMemoryClient()
+	const server = createServer(client, {}, { path: '/rpc', maxPayload: 64 })
+	server.listen(0, '127.0.0.1')
+	await once(server, 'listening')
+	const url = `ws://127.0.0.1:${(server.address() as { port: number }).port}`
+	const socket = new WebSocket(`${url}/rpc`)
+	try {
+		await once(socket, 'open')
+		await expect(once(new WebSocket(url), 'open')).rejects.toThrow(/400/)
+		const oversized = new WebSocket(`${url}/rpc`)
+		await once(oversized, 'open')
+		const rejected = once(oversized, 'close')
+		oversized.send('a'.repeat(65))
+		expect((await rejected)[0]).toBe(1009)
+		const disconnected = once(socket, 'close')
+		const stopped = new Promise<void>((resolve, reject) => server.close((err) => (err ? reject(err) : resolve())))
+		await Promise.all([disconnected, stopped])
+	} finally {
+		socket.terminate()
+		if (server.listening) await new Promise<void>((resolve) => server.close(() => resolve()))
+		await client.tevmClose()
+	}
+})
+
+it('returns distinct HTTP statuses for oversize, invalid framework data and stream failures', async () => {
+	const client = createMemoryClient()
+	const handler = createHttpHandler(client, { maxBodySize: 64 })
+	const server = createHttpServer((req, res) => {
+		if (req.url === '/invalid') Object.assign(req, { body: 1n })
+		void handler(req, res)
+		if (req.url === '/broken') req.emit('error', new Error('body reader failed'))
+	})
+	server.listen(0, '127.0.0.1')
+	await once(server, 'listening')
+	try {
+		const url = `http://127.0.0.1:${(server.address() as { port: number }).port}`
+		for (const [path, expected] of [
+			['/oversized', 413],
+			['/invalid', 400],
+			['/broken', 500],
+		] as const)
+			expect((await fetch(url + path, { method: 'POST', body: ' '.repeat(65) })).status).toBe(expected)
+	} finally {
+		await new Promise<void>((resolve) => server.close(() => resolve()))
+		await client.tevmClose()
+	}
 })

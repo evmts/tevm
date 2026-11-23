@@ -6,7 +6,7 @@
   TypeScript programming with the full power of the Ethereum Virtual Machine
 <p>
 
-[![CI](https://github.com/evmts/tevm/actions/workflows/nx.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/nx.yml)
+[![CI](https://github.com/evmts/tevm/actions/workflows/ci.yml/badge.svg)](https://github.com/evmts/tevm/actions/workflows/ci.yml)
 <a href="https://www.npmjs.com/package/tevm">
 <img src="https://img.shields.io/npm/v/tevm?style=flat" alt="Version">
 </a>
@@ -25,15 +25,7 @@ Tevm is an ethereum development toolkit that offers
 - A powerful solidity scripting environment akin to [foundry scripts](https://book.getfoundry.sh/guides/scripting-with-solidity)
 - Build tooling to create a smooth interface between your Solidity scripts and TypeScript code
 
-```typescript
-
-```
-
-Tevm runs in all environments
-
-- [All modern browsers](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API#browser_compatibility)
-- [Node.js >=18](https://nodejs.org/en)
-- [Bun](https://bun.sh)
+Use Node.js 24 for the native client. Browser applications can connect to a running Tevm server with a viem HTTP transport.
 
 ## Try it out
 
@@ -45,7 +37,7 @@ Try out our [online frontend example on stackblitz](https://stackblitz.com/~/git
 
 Tevm scripting is a simple yet powerful way to program.
 
-1. Write a solidity script `HelloWorld.s.sol`
+1. Write a solidity script `HelloWorld.sol`
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -58,7 +50,7 @@ contract HelloWorld {
 }
 ```
 
-2. Import the solidity file into a JavaScript or TypeScript file. No need to compile it.
+2. With the Tevm Solidity bundler plugin configured, import the contract in JavaScript or TypeScript.
 
 ```typescript
 import { HelloWorld } from "./HelloWorld.sol";
@@ -67,17 +59,26 @@ console.log(HelloWorld.abi);
 console.log(HelloWorld.bytecode);
 ```
 
-3. Initialize a [Tevm memory client](../packages/memory-client/docs/functions/createMemoryClient.md) and execute your Script using the [`EthGetTransactionReceiptHandler`](_media/EthGetTransactionReceiptHandler.md) action
+3. Load the compiled runtime bytecode into a memory client and call `greet`.
 
 ```typescript
 import { HelloWorld } from "./HelloWorld.sol";
 import { createMemoryClient } from "tevm";
 
 const client = createMemoryClient();
-
-const result = await tevm.script(HelloWorld.read.greate("World"));
-
-console.log(result.data); // Hello world!
+try {
+  const address = "0x0000000000000000000000000000000000000123";
+  await client.tevmSetAccount({ address, deployedBytecode: HelloWorld.deployedBytecode });
+  const result = await client.tevmContract({
+    address,
+    abi: HelloWorld.abi,
+    functionName: "greet",
+    args: ["World"],
+  });
+  console.log(result.data); // Hello World!
+} finally {
+  await client.tevmClose();
+}
 ```
 
 This is just a small subset of what Tevm offers. See [docs](https://tevm.sh/) for more information.

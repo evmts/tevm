@@ -20,8 +20,10 @@ export function createIpcServer(client, options = {}, limits = {}) {
 		})
 		socket.on('data', (data) => {
 			buffer += decoder.write(data)
-			if (Buffer.byteLength(buffer) > (limits.maxMessageSize ?? 1024 * 1024)) return void socket.destroy()
 			const [frames, remaining] = extractJsonRpcFrames(buffer)
+			const limit = limits.maxMessageSize ?? 1024 * 1024
+			if (Buffer.byteLength(remaining) > limit || frames.some((frame) => Buffer.byteLength(frame) > limit))
+				return void socket.destroy()
 			buffer = remaining
 			for (const frame of frames)
 				queue = queue

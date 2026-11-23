@@ -2,44 +2,29 @@ import { encodeFunctionData, type Hex, parseAbi } from 'viem'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { ConsoleLogEvent } from './ConsoleLogEvent.js'
 import { createZevmEngine } from './createZevmEngine.js'
-import type { ZevmEngine } from './ZevmEngine.js'
+import type { ZevmBackend, ZevmEngine } from './ZevmEngine.js'
 
-// The native drain is implemented in ZEVM. Until every addon build ships it, these
-// tests script the native boundary to pin TEVM's side of the wire contract exactly.
-// `fake` is null for tests that use the real addon.
-const state = vi.hoisted(() => ({
+// The native drain is implemented in ZEVM. These tests script the backend boundary to pin
+// TEVM's side of the wire contract exactly. `fake` is null for tests that use the real addon.
+const state = {
 	fake: null as null | ((request: { method: string; params?: unknown[] }) => unknown),
 	calls: [] as string[],
-}))
-vi.mock('node:module', async (importOriginal) => {
-	const actual = await importOriginal<typeof import('node:module')>()
-	return {
-		...actual,
-		createRequire: (url: string) => {
-			const require = actual.createRequire(url)
-			return (id: string) => {
-				if (id !== '@evmts/zevm' || !state.fake) return require(id)
-				return {
-					NativeNode: class {
-						rpc(json: string) {
-							const request = JSON.parse(json)
-							const requests = Array.isArray(request) ? request : [request]
-							for (const item of requests) state.calls.push(item.method)
-							const respond = (item: { id: number; method: string; params?: unknown[] }) => {
-								try {
-									return { jsonrpc: '2.0', id: item.id, result: state.fake!(item) }
-								} catch (error) {
-									return { jsonrpc: '2.0', id: item.id, error }
-								}
-							}
-							return JSON.stringify(Array.isArray(request) ? request.map(respond) : respond(request))
-						}
-						close() {}
-					},
-				}
+}
+const scriptedBackend = (): ZevmBackend => ({
+	rpc(json) {
+		const request = JSON.parse(json)
+		const requests = Array.isArray(request) ? request : [request]
+		for (const item of requests) state.calls.push(item.method)
+		const respond = (item: { id: number; method: string; params?: unknown[] }) => {
+			try {
+				return { jsonrpc: '2.0', id: item.id, result: state.fake!(item) }
+			} catch (error) {
+				return { jsonrpc: '2.0', id: item.id, error }
 			}
-		},
-	}
+		}
+		return JSON.stringify(Array.isArray(request) ? request.map(respond) : respond(request))
+	},
+	close() {},
 })
 
 const encode = (signature: string, args: readonly unknown[]) =>
@@ -50,7 +35,7 @@ const methodNotFound = { code: -32601, message: 'Method not found' }
 
 const nodes: ZevmEngine[] = []
 const create = (options?: Parameters<typeof createZevmEngine>[0]) => {
-	const node = createZevmEngine(options)
+	const node = createZevmEngine({ ...options, ...(state.fake && { backend: scriptedBackend() }) })
 	nodes.push(node)
 	return node
 }
@@ -169,13 +154,51 @@ describe('consoleLog option', () => {
 		expect(handler).not.toHaveBeenCalled()
 	})
 
-	it('surfaces other native drain failures', async () => {
+	it('reports a drain failure as an error event without replacing the committed result', async () => {
 		state.fake = ({ method }) => {
 			if (method === 'tevm_drainConsoleLogs') throw { code: -32603, message: 'drain failed' }
 			return '0x1'
 		}
 		const node = create({ consoleLog: true })
-		await expect(node.request({ method: 'eth_call', params: [] })).rejects.toMatchObject({ code: -32603 })
+		const errors: unknown[] = []
+		node.events.on('error', (error) => errors.push(error))
+		expect(await node.request({ method: 'eth_sendTransaction', params: [] })).toBe('0x1')
+		expect(errors).toHaveLength(1)
+		expect(errors[0]).toMatchObject({ name: 'NativeRpcError', code: -32603 })
+	})
+
+	it('keeps the revert error when the drain also fails', async () => {
+		state.fake = ({ method }) => {
+			if (method === 'tevm_drainConsoleLogs') throw { code: -32603, message: 'drain failed' }
+			throw { code: 3, message: 'execution reverted', data: '0x08c379a0' }
+		}
+		const node = create({ consoleLog: true })
+		await expect(node.request({ method: 'eth_call', params: [] })).rejects.toMatchObject({
+			code: 3,
+			data: '0x08c379a0',
+		})
+		await expect(
+			node.rpc('{"jsonrpc":"2.0","id":7,"method":"eth_call","params":[]}').then((raw) => JSON.parse(raw!)),
+		).resolves.toMatchObject({ id: 7, error: { code: 3 } })
+	})
+
+	it('delivers every message and the result when the handler and a listener throw', async () => {
+		scripted([hello, flag], '0xabc')
+		const seen: string[] = []
+		const node = create({
+			consoleLog: (message) => {
+				seen.push(message)
+				throw new Error(`handler ${message}`)
+			},
+		})
+		const errors: unknown[] = []
+		node.events.on('error', (error) => errors.push((error as Error).message))
+		node.events.on('consoleLog', () => {
+			throw new Error('listener')
+		})
+		expect(await node.request({ method: 'eth_sendTransaction', params: [] })).toBe('0xabc')
+		expect(seen).toEqual(['hello 42', 'true'])
+		expect(errors).toEqual(['listener', 'handler hello 42', 'listener', 'handler true'])
 	})
 
 	it('keeps eth_call working on the real native addon', async () => {

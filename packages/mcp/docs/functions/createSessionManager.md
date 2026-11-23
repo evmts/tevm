@@ -8,7 +8,7 @@
 
 > **createSessionManager**(`options?`): `object`
 
-Defined in: [packages/mcp/src/createSessionManager.js:34](https://github.com/evmts/tevm/blob/main/packages/mcp/src/createSessionManager.js#L34)
+Defined in: [packages/mcp/src/createSessionManager.js:35](https://github.com/evmts/tevm/blob/main/packages/mcp/src/createSessionManager.js#L35)
 
 Creates an isolated Tevm session manager with idle expiration.
 
@@ -40,6 +40,14 @@ A manager whose handles expire after the configured idle lifetime.
 #### Returns
 
 `Promise`\<`boolean`\>
+
+### closeAll
+
+> **closeAll**: () => `Promise`\<`void`\>
+
+#### Returns
+
+`Promise`\<`void`\>
 
 ### createFork
 

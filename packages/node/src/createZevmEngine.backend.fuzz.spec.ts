@@ -268,6 +268,8 @@ type BackendConfig = {
 	closeThrows?: boolean
 	fail?: { method: string; mode: FailMode }
 }
+/** Chain ID the fuzz backend reports from `eth_chainId`. */
+const BACKEND_CHAIN_ID = 31337
 const FAIL_ERROR = { code: -32099, message: 'init failed', data: '0xdead' }
 const FAIL_OUTPUT: Record<Exclude<FailMode, 'syncThrow' | 'asyncReject'>, string | null> = {
 	error: JSON.stringify({ jsonrpc: '2.0', id: 1, error: FAIL_ERROR }),
@@ -315,6 +317,9 @@ function createFuzzBackend(config: BackendConfig = {}) {
 			case 'eth_blockNumber':
 				reply = { result: `0x${state.head.toString(16)}` }
 				break
+			case 'eth_chainId':
+				reply = { result: `0x${BACKEND_CHAIN_ID.toString(16)}` }
+				break
 			case 'evm_mine':
 				state.head += 1n
 				reply = { result: '0x0' }
@@ -358,7 +363,8 @@ function createFuzzBackend(config: BackendConfig = {}) {
 		}
 		if (parsed !== null && typeof parsed === 'object' && parsed.method === 'fuzz_raw') {
 			const raw = Array.isArray(parsed.params) ? parsed.params[0] : null
-			return typeof raw === 'string' ? raw : null
+			// `"__ID__"` stands for the request id, which the caller of request() cannot know.
+			return typeof raw === 'string' ? raw.replaceAll('"__ID__"', JSON.stringify(parsed.id)) : null
 		}
 		if (Array.isArray(parsed)) {
 			if (parsed.length === 0) return JSON.stringify(single(undefined))
@@ -386,6 +392,8 @@ function createFuzzBackend(config: BackendConfig = {}) {
 			const finish = () => {
 				state.inFlight--
 				if (failing === 'asyncReject') throw state.thrown
+				// A JSON-RPC error reply must echo the request id, or the engine reports a transport fault.
+				if (failing === 'error') return JSON.stringify({ jsonrpc: '2.0', id: JSON.parse(json).id, error: FAIL_ERROR })
 				if (failing !== undefined) return FAIL_OUTPUT[failing]
 				return handle(json)
 			}
@@ -1000,6 +1008,16 @@ const INVALID_RESPONSES: (string | null)[] = [
 	'undefined',
 	'NaN',
 	'{"result":1}}',
+	// Well-formed JSON that is not a JSON-RPC 2.0 response to this request.
+	'{"result":1}',
+	'{"id":"__ID__","result":1}',
+	'{"jsonrpc":"1.0","id":"__ID__","result":1}',
+	'{"jsonrpc":2,"id":"__ID__","result":1}',
+	'{"jsonrpc":"2.0","result":1}',
+	'{"jsonrpc":"2.0","id":null,"result":1}',
+	'{"jsonrpc":"2.0","id":-1,"result":1}',
+	'{"jsonrpc":"2.0","id":"1","result":1}',
+	'{"jsonrpc":"2.0","id":"__ID__"}',
 ]
 
 const genResponseOp = (r: Rng): ResponseOp => {
@@ -1025,7 +1043,7 @@ const genResponseOp = (r: Rng): ResponseOp => {
 			return {
 				k: 'rawOk',
 				v,
-				out: JSON.stringify(r.bool() ? { jsonrpc: '2.0', id: 1, result: v, error: null } : { result: v }),
+				out: JSON.stringify({ jsonrpc: '2.0', id: '__ID__', result: v, ...(r.bool() ? { error: null } : {}) }),
 			}
 		}
 		default:
@@ -1165,7 +1183,8 @@ type OptionScenario = {
 const genNumeric = (r: Rng) =>
 	r.bool(0.45) ? r.pick([undefined, 0, 1, r.int(1e9), Number.MAX_SAFE_INTEGER]) : r.pick(NUMERIC_POOL)
 const genOptions = (r: Rng): OptionScenario => ({
-	chainId: genNumeric(r),
+	// Include the backend's own chain ID so the matching path is reached.
+	chainId: r.bool(0.3) ? BACKEND_CHAIN_ID : genNumeric(r),
 	hasMining: r.bool(0.7),
 	interval: genNumeric(r),
 	hasFork: r.bool(0.7),
@@ -1248,9 +1267,20 @@ async function propOptions(s: OptionScenario): Promise<void> {
 		return
 	}
 	const engine = createZevmEngine(options)
+	if (s.chainId !== undefined && s.chainId !== BACKEND_CHAIN_ID) {
+		// An injected backend owns its chain ID: a conflicting chainId fails initialization
+		// before any state-changing call, and the backend is released.
+		const error = await rejection(engine.ready())
+		expect(error.message).toContain(`but chainId is ${s.chainId}`)
+		expect(state.methods).toEqual(['eth_chainId'])
+		await engine.close()
+		expect(state.closeCalls).toBe(1)
+		return
+	}
 	try {
 		await engine.ready()
 		const expectedInit: unknown[] = []
+		if (s.chainId !== undefined) expectedInit.push({ method: 'eth_chainId' })
 		if (s.hasFork) {
 			expectedInit.push({
 				method: 'anvil_reset',

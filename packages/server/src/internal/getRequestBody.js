@@ -1,12 +1,12 @@
 import { StringDecoder } from 'node:string_decoder'
-import { InvalidRequestError } from '@tevm/errors'
 import { ReadRequestBodyError } from '../errors/ReadRequestBodyError.js'
 
-const bodySizeErrorMessage = 'Request body exceeds configured max body size'
+const oversized = () => new ReadRequestBodyError('Request body exceeds configured max body size', { kind: 'oversized' })
+const ignoreLateError = () => {}
 
 /**
  * @param {unknown} body
- * @returns {string | InvalidRequestError}
+ * @returns {string | ReadRequestBodyError}
  */
 const normalizeBody = (body) => {
 	if (typeof body === 'string') {
@@ -19,33 +19,35 @@ const normalizeBody = (body) => {
 		}
 	} catch (e) {
 		const err = /** @type {Error} */ (e)
-		return new InvalidRequestError('Request body must be JSON serializable', { cause: err })
+		return new ReadRequestBodyError('Request body must be JSON serializable', { kind: 'invalid', cause: err })
 	}
-	return new InvalidRequestError('Request body must be a JSON string, Buffer, or JSON-serializable value')
+	return new ReadRequestBodyError('Request body must be a JSON string, Buffer, or JSON-serializable value', {
+		kind: 'invalid',
+	})
 }
 
 /**
  * Gets request body from an http request.
  * @param {import('http').IncomingMessage|{body: unknown}} req The request object
  * @param {{ maxBodySize?: number }} [options] Maximum UTF-8 body size in bytes (before decoding binary input)
- * @returns {Promise<string | ReadRequestBodyError | InvalidRequestError>} Request body as a promise
+ * @returns {Promise<string | ReadRequestBodyError>} Request body as a promise
  * @throws {never} returns errors as value
  */
 export const getRequestBody = (req, options = {}) => {
 	const { maxBodySize = Number.POSITIVE_INFINITY } = options
 	// If the request already has a body property, return it
 	if ('body' in req && req.body !== undefined) {
-		if (Buffer.isBuffer(req.body)) {
+		if (req.body instanceof Uint8Array) {
 			return Promise.resolve(
-				req.body.length > maxBodySize ? new ReadRequestBodyError(bodySizeErrorMessage) : req.body.toString('utf8'),
+				req.body.length > maxBodySize ? oversized() : new TextDecoder('utf-8', { ignoreBOM: true }).decode(req.body),
 			)
 		}
 		const body = normalizeBody(req.body)
-		if (body instanceof InvalidRequestError) {
+		if (body instanceof ReadRequestBodyError) {
 			return Promise.resolve(body)
 		}
 		if (Buffer.byteLength(body, 'utf8') > maxBodySize) {
-			return Promise.resolve(new ReadRequestBodyError(bodySizeErrorMessage))
+			return Promise.resolve(oversized())
 		}
 		return Promise.resolve(body)
 	}
@@ -66,7 +68,10 @@ export const getRequestBody = (req, options = {}) => {
 				}
 				done = true
 				if (typeof req.removeListener === 'function') {
+					if (result instanceof ReadRequestBodyError) req.on('error', ignoreLateError)
 					req.removeListener('error', onError)
+					req.removeListener('aborted', onClose)
+					req.removeListener('close', onClose)
 					req.removeListener('data', onData)
 					req.removeListener('end', onEnd)
 				}
@@ -95,21 +100,25 @@ export const getRequestBody = (req, options = {}) => {
 					if (typeof req.pause === 'function') {
 						req.pause()
 					}
-					finish(new ReadRequestBodyError(bodySizeErrorMessage))
+					finish(oversized())
 					return
 				}
 				body += typeof chunk === 'string' ? decoder.end() + chunk : decoder.write(chunk)
 			}
 			const onEnd = () => {
-				finish(receivedBytes > maxBodySize ? new ReadRequestBodyError(bodySizeErrorMessage) : body + decoder.end())
+				finish(receivedBytes > maxBodySize ? oversized() : body + decoder.end())
 			}
 
+			const onClose = () => finish(new ReadRequestBodyError('Request stream closed before the body was complete'))
 			req.on('error', onError)
+			req.on('aborted', onClose)
+			req.on('close', onClose)
 			req.on('data', onData)
 			req.on('end', onEnd)
+			if (req.aborted || req.destroyed) onClose()
 		} else {
 			// Should never happen, but needed for type safety
-			resolve(new ReadRequestBodyError('Request object is not a valid stream', {}))
+			resolve(new ReadRequestBodyError('Request object is not a valid stream', { kind: 'invalid' }))
 		}
 	})
 }

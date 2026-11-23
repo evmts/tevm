@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { createSessionManager } from './createSessionManager.js'
 import { executeTool } from './executeTool.js'
 import { toolDefinitions } from './toolDefinitions.js'
@@ -97,13 +97,15 @@ describe('Tevm MCP tools', () => {
 		expect(receipt.status).toBe('success')
 		expect(receipt.contractAddress.toLowerCase()).toBe(contractAddress.toLowerCase())
 
+		const request = vi.spyOn(sessions.get(session).transport.tevm, 'request')
 		const read: any = await executeTool(
 			'evm_call_contract',
 			{ session, address: contractAddress, signature: 'value() view returns (uint256)' },
 			sessions,
 		)
 		expect(read.decodedOutput).toBe('7')
-		expect(BigInt(read.estimatedGas)).toBeGreaterThan(0n)
+		expect(request.mock.calls.map(([payload]) => payload.method)).toEqual(['eth_call'])
+		request.mockRestore()
 
 		const sent: any = await executeTool(
 			'evm_send_transaction',

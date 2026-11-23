@@ -77,6 +77,15 @@ describe('@tevm/mcp edge cases and error paths', () => {
 			}),
 		).toThrow(/only one of blockNumber or blockHash/)
 		expect(() => toolSchemas.evm_trace_call.parse({ session, address })).toThrow(/Provide data, abi, or signature/)
+		for (const invalid of ['0x', '0xzz', `0x${'00'.repeat(33)}`]) {
+			expect(() => toolSchemas.evm_get_account.parse({ session, address, storageSlot: invalid })).toThrow(
+				/1 to 32 bytes/,
+			)
+			expect(() => toolSchemas.evm_set_account.parse({ session, address, storage: { '0x00': invalid } })).toThrow(
+				/1 to 32 bytes/,
+			)
+			expect(() => toolSchemas.evm_set_account.parse({ session, address, storage: { [invalid]: '0x01' } })).toThrow()
+		}
 		expect(toolDefinitions.length).toBe(Object.keys(toolSchemas).length)
 	})
 
@@ -99,6 +108,12 @@ contract Helper {
 		}
 		return total;
 	}
+	error Denied();
+	function overload() external pure returns (uint) { return 0; }
+	function overload(Pair[] memory pairs) external pure returns (uint) { return pairs[0].a + pairs[0].b; }
+	function choose(uint256) external pure returns (uint) { return 1; }
+	function choose(string memory) external pure returns (uint) { return 2; }
+	function deny() external pure { revert Denied(); }
 	function failRaw() external pure {
 		assembly {
 			mstore(0, 0xdeadbeef)
@@ -143,6 +158,32 @@ contract Helper {
 			sessions,
 		)) as { decodedOutput: string }
 		expect(sumRes.decodedOutput).toBe('37')
+
+		const target = { session, address: deployed.contractAddress, abi: deployed.abi }
+		expect(
+			await executeTool(
+				'evm_call_contract',
+				{ ...target, functionName: 'overload', args: [[{ b: '5', a: '9007199254740993' }]] },
+				sessions,
+			),
+		).toMatchObject({ decodedOutput: '9007199254740998' })
+		await expect(executeTool('evm_call_contract', { ...target, functionName: 'deny' }, sessions)).rejects.toThrow(
+			'Denied',
+		)
+		expect(await executeTool('evm_trace_call', { ...target, functionName: 'deny' }, sessions)).toMatchObject({
+			failed: true,
+			revertReason: 'Denied',
+		})
+
+		expect(
+			await executeTool('evm_call_contract', { ...target, functionName: 'choose', args: ['word'] }, sessions),
+		).toMatchObject({ decodedOutput: '2' })
+		await expect(
+			executeTool('evm_call_contract', { ...target, functionName: 'choose', args: ['123'] }, sessions),
+		).rejects.toThrow(/ambiguous overload/i)
+		expect(
+			await executeTool('evm_call_contract', { ...target, signature: 'choose(uint256)', args: ['123'] }, sessions),
+		).toMatchObject({ decodedOutput: '1' })
 
 		// Trace truncation + undecodable raw 4-byte revert payload
 		const traceRes = (await executeTool(

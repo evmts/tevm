@@ -1,6 +1,5 @@
 use node_resolve::{resolve_from, ResolutionError as NodeResolutionError};
 use std::io;
-use std::iter::once;
 use std::path::{Component, Path, PathBuf};
 
 use crate::Config;
@@ -16,6 +15,35 @@ pub enum ResolveImportPathError {
         import_path: String,
         causes: Vec<NodeResolutionError>,
     },
+}
+
+// Resolve existing ancestors as well: a missing leaf below an escaping symlink
+// must not make that link a valid remapping target.
+fn check_remapping_root(root: &Path, path: &Path) -> io::Result<()> {
+    let base = if root.as_os_str().is_empty() {
+        Path::new(".")
+    } else {
+        root
+    };
+    let root_on_disk = match base.canonicalize() {
+        Ok(canonical) => canonical,
+        Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(()),
+        Err(e) => return Err(e),
+    };
+    for ancestor in path.ancestors().take_while(|p| *p != root) {
+        match ancestor.canonicalize() {
+            Ok(resolved) if resolved.starts_with(&root_on_disk) => break,
+            Ok(_) => {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "path leaves remapping target",
+                ))
+            }
+            Err(e) if e.kind() == io::ErrorKind::NotFound && !ancestor.is_symlink() => continue,
+            Err(e) => return Err(e),
+        }
+    }
+    Ok(())
 }
 
 /// Resolves an import path to an absolute file path
@@ -49,7 +77,7 @@ pub fn resolve_import_path(
         context_path.clone()
     };
 
-    // Try resolving relative path
+    // Explicit ./ and ../ imports always resolve from the importing source.
     let imp_path = Path::new(import_path);
     if let Some(c) = imp_path.components().next() {
         if matches!(c, Component::CurDir | Component::ParentDir) {
@@ -76,35 +104,53 @@ pub fn resolve_import_path(
         }
     }
 
-    // Try resolving remappings
-    for (k, v) in cfg.remappings.iter() {
-        if let Some(rest) = import_path.strip_prefix(k) {
-            let rest = rest.trim_start_matches(&['/', '\\'][..]);
-            // Normalize only the suffix. Parent imports within a package are valid,
-            // but they cannot remove a component of the configured target itself.
-            let mut suffix = PathBuf::new();
-            for component in Path::new(rest).components() {
-                match component {
-                    Component::CurDir => (),
-                    Component::Normal(part) if Path::new(part).file_name() == Some(part) => {
-                        suffix.push(part)
-                    }
-                    Component::ParentDir if suffix.pop() => (),
-                    _ => return Err(invalid_path("path leaves remapping target")),
+    // Config also supports public struct literals, whose remappings may be unsorted.
+    let mapping = cfg
+        .remappings
+        .iter()
+        .filter_map(|(prefix, target)| import_path.strip_prefix(prefix).map(|rest| (rest, target)))
+        .min_by_key(|(rest, _)| rest.len()); // shortest suffix = longest prefix; first tie wins
+    if let Some((rest, target)) = mapping {
+        let rest = rest.trim_start_matches(&['/', '\\'][..]);
+        // Normalize only the suffix. Parent imports within a package are valid,
+        // but they cannot remove a component of the configured target itself.
+        let mut suffix = PathBuf::new();
+        for component in Path::new(rest).components() {
+            match component {
+                Component::CurDir => (),
+                Component::Normal(part) if Path::new(part).file_name() == Some(part) => {
+                    suffix.push(part)
                 }
+                Component::ParentDir if suffix.pop() => (),
+                _ => return Err(invalid_path("path leaves remapping target")),
             }
-            return Ok(v.join(suffix));
         }
+        let candidate = target.join(suffix);
+        check_remapping_root(target, &candidate).map_err(|err| {
+            ResolveImportPathError::InvalidRelativePath {
+                context_path: context_path.display().to_string(),
+                import_path: import_path.to_owned(),
+                err,
+            }
+        })?;
+        return Ok(candidate);
     }
 
     // Finally try using node.js resolution
     let mut causes = Vec::with_capacity(cfg.libs.len() + 1);
-    for lib in once(dir_path).chain(cfg.libs.to_vec()) {
-        match resolve_from(import_path, lib) {
+    match resolve_from(import_path, dir_path) {
+        Ok(res) => return Ok(res),
+        Err(err) => causes.push(err),
+    }
+    for lib in cfg.libs.iter() {
+        // Configured library directories can contain the package directly or
+        // serve as a Node resolution base with its own node_modules.
+        match resolve_from(&format!("./{import_path}"), lib.clone())
+            .or_else(|_| resolve_from(import_path, lib.clone()))
+        {
             Ok(res) => return Ok(res),
             Err(err) => causes.push(err),
-            // Finally try using node.js resolution
-        };
+        }
     }
 
     Err(ResolveImportPathError::NotFoundAbsolutePath {
@@ -116,7 +162,6 @@ pub fn resolve_import_path(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
     use std::fs::{create_dir_all, File};
     use std::io::Write;
     use tempfile::tempdir;
@@ -161,148 +206,70 @@ mod tests {
     }
 
     #[test]
-    fn test_with_libraries() {
-        let temp_dir = tempdir().unwrap();
-        let root_dir = temp_dir.path().to_path_buf();
-
-        setup_test_files(&root_dir, &["src/main.rs", "lib/external/module.rs"]).unwrap();
-
-        let src_path = std::fs::canonicalize(root_dir.join("src"))
-            .unwrap()
-            .display()
-            .to_string();
-        let lib_path = std::fs::canonicalize(root_dir.join("lib"))
-            .unwrap()
-            .display()
-            .to_string();
-
-        setup_test_files(&root_dir, &["test-module.rs"]).unwrap();
-        let _simple_path = std::fs::canonicalize(root_dir.join("test-module.rs"))
-            .unwrap()
-            .display()
-            .to_string();
-
-        // Create a Config for testing
+    fn relative_imports_take_precedence_over_matching_remappings() {
+        let root = tempdir().unwrap();
+        let context = root.path().join("src/Main.sol");
         let cfg = Config::from((
-            Some(Vec::<String>::new()),
-            Some(Vec::<(String, String)>::new()),
+            None,
+            Some(vec![
+                ("./".into(), root.path().join("wrong")),
+                ("../".into(), root.path().join("wrong")),
+            ]),
         ));
-
-        let result = resolve_import_path(PathBuf::from(&src_path), "../test-module.rs", &cfg);
-
-        if result.is_ok() {
-            let cfg_with_libs = Config::from((
-                Some(vec![lib_path.clone()]),
-                Some(Vec::<(String, String)>::new()),
-            ));
-
-            let lib_result = resolve_import_path(
-                PathBuf::from(&src_path),
-                "../lib/external/module.rs",
-                &cfg_with_libs,
+        for (import, expected) in [
+            ("./Helper.sol", "src/Helper.sol"),
+            ("../Helper.sol", "Helper.sol"),
+        ] {
+            assert_eq!(
+                resolve_import_path(context.clone(), import, &cfg).unwrap(),
+                root.path().join(expected)
             );
-
-            assert!(
-                lib_result.is_ok(),
-                "Library resolution failed: {:?}",
-                lib_result.as_ref().err()
-            );
-            let resolved_path = normalize_path(&lib_result.unwrap().display().to_string());
-            let expected_path = normalize_path(
-                &std::fs::canonicalize(root_dir.join("lib/external/module.rs"))
-                    .unwrap()
-                    .display()
-                    .to_string(),
-            );
-            assert_eq!(resolved_path, expected_path);
-        } else {
-            println!("Skipping deep resolution test as basic resolution failed");
-            println!(
-                "This might be due to the node-resolve module limitations in the test environment"
-            );
-            assert!(true);
         }
     }
 
     #[test]
-    fn test_with_remappings() {
-        let temp_dir = tempdir().unwrap();
-        let root_dir = temp_dir.path().to_path_buf();
-
-        setup_test_files(&root_dir, &["src/main.rs", "actual/path/to/file.sol"]).unwrap();
-
-        let absolute_path = std::fs::canonicalize(root_dir.join("src"))
-            .unwrap()
-            .display()
-            .to_string();
-
-        let mut remappings = HashMap::new();
-        remappings.insert(
-            "remapped/".to_string(),
-            root_dir.join("actual/path/to/").display().to_string(),
+    fn longest_prefix_and_first_tie_win_for_public_config_literals() {
+        let cfg = Config {
+            libs: Default::default(),
+            remappings: vec![
+                ("pkg/".into(), PathBuf::from("/other")),
+                ("pkg/sub/".into(), PathBuf::from("/first")),
+                ("pkg/sub/".into(), PathBuf::from("/second")),
+            ]
+            .into(),
+        };
+        assert_eq!(
+            resolve_import_path("/Main.sol".into(), "pkg/sub/A.sol", &cfg).unwrap(),
+            PathBuf::from("/first/A.sol")
         );
+    }
 
-        println!(
-            "Remapping 'remapped/' to '{}'",
-            root_dir.join("actual/path/to/").display().to_string()
+    #[cfg(unix)]
+    #[test]
+    fn remapping_rejects_symlinks_leading_outside_the_selected_root() {
+        use std::os::unix::fs::symlink;
+
+        let dir = tempdir().unwrap();
+        let root = dir.path().join("lib");
+        setup_test_files(
+            &dir.path().to_path_buf(),
+            &["lib/real/A.sol", "sibling/A.sol"],
+        )
+        .unwrap();
+        symlink("../sibling", root.join("outside")).unwrap();
+        symlink("real", root.join("inside")).unwrap();
+        let cfg = Config::from((None, Some(vec![("pkg/".into(), root.clone())])));
+        let resolve = |s| resolve_import_path(dir.path().join("Main.sol"), s, &cfg);
+        assert!(resolve("pkg/outside/A.sol").is_err());
+        assert!(resolve("pkg/outside/new.sol").is_err());
+        assert_eq!(
+            resolve("pkg/inside/A.sol").unwrap(),
+            root.join("inside/A.sol")
         );
-        println!(
-            "Looking for 'remapped/file.sol' which should resolve to '{}'",
-            root_dir
-                .join("actual/path/to/file.sol")
-                .display()
-                .to_string()
+        assert_eq!(
+            resolve("pkg/inside/new.sol").unwrap(),
+            root.join("inside/new.sol")
         );
-
-        let file_exists = std::path::Path::new(&root_dir.join("actual/path/to/file.sol")).exists();
-        println!("Target file exists: {}", file_exists);
-
-        let import_path = "remapped/file.sol";
-        let mut manually_remapped = import_path.to_string();
-
-        for (key, val) in &remappings {
-            if import_path.starts_with(key) {
-                manually_remapped = import_path.replace(key, val);
-                break;
-            }
-        }
-
-        println!("Manual remapping result: {}", manually_remapped);
-
-        // Create config with remappings
-        let remappings_vec: Vec<(String, String)> = remappings
-            .iter()
-            .map(|(k, v)| (k.clone(), v.clone()))
-            .collect();
-        let cfg = Config::from((Some(vec![]), Some(remappings_vec)));
-
-        let result = resolve_import_path(PathBuf::from(&absolute_path), "remapped/file.sol", &cfg);
-
-        if result.is_err() && file_exists {
-            println!("Remapping resolution failed but file exists - marking test as passed");
-            assert_eq!(
-                manually_remapped,
-                root_dir
-                    .join("actual/path/to/file.sol")
-                    .display()
-                    .to_string()
-            );
-            assert!(true);
-        } else {
-            assert!(
-                result.is_ok(),
-                "Remapping resolution failed: {:?}",
-                result.as_ref().err()
-            );
-            let resolved_path = normalize_path(&result.unwrap().display().to_string());
-            let expected_path = normalize_path(
-                &root_dir
-                    .join("actual/path/to/file.sol")
-                    .display()
-                    .to_string(),
-            );
-            assert_eq!(resolved_path, expected_path);
-        }
     }
 
     #[test]

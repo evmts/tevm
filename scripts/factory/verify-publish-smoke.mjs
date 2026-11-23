@@ -1,9 +1,18 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process'
-import { globSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import {
+	globSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	realpathSync,
+	rmSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
-import { dirname, join, relative, resolve } from 'node:path'
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import ts from 'typescript'
 import { repositoryRoot } from './lib.mjs'
@@ -12,7 +21,11 @@ import { repositoryRoot } from './lib.mjs'
 
 const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'))
 const isFile = (path) => statSync(path, { throwIfNoEntry: false })?.isFile()
-const isTevm = (name) => name === 'tevm' || name.startsWith('@tevm/')
+// Sibling ZEVM packages have their own release train. Pack its native dependency on demand.
+function isPublishable(root, pkg) {
+	const path = relative(realpathSync(root), realpathSync(pkg.dir))
+	return !pkg.manifest.private && path !== '..' && !path.startsWith(`..${sep}`) && !isAbsolute(path)
+}
 const declaration = /\.d\.[cm]?ts$/
 const emitted = /\.(?:[cm]?js|d\.[cm]?ts)$/
 const env = { ...process.env, npm_config_ignore_scripts: 'true', npm_config_update_notifier: 'false' }
@@ -39,7 +52,7 @@ export function workspacePackages(root) {
 		run('pnpm', ['list', '-r', '--depth', '-1', '--json'], root, 'discover workspace packages'),
 	)
 	return entries
-		.filter(({ path }) => relative(root, path) !== '')
+		.filter(({ path }) => realpathSync(root) !== realpathSync(path))
 		.map(({ path }) => ({ dir: path, manifest: readJson(join(path, 'package.json')) }))
 }
 
@@ -191,6 +204,21 @@ function exportProblems(pkg, hasTarget) {
 			return hasTarget(target) ? [] : [`${label}: missing target ${target}`]
 		}),
 	)
+}
+
+function entryProblems(pkg, hasTarget) {
+	const { manifest } = pkg
+	const problems = exportProblems(pkg, hasTarget)
+	const entries = ['main', 'module', 'types'].filter((key) => key in manifest).map((key) => [key, manifest[key]])
+	if (typeof manifest.bin === 'string') entries.push(['bin', manifest.bin])
+	else for (const [name, target] of Object.entries(manifest.bin ?? {})) entries.push([`bin.${name}`, target])
+	for (const [field, path] of entries) {
+		const target = typeof path === 'string' && `./${path.replace(/^\.\//, '')}`
+		if (!target || target.includes('*') || target.includes('//') || !validTarget(target) || !hasTarget(target)) {
+			problems.push(`${manifest.name} ${field}: invalid or missing target ${JSON.stringify(path)}`)
+		}
+	}
+	return problems
 }
 
 function selectCondition(value, conditions) {
@@ -513,7 +541,7 @@ export function verifyStatic(root, packages = workspacePackages(root)) {
 		for (const path of paths) if (path.startsWith(dist) && emitted.test(path)) built.add(path)
 
 		findings.push(
-			...exportProblems(
+			...(isPublishable(root, pkg) ? entryProblems : exportProblems)(
 				pkg,
 				(target) =>
 					hasExportFile(pkg.dir, target) || buildSource(pkg, target) || isWasiBuildOutput(pkg, target, packagesByDir),
@@ -569,7 +597,7 @@ function packPackage(pkg, scratch) {
 	const result = JSON.parse(run('pnpm', ['pack', '--json', '--out', archive], pkg.dir, label))
 	const manifest = JSON.parse(run('tar', ['-xOzf', archive, 'package/package.json'], scratch, `${label} manifest`))
 	const files = result.files.map(({ path }) => path)
-	const problems = exportProblems({ manifest }, (target) => {
+	const problems = entryProblems({ manifest }, (target) => {
 		if (!target.includes('*')) return files.includes(target.slice(2))
 		const pattern = new RegExp(`^${target.slice(2).split('*').map(RegExp.escape).join('.*')}$`)
 		return files.some((path) => pattern.test(path))
@@ -588,8 +616,8 @@ function packPackage(pkg, scratch) {
 }
 
 export function verifyPack(root, packages = workspacePackages(root), tempRoot = tmpdir()) {
-	const publishable = packages.filter(({ manifest }) => !manifest.private && isTevm(manifest.name))
-	const missing = publishable.flatMap((pkg) => exportProblems(pkg, (target) => hasExportFile(pkg.dir, target)))
+	const publishable = packages.filter((pkg) => isPublishable(root, pkg))
+	const missing = publishable.flatMap((pkg) => entryProblems(pkg, (target) => hasExportFile(pkg.dir, target)))
 	if (missing.length) throw new Error(`Build runtime and type outputs before --pack:\n${missing.join('\n')}`)
 
 	const scratch = mkdtempSync(join(tempRoot, 'tevm-publish-smoke-'))
@@ -612,7 +640,7 @@ export function verifyPack(root, packages = workspacePackages(root), tempRoot = 
 			dependencies[name] = `file:./${relative(scratch, pkg.archive)}`
 			for (const field of dependencyFields) {
 				for (const dependency of Object.keys(pkg.manifest[field] ?? {})) {
-					if (isTevm(dependency) || dependency === zevmName) pending.push(dependency)
+					if (archives.has(dependency) || dependency === zevmName) pending.push(dependency)
 				}
 			}
 		}

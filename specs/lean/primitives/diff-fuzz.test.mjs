@@ -6,29 +6,24 @@
 //   ZEVM native   strict JSON-RPC Quantity / Data parsing through the Node-API addon
 //
 // Every case is generated from a fixed seed, so a failure reproduces exactly.
-// Run: node --test specs/lean/primitives/diff-fuzz.test.mjs
+// Run:   node --test specs/lean/primitives/diff-fuzz.test.mjs
+// Setup: Voltaire is read from VOLTAIRE_DIR (default `../voltaire` beside this repository)
+//        and must be built (`dist/`). See ../oracle.mjs for LEAN_SKIP_BUILD and ELAN_HOME.
 
 import assert from 'node:assert/strict'
-import { execFileSync, spawnSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { dirname, join, resolve } from 'node:path'
+import { join } from 'node:path'
 import { test } from 'node:test'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { pathToFileURL } from 'node:url'
+import { buildOracle, REPO_ROOT as repoRoot, VOLTAIRE_TS as voltaireRoot } from '../oracle.mjs'
 
-const here = dirname(fileURLToPath(import.meta.url))
-const repoRoot = resolve(here, '../../..')
-const voltaireRoot = process.env.VOLTAIRE_TS ?? '/Users/williamcory/voltaire/packages/voltaire-ts'
-const leanBin = join(here, '.lake/build/bin/primitives-spec')
+const here = import.meta.dirname
 const SEED = Number(process.env.FUZZ_SEED ?? 0x7e5a_2537)
 
-if (!existsSync(leanBin)) {
-	execFileSync('lake', ['build'], {
-		cwd: here,
-		stdio: 'inherit',
-		env: { ...process.env, PATH: `${process.env.HOME}/.elan/bin:${process.env.PATH}` },
-	})
-}
+// Always an incremental `lake build`: an edited `.lean` file is never tested as a stale binary.
+const leanBin = buildOracle(here, 'primitives-spec')
 
 /** @param {string} path */
 const load = (path) => import(pathToFileURL(path).href)
@@ -254,10 +249,29 @@ test('regression: weiToGwei is exact at and above 2^52 wei (Lean spec and patche
 	}
 })
 
-test('regression: installed Voltaire weiToGwei is exact at and above 2^52 wei', {
-	todo: 'apply upstream/voltaire-weiToGwei-exact.patch in the Voltaire repository',
-}, () => {
-	for (const [wei, expected] of WEI_TO_GWEI_REGRESSIONS) assert.equal(FeeMarket.weiToGwei(wei), expected)
+// UPSTREAM-DELTA(voltaire: `FeeMarket.weiToGwei`, packages/voltaire-ts/src/primitives/FeeMarket/weiToGwei.js).
+// The installed Voltaire computes `(Number(wei) / 1e9).toFixed(9)`, which loses digits from
+// 2^52 wei upward. The exact fix is upstream/voltaire-weiToGwei-exact.patch, verified by the
+// test above. Until Voltaire applies it, the installed function is pinned to its exact
+// current formula: any other answer fails, and an exact answer fails with the instruction
+// to replace this pin by `assert.equal(FeeMarket.weiToGwei(wei), expected)`.
+test('regression: installed Voltaire weiToGwei at and above 2^52 wei is the pinned upstream delta', () => {
+	const lossy = (wei) => (Number(wei) / 1_000_000_000).toFixed(9)
+	const installed = WEI_TO_GWEI_REGRESSIONS.map(([wei]) => FeeMarket.weiToGwei(wei))
+	const exact = WEI_TO_GWEI_REGRESSIONS.map(([, expected]) => expected)
+	assert.notDeepEqual(
+		installed,
+		exact,
+		'Voltaire weiToGwei is now exact: the upstream patch landed. Assert exactness here and delete the patch file.',
+	)
+	assert.deepEqual(
+		installed,
+		WEI_TO_GWEI_REGRESSIONS.map(([wei]) => lossy(wei)),
+	)
+	assert.ok(
+		WEI_TO_GWEI_REGRESSIONS.every(([wei, expected]) => wei < 2n ** 52n || lossy(wei) !== expected),
+		'every regression vector at or above 2^52 wei shows the loss',
+	)
 })
 
 // ---------------------------------------------------------------------------

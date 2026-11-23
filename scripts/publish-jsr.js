@@ -7,9 +7,9 @@
  */
 
 import { execSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { syncJsr } from './prepare-changeset-publish.mjs'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const rootDir = resolve(__dirname, '..')
@@ -39,25 +39,7 @@ function runCommand(command, options = {}) {
 async function publishToJSR() {
 	console.log('Publishing to JSR...')
 
-	// Check if jsr.json exists in the tevm package directory
-	const jsrConfigPath = resolve(rootDir, 'tevm', 'jsr.json')
-	if (!existsSync(jsrConfigPath)) {
-		console.error('Error: jsr.json not found in the tevm directory.')
-		process.exit(1)
-	}
-
-	// Read the current version from main tevm package
-	const tevmPackageJson = JSON.parse(readFileSync(resolve(rootDir, 'tevm', 'package.json'), 'utf8'))
-	const version = tevmPackageJson.version
-	console.log(`Current version: ${version}`)
-
-	// Update jsr.json with the current version
-	const jsrConfig = JSON.parse(readFileSync(jsrConfigPath, 'utf8'))
-	jsrConfig.version = version
-
-	// Write the updated jsr.json back
-	const fs = await import('node:fs/promises')
-	await fs.writeFile(jsrConfigPath, JSON.stringify(jsrConfig, null, 2), 'utf8')
+	syncJsr(rootDir)
 
 	// Install JSR CLI if needed
 	try {

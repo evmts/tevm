@@ -214,3 +214,28 @@ it('keeps read and write overloads distinct across integer widths and ABI order'
 		options,
 	)
 })
+
+it('types unbound actions and their readonly ABI with all overloads and errors', () => {
+	const contract = createContract({
+		humanReadableAbi: [
+			'error Failed()',
+			'function get() view',
+			'function get(uint256) view',
+			'function set()',
+			'function set(uint256)',
+		] as const,
+	})
+	for (const creator of [contract.read.get, contract.write.set]) {
+		expect(creator).not.toHaveProperty('address')
+		expect(creator).not.toHaveProperty('to')
+	}
+	for (const action of [contract.read.get(), contract.write.set()]) {
+		expectTypeOf(action).not.toHaveProperty('address')
+		expectTypeOf(action).not.toHaveProperty('to')
+		expectTypeOf(action.abi).not.toHaveProperty('push')
+		expectTypeOf(action.abi.length).toEqualTypeOf<number>()
+		expect(action.abi.map((item) => item.type)).toEqual(['function', 'function', 'error'])
+		expect(action).not.toHaveProperty('address')
+		expect(action).not.toHaveProperty('to')
+	}
+})

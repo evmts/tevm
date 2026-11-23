@@ -20,7 +20,7 @@ describe('createNextApiHandler native RPC', () => {
 	])('handles %s', async (_name, body, expected) => {
 		const client = createMemoryClient()
 		close.push(() => client.tevmClose())
-		const handler = createNextApiHandler(client)
+		const handler = createNextApiHandler(client, { cors: true })
 		const server = createServer((req, res) => {
 			void handler(req as never, res as never)
 		})
@@ -31,6 +31,7 @@ describe('createNextApiHandler native RPC', () => {
 			method: 'POST',
 			body: body as string,
 		})
+		expect(response.headers.get('access-control-allow-origin')).toBe('*')
 		expect(response.status).toBe(200)
 		expect(response.headers.get('content-type')).toContain('application/json')
 		expect(await response.json()).toEqual(expected)

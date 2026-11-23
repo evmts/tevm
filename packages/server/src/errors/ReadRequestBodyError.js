@@ -8,6 +8,7 @@ import { BaseError } from '@tevm/errors'
  * @property {string} [docsSlug] - Slug for the documentation.
  * @property {string[]} [metaMessages] - Additional meta messages.
  * @property {import('@tevm/errors').BaseError|Error} [cause] - The cause of the error.
+ * @property {'oversized' | 'invalid' | 'read_error'} [kind] - Body failure category.
  * @property {string} [details] - Details of the error.
  * @property {object} [meta] - Optional object containing additional information about the error.
  */
@@ -43,5 +44,6 @@ export class ReadRequestBodyError extends BaseError {
 			},
 			'ReadRequestBodyError',
 		)
+		this.kind = args.kind ?? 'read_error'
 	}
 }

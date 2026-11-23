@@ -27,6 +27,6 @@ export class TevmProvider extends JsonRpcApiProvider {
 	/** Stop ethers polling and release the native engine. @override */
 	destroy() {
 		super.destroy()
-		void this.tevm.tevmClose()
+		void this.tevm.tevmClose().catch(() => {})
 	}
 }

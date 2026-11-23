@@ -13,20 +13,23 @@
 //   node --test specs/lean/protocol/diff-fuzz.test.mjs
 //   PROTOCOL_FUZZ_SEED=123 node --test specs/lean/protocol/diff-fuzz.test.mjs
 //   PROTOCOL_FUZZ_DUMP=/tmp/queries.tsv node --test specs/lean/protocol/diff-fuzz.test.mjs
+//
+// Voltaire is read from VOLTAIRE_DIR (default `../voltaire` beside this repository).
+// See ../oracle.mjs for LEAN_SKIP_BUILD and ELAN_HOME.
 
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { registerHooks, stripTypeScriptTypes } from 'node:module'
-import { dirname, join, resolve } from 'node:path'
+import { join } from 'node:path'
 import { after, before, test } from 'node:test'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { buildOracle, REPO_ROOT as REPO, VOLTAIRE_TS } from '../oracle.mjs'
 
-const HERE = dirname(fileURLToPath(import.meta.url))
-const REPO = resolve(HERE, '../../..')
-const VOLTAIRE = process.env.VOLTAIRE_TS_SRC ?? '/Users/williamcory/voltaire/packages/voltaire-ts/src'
-const ELAN_BIN = process.env.ELAN_BIN ?? '/Users/williamcory/.elan/bin'
-const ORACLE = join(HERE, '.lake/build/bin/protocol-spec')
+const HERE = import.meta.dirname
+const VOLTAIRE = join(VOLTAIRE_TS, 'src')
+/** Path of the compiled oracle, set by the `before` hook's incremental `lake build`. */
+let ORACLE
 const SEED = Number(process.env.PROTOCOL_FUZZ_SEED ?? 0x7e5a0ca)
 
 // Both targets are loaded from source, with no build step:
@@ -466,9 +469,8 @@ const runOracle = (queries) => {
 }
 
 before(async () => {
-	const env = { ...process.env, PATH: `${ELAN_BIN}:${process.env.PATH}` }
-	const build = spawnSync('lake', ['build'], { cwd: HERE, env, encoding: 'utf8' })
-	assert.equal(build.status, 0, `lake build failed:\n${build.stdout}\n${build.stderr}`)
+	// Always an incremental `lake build`: an edited `.lean` file is never tested as a stale binary.
+	ORACLE = buildOracle(HERE, 'protocol-spec')
 
 	await fuzzVoltaire()
 	await fuzzEngine()
@@ -568,23 +570,31 @@ test('oracle answers the normative EIP vectors', () => {
 	)
 })
 
-// Regression for a divergence found while building this harness. EIP-4844 defines
-// `fake_exponential(0, n, d) = 0`; Voltaire's `fakeExponential` clamps a zero
-// result to 1. No protocol caller passes `factor = 0` (the factor is
-// MIN_BASE_FEE_PER_BLOB_GAS = 1), so consensus values are unaffected, and for
-// every `factor >= 1` the two agree (`voltaire/fakeexp` above). Lean pins the
-// normative value; the Voltaire side accepts either 0 or its documented clamp
-// so this test keeps passing when Voltaire drops the clamp.
-test('fake_exponential with factor 0: Lean is normative, Voltaire clamps to 1', async () => {
+// UPSTREAM-DELTA(voltaire: `fakeExponential`, packages/voltaire-ts/src/primitives/FeeMarket/fakeExponential.js).
+// EIP-4844 defines `fake_exponential(0, n, d) = 0`. Voltaire clamps a zero result to 1.
+// No protocol caller passes `factor = 0` (the factor is MIN_BASE_FEE_PER_BLOB_GAS = 1), so
+// consensus values are unaffected, and for every `factor >= 1` the two agree
+// (`voltaire/fakeexp` above, which is why that category never generates `factor = 0`).
+// Both sides are asserted exactly: Lean answers the normative 0, and Voltaire is pinned to
+// its clamp. When Voltaire drops the clamp this test fails: replace `VOLTAIRE_CLAMP` by the
+// normative `0n` and let `voltaire/fakeexp` generate `factor = 0`.
+test('fake_exponential with factor 0: Lean answers the normative 0, Voltaire is pinned to its clamp of 1', async () => {
+	const NORMATIVE = 0n
+	const VOLTAIRE_CLAMP = 1n
 	const { fakeExponential } = await voltaire('primitives/FeeMarket/fakeExponential.js')
 	const inputs = [
 		[0n, 0n, 1n],
 		[0n, 5n, 7n],
 		[0n, 10000000n, 5007716n],
+		[0n, 2n ** 64n, 1n],
 	]
 	assert.deepEqual(
 		runOracle(inputs.map((input) => ['fakeexp', ...input].join('\t'))),
-		inputs.map(() => '0'),
+		inputs.map(() => String(NORMATIVE)),
 	)
-	for (const input of inputs) assert.ok([0n, 1n].includes(fakeExponential(...input)))
+	assert.deepEqual(
+		inputs.map((input) => fakeExponential(...input)),
+		inputs.map(() => VOLTAIRE_CLAMP),
+		'Voltaire fakeExponential(0, n, d) changed. If it now returns 0, the upstream clamp is gone: pin NORMATIVE.',
+	)
 })

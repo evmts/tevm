@@ -15,8 +15,11 @@ export type CallParams = {
 	maxPriorityFeePerGas?: bigint
 	nonce?: bigint
 	blockTag?: string
+	/** Runtime bytecode to simulate at the destination. Addressless simulations use the zero address. */
+	code?: Hex
 	stateOverride?: Record<string, JsonValue>
 	addToMempool?: boolean
+	/** Require a mined, successful receipt. A pending or reverted transaction throws with its hash. */
 	addToBlockchain?: boolean
 }
 /** Simulation output or the hash of a submitted transaction. */

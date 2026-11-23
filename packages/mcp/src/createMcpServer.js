@@ -1,5 +1,6 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
+import manifest from '../package.json' with { type: 'json' }
 import { createSessionManager } from './createSessionManager.js'
 import { executeTool } from './executeTool.js'
 import { toJsonValue } from './toJsonValue.js'
@@ -23,13 +24,14 @@ import { toolDefinitions } from './toolDefinitions.js'
 export const createMcpServer = (options = {}) => {
 	const sessions = createSessionManager(options)
 	const server = new Server(
-		{ name: 'tevm-mcp', version: '1.0.0-rc.151' },
+		{ name: 'tevm-mcp', version: manifest.version },
 		{
 			capabilities: { tools: {} },
 			instructions:
 				'Create or fork a session first, then pass its handle to every EVM tool. Sessions are isolated and expire after 30 idle minutes by default.',
 		},
 	)
+	server.onclose = () => sessions.closeAll().catch((error) => server.onerror?.(error))
 	server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: toolDefinitions }))
 	server.setRequestHandler(CallToolRequestSchema, async (request) => {
 		try {

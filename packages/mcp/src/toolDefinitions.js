@@ -10,7 +10,7 @@ const descriptions = {
 	evm_close_session:
 		'Close an EVM session when its state is no longer needed. Use this to release memory before creating more sessions.',
 	evm_call_contract:
-		'Read a contract without changing state. Use an ABI or one human-readable function signature. Returns decoded output, raw output, and a gas estimate.',
+		'Read a contract without changing state. Use an ABI or one human-readable function signature. Returns decoded and raw output.',
 	evm_send_transaction:
 		'Execute a state-changing contract function and add it to the session txpool. Use evm_mine afterward to commit it. Returns a gas estimate and transaction hash. Read the mined receipt for actual gas use and logs.',
 	evm_deploy_contract:

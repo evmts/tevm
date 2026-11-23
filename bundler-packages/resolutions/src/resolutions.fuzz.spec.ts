@@ -284,6 +284,19 @@ const expectedRemap = (specifier: string, remappings: ReadonlyArray<Remapping>) 
 	return match ? posix.resolve(`${match.dir}${specifier.slice(match.prefix.length)}`) : undefined
 }
 
+/** Oracle: a remapped specifier must stay inside its target (a directory, or a bare string prefix) */
+const escapesRemapping = (specifier: string, remappings: ReadonlyArray<Remapping>) => {
+	const match = remappings
+		.filter(({ prefix }) => specifier.startsWith(prefix))
+		.sort((a, b) => b.prefix.length - a.prefix.length)[0]
+	if (!match) return false
+	const rest = specifier.slice(match.prefix.length)
+	const root = posix.resolve(match.dir)
+	const target = posix.resolve(`${match.dir}${rest}`)
+	if (target === root || target.startsWith(`${root}/`)) return false
+	return match.dir.endsWith('/') || rest.startsWith('/') || !target.startsWith(root)
+}
+
 /**
  * Finds the import specifier for an edge. Remapped specifiers are only used when the
  * oracle agrees the remapping lands on the target file, otherwise the edge is relative.
@@ -596,14 +609,17 @@ describe('resolveImportPath fuzz', { timeout: 60_000 }, () => {
 			},
 			async ({ remappings, shuffled, specifier, sync }) => {
 				const expected = expectedRemap(specifier, remappings)
-				const resolve = (record: Record<string, string>) => {
-					const effect = resolveImportPath('/project/src/Entry.sol', specifier, record, [], sync)
-					return sync ? runSync(effect) : runPromise(effect)
+				const resolve = async (record: Record<string, string>) => {
+					const effect = either(resolveImportPath('/project/src/Entry.sol', specifier, record, [], sync))
+					const result = sync ? runSync(effect) : await runPromise(effect)
+					return result._tag === 'Right' ? result.right : `error:${result.left._tag}`
 				}
 				const resolved = await resolve(toRecord(remappings))
-				expect(resolved).toBe(expected)
-				expect(await resolve(toRecord(shuffled))).toBe(expected)
+				// Imports that climb out of their remapping target are rejected
+				expect(resolved).toBe(escapesRemapping(specifier, remappings) ? 'error:CouldNotResolveImportError' : expected)
+				expect(await resolve(toRecord(shuffled))).toBe(resolved)
 				expect(await resolve(toRecord(remappings))).toBe(resolved)
+				if (resolved.startsWith('error:')) return
 				expect(posix.isAbsolute(resolved)).toBe(true)
 				expect(resolved).not.toContain('\\')
 			},

@@ -38,3 +38,5 @@ Visit [tevm.sh](https://tevm.sh/) for full documentation.
 ## License
 
 [MIT](./LICENSE)
+
+Read and write actions include `address` and `to` when a contract address is configured. Their readonly ABI contains the matching function overloads and the contract’s custom errors.

@@ -9,14 +9,15 @@ import '../tevm/PACKAGE.js'
 // Sibling workspaces must exist before pnpm resolves workspace dependencies.
 // Raw steps keep that ordering explicit while the pinned Flows renderer still
 // owns every workflow file and the shared toolchain setup action.
-const nativeSteps = (command: string): NonNullable<Parameters<typeof S.Github.Workflow>[0]['steps']> => [
-	{ uses: 'actions/checkout@v5', with: { 'fetch-depth': '0' } },
+type Steps = NonNullable<Parameters<typeof S.Github.Workflow>[0]['steps']>
+const nativeSetup = (ref?: string): Steps => [
+	{ uses: 'actions/checkout@v5', with: { 'fetch-depth': '0', ...(ref ? { ref } : {}) } },
 	{ name: 'Checkout pinned native sources', run: 'node scripts/factory/checkout-native.mjs' },
 	{ uses: './.github/actions/setup' },
-	{ run: command },
 ]
+const nativeSteps = (command: string): Steps => [...nativeSetup(), { run: command }]
 const releaseSteps: NonNullable<Parameters<typeof S.Github.Workflow>[0]['steps']> = [
-	...nativeSteps('pnpm exec changeset status'),
+	...nativeSetup(),
 	{
 		name: 'Create version PR or publish approved packages',
 		uses: 'changesets/action@v1',
@@ -25,6 +26,7 @@ const releaseSteps: NonNullable<Parameters<typeof S.Github.Workflow>[0]['steps']
 			GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}',
 			NPM_TOKEN: '${{ secrets.NPM_TOKEN }}',
 			NODE_AUTH_TOKEN: '${{ secrets.NPM_TOKEN }}',
+			NPM_CONFIG_PROVENANCE: 'true',
 		},
 	},
 ]
@@ -98,10 +100,7 @@ const prerelease = S.Github.Workflow({
 	steps: releaseSteps,
 })
 
-// prerelease-exit.yml: dispatch with a branch input; the Diff removes
-// pre.json. The current Flows workflow renderer does not yet model committing
-// generated changes, so the checked-in workflow remains authoritative for
-// that final commit step.
+// Request a reviewed prerelease exit against the selected release branch.
 const prereleaseExit = S.Github.Workflow({
 	name: 'prerelease-exit',
 	on: {
@@ -116,9 +115,23 @@ const prereleaseExit = S.Github.Workflow({
 			},
 		},
 	},
-	permissions: { contents: 'write' },
+	permissions: { contents: 'write', pullRequests: 'write' },
 	setup,
-	steps: nativeSteps('pnpm exec smthrs target //:prereleaseExit --write'),
+	steps: [
+		...nativeSetup('${{ inputs.branch }}'),
+		{ run: 'pnpm exec smthrs target //:prereleaseExit --write' },
+		{
+			name: 'Open prerelease exit for review',
+			uses: 'peter-evans/create-pull-request@v7',
+			with: {
+				base: '${{ inputs.branch }}',
+				branch: 'automation/prerelease-exit-${{ github.run_id }}',
+				'add-paths': '.changeset/pre.json',
+				title: 'Exit Changesets prerelease mode',
+				'commit-message': 'chore: exit prerelease mode',
+			},
+		},
+	],
 })
 
 // snapshot.yml: dispatch-only snapshot publish.
@@ -127,7 +140,13 @@ const snapshot = S.Github.Workflow({
 	on: { workflowDispatch: true },
 	concurrency: { group: 'snapshot-${{ github.ref }}', cancelInProgress: false },
 	setup,
-	env: rpcEnvironment,
+	permissions: { contents: 'read', idToken: 'write' },
+	env: {
+		...rpcEnvironment,
+		NPM_TOKEN: '${{ secrets.NPM_TOKEN }}',
+		GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}',
+		NPM_CONFIG_PROVENANCE: 'true',
+	},
 	steps: nativeSteps('pnpm exec smthrs target //:snapshot'),
 })
 
@@ -149,7 +168,11 @@ const jsrPublish = S.Github.Workflow({
 	},
 	permissions: { contents: 'read', idToken: 'write' },
 	setup,
-	steps: nativeSteps('pnpm exec smthrs target //tevm:publishJsr'),
+	steps: [
+		...nativeSetup(),
+		{ if: '${{ inputs.dry_run }}', run: 'pnpm exec smthrs target //tevm:publishJsrDryRun' },
+		{ if: '${{ !inputs.dry_run }}', run: 'pnpm exec smthrs target //tevm:publishJsr' },
+	],
 })
 
 // wasm-size-check.yml: the byte budget on the napi/wasm artifacts. The yml
@@ -225,27 +248,24 @@ const benchmarks = S.Github.Workflow({
 // //:prReview reads as its prompt. Factory intake and settlement remain
 // hand-written because they use a two-job approval/artifact boundary the
 // current renderer cannot express.
-const github = S.Github.CiGen({
-	workflows: [
-		benchmarks,
-		ci,
-		release,
-		prerelease,
-		prereleaseExit,
-		snapshot,
-		jsrPublish,
-		wasmSize,
-		paritySuites,
-		nightlyConformance,
-		review,
-	],
-	preserve: [
+// The pinned renderer interpolates cache inputs directly into a shell program.
+// Use its graph renderer with a local composite-action adapter until upstream
+// supports step env and a separate setup-node version file.
+const github = S.Generate({
+	bin: S.Runtime.bin,
+	args: [
+		'scripts/factory/render-github.mjs',
 		'workflows/claude.yml',
 		'workflows/claude-auto-update.yml',
 		'workflows/claude-code-review.yml',
 		'workflows/factory-configure.yml',
 		'workflows/factory-intake.yml',
 		'workflows/factory-issue.yml',
+	],
+	data: [
+		S.file('//scripts/factory/render-github.mjs'),
+		S.file('//WORKSPACE.ts'),
+		S.Filegroup({ srcs: [S.glob('//**/PACKAGE.ts', { exclude: ['**/node_modules/**', '**/vendor/**'] })] }),
 	],
 	changes: ['workflows/**', 'actions/setup/**'],
 })

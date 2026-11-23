@@ -1,3 +1,4 @@
+import { format } from 'node:util'
 import { encodeAbiParameters, getAddress, type Hex, toFunctionSelector } from 'viem'
 import { describe, expect, it } from 'vitest'
 import { decodeHardhatConsoleLog } from './decodeHardhatConsoleLog.js'
@@ -214,28 +215,74 @@ describe('Hardhat console calldata properties', () => {
 			const types = Array.from({ length: draw(4) }, () => pick(draw, scalar))
 			const args = types.map((type) => value(draw, type))
 			const parts = Array.from({ length: draw(10) }, () =>
-				pick(draw, ['%s', '%d', '%i', '%o', '%%', '%q', string(draw)]),
+				pick(draw, ['%s', '%d', '%i', '%f', '%o', '%%', '%q', string(draw)]),
 			)
 			let used = 0
 			const rendered = parts.map((part) => {
 				if (part === '%%') return '%'
-				if (!['%s', '%d', '%i', '%o'].includes(part) || used === args.length) return part
+				if (!['%s', '%d', '%i', '%f', '%o'].includes(part) || used === args.length) return part
 				const arg = args[used++]!
 				if (part === '%o' && typeof arg === 'string') return `'${arg}'`
-				if ((part === '%d' || part === '%i') && typeof arg !== 'bigint') return 'NaN'
-				return String(arg)
+				if (part === '%s' || part === '%o' || typeof arg === 'bigint') return String(arg)
+				// Strings (including addresses) coerce as util.format does. Booleans print NaN.
+				return typeof arg === 'string' ? format(part, arg) : 'NaN'
 			})
 			const trailing = draw(2) ? '%' : ''
-			const format = parts.join('') + trailing
-			const expected = [rendered.join('') + trailing, ...args.slice(used)].join(' ')
+			const format_ = parts.join('') + trailing
+			// util.format returns a lone format string unchanged: %% is not collapsed.
+			const expected = args.length === 0 ? format_ : [rendered.join('') + trailing, ...args.slice(used)].join(' ')
 			const allTypes = ['string', ...types]
 			const signature = `log(${allTypes.join(',')})`
-			const allArgs = [format, ...args]
+			const allArgs = [format_, ...args]
 			expect(decodeHardhatConsoleLog(encode(signature, allTypes, allArgs))).toEqual({
 				signature,
 				args: allArgs,
 				formatted: expected,
 			})
+		})
+	})
+
+	// Regression (Astra R1-53): Node's util.format is the oracle for both cases.
+	it('preserves %% in a format string that has no substitution arguments', () => {
+		expect(decodeHardhatConsoleLog(encode('log(string)', ['string'], ['100%%']))?.formatted).toBe('100%%')
+		cases((draw) => {
+			const text = Array.from({ length: draw(8) }, () =>
+				pick(draw, ['%%', '%', '%s', '%d', '%i', '%f', '%o', string(draw)]),
+			).join('')
+			for (const signature of ['log(string)', 'logString(string)'])
+				expect(decodeHardhatConsoleLog(encode(signature, ['string'], [text]))?.formatted).toBe(format(text))
+		})
+	})
+
+	it('coerces numeric strings for %d, %i and %f instead of printing NaN', () => {
+		const decode = (specifier: string, text: string) =>
+			decodeHardhatConsoleLog(encode('log(string,string)', ['string', 'string'], [specifier, text]))?.formatted
+		expect(decode('%d', '42')).toBe('42')
+		expect(decode('%d', '3.14')).toBe('3.14')
+		expect(decode('%i', '3.14')).toBe('3')
+		expect(decode('%f', '3.14')).toBe('3.14')
+		expect(decode('%d', 'not a number')).toBe('NaN')
+		const digits = '0123456789'
+		cases((draw) => {
+			const integer = Array.from({ length: 1 + draw(12) }, () => pick(draw, [...digits])).join('')
+			const text = pick(draw, [
+				integer,
+				`-${integer}`,
+				`${integer}.${integer}`,
+				`.${integer}`,
+				`${integer}e${draw(20)}`,
+				` ${integer} `,
+				`0x${integer}`,
+				`${integer}px`,
+				'',
+				'-0',
+				'Infinity',
+				string(draw),
+			])
+			for (const specifier of ['%d', '%i', '%f'])
+				expect(decode(`[${specifier}]`, text), `${specifier} ${JSON.stringify(text)}`).toBe(
+					format(`[${specifier}]`, text),
+				)
 		})
 	})
 })

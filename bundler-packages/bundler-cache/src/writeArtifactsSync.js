@@ -24,9 +24,12 @@ const writeFileAtomically = (path, content, fs) => {
  */
 const getSourceMetadata = (resolvedArtifacts, fs) => {
 	return Object.fromEntries(
-		Object.entries(resolvedArtifacts.solcInput?.sources || {}).map(([sourcePath, source]) => {
+		Object.keys(resolvedArtifacts.solcInput?.sources || {}).map((sourcePath) => {
 			const stat = fs.statSync(sourcePath)
-			const content = 'content' in source && typeof source.content === 'string' ? source.content : undefined
+			// Hash the bytes read from disk. The solc input content is the rewritten code solc compiled
+			// (absolute import paths, updated pragma), so it never matches the file on the next read.
+			const rawCode = resolvedArtifacts.modules?.[sourcePath]?.rawCode
+			const content = typeof rawCode === 'string' ? rawCode : undefined
 			return [
 				sourcePath,
 				{

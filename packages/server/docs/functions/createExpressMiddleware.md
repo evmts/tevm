@@ -6,9 +6,9 @@
 
 # Function: createExpressMiddleware()
 
-> **createExpressMiddleware**(`client`): `RequestHandler`\<`ParamsDictionary`, `any`, `any`, `ParsedQs`, `Record`\<`string`, `any`\>\>
+> **createExpressMiddleware**(`client`, `options?`): `RequestHandler`\<`ParamsDictionary`, `any`, `any`, `ParsedQs`, `Record`\<`string`, `any`\>\>
 
-Defined in: [adapters/createExpressMiddleware.js:34](https://github.com/evmts/tevm/blob/main/packages/server/src/adapters/createExpressMiddleware.js#L34)
+Defined in: [packages/server/src/adapters/createExpressMiddleware.js:35](https://github.com/evmts/tevm/blob/main/packages/server/src/adapters/createExpressMiddleware.js#L35)
 
 Creates express middleware for a Tevm JSON-RPC server
 
@@ -17,6 +17,11 @@ Creates express middleware for a Tevm JSON-RPC server
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `client` | [`Client`](../type-aliases/Client.md) | - |
+| `options?` | \{ `cors?`: `boolean`; `maxBatchSize?`: `number`; `maxBodySize?`: `number`; `requestTimeout?`: `number`; \} | HTTP handler options. |
+| `options.cors?` | `boolean` | - |
+| `options.maxBatchSize?` | `number` | - |
+| `options.maxBodySize?` | `number` | - |
+| `options.requestTimeout?` | `number` | - |
 
 ## Returns
 
@@ -33,7 +38,7 @@ const tevm = createMemoryClient()
 
 const app = express()
 app.use(express.json())
-app.use(createExpressMiddleware({ request: tevm.request }))
+app.use(createExpressMiddleware(tevm))
 app.listen(8080, () => console.log('listening on 8080'))
 ```
 

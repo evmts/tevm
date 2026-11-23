@@ -3,6 +3,7 @@ import { createHttpHandler } from '../createHttpHandler.js'
 /**
  * Creates express middleware for a Tevm JSON-RPC server
  * @param {import('../Client.js').Client} client
+ * @param {Parameters<typeof createHttpHandler>[1]} [options] HTTP handler options.
  * @returns {import('express').RequestHandler}
  * @example
  * ```typescript
@@ -14,7 +15,7 @@ import { createHttpHandler } from '../createHttpHandler.js'
  *
  * const app = express()
  * app.use(express.json())
- * app.use(createExpressMiddleware({ request: tevm.request }))
+ * app.use(createExpressMiddleware(tevm))
  * app.listen(8080, () => console.log('listening on 8080'))
  * ```
  *
@@ -31,8 +32,8 @@ import { createHttpHandler } from '../createHttpHandler.js'
  *  const chainId = await client.eth.getChainId()
  *  ```
  */
-export function createExpressMiddleware(client) {
-	const handler = createHttpHandler(client)
+export function createExpressMiddleware(client, options) {
+	const handler = createHttpHandler(client, options)
 	return async (req, res) => {
 		return handler(req, res)
 	}

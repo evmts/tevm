@@ -210,7 +210,8 @@ export function satisfiesRange(version, range) {
  * @returns {string}
  */
 export function resolveWorkspaceRange(spec, targetVersion) {
-	if (spec === 'workspace:*' || spec === 'workspace:^') return `^${targetVersion}`
+	if (spec === 'workspace:*') return targetVersion
+	if (spec === 'workspace:^') return `^${targetVersion}`
 	if (spec === 'workspace:~') return `~${targetVersion}`
 	const explicit = spec.slice('workspace:'.length)
 	return explicit || `^${targetVersion}`
@@ -219,9 +220,10 @@ export function resolveWorkspaceRange(spec, targetVersion) {
 /**
  * Enforce lockstep (`fixed`) versioning in `.changeset/config.json` to prevent #2097 skew.
  * @param {string} repoRoot
+ * @param {WorkspacePackage[]} [packages]
  * @returns {string[]}
  */
-export function validateChangesetLockstep(repoRoot) {
+export function validateChangesetLockstep(repoRoot, packages) {
 	const configPath = join(repoRoot, '.changeset', 'config.json')
 	if (!existsSync(configPath)) return ['Missing .changeset/config.json']
 	const config = JSON.parse(readFileSync(configPath, 'utf8'))
@@ -233,10 +235,22 @@ export function validateChangesetLockstep(repoRoot) {
 		errors.push('.changeset/config.json: "linked" groups allow partial releases and version skew (#2097); use "fixed"')
 	}
 	const hasCoreLockstep = fixed.some(
-		(group) => Array.isArray(group) && group.includes('@tevm/*') && group.includes('tevm'),
+		(group) => Array.isArray(group) && ['@tevm/*', 'tevm', 'tevm-run'].every((name) => group.includes(name)),
 	)
 	if (!hasCoreLockstep) {
-		errors.push('.changeset/config.json: "fixed" must lockstep ["@tevm/*", "tevm", ...] together')
+		errors.push('.changeset/config.json: "fixed" must lockstep ["@tevm/*", "tevm", "tevm-run"] together')
+	}
+	const publicPackages = (packages ?? discoverWorkspacePackages(repoRoot)).filter(
+		({ pkg, relDir }) => !pkg.private && !relDir.startsWith('..'),
+	)
+	for (const group of fixed) {
+		if (!Array.isArray(group)) continue
+		const members = publicPackages.filter(
+			({ pkg }) => typeof pkg.name === 'string' && group.some((pattern) => matchesGlob(pkg.name, pattern)),
+		)
+		if (new Set(members.map(({ pkg }) => pkg.version)).size > 1) {
+			errors.push(`Fixed group version skew: ${members.map(({ pkg }) => `${pkg.name}@${pkg.version}`).join(', ')}`)
+		}
 	}
 	return errors
 }
@@ -482,6 +496,31 @@ export function validateCrossPackageSymbols(allPackages) {
 	})
 }
 
+/** Derive the JSR import map from the facade's npm dependency ranges. */
+function jsrImports(pkg) {
+	return Object.fromEntries(
+		Object.entries({ ...pkg.peerDependencies, ...pkg.dependencies })
+			.filter(([name]) => name.startsWith('@tevm/') || name === 'viem')
+			.map(([name, spec]) => [
+				name,
+				`npm:${name}@${spec.startsWith('workspace:') ? resolveWorkspaceRange(spec, pkg.version) : spec}`,
+			]),
+	)
+}
+
+/** Refresh release metadata while retaining non-TEVM import aliases. */
+export function syncJsr(repoRoot) {
+	const path = join(repoRoot, 'tevm/jsr.json')
+	const pkg = JSON.parse(readFileSync(join(repoRoot, 'tevm/package.json'), 'utf8'))
+	const jsr = JSON.parse(readFileSync(path, 'utf8'))
+	jsr.version = pkg.version
+	jsr.imports = {
+		...Object.fromEntries(Object.entries(jsr.imports ?? {}).filter(([name]) => !name.startsWith('@tevm/'))),
+		...jsrImports(pkg),
+	}
+	writeFileSync(path, `${JSON.stringify(jsr, null, 2)}\n`)
+}
+
 /**
  * Validate `tevm` facade parity across `package.json`, `jsr.json`, `index.d.{ts,cts}`, and `typedoc.json`.
  * @param {string} repoRoot
@@ -498,6 +537,14 @@ export function validateTevmFacade(repoRoot) {
 		const jsr = JSON.parse(readFileSync(join(tevmDir, 'jsr.json'), 'utf8'))
 		if (jsr.version !== pkg.version) {
 			errors.push(`tevm/jsr.json: version "${jsr.version}" !== tevm/package.json "${pkg.version}"`)
+		}
+		const expectedImports = jsrImports(pkg)
+		for (const name of new Set([
+			...Object.keys(expectedImports),
+			...Object.keys(jsr.imports ?? {}).filter((key) => key.startsWith('@tevm/')),
+		])) {
+			if (jsr.imports?.[name] !== expectedImports[name])
+				errors.push(`tevm/jsr.json: stale import for ${name}; run --sync-jsr`)
 		}
 		const pkgSubpaths = Object.keys(pkg.exports ?? {})
 			.filter((k) => k !== './package.json')
@@ -559,7 +606,7 @@ export function findStrayTarballs(repoRoot) {
 }
 
 /**
- * Plan `@evmts/*` sibling resolution rewrites (`workspace:*` -> `^0.1.0`) and mark sibling manifests private.
+ * Plan `@evmts/*` sibling resolution rewrites (`workspace:*` -> `0.1.0`) and mark sibling manifests private.
  * @param {WorkspacePackage[]} allPackages
  * @param {string} repoRoot
  * @returns {{ edits: PlannedFileEdit[], rewrites: ExternalRewrite[], errors: string[] }}
@@ -638,7 +685,7 @@ export function planZevmPublishResolution(allPackages, repoRoot) {
 }
 
 /**
- * Verify rewritten external dependencies (such as `@evmts/zevm@^0.1.0`) actually exist on npm.
+ * Verify rewritten external dependencies (such as `@evmts/zevm@0.1.0`) actually exist on npm.
  * @param {ExternalRewrite[]} rewrites
  * @param {{ registryUrl?: string, fetchImpl?: typeof fetch }} [options]
  * @returns {Promise<string[]>}
@@ -782,7 +829,7 @@ export async function runPublishPrep({
 
 	/** @type {string[]} */
 	const errors = [
-		...validateChangesetLockstep(repoRoot),
+		...validateChangesetLockstep(repoRoot, allPackages),
 		...validatePackageManifests(allPackages, { repoRoot, checkDist, expectedViemRange }),
 		...commonResult.errors,
 		...validateCrossPackageSymbols(allPackages),
@@ -836,7 +883,7 @@ export async function runPublishPrep({
  */
 export function parseCliArgs(argv, env = process.env) {
 	const isCi = env.GITHUB_ACTIONS === 'true'
-	/** @type {'dry-run' | 'apply' | 'restore'} */
+	/** @type {'dry-run' | 'apply' | 'restore' | 'sync-jsr'} */
 	let mode = isCi ? 'apply' : 'dry-run'
 	let checkDist = isCi
 	let checkRegistry = isCi
@@ -848,6 +895,7 @@ export function parseCliArgs(argv, env = process.env) {
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i]
 		if (arg === '--dry-run') mode = 'dry-run'
+		else if (arg === '--sync-jsr') mode = 'sync-jsr'
 		else if (arg === '--apply') mode = 'apply'
 		else if (arg === '--restore') mode = 'restore'
 		else if (arg === '--check-dist') checkDist = true
@@ -866,6 +914,10 @@ const isDirectRun = process.argv[1] && resolve(process.argv[1]) === resolve(file
 
 if (isDirectRun) {
 	const opts = parseCliArgs(process.argv.slice(2))
+	if (opts.mode === 'sync-jsr') {
+		syncJsr(opts.repoRoot)
+		process.exit(0)
+	}
 	const result = await runPublishPrep(opts)
 	if (opts.mode === 'restore') {
 		console.log(`Restored ${result.restored} manifest(s).`)

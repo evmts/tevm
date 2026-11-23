@@ -50,6 +50,21 @@ describe('writeArtifacts', () => {
 				'/mock/cwd/contracts/AnotherContract.sol': { content: 'contract AnotherContract {}' },
 			},
 		},
+		// rawCode is the file on disk; solcInput content is the rewritten code solc compiled
+		modules: {
+			'/mock/cwd/contracts/MyContract.sol': {
+				id: '/mock/cwd/contracts/MyContract.sol',
+				rawCode: 'raw contract MyContract {}',
+				code: 'contract MyContract {}',
+				importedIds: [],
+			},
+			'/mock/cwd/contracts/AnotherContract.sol': {
+				id: '/mock/cwd/contracts/AnotherContract.sol',
+				rawCode: 'raw contract AnotherContract {}',
+				code: 'contract AnotherContract {}',
+				importedIds: [],
+			},
+		},
 	}
 
 	beforeEach(() => {
@@ -95,12 +110,12 @@ describe('writeArtifacts', () => {
 				'/mock/cwd/contracts/MyContract.sol': {
 					mtimeMs: 123456789,
 					size: 22,
-					contentHash: cacheHash('contract MyContract {}'),
+					contentHash: cacheHash('raw contract MyContract {}'),
 				},
 				'/mock/cwd/contracts/AnotherContract.sol': {
 					mtimeMs: 123456789,
 					size: 22,
-					contentHash: cacheHash('contract AnotherContract {}'),
+					contentHash: cacheHash('raw contract AnotherContract {}'),
 				},
 			},
 		}

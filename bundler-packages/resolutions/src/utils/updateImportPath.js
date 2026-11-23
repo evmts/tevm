@@ -1,28 +1,23 @@
 import { succeed } from 'effect/Effect'
-import { maskBlockComments } from './maskBlockComments.js'
+import { scanSolidityImports } from './scanSolidityImports.js'
 
 /**
- * Replaces the path of every import statement outside of block comments.
- * Uses the same comment masking as `resolveImports`, so both agree on what an import is.
+ * Replaces the path of every import statement found by `scanSolidityImports`.
+ * Uses the same scanner as `resolveImports`, so both agree on what an import is.
  * @param {string} code Source code to update
  * @param {(importPath: string) => string | undefined} getReplacement Returns the new path, or undefined to keep the path
  * @returns {string} The updated source code
  */
 const replaceImportPaths = (code, getReplacement) => {
-	// The closing quote must match the opening quote: `import "./it's/A.sol"` is one path
-	const solidityImportRegex = /(^\s*import\b\s+[^'"]*(['"]))((?:(?!\2).)*)\2/gm
 	let updated = ''
 	let lastIndex = 0
-	// Masking keeps offsets, so matches found in the masked code index into the original code
-	for (const match of maskBlockComments(code).matchAll(solidityImportRegex)) {
-		const [, prefix, , importPath] = /** @type {[string, string, string, string]} */ (/** @type {unknown} */ (match))
-		const replacement = getReplacement(importPath)
+	for (const { path, start, end } of scanSolidityImports(code)) {
+		const replacement = getReplacement(path)
 		if (replacement === undefined) {
 			continue
 		}
-		const start = match.index + prefix.length
 		updated += `${code.slice(lastIndex, start)}${replacement}`
-		lastIndex = start + importPath.length
+		lastIndex = end
 	}
 	return `${updated}${code.slice(lastIndex)}`
 }

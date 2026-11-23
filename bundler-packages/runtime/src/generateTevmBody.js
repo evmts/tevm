@@ -1,7 +1,8 @@
 import { formatAbi } from 'abitype'
 import { succeed } from 'effect/Effect'
 import { generateDtsBody } from './generateTevmBodyDts.js'
-import { needsExportAlias } from './needsExportAlias.js'
+import { planContractBindings } from './planContractBindings.js'
+import { toObjectLiteral } from './toObjectLiteral.js'
 
 /** @param {string | null | undefined} value */
 const escapeJSDoc = (value) =>
@@ -53,30 +54,35 @@ export const generateTevmBody = (artifacts, moduleType, includeBytecode) => {
 		return generateDtsBody(artifacts, includeBytecode)
 	}
 
+	const { exportsArtifacts, contracts } = planContractBindings(Object.keys(artifacts), ['_'])
+	const artifactsLiteral = toObjectLiteral(artifacts)
+
 	// Generate JavaScript/TypeScript code for the contracts
 	return succeed(
-		Object.entries(artifacts)
-			.flatMap(([contractName, { abi, userdoc = {}, evm }], i) => {
+		Object.values(artifacts)
+			.flatMap(({ abi, userdoc = {}, evm }, i) => {
+				const {
+					name: contractName,
+					binding,
+					aliased,
+					locals,
+				} = /** @type {import('./planContractBindings.js').ContractBindings} */ (contracts[i])
+				const config = /** @type {string} */ (locals['_'])
 				// Create the contract configuration object
-				const contract = JSON.stringify(
-					{
-						name: contractName,
-						humanReadableAbi: formatAbi(abi),
-						// Include bytecode if requested and available (checking for empty string for interfaces)
-						...(includeBytecode
-							? {
-									bytecode:
-										evm?.bytecode?.object && evm.bytecode.object !== '' ? `0x${evm.bytecode.object}` : undefined,
-									deployedBytecode:
-										evm?.deployedBytecode?.object && evm.deployedBytecode.object !== ''
-											? `0x${evm.deployedBytecode.object}`
-											: undefined,
-								}
-							: {}),
-					},
-					null,
-					2,
-				)
+				const contract = toObjectLiteral({
+					name: contractName,
+					humanReadableAbi: formatAbi(abi),
+					// Include bytecode if requested and available (checking for empty string for interfaces)
+					...(includeBytecode
+						? {
+								bytecode: evm?.bytecode?.object && evm.bytecode.object !== '' ? `0x${evm.bytecode.object}` : undefined,
+								deployedBytecode:
+									evm?.deployedBytecode?.object && evm.deployedBytecode.object !== ''
+										? `0x${evm.deployedBytecode.object}`
+										: undefined,
+							}
+						: {}),
+				})
 
 				// Generate JSDoc documentation from NatSpec comments
 				const natspec = Object.entries(userdoc.methods ?? {}).map(
@@ -93,41 +99,45 @@ export const generateTevmBody = (artifacts, moduleType, includeBytecode) => {
 				natspec.unshift('/**')
 				natspec.push(' */')
 
+				const emitArtifacts = i === 0 && exportsArtifacts
+
 				// Generate CommonJS format
 				if (moduleType === 'cjs') {
+					// Assigning `module.exports.__proto__` would replace the prototype of `exports`
+					const exportCjs =
+						contractName === '__proto__'
+							? `Object.defineProperty(module.exports, '__proto__', { value: createContract(${config}), enumerable: true, writable: true, configurable: true });`
+							: `module.exports.${contractName} = createContract(${config});`
 					return [
-						`const _${contractName} = ${contract};`,
+						`const ${config} = ${contract};`,
 						...natspec,
-						`module.exports.${contractName} = createContract(_${contractName});`,
-						i === 0 ? `module.exports.artifacts = ${JSON.stringify(artifacts, null, 2)};` : '',
+						exportCjs,
+						emitArtifacts ? `module.exports.artifacts = ${artifactsLiteral};` : '',
 					]
 				}
 
 				// Reserved words such as `class` are valid Solidity contract names but cannot be
 				// declared with `export const`. Declare them under an internal name and alias the export.
-				const exportContract = needsExportAlias(contractName)
-					? [
-							`const _tevm_${contractName} = createContract(_${contractName});`,
-							`export { _tevm_${contractName} as ${contractName} };`,
-						]
-					: [`export const ${contractName} = createContract(_${contractName});`]
+				const exportContract = aliased
+					? [`const ${binding} = createContract(${config});`, `export { ${binding} as ${contractName} };`]
+					: [`export const ${contractName} = createContract(${config});`]
 
 				// Generate TypeScript format with const assertion
 				if (moduleType === 'ts') {
 					return [
-						`const _${contractName} = ${contract} as const`,
+						`const ${config} = ${contract} as const`,
 						...natspec,
 						...exportContract,
-						i === 0 ? `export const artifacts = ${JSON.stringify(artifacts, null, 2)};` : '',
+						emitArtifacts ? `export const artifacts = ${artifactsLiteral};` : '',
 					]
 				}
 
 				// Generate ES module format
 				return [
-					`const _${contractName} = ${contract};`,
+					`const ${config} = ${contract};`,
 					...natspec,
 					...exportContract,
-					i === 0 ? `export const artifacts = ${JSON.stringify(artifacts, null, 2)};` : '',
+					emitArtifacts ? `export const artifacts = ${artifactsLiteral};` : '',
 				]
 			})
 			.join('\n'),

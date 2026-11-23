@@ -27,6 +27,24 @@ export class CouldNotResolveImportError extends Error {
 }
 
 /**
+ * Returns whether a remapped import stays inside its remapping target.
+ * `key/../../etc/passwd` must not escape `value`. A target without a trailing
+ * separator is a plain string prefix, as in solc, so `value` + `rest` must still start with it.
+ * @param {string} value Remapping target
+ * @param {string} rest Import path after the remapping key
+ * @param {string} target Resolved, formatted import path
+ * @returns {boolean}
+ */
+const isWithinRemappingTarget = (value, rest, target) => {
+	const root = formatPath(pathResolve(value))
+	if (target === root) return true
+	const rootDir = root.endsWith('/') ? root : `${root}/`
+	if (target.startsWith(rootDir)) return true
+	const isDirectoryTarget = /[\\/]$/.test(value) || /^[\\/]/.test(rest)
+	return !isDirectoryTarget && target.startsWith(root)
+}
+
+/**
  * Resolve import statement to absolute file path
  *
  * @param {string} importPath import statement in *.sol contract
@@ -46,7 +64,18 @@ export const resolveImportPath = (absolutePath, importPath, remappings, libs, sy
 		if (importPath.startsWith(key)) {
 			// Do not use String.prototype.replace here: `$&`, `$'` and friends in the
 			// remapping target would be interpreted as replacement patterns.
-			return succeed(formatPath(pathResolve(`${value}${importPath.slice(key.length)}`)))
+			const rest = importPath.slice(key.length)
+			const target = formatPath(pathResolve(`${value}${rest}`))
+			if (!isWithinRemappingTarget(value, rest, target)) {
+				return fail(
+					new CouldNotResolveImportError(
+						importPath,
+						absolutePath,
+						new Error(`Import ${importPath} escapes remapping target ${value} for prefix ${key}`),
+					),
+				)
+			}
+			return succeed(target)
 		}
 	}
 	// Local import "./LocalContract.sol"
@@ -57,10 +86,12 @@ export const resolveImportPath = (absolutePath, importPath, remappings, libs, sy
 	if (sync) {
 		return trySync({
 			try: () =>
-				resolve.sync(importPath, {
-					basedir: dirname(absolutePath),
-					paths: libs,
-				}),
+				formatPath(
+					resolve.sync(importPath, {
+						basedir: dirname(absolutePath),
+						paths: libs,
+					}),
+				),
 			catch: (e) => new CouldNotResolveImportError(importPath, absolutePath, /** @type {Error}*/ (e)),
 		})
 	}

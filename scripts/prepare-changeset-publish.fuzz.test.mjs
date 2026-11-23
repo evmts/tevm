@@ -271,7 +271,7 @@ property(
 				const { field, spec } = styles[i]
 				assert.equal(
 					JSON.parse(readFileSync(entry.manifestPath))[field]['@evmts/lib'],
-					spec === 'workspace:~' ? '~2.1.0' : '^2.1.0',
+					{ 'workspace:*': '2.1.0', 'workspace:~': '~2.1.0', 'workspace:^': '^2.1.0' }[spec],
 				)
 			}
 			assert.equal(JSON.parse(readFileSync(sibling.manifestPath)).private, true)

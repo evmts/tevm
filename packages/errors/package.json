@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/errors",
-	"version": "1.0.0-rc.151",
+	"version": "1.0.0-rc.153",
 	"private": false,
 	"description": "Structured JSON-RPC, EVM, and client error classes for Tevm",
 	"keywords": [

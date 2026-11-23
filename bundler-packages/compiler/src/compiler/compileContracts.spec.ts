@@ -323,3 +323,42 @@ describe('compileContract', () => {
 		expect(mockSolcWithErrors.compile).toHaveBeenCalled()
 	})
 })
+
+describe('compileContract module raw code', () => {
+	it('keeps the disk bytes in rawCode while solc receives the rewritten code', async () => {
+		const { mkdtempSync, rmSync, writeFileSync } = await import('node:fs')
+		const { tmpdir } = await import('node:os')
+		const basedir = mkdtempSync(join(tmpdir(), 'tevm-rawcode-'))
+		try {
+			writeFileSync(join(basedir, 'A.sol'), 'pragma solidity ^0.8.0;\nimport "./B.sol";\ncontract A is B {}\n')
+			writeFileSync(join(basedir, 'B.sol'), 'pragma solidity ^0.8.0;\ncontract B {}\n')
+			const config: ResolvedCompilerConfig = {
+				jsonAsConst: [],
+				cacheDir: '.tevm',
+				foundryProject: false,
+				libs: [],
+				remappings: {},
+			}
+			const fao: FileAccessObject = {
+				existsSync,
+				readFile,
+				readFileSync,
+				exists: async (path: string) => existsSync(path),
+			}
+			const logger = { error: vi.fn(), warn: vi.fn(), info: vi.fn(), log: vi.fn() }
+			const result = await compileContract('./A.sol', basedir, config, false, false, fao, logger, require('solc'))
+			const ids = Object.keys(result.modules)
+			expect(ids.length).toBe(2)
+			for (const id of ids) {
+				// bundler-cache hashes rawCode, so it must equal the file it later re-reads
+				expect(result.modules[id]?.rawCode).toBe(readFileSync(id, 'utf8'))
+			}
+			const entry = ids.find((id) => id.endsWith('/A.sol')) as string
+			expect((result.solcInput?.sources[entry] as { content?: string } | undefined)?.content).not.toBe(
+				result.modules[entry]?.rawCode,
+			)
+		} finally {
+			rmSync(basedir, { recursive: true, force: true })
+		}
+	})
+})

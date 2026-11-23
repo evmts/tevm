@@ -195,9 +195,24 @@ jobs:
           cd "$RUNNER_TEMP/factory-candidate"
           sha256sum --check candidate.patch.sha256
           cd "$GITHUB_WORKSPACE"
-          git apply --check "$RUNNER_TEMP/factory-candidate/candidate.patch"
-          git apply "$RUNNER_TEMP/factory-candidate/candidate.patch"
-          git diff --check
+          patch="$RUNNER_TEMP/factory-candidate/candidate.patch"
+          # Inspect the proposed index against the trusted checkout before any
+          # candidate files enter the working tree or any repository code runs.
+          git apply --cached "$patch"
+          if ! git diff --cached --quiet HEAD -- .github scripts/factory; then
+            echo "Candidate changes protected workflow or factory files" >&2
+            exit 1
+          fi
+          if ! git diff --cached --quiet HEAD -- package.json; then
+            git show HEAD:package.json | jq -cSe '.scripts' > "$RUNNER_TEMP/base-scripts.json"
+            git show :package.json | jq -cSe '.scripts' > "$RUNNER_TEMP/candidate-scripts.json"
+            if ! cmp -s "$RUNNER_TEMP/base-scripts.json" "$RUNNER_TEMP/candidate-scripts.json"; then
+              echo "Candidate changes protected root package scripts" >&2
+              exit 1
+            fi
+          fi
+          git diff --cached --check
+          git apply "$patch"
 
       - name: Checkout pinned native sources
         run: node scripts/factory/checkout-native.mjs

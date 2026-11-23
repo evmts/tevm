@@ -58,7 +58,13 @@ export type ReadActionCreator<
 	) => {
 		functionName: TFunctionName
 		humanReadableAbi: FormatAbi<[ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'pure' | 'view'>]>
-		abi: [ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'pure' | 'view'>]
+		abi: readonly [
+			ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'pure' | 'view'>,
+			...(
+				| ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'pure' | 'view'>
+				| Extract<ParseAbi<THumanReadableAbi>[number], { type: 'error' }>
+			)[],
+		]
 	} & (TCode extends undefined ? {} : { code: TCode }) &
 		(TArgs['length'] extends 0
 			? {}
@@ -68,7 +74,7 @@ export type ReadActionCreator<
 		TAddressArgs) & {
 		functionName: TFunctionName
 		humanReadableAbi: FormatAbi<[ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'pure' | 'view'>]>
-		abi: [ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'pure' | 'view'>]
+		abi: readonly [ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'pure' | 'view'>]
 	} & (TCode extends undefined ? {} : { code: TCode }) &
 		TAddressArgs
 }

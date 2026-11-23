@@ -224,3 +224,18 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol"
 		})
 	})
 })
+
+describe('resolveImports lexical scanning', () => {
+	const originals = (code: string) =>
+		runSync(resolveImports('/project/src/C.sol', code, {}, [], true)).map((i) => i.original)
+
+	it('resolves an import after a line comment containing /*', () => {
+		expect(originals('// /*\nimport "./A.sol";')).toEqual(['./A.sol'])
+	})
+
+	it('resolves several imports on one line and after a pragma', () => {
+		expect(
+			originals('pragma solidity ^0.8.0; import "./A.sol"; import * as X from "./B.sol"; import { C } from "./C.sol";'),
+		).toEqual(['./A.sol', './B.sol', './C.sol'])
+	})
+})

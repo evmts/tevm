@@ -86,3 +86,26 @@ it('enforces maxBodySize when trailing incomplete UTF-8 bytes flush on stream en
 	stream.end(Buffer.from([0xc0]))
 	expect(await result).toBeInstanceOf(ReadRequestBodyError)
 })
+
+it.each(['aborted', 'close'])('settles a partial stream on %s and absorbs late errors', async (event) => {
+	const stream = new PassThrough()
+	const body = getRequestBody(stream as never)
+	stream.write('{')
+	stream.emit(event)
+	expect(await body).toMatchObject({ kind: 'read_error' })
+	expect(() => stream.emit('error', new Error('socket reset'))).not.toThrow()
+	stream.destroy()
+})
+
+it('classifies body failures and decodes precisely the supplied byte view', async () => {
+	const bytes = new TextEncoder().encode('a"é"b').subarray(1, 5)
+	expect(await getRequestBody({ body: bytes }, { maxBodySize: 4 })).toBe('"é"')
+	expect(await getRequestBody({ body: bytes }, { maxBodySize: 3 })).toMatchObject({ kind: 'oversized' })
+	expect(await getRequestBody({ body: 1n })).toMatchObject({ kind: 'invalid' })
+	const stream = new PassThrough()
+	const result = getRequestBody(stream as never, { maxBodySize: 1 })
+	stream.write('ab')
+	expect(await result).toMatchObject({ kind: 'oversized' })
+	expect(() => stream.emit('error', new Error('late error'))).not.toThrow()
+	stream.destroy()
+})

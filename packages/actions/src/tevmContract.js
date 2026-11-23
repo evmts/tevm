@@ -11,10 +11,10 @@ import { tevmCall } from './tevmCall.js'
  */
 export const tevmContract = async (client, params) => {
 	const to = params.to ?? params.address
-	if (to === undefined) throw new TypeError('A contract address is required')
+	if (to === undefined && params.code === undefined) throw new TypeError('A contract address is required')
 	const result = await tevmCall(client, {
 		...params,
-		to,
+		...(to === undefined ? {} : { to }),
 		data: encodeFunctionData(/** @type {import('viem').EncodeFunctionDataParameters} */ (params)),
 	})
 	if (result.txHash) return result

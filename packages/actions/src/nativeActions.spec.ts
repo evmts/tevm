@@ -114,21 +114,80 @@ it('preserves overrides, explicit transaction fields, and structured failures', 
 	}
 })
 
-it('falls back cleanly when eth_accounts returns an empty list', async () => {
-	const requests: Array<{ method: string; params?: unknown[] }> = []
-	const fakeHash = `0x${'aa'.repeat(32)}`
+it('requires an explicit sender when the node has no accounts', async () => {
+	const methods: string[] = []
 	const client = {
-		request: async (req: { method: string; params?: unknown[] }) => {
-			requests.push(req)
-			if (req.method === 'eth_accounts') return []
-			if (req.method === 'eth_sendTransaction') return fakeHash
-			return null
+		request: async ({ method }: { method: string }) => {
+			methods.push(method)
+			return []
 		},
 	}
-	const result = await tevmCall(client, { to: address, addToMempool: true })
-	expect(result.txHash).toBe(fakeHash)
-	expect(requests[1]).toEqual({
-		method: 'eth_sendTransaction',
-		params: [{ to: address, from: '' }],
-	})
+	await expect(tevmCall(client, { to: address, addToMempool: true })).rejects.toThrow(/no accounts/i)
+	await expect(tevmDeploy(client, { bytecode: initcode })).rejects.toThrow(/no accounts/i)
+	expect(methods).toEqual(['eth_accounts', 'eth_accounts'])
+})
+
+it.each([null, { status: '0x0' }])('reports unsuccessful inclusion for calls and deployments', async (receipt) => {
+	const hash = '0x1234'
+	const methods: string[] = []
+	const client = {
+		request: async ({ method }: { method: string }) => {
+			methods.push(method)
+			if (method === 'eth_sendTransaction') return hash
+			if (method === 'evm_mine') return null
+			return receipt
+		},
+	}
+	for (const submit of [
+		() => tevmCall(client, { from: address, to: address, addToBlockchain: true }),
+		() => tevmDeploy(client, { from: address, bytecode: initcode, addToBlockchain: true, addToMempool: true }),
+	]) {
+		methods.length = 0
+		await expect(submit()).rejects.toMatchObject({
+			txHash: hash,
+			message: expect.stringMatching(receipt ? /reverted/i : /not mined/i),
+		})
+		expect(methods).toEqual([
+			'eth_sendTransaction',
+			'eth_getTransactionReceipt',
+			...(receipt ? [] : ['evm_mine', 'eth_getTransactionReceipt']),
+		])
+	}
+})
+
+it('applies action creator code at the destination while retaining other account overrides', async () => {
+	const engine = createZevmEngine()
+	try {
+		const balanceCode = '0x4760005260206000f3' // SELFBALANCE / MSTORE / RETURN
+		const result = await tevmContract(engine, {
+			abi,
+			functionName: 'answer',
+			address,
+			code: balanceCode,
+			stateOverride: { [address]: { balance: '0x2b' } },
+		})
+		expect(result.data).toBe(43n)
+		expect((await tevmContract(engine, { abi, functionName: 'answer', code: runtime })).data).toBe(42n)
+		expect(await engine.request({ method: 'eth_getCode', params: [address, 'latest'] })).toBe('0x')
+	} finally {
+		await engine.close()
+	}
+})
+
+it('reports the submitted hash when mining leaves a future nonce pending or contract creation reverts', async () => {
+	const engine = createZevmEngine({ mining: { auto: false } })
+	try {
+		await expect(
+			tevmCall(engine, { to: address, nonce: 5n, gas: 21000n, addToBlockchain: true }),
+		).rejects.toMatchObject({
+			txHash: expect.stringMatching(/^0x[0-9a-f]{64}$/),
+			message: expect.stringContaining('not mined'),
+		})
+		await expect(tevmDeploy(engine, { bytecode: '0x60006000fd', gas: 100000n })).rejects.toMatchObject({
+			txHash: expect.stringMatching(/^0x[0-9a-f]{64}$/),
+			receipt: { status: '0x0' },
+		})
+	} finally {
+		await engine.close()
+	}
 })

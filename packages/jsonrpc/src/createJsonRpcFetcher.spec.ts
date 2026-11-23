@@ -213,3 +213,82 @@ describe('createJsonRpcFetcher', () => {
 		})
 	})
 })
+
+it.each([
+	null,
+	'',
+	1.5,
+	'1.5',
+	Symbol('code'),
+	false,
+	NaN,
+])('returns a serializable fallback for malformed code %s', async (code) => {
+	const fetcher = createJsonRpcFetcher({
+		request: async () => {
+			throw { code, message: 'bad', data: { amount: 42n } }
+		},
+	})
+	const response = await fetcher.request({ jsonrpc: '2.0', method: 'eth_call', params: [], id: 0 })
+	expect(JSON.parse(JSON.stringify(response))).toEqual({
+		jsonrpc: '2.0',
+		method: 'eth_call',
+		id: 0,
+		error: { code: -32000, message: 'bad', data: { amount: '42' } },
+	})
+})
+
+it('omits unrepresentable data while preserving the provider error', async () => {
+	const data: unknown[] = []
+	data.push(data)
+	const fetcher = createJsonRpcFetcher({
+		request: async () => {
+			throw { code: -32602, message: 'bad params', data }
+		},
+	})
+	expect(
+		JSON.parse(JSON.stringify(await fetcher.request({ jsonrpc: '2.0', method: 'eth_call', params: [], id: null }))),
+	).toEqual({
+		jsonrpc: '2.0',
+		method: 'eth_call',
+		id: null,
+		error: { code: -32602, message: 'bad params' },
+	})
+})
+
+it('omits an undefined or symbolic data field without discarding the envelope', async () => {
+	for (const data of [undefined, Symbol('diagnostic')]) {
+		const fetcher = createJsonRpcFetcher({
+			request: async () => {
+				throw { code: -32001, message: 'failure', data }
+			},
+		})
+		const response = await fetcher.request({ jsonrpc: '2.0', method: 'eth_call', params: [], id: '' })
+		expect(JSON.parse(JSON.stringify(response))).toEqual({
+			jsonrpc: '2.0',
+			method: 'eth_call',
+			id: '',
+			error: { code: -32001, message: 'failure' },
+		})
+	}
+})
+
+it('keeps the error envelope when reading provider diagnostics throws', async () => {
+	const fetcher = createJsonRpcFetcher({
+		request: async () => {
+			throw {
+				code: -32603,
+				message: 'failure',
+				get data() {
+					throw new Error('unavailable diagnostics')
+				},
+			}
+		},
+	})
+	const response = await fetcher.request({ jsonrpc: '2.0', method: 'eth_call', id: 0, params: [] })
+	expect(JSON.parse(JSON.stringify(response))).toEqual({
+		jsonrpc: '2.0',
+		method: 'eth_call',
+		id: 0,
+		error: { code: -32603, message: 'failure' },
+	})
+})

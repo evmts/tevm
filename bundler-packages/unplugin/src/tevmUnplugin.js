@@ -30,7 +30,11 @@ const compilerOptionValidator = z
 const bundlers = {
 	solc: bundler,
 }
-const sidecarExtensions = ['.ts', '.js', '.mjs', '.cjs', '.d.ts']
+/**
+ * Executable runtime sidecars that replace compiling `Contract.sol`.
+ * `Contract.sol.d.ts` is only a declaration, so it must never suppress compilation.
+ */
+const runtimeSidecarExtensions = ['.ts', '.js', '.mjs', '.cjs']
 
 /**
  * @type {import("unplugin").UnpluginFactory<{solc?: CompilerOption } | undefined, false>}
@@ -76,7 +80,7 @@ export const tevmUnplugin = (options = {}) => {
 			moduleResolver = bundler(config, console, fao, versionedSolc, solcCache, contractPackage)
 		},
 		loadInclude: (id) => {
-			return id.endsWith('.sol') && !sidecarExtensions.some((extension) => fao.existsSync(`${id}${extension}`))
+			return id.endsWith('.sol') && !runtimeSidecarExtensions.some((extension) => fao.existsSync(`${id}${extension}`))
 		},
 		async resolveId(id, importer) {
 			// to handle the case where the import is coming from a node_module or a different workspace

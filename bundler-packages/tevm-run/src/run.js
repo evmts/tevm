@@ -1,6 +1,6 @@
 import { $ } from 'bun'
-import { configPath } from './configPath.js'
 import { parseArgs } from './parseArgs.js'
+import { runArgs } from './runArgs.js'
 
 /**
  * Type guard for Bun shell execution errors.
@@ -17,9 +17,9 @@ const isShellError = (err) =>
  */
 export const run = async ([scriptPath, ...positionals] = parseArgs(process.argv).positionals) => {
 	try {
-		const command = `[tevm-run] bun run --bun --config=${configPath} --install=fallback ${scriptPath} ${positionals.join(' ')}`
-		console.log(command)
-		return await $`bun run --config=${configPath} --install=fallback ${scriptPath} ${positionals}`
+		const args = runArgs(/** @type {string} */ (scriptPath), positionals)
+		console.log(`[tevm-run] bun ${args.join(' ')}`)
+		return await $`bun ${args}`
 	} catch (err) {
 		if (!isShellError(err)) throw err
 		// Changed 'error' to 'err' to match usage below

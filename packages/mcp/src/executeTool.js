@@ -1,43 +1,20 @@
-import { decodeErrorResult, encodeFunctionData, getContractAddress, keccak256, parseAbi, toHex } from 'viem'
+import {
+	decodeErrorResult,
+	decodeFunctionResult,
+	encodeFunctionData,
+	getContractAddress,
+	keccak256,
+	parseAbi,
+	toFunctionSignature,
+	toHex,
+} from 'viem'
 import { compileSolidity } from './compileSolidity.js'
 import { toJsonValue } from './toJsonValue.js'
 import { toolSchemas } from './toolSchemas.js'
 
 /**
- * @param {Array<Record<string, unknown>> | undefined} suppliedAbi
- * @param {string | undefined} signature
- * @param {string | undefined} suppliedFunctionName
- */
-const resolveFunction = (suppliedAbi, signature, suppliedFunctionName) => {
-	if (!suppliedAbi && !signature) {
-		throw new Error('Provide abi or signature')
-	}
-	/** @type {Array<any>} */
-	let resolvedAbi
-	if (suppliedAbi) {
-		resolvedAbi = suppliedAbi
-	} else {
-		const readableSignature = /** @type {string} */ (signature)
-		resolvedAbi = /** @type {Array<any>} */ (
-			parseAbi([readableSignature.startsWith('function ') ? readableSignature : `function ${readableSignature}`])
-		)
-	}
-	const functions = resolvedAbi.filter((item) => item.type === 'function')
-	const functionName =
-		suppliedFunctionName ??
-		(typeof functions[0]?.name === 'string' && functions.length === 1 ? functions[0].name : undefined)
-	if (!functionName) {
-		throw new Error('functionName is required when the ABI contains more than one function')
-	}
-	if (!functions.some((item) => item.name === functionName)) {
-		throw new Error(`Function "${functionName}" was not found in the supplied ABI`)
-	}
-	return { abi: resolvedAbi, functionName }
-}
-
-/**
  * @param {unknown} value
- * @param {{type: string, components?: Array<{type: string, components?: any[]}>}} parameter
+ * @param {{type: string, name?: string, components?: Array<{type: string, name?: string, components?: any[]}>}} parameter
  * @returns {unknown}
  */
 const coerceAbiValue = (value, parameter) => {
@@ -45,24 +22,60 @@ const coerceAbiValue = (value, parameter) => {
 		const elementType = parameter.type.replace(/\[[0-9]*\]$/, '')
 		return value.map((item) => coerceAbiValue(item, { ...parameter, type: elementType }))
 	}
-	if (parameter.type.startsWith('tuple') && parameter.components && Array.isArray(value)) {
-		return value.map((item, index) => coerceAbiValue(item, parameter.components?.[index] ?? { type: '' }))
+	if (parameter.type === 'tuple' && parameter.components) {
+		if (Array.isArray(value) && value.length === parameter.components.length)
+			return parameter.components.map((field, i) => coerceAbiValue(value[i], field))
+		if (value && typeof value === 'object' && !Array.isArray(value)) {
+			return parameter.components.map((field) => {
+				if (!field.name || !Object.hasOwn(value, field.name)) throw new Error(`Missing tuple field: ${field.name}`)
+				return coerceAbiValue(/** @type {Record<string, unknown>} */ (value)[field.name], field)
+			})
+		}
+		throw new Error('Expected a tuple with all ABI components')
 	}
-	if (/^u?int[0-9]*$/.test(parameter.type) && typeof value === 'string' && /^-?[0-9]+$/.test(value)) {
-		return BigInt(value)
+	if (/^u?int[0-9]*$/.test(parameter.type)) {
+		if (typeof value === 'string' && /^(?:-?[0-9]+|0x[0-9a-f]+)$/i.test(value)) return BigInt(value)
+		if (typeof value !== 'bigint' && !Number.isSafeInteger(value)) throw new Error(`Invalid ${parameter.type} integer`)
 	}
+	if (parameter.type === 'string' && typeof value !== 'string') throw new Error('Expected a string')
 	return value
 }
 
 /**
- * @param {ReadonlyArray<any>} abi
- * @param {string} functionName
+ * Resolve one ABI overload against the JSON arguments before encoding or decoding.
+ * @param {Array<any> | undefined} suppliedAbi
+ * @param {string | undefined} signature
+ * @param {string | undefined} suppliedName
  * @param {unknown[]} args
- * @returns {unknown[]}
  */
-const coerceFunctionArgs = (abi, functionName, args) => {
-	const entry = abi.find((item) => item.type === 'function' && item.name === functionName)
-	return args.map((value, index) => coerceAbiValue(value, entry?.inputs?.[index] ?? { type: '' }))
+const resolveFunction = (suppliedAbi, signature, suppliedName, args) => {
+	/** @type {import('viem').Abi} */
+	const parsed = signature ? parseAbi([signature.startsWith('function ') ? signature : `function ${signature}`]) : []
+	const abi = suppliedAbi ?? parsed
+	const functions = abi.filter((item) => item.type === 'function')
+	const names = new Set(functions.map((item) => item.name))
+	const signed = /** @type {import('viem').AbiFunction | undefined} */ (parsed[0])
+	const functionName = suppliedName ?? signed?.name ?? (names.size === 1 ? functions[0].name : undefined)
+	if (!functionName) throw new Error('functionName is required when the ABI contains more than one function')
+	const candidates = functions.filter(
+		(item) => item.name === functionName && (!signed || toFunctionSignature(item) === toFunctionSignature(signed)),
+	)
+	if (!candidates.length) throw new Error(`Function "${functionName}" was not found in the supplied ABI`)
+	const matches = []
+	for (const entry of candidates) {
+		if (entry.inputs.length !== args.length) continue
+		try {
+			const values = args.map((value, index) => coerceAbiValue(value, entry.inputs[index]))
+			const data = encodeFunctionData({ abi: [entry], functionName, args: values })
+			matches.push({ abi: [entry], functionName, data })
+		} catch (error) {
+			if (candidates.length === 1) throw error
+		}
+	}
+	if (matches.length > 1) throw new Error(`Ambiguous overload for ${functionName}. Provide its exact signature.`)
+	const match = matches[0]
+	if (!match) throw new Error(`No overload of ${functionName} accepts the supplied arguments`)
+	return match
 }
 
 /**
@@ -83,7 +96,7 @@ const coerceConstructorArgs = (abi, args) => {
  * @returns {string | undefined} A human-readable reason, or undefined when the payload is not decodable.
  */
 const decodeRevertReason = (returnValue, abi = []) => {
-	if (typeof returnValue !== 'string' || returnValue.length <= 10) {
+	if (typeof returnValue !== 'string' || returnValue.length < 10) {
 		return undefined
 	}
 	try {
@@ -131,43 +144,46 @@ export const executeTool = async (name, input, sessions) => {
 		case 'evm_call_contract':
 		case 'evm_send_transaction': {
 			const client = sessions.get(args.session)
-			const resolved = resolveFunction(args.abi, args.signature, args.functionName)
+			const resolved = resolveFunction(args.abi, args.signature, args.functionName, args.args)
 			const call = {
 				to: args.address,
-				data: encodeFunctionData({
-					...resolved,
-					args: coerceFunctionArgs(resolved.abi, resolved.functionName, args.args),
-				}),
+				data: resolved.data,
 				...(args.from ? { from: args.from } : {}),
-				...(args.value ? { value: toHex(BigInt(args.value)) } : {}),
-				...(args.gasLimit ? { gas: toHex(BigInt(args.gasLimit)) } : {}),
+				...(args.value ? { value: BigInt(args.value) } : {}),
+				...(args.gasLimit ? { gas: BigInt(args.gasLimit) } : {}),
 			}
-			let estimatedGas
-			let result
 			try {
-				estimatedGas = args.gasLimit
-					? BigInt(args.gasLimit)
-					: BigInt(
-							/** @type {string} */ (
-								await client.transport.tevm.request({ method: 'eth_estimateGas', params: [call] })
-							),
-						)
-				result = await client.tevmContract({
-					to: args.address,
-					abi: resolved.abi,
-					functionName: resolved.functionName,
-					args: coerceFunctionArgs(resolved.abi, resolved.functionName, args.args),
-					...(args.from ? { from: args.from } : {}),
-					...(args.value ? { value: BigInt(args.value) } : {}),
-					...(args.gasLimit ? { gas: BigInt(args.gasLimit) } : {}),
-					...(name === 'evm_send_transaction' ? { addToMempool: true } : {}),
-				})
+				if (name === 'evm_call_contract') {
+					const { rawData } = await client.tevmCall(call)
+					return toJsonValue({
+						rawOutput: rawData,
+						decodedOutput: decodeFunctionResult({ ...resolved, data: rawData }),
+					})
+				}
+				const estimatedGas =
+					call.gas ??
+					BigInt(
+						/** @type {string} */ (
+							await client.transport.tevm.request({
+								method: 'eth_estimateGas',
+								params: [
+									{
+										to: call.to,
+										data: call.data,
+										...(call.from ? { from: call.from } : {}),
+										...(call.value === undefined ? {} : { value: toHex(call.value) }),
+									},
+								],
+							})
+						),
+					)
+				const { txHash, rawData } = await client.tevmCall({ ...call, addToMempool: true })
+				return toJsonValue({ txHash, rawOutput: rawData, estimatedGas })
 			} catch (error) {
-				const reason = decodeRevertReason(/** @type {{data?:unknown}} */ (error).data, resolved.abi)
+				const reason = decodeRevertReason(/** @type {{data?:unknown}} */ (error)?.data, args.abi)
 				if (reason) throw new Error(reason, { cause: error })
 				throw error
 			}
-			return toJsonValue({ decodedOutput: result.data, rawOutput: result.rawData, txHash: result.txHash, estimatedGas })
 		}
 		case 'evm_deploy_contract': {
 			const client = sessions.get(args.session)
@@ -271,12 +287,7 @@ export const executeTool = async (name, input, sessions) => {
 			const client = sessions.get(args.session)
 			let data = args.data
 			if (!data) {
-				const resolved = resolveFunction(args.abi, args.signature, args.functionName)
-				data = encodeFunctionData({
-					abi: resolved.abi,
-					functionName: resolved.functionName,
-					args: coerceFunctionArgs(resolved.abi, resolved.functionName, args.args),
-				})
+				data = resolveFunction(args.abi, args.signature, args.functionName, args.args).data
 			}
 			const result = /** @type {{failed:boolean; returnValue:string; gas:string|number; structLogs: unknown[]}} */ (
 				await client.transport.tevm.request({

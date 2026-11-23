@@ -172,3 +172,12 @@ import { B } from 'path/to/OtherContract.sol';`)
 import { B } from 'OtherContract.sol';`)
 	})
 })
+
+describe('updateImportPath lexical scanning', () => {
+	it('rewrites imports after a line comment containing /* and leaves strings alone', () => {
+		const source = '// /*\nimport "./A.sol"; string constant s = "import \\"./A.sol\\";";'
+		expect(updateImportPath(source, './A.sol', '/abs/A.sol')).toBe(
+			'// /*\nimport "/abs/A.sol"; string constant s = "import \\"./A.sol\\";";',
+		)
+	})
+})

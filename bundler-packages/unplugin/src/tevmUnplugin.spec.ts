@@ -218,13 +218,22 @@ describe('unpluginFn', () => {
 		expect(mockExistsSync).toHaveBeenCalledWith('test.sol.ts')
 	})
 
-	it('should not load if .sol file has corresponding .d.ts file', async () => {
+	it('should still load a .sol file that only has a .d.ts declaration sidecar', async () => {
 		const plugin = tevmUnplugin({}, {} as any)
-		mockExistsSync.mockImplementation((path) => path.endsWith('.d.ts'))
+		mockExistsSync.mockImplementation((path) => path === 'test.sol' || path === 'test.sol.d.ts')
 		const result = plugin.loadInclude?.call(mockPlugin, 'test.sol')
-		expect(result).toBe(false)
-		expect(mockExistsSync).toHaveBeenCalledWith('test.sol.d.ts')
+		expect(result).toBe(true)
+		expect(mockExistsSync).not.toHaveBeenCalledWith('test.sol.d.ts')
 	})
+
+	for (const extension of ['.js', '.mjs', '.cjs', '.ts']) {
+		it(`should not load if .sol file has an executable ${extension} sidecar`, async () => {
+			const plugin = tevmUnplugin({}, {} as any)
+			mockExistsSync.mockImplementation((path) => path === `test.sol${extension}`)
+			const result = plugin.loadInclude?.call(mockPlugin, 'test.sol')
+			expect(result).toBe(false)
+		})
+	}
 
 	it('should handle bytecode resolution for .s.sol files', async () => {
 		const plugin = tevmUnplugin({}, {} as any)

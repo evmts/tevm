@@ -10,6 +10,7 @@ on:
         type: string
 permissions:
   contents: write
+  pull-requests: write
 jobs:
   prerelease-exit:
     runs-on: ubuntu-latest
@@ -17,7 +18,16 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: "0"
+          ref: "${{ inputs.branch }}"
       - name: Checkout pinned native sources
         run: node scripts/factory/checkout-native.mjs
       - uses: "./.github/actions/setup"
       - run: pnpm exec smthrs target //:prereleaseExit --write
+      - name: Open prerelease exit for review
+        uses: peter-evans/create-pull-request@v7
+        with:
+          base: "${{ inputs.branch }}"
+          branch: "automation/prerelease-exit-${{ github.run_id }}"
+          add-paths: ".changeset/pre.json"
+          title: Exit Changesets prerelease mode
+          commit-message: "chore: exit prerelease mode"

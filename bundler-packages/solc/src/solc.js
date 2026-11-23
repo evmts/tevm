@@ -9,13 +9,22 @@ export const fileLevelOption = ''
  * @type {import("./solcTypes.js").Releases}
  */
 export const releases = {
-	'0.8.30': 'v0.8.30+commit.73712a01.js',
-	'0.8.29': 'v0.8.29+commit.ab55807c.js',
-	'0.8.28': 'v0.8.28+commit.c33e5a8c.js',
-	'0.8.27': 'v0.8.27+commit.4a35a09.js',
-	'0.8.26': 'v0.8.26+commit.8a97fa7a.js',
-	'0.8.25': 'v0.8.25+commit.b61c2a91.js',
-	'0.8.24': 'v0.8.24+commit.e11b9ed9.js',
+	'0.8.39': 'v0.8.39+commit.ce47f2c8',
+	'0.8.38': 'v0.8.38+commit.1835d247',
+	'0.8.37': 'v0.8.37+commit.f401782d',
+	'0.8.36': 'v0.8.36+commit.8a079791',
+	'0.8.35': 'v0.8.35+commit.47b9dedd',
+	'0.8.34': 'v0.8.34+commit.80d5c536',
+	'0.8.33': 'v0.8.33+commit.64118f21',
+	'0.8.32': 'v0.8.32+commit.ebbd65e5',
+	'0.8.31': 'v0.8.31+commit.fd3a2265',
+	'0.8.30': 'v0.8.30+commit.73712a01',
+	'0.8.29': 'v0.8.29+commit.ab55807c',
+	'0.8.28': 'v0.8.28+commit.7893614a',
+	'0.8.27': 'v0.8.27+commit.40a35a09',
+	'0.8.26': 'v0.8.26+commit.8a97fa7a',
+	'0.8.25': 'v0.8.25+commit.b61c2a91',
+	'0.8.24': 'v0.8.24+commit.e11b9ed9',
 	'0.8.23': 'v0.8.23+commit.f704f362',
 	'0.8.22': 'v0.8.22+commit.4fc1097e',
 	'0.8.21': 'v0.8.21+commit.d9974bed',
@@ -136,19 +145,37 @@ export const solcCompile = (solc, input) => {
 }
 
 /**
+ * Returns the bundled `solc` package when it is exactly `release`, so it loads locally.
+ * @param {string} release - A compiler id from `releases`, such as `v0.8.35+commit.47b9dedd`
+ * @returns {any} The bundled solc, or undefined when a remote download is needed
+ */
+const bundledSolcFor = (release) => {
+	const bundledVersion = typeof _solc.version === 'function' ? _solc.version() : undefined
+	return typeof bundledVersion === 'string' && bundledVersion.startsWith(`${release.slice(1)}.`) ? _solc : undefined
+}
+
+/**
+ * Loads a solc compiler. The bundled version loads locally; other releases download
+ * `soljson-<id>.js` from binaries.soliditylang.org.
  * @param {keyof import("./solcTypes.js").Releases} release
  * @returns {Promise<import("./solcTypes.js").Solc>} An instance of solc
  */
 export const createSolc = async (release) => {
-	const s = await new Promise((resolve, reject) =>
-		_solc.loadRemoteVersion(releases[release], (/** @type {any}*/ e, /** @type {any}*/ s) => {
-			if (e) {
-				reject(e)
-			} else {
-				resolve(s)
-			}
-		}),
-	)
+	const id = releases[release]
+	if (typeof id !== 'string') {
+		throw new Error(`Unknown solc release ${String(release)}`)
+	}
+	const s =
+		bundledSolcFor(id) ??
+		(await new Promise((resolve, reject) =>
+			_solc.loadRemoteVersion(id, (/** @type {any}*/ e, /** @type {any}*/ s) => {
+				if (e) {
+					reject(e)
+				} else {
+					resolve(s)
+				}
+			}),
+		))
 	return {
 		...s,
 		compile: (input) => {

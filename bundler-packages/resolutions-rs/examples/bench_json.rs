@@ -2,6 +2,16 @@ use serde_json::json;
 use std::time::{Duration, Instant};
 use tevm_resolutions_rs::{resolve_imports, Config};
 
+// Approximate two-sided 95% margin of error, as a percentage of the mean.
+fn relative_margin_of_error(samples: &[f64], mean: f64) -> f64 {
+    let n = samples.len() as f64;
+    if n < 2.0 || mean == 0.0 {
+        return 0.0;
+    }
+    let variance = samples.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / (n - 1.0);
+    100.0 * 1.96 * (variance / n).sqrt() / mean
+}
+
 fn run_bench<F: FnMut()>(suite: &str, name: &str, mut f: F) -> serde_json::Value {
     // Warmup
     let warm_end = Instant::now() + Duration::from_millis(40);
@@ -34,7 +44,7 @@ fn run_bench<F: FnMut()>(suite: &str, name: &str, mut f: F) -> serde_json::Value
         "p99Ms": (p99_ms * 1_000_000.0).round() / 1_000_000.0,
         "minMs": (min_ms * 1_000_000.0).round() / 1_000_000.0,
         "maxMs": (max_ms * 1_000_000.0).round() / 1_000_000.0,
-        "rme": 0.0,
+        "rme": relative_margin_of_error(&samples_ms, mean_ms),
         "samples": n,
     })
 }
@@ -68,4 +78,18 @@ fn main() {
     });
 
     println!("{}", json!({ "benchmarks": [b1, b2] }));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rme_uses_sample_variance_and_standard_error() {
+        // Four values with mean 2 and sample standard deviation 1.
+        let samples = [1.5, 1.5, 1.5, 3.5];
+        assert!((relative_margin_of_error(&samples, 2.0) - 49.0).abs() < 1e-10);
+        assert_eq!(relative_margin_of_error(&[2.0; 10], 2.0), 0.0);
+        assert_eq!(relative_margin_of_error(&[0.0; 10], 0.0), 0.0);
+    }
 }

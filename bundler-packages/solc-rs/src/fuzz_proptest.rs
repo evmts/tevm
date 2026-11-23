@@ -15,7 +15,7 @@ proptest! {
     fn fuzz_solc_input_description_roundtrips_through_json(
         file_name in "[a-zA-Z0-9_/-]{1,24}\\.sol",
         content in ".{0,200}",
-        runs in any::<u32>(),
+        runs in any::<Option<u32>>(),
         enabled in any::<Option<bool>>(),
         via_ir in any::<Option<bool>>(),
         lang_idx in 0usize..3,
@@ -266,4 +266,44 @@ fn solc_whole_file_warning_round_trips() {
     let wire = json!({"errors":[entry]});
     let parsed = parse_output(&serde_json::to_vec(&wire).unwrap()).unwrap();
     assert_eq!(serde_json::to_value(parsed).unwrap(), wire);
+}
+
+#[test]
+fn optimizer_omits_unspecified_fields() {
+    for wire in [
+        json!({}),
+        json!({"enabled":false}),
+        json!({"enabled":true}),
+        json!({"runs":0, "details":{"peephole":false,"yulDetails":{"stackAllocation":true}}}),
+    ] {
+        let optimizer: SolcOptimizer = serde_json::from_value(wire.clone()).unwrap();
+        assert_eq!(serde_json::to_value(optimizer).unwrap(), wire);
+    }
+}
+
+#[test]
+fn storage_layout_accepts_null_and_populated_type_maps() {
+    for types in [
+        Value::Null,
+        json!({"t_uint256":{"encoding":"inplace","numberOfBytes":"32"}}),
+    ] {
+        let wire =
+            json!({"contracts":{"A.sol":{"A":{"storageLayout":{"storage":[],"types":types}}}}});
+        let parsed = parse_output(&serde_json::to_vec(&wire).unwrap()).unwrap();
+        assert_eq!(serde_json::to_value(parsed).unwrap(), wire);
+    }
+}
+
+#[test]
+fn all_errors_are_reported_in_order_with_formatted_diagnostics() {
+    let mut first = diagnostic("error", "plain first");
+    first["formattedMessage"] = json!("A.sol:1: first");
+    let wire =
+        json!({"errors":[first, diagnostic("warning","skip me"), diagnostic("error","second")]});
+    let Err(SolcError::CompilationError(reason)) =
+        parse_output(&serde_json::to_vec(&wire).unwrap())
+    else {
+        panic!("expected compiler diagnostics")
+    };
+    assert_eq!(reason, "A.sol:1: first\nsecond");
 }

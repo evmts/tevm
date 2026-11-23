@@ -9,6 +9,9 @@ const hex = z
 	.string()
 	.regex(/^0x(?:[0-9a-fA-F]{2})*$/)
 	.describe('0x-prefixed, even-length hexadecimal bytes')
+const storageWord = z
+	.string()
+	.regex(/^0x(?:[0-9a-fA-F]{2}){1,32}$/, 'Expected 1 to 32 bytes of hexadecimal storage data')
 const quantity = z
 	.string()
 	.regex(/^(0|[1-9][0-9]*)$/)
@@ -89,7 +92,7 @@ export const toolSchemas = {
 		.object({
 			session: handle,
 			address,
-			storageSlot: hex.optional(),
+			storageSlot: storageWord.optional(),
 			includeCachedStorage: z.boolean().default(false),
 		})
 		.strict(),
@@ -100,7 +103,7 @@ export const toolSchemas = {
 			balance: quantity.optional(),
 			nonce: quantity.optional(),
 			code: hex.optional(),
-			storage: z.record(hex, hex).optional(),
+			storage: z.record(storageWord, storageWord).optional(),
 		})
 		.strict()
 		.refine((input) => input.balance || input.nonce || input.code || input.storage, {

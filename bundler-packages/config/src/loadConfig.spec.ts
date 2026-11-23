@@ -21,7 +21,7 @@ describe(loadConfig.name, () => {
 		expect({
 			...runSync(config),
 			remappings: Object.fromEntries(
-				Object.entries(runSync(config).remappings).map(([a, b]) => [a, b.replace(process.cwd(), '')]),
+				Object.entries(runSync(config).remappings).map(([a, b]) => [a, b.replace(join(__dirname, '..'), '')]),
 			),
 		}).toMatchInlineSnapshot(`
 			{
@@ -58,7 +58,9 @@ describe(loadConfig.name, () => {
 		const res = runSync(loadConfig(join(__dirname, 'fixtures/withFoundry')))
 		expect({
 			...res,
-			remappings: Object.fromEntries(Object.entries(res.remappings).map(([a, b]) => [a, b.replace(process.cwd(), '')])),
+			remappings: Object.fromEntries(
+				Object.entries(res.remappings).map(([a, b]) => [a, b.replace(join(__dirname, '..'), '')]),
+			),
 		}).toMatchInlineSnapshot(`
 			{
 			  "cacheDir": ".tevm",

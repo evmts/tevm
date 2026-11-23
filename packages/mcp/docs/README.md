@@ -104,7 +104,7 @@ This design prevents unrelated agents and tasks from sharing one implicit mutabl
 
 Integers that may exceed JSON precision use base-10 strings. Byte data uses even-length `0x` hex strings. Contract calls accept either a JSON ABI plus `functionName`, or one human-readable signature such as `balanceOf(address) view returns (uint256)`.
 
-`evm_send_transaction` and `evm_deploy_contract` put transactions in the session txpool. Call `evm_mine` to commit them. Submission returns a transaction hash and gas estimate (deployment returns its gas limit and predicted address). Read the mined receipt for status, actual gas use, logs, and confirmed creation. Read-only calls return decoded output and a gas estimate.
+`evm_send_transaction` and `evm_deploy_contract` put transactions in the session txpool. Call `evm_mine` to commit them. Submission returns a transaction hash and gas estimate (deployment returns its gas limit and predicted address). Read the mined receipt for status, actual gas use, logs, and confirmed creation. Read-only calls execute once and return decoded and raw output.
 
 `evm_trace_call` defaults to at most 200 opcode steps and accepts up to 2,000. When a trace is longer, it keeps the first 70 percent and final 30 percent, reports the omitted middle count, and preserves failure status, gas use, and return data.
 

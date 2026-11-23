@@ -24,15 +24,16 @@ export class UnknownChainError extends Error {
 	}
 }
 
-// TODO pass in tevm config too
 /**
+ * Resolves an `evm://<chainId>/<address>` URI to the contract's ABI and deployed bytecode.
+ * With `followProxies` (the default) the ABI is the implementation's, while `address` and
+ * `deployedBytecode` always belong to the account the URI names.
  * @param {import('./ContractUri.js').ContractUri} contractUri
- * @param {import('@tevm/config').ResolvedCompilerConfig} config
+ * @param {import('@tevm/config').ResolvedCompilerConfig} _config - Reserved for compiler settings
  * @returns { Promise<{abi: import('@tevm/utils').Abi, address: import('@tevm/utils').Address, deployedBytecode: import('@tevm/utils').Hex} | undefined>}
  * @throws {UnknownChainError} if the chainId is not known and no rpcUrl is provided
  */
-export const resolveContractUri = async (contractUri, config) => {
-	console.log('todo config', config)
+export const resolveContractUri = async (contractUri, _config) => {
 	const parsedUri = parseUri(contractUri)
 	if (!parsedUri) {
 		return undefined
@@ -55,14 +56,15 @@ export const resolveContractUri = async (contractUri, config) => {
 
 	const whatsabiResult = await loadAbi({
 		client,
+		chainId: parsedUri.chainId,
 		explorerUrl,
 		address: parsedUri.address,
 		followProxies: parsedUri.followProxies ?? true,
 		etherscanApiKey: parsedUri.etherscanApiKey,
 	})
-	const deployedBytecode = await getCode(client, {
-		address: /** @type {import('@tevm/utils').Address}*/ (whatsabiResult.address),
-	})
+	// whatsabiResult.address is the implementation when a proxy was followed. Pairing the proxy
+	// address with the implementation's bytecode would describe an account that does not exist.
+	const deployedBytecode = await getCode(client, { address: parsedUri.address })
 	if (!deployedBytecode) {
 		throw new Error('Could not fetch deployed bytecode')
 	}
@@ -70,8 +72,6 @@ export const resolveContractUri = async (contractUri, config) => {
 		abi: /** @type {any}*/ (whatsabiResult.abi),
 		address: parsedUri.address,
 		deployedBytecode,
-		// TODO we want to represent proxies in some way like listing the resolved addy
-		// ...{resolvedAddress: whatsabiResult.address},
 		// TODO if we can get a verified contract we should compile it with solc and return solc output too
 	}
 }

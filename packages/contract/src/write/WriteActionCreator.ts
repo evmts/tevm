@@ -59,9 +59,13 @@ export type WriteActionCreator<
 		humanReadableAbi: FormatAbi<
 			[ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'payable' | 'nonpayable'>]
 		>
-		abi: [ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'payable' | 'nonpayable'>]
-		address: TAddress
-		to: TAddress
+		abi: readonly [
+			ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'payable' | 'nonpayable'>,
+			...(
+				| ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'payable' | 'nonpayable'>
+				| Extract<ParseAbi<THumanReadableAbi>[number], { type: 'error' }>
+			)[],
+		]
 	} & (TCode extends undefined ? {} : { code: TCode }) &
 		(TArgs['length'] extends 0
 			? {}
@@ -73,7 +77,7 @@ export type WriteActionCreator<
 		humanReadableAbi: FormatAbi<
 			[ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'payable' | 'nonpayable'>]
 		>
-		abi: [ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'payable' | 'nonpayable'>]
+		abi: readonly [ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'payable' | 'nonpayable'>]
 	} & (TCode extends undefined ? {} : { code: TCode }) &
 		TAddressArgs
 }

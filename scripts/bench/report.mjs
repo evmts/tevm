@@ -86,7 +86,7 @@ for (const rel of benchPaths) {
 	}
 }
 
-const outDir = resolve(repoRoot, 'artifacts/benchmarks')
+const outDir = resolve(repoRoot, process.env.TEVM_BENCH_REPORT_DIR ?? 'artifacts/benchmarks')
 mkdirSync(outDir, { recursive: true })
 
 const aggregate = {
@@ -233,4 +233,4 @@ const html = `<!DOCTYPE html>
 </html>
 `
 writeFileSync(resolve(outDir, 'report.html'), html, 'utf8')
-console.log(`Aggregated ${totalBenchmarks} benchmarks across ${packages.length} packages -> artifacts/benchmarks/`)
+console.log(`Aggregated ${totalBenchmarks} benchmarks across ${packages.length} packages -> ${outDir}/`)

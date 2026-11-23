@@ -6,6 +6,7 @@ import type { SolcInputDescription, SolcLanguage } from './solcTypes.js'
 vi.mock('solc', () => {
 	return {
 		default: {
+			version: vi.fn(() => '0.8.35+commit.47b9dedd.Emscripten.clang'),
 			compile: vi.fn((_input: string) => {
 				return JSON.stringify({
 					contracts: {
@@ -42,7 +43,7 @@ describe('solc', () => {
 
 		// Check that it contains common Solidity versions
 		expect(releases['0.8.28']).toBeDefined()
-		expect(releases['0.8.28']).toBe('v0.8.28+commit.c33e5a8c.js')
+		expect(releases['0.8.28']).toBe('v0.8.28+commit.7893614a')
 
 		// Check a couple more versions to ensure it's properly populated
 		expect(releases['0.8.0']).toBeDefined()
@@ -120,5 +121,33 @@ describe('solc', () => {
 		// Verify the compile method exists
 		expect(solc.compile).toBeDefined()
 		expect(typeof solc.compile).toBe('function')
+	})
+})
+
+describe('solc release ids', () => {
+	it('never ends a compiler id in .js, so solc does not request soljson-<id>.js.js', () => {
+		for (const id of Object.values(releases)) {
+			expect(id).not.toMatch(/\.js$/)
+		}
+		expect(releases['0.8.24']).toBe('v0.8.24+commit.e11b9ed9')
+		expect(releases['0.8.27']).toBe('v0.8.27+commit.40a35a09')
+		expect(releases['0.8.30']).toBe('v0.8.30+commit.73712a01')
+	})
+
+	it('lists the bundled 0.8.35 compiler', () => {
+		expect(releases['0.8.35']).toBe('v0.8.35+commit.47b9dedd')
+	})
+
+	it('loads the bundled compiler locally and downloads other releases by exact id', async () => {
+		const solc = (await import('solc')).default as any
+		solc.loadRemoteVersion.mockClear()
+		await createSolc('0.8.35')
+		expect(solc.loadRemoteVersion).not.toHaveBeenCalled()
+		await createSolc('0.8.30')
+		expect(solc.loadRemoteVersion).toHaveBeenCalledWith('v0.8.30+commit.73712a01', expect.any(Function))
+	})
+
+	it('rejects unknown releases', async () => {
+		await expect(createSolc('9.9.9' as any)).rejects.toThrow('Unknown solc release 9.9.9')
 	})
 })
