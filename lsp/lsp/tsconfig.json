@@ -2,7 +2,9 @@
 	"extends": "@tevm/tsconfig/base",
 	"compilerOptions": {
 		"outDir": "dist",
-		"rootDir": "src"
+		"rootDir": "src",
+		"declarationMap": false
 	},
-	"include": ["src"]
+	"include": ["src"],
+	"exclude": ["src/**/*.spec.ts"]
 }

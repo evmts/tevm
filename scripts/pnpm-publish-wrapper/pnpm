@@ -25,6 +25,25 @@ if [ -z "${tarball}" ]; then
 	exit 1
 fi
 
+# Defense-in-depth guard: refuse to publish any packed tarball whose manifest
+# still contains unresolved workspace:, link:, file:, or portal: specifiers.
+tar -xOf "${tarball}" package/package.json | node -e '
+const fs = require("node:fs");
+const pkg = JSON.parse(fs.readFileSync(0, "utf8"));
+const bad = [];
+for (const field of ["dependencies", "peerDependencies", "optionalDependencies"]) {
+	for (const [dep, spec] of Object.entries(pkg[field] || {})) {
+		if (typeof spec === "string" && /^(?:workspace:|link:|file:|portal:)/.test(spec)) {
+			bad.push(`${field}.${dep}=${spec}`);
+		}
+	}
+}
+if (bad.length > 0) {
+	console.error(`Refusing to publish ${pkg.name}@${pkg.version}: leaked specifier(s): ${bad.join(", ")}`);
+	process.exit(1);
+}
+'
+
 npm_args=("publish" "${tarball}")
 provenance=false
 

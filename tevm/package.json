@@ -308,7 +308,6 @@
 		"@tevm/errors": "workspace:^",
 		"@tevm/esbuild-plugin": "workspace:^",
 		"@tevm/http-client": "workspace:^",
-		"@tevm/jsonrpc": "workspace:^",
 		"@tevm/memory-client": "workspace:^",
 		"@tevm/node": "workspace:^",
 		"@tevm/predeploys": "workspace:^",
@@ -318,7 +317,6 @@
 		"@tevm/solc": "workspace:^",
 		"@tevm/ts-plugin": "workspace:^",
 		"@tevm/utils": "workspace:^",
-		"@tevm/viem": "workspace:^",
 		"@tevm/vite-plugin": "workspace:^",
 		"@tevm/webpack-plugin": "workspace:^",
 		"commander": "^14.0.3",
@@ -331,8 +329,7 @@
 		"@tevm/tsupconfig": "workspace:^"
 	},
 	"peerDependencies": {
-		"@tevm/ts-plugin": "workspace:^",
-		"viem": "^2.49.3"
+		"viem": "^2.58.4"
 	},
 	"publishConfig": {
 		"access": "public"

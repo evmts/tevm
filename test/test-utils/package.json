@@ -79,7 +79,7 @@
 		"@types/node": "^25.9.0"
 	},
 	"peerDependencies": {
-		"viem": "^2.49.3"
+		"viem": "^2.58.4"
 	},
 	"publishConfig": {
 		"access": "public"

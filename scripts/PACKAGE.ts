@@ -11,6 +11,8 @@ const batchAddJsdocScript = S.file('jsdoc-helper/batch-add-jsdoc.js')
 const createBarrelFilesScript = S.file('createBarrelFiles.ts')
 const updateBiomeConfigScript = S.file('updateBiomeConfig.ts')
 const prepareChangesetPublishScript = S.file('prepare-changeset-publish.mjs')
+const prepareChangesetPublishTestScript = S.file('prepare-changeset-publish.test.mjs')
+const pnpmPublishWrapperScript = S.file('pnpm-publish-wrapper/pnpm')
 const publishJsrScript = S.file('publish-jsr.js')
 const tevmJsrJson = S.file('//tevm/jsr.json')
 const tevmPackageJson = S.file('//tevm/package.json')
@@ -79,13 +81,18 @@ const claudeTriage = S.Shell.Run({
 	sandbox: { network: true },
 })
 
-// prepare-changeset-publish.mjs marks the sibling zevm checkout's @evmts
-// manifests private before a changesets publish. It exits 0 outside
-// GitHub Actions. The root //:publish target consumes it.
+// prepare-changeset-publish.mjs validates publishable manifests, facade parity,
+// cross-package symbols, and @evmts/zevm registry resolution before publish.
 const prepareChangesetPublish = S.Shell.Run({
 	bin: S.Runtime.bin,
 	args: ['prepare-changeset-publish.mjs'],
 	data: [prepareChangesetPublishScript],
+})
+
+const prepareChangesetPublishTest = S.Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['--test', 'prepare-changeset-publish.test.mjs'],
+	data: [prepareChangesetPublishScript, prepareChangesetPublishTestScript, pnpmPublishWrapperScript],
 })
 
 // publish-jsr.js rewrites tevm/jsr.json to the workspace version and runs
@@ -108,6 +115,7 @@ export const Package = S.Package({
 		createBarrelFiles,
 		findMissingJsdoc,
 		prepareChangesetPublish,
+		prepareChangesetPublishTest,
 		publishJsr,
 		updateBiomeConfig,
 	},

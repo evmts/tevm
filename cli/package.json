@@ -1,18 +1,15 @@
 {
 	"name": "@tevm/cli",
 	"version": "1.0.0-rc.151",
-	"license": "MIT",
+	"description": "Command-line interface for native Tevm nodes, sessions, and JSON-RPC servers",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/evmts/tevm.git",
 		"directory": "cli"
 	},
-	"bin": "dist/cli.js",
-	"type": "module",
-	"main": "dist/cli.js",
-	"module": "dist/cli.js",
+	"license": "MIT",
 	"sideEffects": true,
-	"types": "dist/cli.d.ts",
+	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/cli.d.ts",
@@ -20,9 +17,13 @@
 		},
 		"./package.json": "./package.json"
 	},
-	"engines": {
-		"node": ">=16"
-	},
+	"main": "dist/cli.js",
+	"module": "dist/cli.js",
+	"types": "dist/cli.d.ts",
+	"bin": "dist/cli.js",
+	"files": [
+		"dist"
+	],
 	"scripts": {
 		"build": "pnpm run build:app",
 		"build:app": "tsc --skipLibCheck",
@@ -35,9 +36,23 @@
 		"test:coverage": "pnpm run build:app && vitest run --coverage",
 		"test:run": "vitest run"
 	},
-	"files": [
-		"dist"
-	],
+	"xo": {
+		"extends": "xo-react",
+		"prettier": true,
+		"rules": {
+			"react/prop-types": "off"
+		}
+	},
+	"prettier": "@vdemedes/prettier-config",
+	"ava": {
+		"extensions": {
+			"ts": "module",
+			"tsx": "module"
+		},
+		"nodeArguments": [
+			"--import=tsx"
+		]
+	},
 	"dependencies": {
 		"@tanstack/react-query": "^5.100.11",
 		"@tevm/actions": "workspace:^",
@@ -45,6 +60,7 @@
 		"@tevm/bundler-cache": "workspace:^",
 		"@tevm/common": "workspace:^",
 		"@tevm/config": "workspace:^",
+		"@tevm/contract": "workspace:^",
 		"@tevm/memory-client": "workspace:^",
 		"@tevm/server": "workspace:^",
 		"@tevm/utils": "workspace:^",
@@ -63,10 +79,9 @@
 		"pastel": "^4.0.1",
 		"react": "^19.2.6",
 		"solc": "^0.8.35",
-		"viem": "^2.49.3",
+		"viem": "^2.58.4",
 		"zod": "^4.4.3",
-		"zustand": "^5.0.13",
-		"@tevm/contract": "workspace:^"
+		"zustand": "^5.0.13"
 	},
 	"devDependencies": {
 		"@sindresorhus/tsconfig": "^8.1.0",
@@ -82,22 +97,10 @@
 		"typescript": "^6.0.3",
 		"xo": "^2.0.2"
 	},
-	"ava": {
-		"extensions": {
-			"ts": "module",
-			"tsx": "module"
-		},
-		"nodeArguments": [
-			"--import=tsx"
-		]
+	"engines": {
+		"node": ">=16"
 	},
-	"xo": {
-		"extends": "xo-react",
-		"prettier": true,
-		"rules": {
-			"react/prop-types": "off"
-		}
-	},
-	"prettier": "@vdemedes/prettier-config",
-	"description": "Command-line interface for native Tevm nodes, sessions, and JSON-RPC servers"
+	"publishConfig": {
+		"access": "public"
+	}
 }

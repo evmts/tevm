@@ -2,7 +2,6 @@
 	"name": "@tevm/ts-plugin",
 	"version": "1.0.0-rc.151",
 	"private": false,
-	"sideEffects": false,
 	"description": "A typescript plugin for tevm",
 	"keywords": [
 		"typescript",
@@ -20,6 +19,7 @@
 	"contributors": [
 		"Will Cory <willcory10@gmail.com>"
 	],
+	"sideEffects": false,
 	"type": "module",
 	"exports": {
 		"./package.json": "./package.json",
@@ -53,19 +53,20 @@
 		"dev": "TSS_DEBUG_BRK=9559 code ../../examples/forge-foundry",
 		"format": "biome format . --write",
 		"format:check": "biome format .",
-		"lint:deps": "bunx depcheck",
 		"generate:docs": "typedoc",
 		"lint": "biome check . --write --unsafe",
 		"lint:check": "biome check . --verbose",
-		"typecheck": "tsc --noEmit",
+		"lint:deps": "bunx depcheck",
+		"lint:package": "bunx publint --strict && attw --pack",
 		"test": "vitest --coverage",
 		"test:coverage": "vitest run --coverage",
 		"test:run": "vitest --run",
-		"lint:package": "bunx publint --strict && attw --pack"
+		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
 		"@tevm/base-bundler": "workspace:^",
 		"@tevm/bundler-cache": "workspace:^",
+		"@tevm/config": "workspace:^",
 		"effect": "3.21.2",
 		"glob": "^13.0.6",
 		"minimatch": "^10.2.5",
@@ -73,7 +74,6 @@
 		"solidity-ast": "^0.4.62"
 	},
 	"devDependencies": {
-		"@tevm/config": "workspace:^",
 		"@tevm/contract": "workspace:^",
 		"@tevm/tsupconfig": "workspace:^",
 		"@types/node": "^25.9.0",
@@ -81,5 +81,8 @@
 	},
 	"peerDependencies": {
 		"typescript": ">=5.0.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }

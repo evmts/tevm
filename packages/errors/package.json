@@ -63,7 +63,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"viem": "^2.49.3"
+		"viem": "^2.58.4"
 	},
 	"devDependencies": {
 		"@tevm/tsconfig": "workspace:^",
@@ -71,7 +71,7 @@
 		"vitest": "^4.1.6"
 	},
 	"peerDependencies": {
-		"viem": "^2.49.3"
+		"viem": "^2.58.4"
 	},
 	"publishConfig": {
 		"access": "public"

@@ -62,13 +62,13 @@
 		"test:ui": "vitest --ui"
 	},
 	"dependencies": {
-		"@tevm/tsconfig": "workspace:^",
-		"@tevm/tsupconfig": "workspace:^",
 		"abitype": "^1.2.4",
+		"solc": "0.8.35",
 		"solidity-ast": "^0.4.61"
 	},
 	"devDependencies": {
-		"solc": "0.8.35",
+		"@tevm/tsconfig": "workspace:^",
+		"@tevm/tsupconfig": "workspace:^",
 		"vitest": "^4.1.6"
 	},
 	"publishConfig": {

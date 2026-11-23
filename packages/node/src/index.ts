@@ -3,6 +3,7 @@ export { NativeRpcError } from './NativeRpcError.js'
 export type {
 	EngineRequest,
 	JsonValue,
+	ZevmBackend,
 	ZevmEngine,
 	ZevmEngine as TevmNode,
 	ZevmEngineOptions,

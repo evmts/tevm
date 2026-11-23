@@ -1,8 +1,8 @@
 {
 	"$schema": "https://unpkg.com/@changesets/config@2.3.0/schema.json",
 	"commit": false,
-	"fixed": [],
-	"linked": [["@tevm/*", "tevm", "tevm-run"]],
+	"fixed": [["@tevm/*", "tevm", "tevm-run"]],
+	"linked": [],
 	"access": "public",
 	"baseBranch": "main",
 	"updateInternalDependencies": "patch",

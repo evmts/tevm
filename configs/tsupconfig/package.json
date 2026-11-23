@@ -10,6 +10,7 @@
 	"sideEffects": false,
 	"type": "module",
 	"exports": {
+		"./package.json": "./package.json",
 		".": {
 			"import": {
 				"types": "./types/index.d.ts",
@@ -44,7 +45,12 @@
 		"test:run": "tsup --dts-only"
 	},
 	"dependencies": {
-		"@tevm/tsconfig": "workspace:^",
 		"@types/node": "^25.9.0"
+	},
+	"devDependencies": {
+		"@tevm/tsconfig": "workspace:^"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }

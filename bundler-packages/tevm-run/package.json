@@ -18,9 +18,9 @@
 			}
 		}
 	},
-	"main": "src/tevm-run.js",
-	"module": "src/tevm-run.js",
-	"types": "src/tevm-run.js",
+	"main": "src/index.js",
+	"module": "src/index.js",
+	"types": "src/index.js",
 	"bin": {
 		"tevm-run": "src/tevm-run.js"
 	},

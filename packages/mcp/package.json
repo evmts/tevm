@@ -69,7 +69,7 @@
 		"@tevm/common": "workspace:^",
 		"@tevm/memory-client": "workspace:^",
 		"solc": "0.8.35",
-		"viem": "^2.49.3",
+		"viem": "^2.58.4",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {

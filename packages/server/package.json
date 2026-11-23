@@ -78,7 +78,7 @@
 		"@types/ws": "^8.5.14",
 		"express": "^5.2.1",
 		"next": "^16.2.6",
-		"viem": "^2.49.3"
+		"viem": "^2.58.4"
 	},
 	"publishConfig": {
 		"access": "public"

@@ -1,18 +1,28 @@
 # @tevm/node
 
-A serialized native ZEVM engine with JSON-RPC and an event emitter. Execution and node state live in the Zig runtime, backed by Voltaire and Guillotine Mini.
+A thin serialized JSON-RPC wrapper around [ZEVM](https://github.com/evmts/zevm) with pluggable native and WASM EVM backend support. By default it delegates execution and node state to `@evmts/zevm`'s `NativeNode` (Voltaire + Guillotine Mini), or accepts any `{ rpc(json), close() }` sync/async `backend` (such as a WASM-based EVM) without loading native bindings.
 
 ```js
 import { createZevmEngine } from '@tevm/node'
+
+// Default: native ZEVM Node-API backend
 const engine = createZevmEngine()
 try {
   console.log(await engine.request({ method: 'eth_chainId' }))
 } finally {
   await engine.close()
 }
+
+// Pluggable: WASM EVM or custom JSON-RPC backend (never loads @evmts/zevm native addon)
+const wasmEngine = createZevmEngine({
+  backend: {
+    rpc: async (json) => wasmInstance.rpc(json),
+    close: () => wasmInstance.free(),
+  },
+})
 ```
 
-`rpc` accepts raw JSON including batches and notifications. `request` throws `NativeRpcError` with the native code and data. Events are `request`, `response`, `block`, and `close`. Close releases the native handle. See the [migration guide](../../docs/native-engine-migration.md) for configuration and native build requirements.
+`rpc` accepts raw JSON including batches and notifications. `request` throws `NativeRpcError` with the backend code and data. Events are `request`, `response`, `block`, and `close`. Close releases the underlying native or WASM handle. See the [migration guide](../../docs/native-engine-migration.md) for configuration and native build requirements.
 
 With `chainId: 1`, pending transactions follow the mainnet hardfork schedule.
 From Osaka (timestamp 1764798551), a declared transaction gas limit above

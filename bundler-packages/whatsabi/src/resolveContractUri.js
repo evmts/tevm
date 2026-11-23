@@ -43,7 +43,13 @@ export const resolveContractUri = async (contractUri, config) => {
 	}
 	const client = createClient({
 		transport: http(parsedUri.rpcUrl),
-		chain,
+		// The ABI loaders use read-only RPC, the chain ID and the default URL.
+		chain: chain && {
+			id: chain.id,
+			name: chain.name,
+			nativeCurrency: chain.nativeCurrency,
+			rpcUrls: chain.rpcUrls,
+		},
 	})
 	const explorerUrl = parsedUri.etherscanBaseUrl ?? chain?.blockExplorers?.default.url
 

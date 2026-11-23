@@ -3,11 +3,11 @@
 [![npm version](https://img.shields.io/npm/v/tevm?style=flat)](https://www.npmjs.com/package/tevm)
 [![npm downloads](https://img.shields.io/npm/dm/tevm.svg)](https://www.npmjs.com/package/tevm)
 
-Ethereum development toolkit powered by the native [ZEVM](https://github.com/evmts/zevm) engine (with Voltaire primitives/state and Guillotine Mini bytecode execution).
+Thin Ethereum development toolkit wrapping [ZEVM](https://github.com/evmts/zevm) with pluggable native and WASM EVM backend support (Voltaire primitives/state and Guillotine Mini bytecode execution).
 
-- Isolated in-process EVM execution and upstream state forking in Node.js (`>=24`)
+- Thin wrapper over ZEVM's native Node-API addon (`>=24`) or any pluggable WASM-based EVM (`backend: { rpc(json), close() }`)
 - Full [viem](https://viem.sh) public, wallet, test, and TEVM convenience actions via `createMemoryClient`
-- HTTP, WebSocket, and IPC JSON-RPC server via `tevm/server` (browsers connect to a native server over JSON-RPC)
+- HTTP, WebSocket, and IPC JSON-RPC server via `tevm/server` (or in-process WASM execution via `backend`)
 - Direct Solidity imports and type generation via `tevm/bundler/*` plugins
 
 ## Installation
@@ -45,8 +45,8 @@ try {
 ## Subpath exports
 
 - `tevm` — `createMemoryClient`, `createZevmEngine`, `createTevmNode`, `createContract`, utilities
-- `tevm/node` — Native ZEVM Node-API engine wrapper (`createZevmEngine`, `NativeRpcError`)
-- `tevm/memory-client` — Viem client and transport over an embedded native engine
+- `tevm/node` — Thin ZEVM engine wrapper with pluggable native & WASM backend support (`createZevmEngine`, `ZevmBackend`, `NativeRpcError`)
+- `tevm/memory-client` — Viem client and transport over a native ZEVM or pluggable WASM EVM backend
 - `tevm/actions` — Browser-safe JSON-RPC helpers (`tevmCall`, `tevmContract`, `tevmDeploy`, `tevmMine`, `tevmGetAccount`, `tevmSetAccount`, `tevmDeal`, `tevmDumpState`, `tevmLoadState`)
 - `tevm/server` — HTTP, WebSocket, IPC, Express, and Next.js JSON-RPC servers
 - `tevm/http-client` — Remote HTTP JSON-RPC client for a running TEVM server

@@ -64,7 +64,8 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@tevm/memory-client": "workspace:^"
+		"@tevm/memory-client": "workspace:^",
+		"@tevm/utils": "workspace:^"
 	},
 	"devDependencies": {
 		"@tevm/contract": "workspace:^",

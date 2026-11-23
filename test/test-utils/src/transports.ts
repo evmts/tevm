@@ -1,5 +1,5 @@
 import { loadBalance, rateLimit } from '@ponder/utils'
-import { http } from 'viem'
+import { http, type Transport } from 'viem'
 import { mainnet as viemMainnet, optimism as viemOptimism } from 'viem/chains'
 import { normalizeRpcUrl } from './getAlchemyUrl.js'
 
@@ -27,7 +27,7 @@ const optimism = loadBalance(
 	optimismRpcUrls.map((url) => rateLimit(http(url), { browser: false, requestsPerSecond: 150 })),
 )({ retryCount: 3, chain: viemOptimism })
 
-export const transports = {
+export const transports: { mainnet: ReturnType<Transport>; optimism: ReturnType<Transport> } = {
 	mainnet,
 	optimism,
 }

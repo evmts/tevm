@@ -33,6 +33,9 @@
 	"engines": {
 		"node": ">= 14"
 	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"napi": {
 		"binaryName": "tevm_resolutions_rs",
 		"packageName": "@tevm/resolutions-rs",

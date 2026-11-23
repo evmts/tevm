@@ -1,6 +1,6 @@
 # TEVM
 
-TEVM embeds the native ZEVM node in Node.js and exposes it through viem clients, an event emitter, and HTTP, WebSocket, and IPC JSON-RPC servers. ZEVM owns execution, mining, transaction admission, receipts, filters, snapshots, and fork state. It uses Voltaire primitives/state and Guillotine Mini bytecode execution.
+TEVM is a thin TypeScript/JavaScript wrapper around [ZEVM](https://github.com/evmts/zevm) and pluggable WASM-based EVM backends, exposing them through viem clients, an event emitter, and HTTP, WebSocket, and IPC JSON-RPC servers. ZEVM (powered by Voltaire primitives/state and Guillotine Mini bytecode execution) owns execution, mining, transaction admission, receipts, filters, snapshots, and fork state; TEVM stays razor-thin on top.
 
 This checkout contains a breaking native-engine migration. Previously published JavaScript-engine releases do not implement this API. See [the migration guide](docs/native-engine-migration.md).
 
@@ -31,7 +31,18 @@ The install build compiles ZEVM's Node-API addon from the sibling Zig sources. `
 mise exec -- node scripts/factory/build-native.mjs
 ```
 
-There is no alternate engine fallback. Local builds use the sibling source; published clients require ZEVM native platform packages. A missing native addon is an error.
+By default, `createZevmEngine()` and `createMemoryClient()` load `@evmts/zevm`'s native Node-API addon. To plug in a **WASM-based EVM** (such as a ZEVM WASM build) or any custom JSON-RPC runtime without loading native bindings, pass a minimal `backend` implementing `{ rpc(json), close() }` (sync or async):
+
+```js
+import { createMemoryClient } from '@tevm/memory-client'
+
+const client = createMemoryClient({
+  backend: {
+    rpc: (json) => wasmEvm.rpc(json), // returns string | null | Promise<string | null>
+    close: () => wasmEvm.close(),
+  },
+})
+```
 
 ## In-memory client
 
@@ -80,7 +91,7 @@ try {
 pnpm native:server
 ```
 
-This starts HTTP and WebSocket on `127.0.0.1:8545`. Browsers connect to this server with viem's `http` or `webSocket` transport. The native addon is not a browser WASM engine.
+This starts HTTP and WebSocket on `127.0.0.1:8545`. Browsers can connect to this server with viem's `http` or `webSocket` transport, or run in-process by plugging a WASM EVM `backend` into `createZevmEngine` / `createMemoryClient`.
 
 ```js
 import { createMemoryClient } from '@tevm/memory-client'

@@ -46,7 +46,7 @@
 	],
 	"scripts": {
 		"all": "bun run build && bun run format && bun run lint && bun run test:coverage && bun run generate:docs",
-		"build": "nx run-many --targets=build:dist,build:types --projects=@tevm/base-bundler ",
+		"build": "nx run-many --targets=build:dist,build:types --projects=@tevm/bundler-cache ",
 		"build:dist": "tsup",
 		"build:types": "tsup --dts-only && tsc --emitDeclarationOnly --declaration",
 		"clean": "rm -rf node_modules && rm -rf artifacts && rm -rf dist && rm -rf cache",
@@ -64,11 +64,11 @@
 	},
 	"dependencies": {
 		"@tevm/compiler": "workspace:^",
-		"@tevm/tsconfig": "workspace:^",
-		"@tevm/tsupconfig": "workspace:^",
 		"@types/node": "^25.9.0"
 	},
 	"devDependencies": {
+		"@tevm/tsconfig": "workspace:^",
+		"@tevm/tsupconfig": "workspace:^",
 		"@vitest/coverage-v8": "^4.1.6",
 		"@vitest/ui": "^4.1.6",
 		"typescript": "^6.0.3",

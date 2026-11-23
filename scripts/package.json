@@ -1,13 +1,14 @@
 {
 	"name": "@tevm/scripts",
 	"version": "0.0.0",
+	"private": true,
 	"description": "Monorepo scripts for tevm monorepo",
+	"license": "MIT",
+	"author": "",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
-	"author": "",
-	"license": "MIT",
 	"dependencies": {
 		"recursive-readdir": "^2.2.3"
 	}

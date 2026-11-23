@@ -10,5 +10,8 @@
 	"sideEffects": false,
 	"files": [
 		"base.json"
-	]
+	],
+	"publishConfig": {
+		"access": "public"
+	}
 }

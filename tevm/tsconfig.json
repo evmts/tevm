@@ -10,7 +10,6 @@
 		"common/index.ts",
 		"memory-client/index.ts",
 		"predeploys/index.ts",
-		"predeploys/index.ts",
 		"node/index.ts",
 		"utils/index.ts",
 		"http-client/index.ts",
