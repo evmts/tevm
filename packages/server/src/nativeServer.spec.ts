@@ -203,7 +203,11 @@ describe('native server transports', () => {
 		server.listen(path)
 		await once(server, 'listening')
 		cleanups.push(() => new Promise<void>((resolve) => server.close(() => resolve())))
+		const firstChunkRead = new Promise<void>((resolve) => {
+			server.once('connection', (peer) => peer.once('data', () => resolve()))
+		})
 		const socket = createConnection(path)
+		socket.setEncoding('utf8')
 		await once(socket, 'connect')
 		cleanups.push(async () => {
 			if (socket.destroyed) return
@@ -224,12 +228,18 @@ describe('native server transports', () => {
 				if (responses.length === 2) resolve()
 			}),
 		)
-		const payload = JSON.stringify(request('eth_chainId')) + JSON.stringify(request('eth_blockNumber', [], 2))
-		socket.write(payload.slice(0, 10))
-		socket.write(payload.slice(10))
+		const id = '🦊'
+		const payload = Buffer.from(
+			JSON.stringify(request('eth_chainId', [], id)) + JSON.stringify(request('eth_blockNumber', [], 2)),
+		)
+		const split = payload.indexOf(id) + 1
+		socket.write(payload.subarray(0, split))
+		// Wait for the IPC decoder to consume the first byte before sending the rest.
+		await firstChunkRead
+		socket.write(payload.subarray(split))
 		await received
 		expect(responses).toEqual([
-			{ jsonrpc: '2.0', id: 1, result: '0x7a69' },
+			{ jsonrpc: '2.0', id, result: '0x7a69' },
 			{ jsonrpc: '2.0', id: 2, result: '0x0' },
 		])
 		const closed = once(socket, 'close')

@@ -1,19 +1,20 @@
+import { RpcError, RpcRequestError } from 'viem'
+
 /**
  * @deprecated
- * Makes a JSON-RPC request to a url
- * Returns the entire JSON-RPC response rather than throwing and only returning result
+ * Adapts a viem client to return JSON-RPC envelopes. Provider failures retain their code, message, and optional data.
  * Used currently as an adapter to avoid refactoring existing code
  * @see https://ethereum.org/en/developers/docs/apis/json-rpc/
  * @param {{request: import('viem').EIP1193RequestFn}} client
- * @returns {import("./JsonRpcClient.js").JsonRpcClient} the `result` field from the JSON-RPC response
+ * @returns {import("./JsonRpcClient.js").JsonRpcClient} Client returning the full JSON-RPC response
  * @example
  * ```typescript
  * import { createJsonRpcFetcher } from '@tevm/jsonrpc'
+ * import { createPublicClient, custom } from 'viem'
  *
- * const fetcher = createJsonRpcFetcher({
- *   request: async ({ method }) => (method === 'eth_blockNumber' ? '0x0' : null),
- * })
- * const response = await fetcher.request({ method: 'eth_blockNumber', id: 1 })
+ * const client = createPublicClient({ transport: custom({ request: async () => '0x0' }) })
+ * const fetcher = createJsonRpcFetcher(client)
+ * const response = await fetcher.request({ jsonrpc: '2.0', method: 'eth_blockNumber', params: [], id: 1 })
  * ```
  */
 export const createJsonRpcFetcher = (client) => {
@@ -27,7 +28,10 @@ export const createJsonRpcFetcher = (client) => {
 					result,
 					...(request.id !== undefined ? { id: request.id } : {}),
 				}
-			} catch (e) {
+			} catch (caught) {
+				// Viem wraps the provider envelope in RpcRequestError and may wrap it again for a known code.
+				const transport = caught instanceof RpcError && caught.cause instanceof RpcRequestError ? caught.cause : caught
+				const e = transport instanceof RpcRequestError ? transport.cause : caught
 				if (typeof e === 'object' && e !== null && 'code' in e) {
 					const message =
 						'message' in e && typeof e.message === 'string' ? e.message : 'Unknown error in jsonrpc request'

@@ -26,7 +26,10 @@ const Counter = createContract({
 
 const readParams = Counter.read.count()
 console.log(readParams.functionName) // 'count'
+console.log(Counter.write.increment.functionName) // 'increment'
 ```
+
+When a name has both read and write overloads, each action creator includes the overloads with its own mutability.
 
 ## Documentation
 

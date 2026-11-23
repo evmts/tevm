@@ -1,10 +1,31 @@
 import { succeed } from 'effect/Effect'
+import { maskBlockComments } from './maskBlockComments.js'
 
 /**
- * @param {string} source
- * @param {number} offset
+ * Replaces the path of every import statement outside of block comments.
+ * Uses the same comment masking as `resolveImports`, so both agree on what an import is.
+ * @param {string} code Source code to update
+ * @param {(importPath: string) => string | undefined} getReplacement Returns the new path, or undefined to keep the path
+ * @returns {string} The updated source code
  */
-const isInBlockComment = (source, offset) => source.lastIndexOf('/*', offset) > source.lastIndexOf('*/', offset)
+const replaceImportPaths = (code, getReplacement) => {
+	// The closing quote must match the opening quote: `import "./it's/A.sol"` is one path
+	const solidityImportRegex = /(^\s*import\b\s+[^'"]*(['"]))((?:(?!\2).)*)\2/gm
+	let updated = ''
+	let lastIndex = 0
+	// Masking keeps offsets, so matches found in the masked code index into the original code
+	for (const match of maskBlockComments(code).matchAll(solidityImportRegex)) {
+		const [, prefix, , importPath] = /** @type {[string, string, string, string]} */ (/** @type {unknown} */ (match))
+		const replacement = getReplacement(importPath)
+		if (replacement === undefined) {
+			continue
+		}
+		const start = match.index + prefix.length
+		updated += `${code.slice(lastIndex, start)}${replacement}`
+		lastIndex = start + importPath.length
+	}
+	return `${updated}${code.slice(lastIndex)}`
+}
 
 /**
  * Updates all the import paths that match the importedIds
@@ -13,18 +34,8 @@ const isInBlockComment = (source, offset) => source.lastIndexOf('/*', offset) > 
  * @returns {import("effect/Effect").Effect<string, never, never>} the source code formatted with the imprt replaced
  */
 export const updateImportPaths = (code, resolvedImports) => {
-	const solidityImportRegex = /(^\s*import\b\s+[^'"]*['"])([^'"]*)(['"]\s*)/gm
 	return succeed(
-		code.replaceAll(solidityImportRegex, (match, p1, p2, p3, offset) => {
-			if (isInBlockComment(code, offset)) {
-				return match
-			}
-			const resolvedImport = resolvedImports.find(({ original }) => original === p2)
-			if (resolvedImport) {
-				return `${p1}${resolvedImport.updated}${p3}`
-			}
-			return match
-		}),
+		replaceImportPaths(code, (importPath) => resolvedImports.find(({ original }) => original === importPath)?.updated),
 	)
 }
 
@@ -36,14 +47,5 @@ export const updateImportPaths = (code, resolvedImports) => {
  * @returns {string} - Updated source code
  */
 export const updateImportPath = (source, oldPath, newPath) => {
-	const solidityImportRegex = /(^\s*import\b\s+[^'"]*['"])([^'"]*)(['"]\s*)/gm
-	return source.replaceAll(solidityImportRegex, (match, p1, p2, p3, offset) => {
-		if (isInBlockComment(source, offset)) {
-			return match
-		}
-		if (p2 === oldPath) {
-			return `${p1}${newPath}${p3}`
-		}
-		return match
-	})
+	return replaceImportPaths(source, (importPath) => (importPath === oldPath ? newPath : undefined))
 }

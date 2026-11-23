@@ -1,6 +1,7 @@
 import { formatAbi } from 'abitype'
 import { succeed } from 'effect/Effect'
 import { generateDtsBody } from './generateTevmBodyDts.js'
+import { needsExportAlias } from './needsExportAlias.js'
 
 /** @param {string | null | undefined} value */
 const escapeJSDoc = (value) =>
@@ -102,12 +103,21 @@ export const generateTevmBody = (artifacts, moduleType, includeBytecode) => {
 					]
 				}
 
+				// Reserved words such as `class` are valid Solidity contract names but cannot be
+				// declared with `export const`. Declare them under an internal name and alias the export.
+				const exportContract = needsExportAlias(contractName)
+					? [
+							`const _tevm_${contractName} = createContract(_${contractName});`,
+							`export { _tevm_${contractName} as ${contractName} };`,
+						]
+					: [`export const ${contractName} = createContract(_${contractName});`]
+
 				// Generate TypeScript format with const assertion
 				if (moduleType === 'ts') {
 					return [
 						`const _${contractName} = ${contract} as const`,
 						...natspec,
-						`export const ${contractName} = createContract(_${contractName});`,
+						...exportContract,
 						i === 0 ? `export const artifacts = ${JSON.stringify(artifacts, null, 2)};` : '',
 					]
 				}
@@ -116,7 +126,7 @@ export const generateTevmBody = (artifacts, moduleType, includeBytecode) => {
 				return [
 					`const _${contractName} = ${contract};`,
 					...natspec,
-					`export const ${contractName} = createContract(_${contractName});`,
+					...exportContract,
 					i === 0 ? `export const artifacts = ${JSON.stringify(artifacts, null, 2)};` : '',
 				]
 			})

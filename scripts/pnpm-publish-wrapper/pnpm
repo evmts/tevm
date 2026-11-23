@@ -12,7 +12,7 @@ fi
 
 shift
 
-tmpdir="$(mktemp -d)"
+tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/tevm-publish.XXXXXXXX")"
 cleanup() {
 	rm -rf "${tmpdir}"
 }
@@ -33,7 +33,7 @@ const pkg = JSON.parse(fs.readFileSync(0, "utf8"));
 const bad = [];
 for (const field of ["dependencies", "peerDependencies", "optionalDependencies"]) {
 	for (const [dep, spec] of Object.entries(pkg[field] || {})) {
-		if (typeof spec === "string" && /^(?:workspace:|link:|file:|portal:)/.test(spec)) {
+		if (typeof spec === "string" && /^(?:workspace:|link:|file:|portal:)/.test(spec.trim())) {
 			bad.push(`${field}.${dep}=${spec}`);
 		}
 	}
@@ -76,4 +76,4 @@ if [ "${provenance}" = false ] && [ "${NPM_CONFIG_PROVENANCE:-}" = "true" ]; the
 	npm_args+=("--provenance")
 fi
 
-exec npm "${npm_args[@]}"
+npm "${npm_args[@]}"

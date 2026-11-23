@@ -45,9 +45,11 @@ export type ReadActionCreator<
 		// Extract the read functions from abi
 		// Keep args etc. generic for typesafety reasons. This is adapted from viem
 		TArgs extends AbiParametersToPrimitiveTypes<
-			ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName>['inputs']
+			ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'pure' | 'view'>['inputs']
 		> &
-			any[] = AbiParametersToPrimitiveTypes<ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName>['inputs']> &
+			any[] = AbiParametersToPrimitiveTypes<
+			ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'pure' | 'view'>['inputs']
+		> &
 			any[],
 	>(
 		// Take the same args of the function
@@ -55,8 +57,8 @@ export type ReadActionCreator<
 		// Return an action creator that matches the viem api
 	) => {
 		functionName: TFunctionName
-		humanReadableAbi: FormatAbi<[ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName>]>
-		abi: [ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName>]
+		humanReadableAbi: FormatAbi<[ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'pure' | 'view'>]>
+		abi: [ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'pure' | 'view'>]
 	} & (TCode extends undefined ? {} : { code: TCode }) &
 		(TArgs['length'] extends 0
 			? {}
@@ -65,8 +67,8 @@ export type ReadActionCreator<
 				}) &
 		TAddressArgs) & {
 		functionName: TFunctionName
-		humanReadableAbi: FormatAbi<[ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName>]>
-		abi: [ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName>]
+		humanReadableAbi: FormatAbi<[ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'pure' | 'view'>]>
+		abi: [ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'pure' | 'view'>]
 	} & (TCode extends undefined ? {} : { code: TCode }) &
 		TAddressArgs
 }

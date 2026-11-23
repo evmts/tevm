@@ -34,7 +34,7 @@ const buildDebug = S.Cargo.Build({
 // test (cargo test).
 const testRust = S.Cargo.Test({
 	package: 'tevm_solc_rs',
-	data: [srcs],
+	data: [srcs, S.file('proptest-regressions/fuzz_proptest.txt')],
 })
 
 const bench = cargoBench('bundler-packages/solc-rs', {

@@ -173,3 +173,24 @@ describe('pluggable ZEVM / WASM EVM backend', () => {
 		expect(() => createZevmEngine({ backend: /** @type {any} */ ({}) })).toThrow(TypeError)
 	})
 })
+
+describe('pluggable backend queue ordering', () => {
+	// Regression: found by statefulDifferential.fuzz.spec.ts. request() and rpc() used to await
+	// `ready` before joining the queue, so a close() issued later in the same tick overtook them.
+	it.each([false, true])('finishes work issued before close() (asyncMode=%s)', async (asyncMode) => {
+		const stub = createWasmStyleBackend({ asyncMode })
+		const engine = createZevmEngine({ backend: stub.backend })
+		engines.push(engine)
+		const mined = engine.request({ method: 'evm_mine' })
+		const raw = engine.rpc('{"jsonrpc":"2.0","id":9,"method":"eth_blockNumber"}')
+		const closing = engine.close()
+		const late = engine.rpc('{"jsonrpc":"2.0","id":10,"method":"eth_blockNumber"}')
+		late.catch(() => {})
+		expect(await mined).toBe('0x0')
+		expect(await raw).toBe('{"jsonrpc":"2.0","id":9,"result":"0x1"}')
+		await closing
+		await expect(late).rejects.toThrow('engine is closed')
+		expect(stub.calls).toEqual(['evm_mine', 'eth_blockNumber'])
+		expect(stub.isClosed()).toBe(true)
+	})
+})

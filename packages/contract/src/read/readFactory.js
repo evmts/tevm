@@ -48,7 +48,7 @@ export const readFactory = ({ methods, errors, address, code }) =>
 				const abiFunction = /** @type {import('@tevm/utils').AbiFunction} */ (method)
 				return abiFunction.stateMutability === 'view' || abiFunction.stateMutability === 'pure'
 			})
-			.map((method) => {
+			.map((method, _index, eligibleMethods) => {
 				/**
 				 * Creates a read action for a specific contract method.
 				 * @param {...any} args - The arguments for the contract method.
@@ -57,7 +57,7 @@ export const readFactory = ({ methods, errors, address, code }) =>
 				const creator = (...args) => {
 					// Handle case where there is an overload
 					// TODO: make this more efficient
-					const methodAbi = methods
+					const methodAbi = eligibleMethods
 						.filter(
 							(m) =>
 								/**@type {import('@tevm/utils').AbiFunction}*/ (m).name ===
@@ -75,6 +75,7 @@ export const readFactory = ({ methods, errors, address, code }) =>
 					}
 				}
 				creator.abi = [method]
+				creator.functionName = /** @type {import('@tevm/utils').AbiFunction} */ (method).name
 				creator.humanReadableAbi = formatAbi([method])
 				creator.code = code
 				creator.address = address

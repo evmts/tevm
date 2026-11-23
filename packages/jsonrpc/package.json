@@ -68,8 +68,11 @@
 		"@ponder/utils": "^0.2.18"
 	},
 	"devDependencies": {
+		"@tevm/errors": "workspace:^",
+		"@tevm/node": "workspace:^",
 		"@tevm/tsconfig": "workspace:^",
-		"@tevm/tsupconfig": "workspace:^"
+		"@tevm/tsupconfig": "workspace:^",
+		"fast-check": "^4.11.0"
 	},
 	"peerDependencies": {
 		"viem": "^2.58.4"

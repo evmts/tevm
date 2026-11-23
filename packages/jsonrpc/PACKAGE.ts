@@ -1,6 +1,9 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
+import { Package as pkg_viem } from '../../extensions/viem/PACKAGE.js'
+import { Package as pkg_errors } from '../errors/PACKAGE.js'
+import { Package as pkg_node } from '../node/PACKAGE.js'
 import { scopedShell } from '../../factory/scoped-shell.js'
 import { vitestBench } from '../../factory/bench.js'
 
@@ -30,6 +33,8 @@ const benches = S.Filegroup({
 })
 
 const deps = S.Filegroup({ srcs: [packageJson] })
+const httpPeer = S.file('//packages/http-client/src/createHttpClient.js')
+const testDeps = [pkg_node.build, pkg_errors.build, pkg_viem.build, httpPeer]
 
 // build:dist.
 const build = Shell.Build({
@@ -59,21 +64,23 @@ const declarations = Shell.Build({
 const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
-	data: [srcs, tests, deps, tsconfig],
+	data: [srcs, tests, deps, ...testDeps, tsconfig],
 })
 
 // test:run.
 const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
-	data: [srcs, tests, deps, vitestConfig, tsconfig],
+	data: [srcs, tests, deps, ...testDeps, vitestConfig, tsconfig],
+	sandbox: { network: 'loopback' },
 })
 
 // test:coverage.
 const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
-	data: [srcs, tests, deps, vitestConfig, tsconfig],
+	data: [srcs, tests, deps, ...testDeps, vitestConfig, tsconfig],
+	sandbox: { network: 'loopback' },
 })
 
 // The floors are vitest.config.ts's thresholds verbatim. The config sets

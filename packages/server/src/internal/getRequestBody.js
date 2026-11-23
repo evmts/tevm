@@ -12,9 +12,6 @@ const normalizeBody = (body) => {
 	if (typeof body === 'string') {
 		return body
 	}
-	if (Buffer.isBuffer(body)) {
-		return body.toString('utf8')
-	}
 	try {
 		const normalizedBody = JSON.stringify(body)
 		if (normalizedBody !== undefined) {
@@ -30,7 +27,7 @@ const normalizeBody = (body) => {
 /**
  * Gets request body from an http request.
  * @param {import('http').IncomingMessage|{body: unknown}} req The request object
- * @param {{ maxBodySize?: number }} [options] Optional body reading options
+ * @param {{ maxBodySize?: number }} [options] Maximum UTF-8 body size in bytes (before decoding binary input)
  * @returns {Promise<string | ReadRequestBodyError | InvalidRequestError>} Request body as a promise
  * @throws {never} returns errors as value
  */
@@ -38,6 +35,11 @@ export const getRequestBody = (req, options = {}) => {
 	const { maxBodySize = Number.POSITIVE_INFINITY } = options
 	// If the request already has a body property, return it
 	if ('body' in req && req.body !== undefined) {
+		if (Buffer.isBuffer(req.body)) {
+			return Promise.resolve(
+				req.body.length > maxBodySize ? new ReadRequestBodyError(bodySizeErrorMessage) : req.body.toString('utf8'),
+			)
+		}
 		const body = normalizeBody(req.body)
 		if (body instanceof InvalidRequestError) {
 			return Promise.resolve(body)
@@ -51,6 +53,8 @@ export const getRequestBody = (req, options = {}) => {
 	// Otherwise, read from the stream
 	return new Promise((resolve) => {
 		let body = ''
+		let receivedBytes = 0
+		let endsWithHighSurrogate = false
 		const decoder = new StringDecoder('utf8')
 		let done = false
 
@@ -77,21 +81,27 @@ export const getRequestBody = (req, options = {}) => {
 				if (done) {
 					return
 				}
-				body += typeof chunk === 'string' ? chunk : decoder.write(chunk)
-				if (Buffer.byteLength(body, 'utf8') > maxBodySize) {
+				if (chunk.length === 0) return
+				if (typeof chunk === 'string') {
+					receivedBytes += Buffer.byteLength(chunk)
+					// Two adjacent surrogate halves encode as a single four-byte sequence.
+					if (endsWithHighSurrogate && /^[\uDC00-\uDFFF]/.test(chunk)) receivedBytes -= 2
+					endsWithHighSurrogate = /[\uD800-\uDBFF]$/.test(chunk)
+				} else {
+					receivedBytes += chunk.length
+					endsWithHighSurrogate = false
+				}
+				if (receivedBytes > maxBodySize) {
 					if (typeof req.pause === 'function') {
 						req.pause()
 					}
 					finish(new ReadRequestBodyError(bodySizeErrorMessage))
-				}
-			}
-			const onEnd = () => {
-				const finalBody = body + decoder.end()
-				if (Buffer.byteLength(finalBody, 'utf8') > maxBodySize) {
-					finish(new ReadRequestBodyError(bodySizeErrorMessage))
 					return
 				}
-				finish(finalBody)
+				body += typeof chunk === 'string' ? decoder.end() + chunk : decoder.write(chunk)
+			}
+			const onEnd = () => {
+				finish(receivedBytes > maxBodySize ? new ReadRequestBodyError(bodySizeErrorMessage) : body + decoder.end())
 			}
 
 			req.on('error', onError)

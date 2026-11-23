@@ -74,6 +74,7 @@
 		"@evmts/vite-plugin": "1.0.0-next.19",
 		"@tevm/tsconfig": "workspace:^",
 		"@tevm/tsupconfig": "workspace:^",
+		"fast-check": "^4.11.0",
 		"zod": "^4.4.3"
 	},
 	"publishConfig": {

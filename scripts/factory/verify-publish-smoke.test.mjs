@@ -5,7 +5,10 @@ import { test } from 'node:test'
 import { verifyPack, verifyStatic, workspacePackages } from './verify-publish-smoke.mjs'
 
 function fixture(t) {
-	const root = mkdtempSync(join(import.meta.dirname, '.publish-smoke-test-'))
+	// Live preflight scans for tarballs concurrently with these pack tests.
+	const artifacts = join(import.meta.dirname, '../../artifacts')
+	mkdirSync(artifacts, { recursive: true })
+	const root = mkdtempSync(join(artifacts, 'publish-smoke-test-'))
 	t.after(() => rmSync(root, { recursive: true, force: true }))
 	const packages = []
 	function write(path, content) {

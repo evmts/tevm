@@ -12,4 +12,4 @@ server.listen(8545, '127.0.0.1')
 process.once('SIGINT', () => server.close(() => { void client.tevmClose() }))
 ```
 
-`createHttpHandler`, `createWebSocketServer`, `createIpcServer`, `createExpressMiddleware`, and `createNextApiHandler` are also exported. Pass `{ cors: true }` as the third `createServer` argument for browser development. HTTP defaults to a 1 MiB body limit and 30-second request timeout; notification responses use HTTP 204.
+`createHttpHandler`, `createWebSocketServer`, `createIpcServer`, `createExpressMiddleware`, and `createNextApiHandler` are also exported. Pass `{ cors: true }` as the third `createServer` argument for browser development. HTTP defaults to a 1 MiB body limit and 30-second request timeout; notification responses use HTTP 204. The body limit counts incoming bytes before UTF-8 decoding and accepts a body exactly at the limit.

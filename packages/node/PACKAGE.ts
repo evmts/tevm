@@ -1,9 +1,10 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
-import { scopedShell } from '../../factory/scoped-shell.js'
 import { vitestBench } from '../../factory/bench.js'
+import { scopedShell } from '../../factory/scoped-shell.js'
 import { Package as pkg_errors } from '../errors/PACKAGE.js'
+import { Package as pkg_utils } from '../utils/PACKAGE.js'
 
 const Shell = scopedShell('packages/node')
 
@@ -31,7 +32,7 @@ const srcs = S.Filegroup({
 })
 
 const tests = S.Filegroup({
-	srcs: S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**', 'fixtures/**']),
+	srcs: [...S.glob(['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/__snapshots__/**', 'fixtures/**']), pkg_utils.srcs],
 })
 
 const benches = S.Filegroup({

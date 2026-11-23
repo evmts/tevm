@@ -5,7 +5,19 @@ import { NativeRpcError } from './NativeRpcError.js'
 
 /** Requests that execute EVM code and may capture Hardhat `console.log` calls. */
 const CONSOLE_LOG_METHODS = new Set(['eth_call', 'eth_estimateGas', 'eth_sendTransaction', 'eth_sendRawTransaction'])
-const CONSOLE_LOG_METHOD_PATTERN = /"method"\s*:\s*"(?:eth_call|eth_estimateGas|eth_sendTransaction|eth_sendRawTransaction)"/
+
+/** @param {string} json Raw JSON-RPC request, notification, or batch. */
+const executesConsoleLogMethod = (json) => {
+	try {
+		const request = JSON.parse(json)
+		return Array.isArray(request)
+			? request.some((item) => CONSOLE_LOG_METHODS.has(item?.method))
+			: CONSOLE_LOG_METHODS.has(request?.method)
+	} catch {
+		// The backend owns the parse error response. No method ran.
+		return false
+	}
+}
 
 /**
  * Create an isolated ZEVM engine with serialized JSON-RPC and events.
@@ -35,7 +47,11 @@ export function createZevmEngine(options = {}) {
 		if (value !== undefined && (!Number.isSafeInteger(value) || value < 0))
 			throw new TypeError(`${name} must be an unsigned safe integer`)
 	}
-	if (options.consoleLog !== undefined && typeof options.consoleLog !== 'boolean' && typeof options.consoleLog !== 'function')
+	if (
+		options.consoleLog !== undefined &&
+		typeof options.consoleLog !== 'boolean' &&
+		typeof options.consoleLog !== 'function'
+	)
 		throw new TypeError('consoleLog must be a boolean or a function')
 	/** @type {import('./ZevmEngine.js').ZevmBackend} */
 	let backend
@@ -56,14 +72,23 @@ export function createZevmEngine(options = {}) {
 	let id = 0
 	/** @type {Promise<unknown>} */
 	let queue = Promise.resolve()
-	/** @param {import('./ZevmEngine.js').EngineRequest} request */
-	const execute = async (request) => {
-		const response = JSON.parse(
-			/** @type {string} */ (await backend.rpc(JSON.stringify({ jsonrpc: '2.0', id: ++id, ...request }))),
-		)
+	/**
+	 * Decode one JSON-RPC response. A backend that answers with anything other than a
+	 * response object is a transport fault, so it throws instead of yielding `undefined`.
+	 * @param {string | null} json
+	 * @returns {import('./ZevmEngine.js').JsonValue}
+	 */
+	const parseResponse = (json) => {
+		const response = JSON.parse(/** @type {string} */ (json))
+		if (response === null || typeof response !== 'object' || Array.isArray(response))
+			throw new Error('backend returned an invalid JSON-RPC response')
 		if (response.error) throw new NativeRpcError(response.error)
-		return /** @type {import('./ZevmEngine.js').JsonValue} */ (response.result)
+		if (!('result' in response)) throw new Error('backend returned an invalid JSON-RPC response')
+		return response.result
 	}
+	/** @param {import('./ZevmEngine.js').EngineRequest} request */
+	const execute = async (request) =>
+		parseResponse(await backend.rpc(JSON.stringify({ jsonrpc: '2.0', id: ++id, ...request })))
 	const consoleLog = options.consoleLog
 	// Cleared when the native engine predates console capture (-32601), so later requests skip the drain.
 	let consoleLogSupported = Boolean(consoleLog)
@@ -98,18 +123,29 @@ export function createZevmEngine(options = {}) {
 		}
 	}
 	let lastBlock = 0n
+	// Counts block subscriptions (first listener added). `baselined` names the subscription
+	// `lastBlock` belongs to, so a new subscription never replays blocks mined before it.
+	let subscription = 0
+	let baselined = 0
 	// Poll only while subscribed: native interval mining happens on a background thread.
 	/** @type {ReturnType<typeof setInterval> | undefined} */
 	let blockTimer
 	const emitBlocks = async () => {
+		const current = subscription
 		const after = BigInt(/** @type {string} */ (await execute({ method: 'eth_blockNumber' })))
-		const before = lastBlock
-		lastBlock = after
-		for (let number = before + 1n; number <= after; number++) {
-			events.emit(
-				'block',
-				await execute({ method: 'eth_getBlockByNumber', params: [`0x${number.toString(16)}`, false] }),
-			)
+		if (current !== subscription) return
+		if (baselined !== current || after < lastBlock) {
+			baselined = current
+			lastBlock = after
+			return
+		}
+		while (lastBlock < after) {
+			const number = lastBlock + 1n
+			const block = await execute({ method: 'eth_getBlockByNumber', params: [`0x${number.toString(16)}`, false] })
+			if (current !== subscription) return
+			// Advance one block at a time: a failed fetch is retried by the next poll instead of skipped.
+			lastBlock = number
+			events.emit('block', block)
 		}
 	}
 	/** @param {string} json */
@@ -126,9 +162,11 @@ export function createZevmEngine(options = {}) {
 	}
 	events.on('newListener', (event) => {
 		if (event !== 'block' || blockTimer || closed) return
+		subscription++
+		// The first emitBlocks of a subscription only records its baseline.
 		void enqueue(async () => {
-			if (!closed) lastBlock = BigInt(/** @type {string} */ (await execute({ method: 'eth_blockNumber' })))
-		})
+			if (!closed) await emitBlocks()
+		}).catch(() => {})
 		blockTimer = setInterval(() => {
 			void enqueue(async () => {
 				if (!closed) await emitBlocks()
@@ -160,9 +198,14 @@ export function createZevmEngine(options = {}) {
 			if (options.mining?.interval !== undefined)
 				await execute({ method: 'evm_setIntervalMining', params: [options.mining.interval] })
 		} catch (error) {
-			clearInterval(blockTimer)
-			await backend.close()
+			// Mark closed before awaiting the backend so a listener added meanwhile starts no timer.
 			closed = true
+			clearInterval(blockTimer)
+			try {
+				await backend.close()
+			} catch {
+				// The initialization failure is the error callers need.
+			}
 			throw error
 		}
 	})
@@ -172,44 +215,47 @@ export function createZevmEngine(options = {}) {
 	return {
 		events,
 		ready: () => ready,
-		request: async (request) => {
-			await ready
-			return enqueue(async () => {
+		// Enqueue synchronously so calls run in the order they were issued, including
+		// relative to close(). Initialization is first in the queue and has settled by then.
+		request: (request) =>
+			enqueue(async () => {
+				await ready
 				if (closed) throw new Error('engine is closed')
 				events.emit('request', request)
 				// Drain even when execution fails: Hardhat prints logs emitted before a revert.
 				try {
-					const response = JSON.parse(
-						/** @type {string} */ (await dispatch(JSON.stringify({ jsonrpc: '2.0', id: ++id, ...request }))),
-					)
-					if (response.error) throw new NativeRpcError(response.error)
-					const result = /** @type {import('./ZevmEngine.js').JsonValue} */ (response.result)
+					const result = parseResponse(await dispatch(JSON.stringify({ jsonrpc: '2.0', id: ++id, ...request })))
 					events.emit('response', { request, result })
 					return result
 				} finally {
 					if (CONSOLE_LOG_METHODS.has(request.method)) await drainConsoleLogs()
 				}
-			})
-		},
-		rpc: async (json) => {
-			await ready
-			return enqueue(async () => {
+			}),
+		rpc: (json) =>
+			enqueue(async () => {
+				await ready
 				if (closed) throw new Error('engine is closed')
 				try {
 					return await dispatch(json)
 				} finally {
-					if (consoleLogSupported && CONSOLE_LOG_METHOD_PATTERN.test(json)) await drainConsoleLogs()
+					if (consoleLogSupported && executesConsoleLogMethod(json)) await drainConsoleLogs()
 				}
-			})
-		},
+			}),
 		close: () =>
 			enqueue(async () => {
 				if (closed) return
 				closed = true
 				clearInterval(blockTimer)
-				await backend.close()
-				events.emit('close')
-				events.removeAllListeners()
+				try {
+					await backend.close()
+				} finally {
+					// The engine is closed even when the backend fails to release its resources.
+					try {
+						events.emit('close')
+					} finally {
+						events.removeAllListeners()
+					}
+				}
 			}),
 	}
 }

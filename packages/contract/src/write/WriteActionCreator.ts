@@ -45,17 +45,21 @@ export type WriteActionCreator<
 		// Extract the names of the functions
 		// Use generic args to maintain typesafety. This is adapted from viem
 		TArgs extends AbiParametersToPrimitiveTypes<
-			ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName>['inputs']
+			ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'payable' | 'nonpayable'>['inputs']
 		> &
-			any[] = AbiParametersToPrimitiveTypes<ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName>['inputs']> &
+			any[] = AbiParametersToPrimitiveTypes<
+			ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'payable' | 'nonpayable'>['inputs']
+		> &
 			any[],
 	>(
 		// Take the same args as the function
 		...args: TArgs
 	) => {
 		functionName: TFunctionName
-		humanReadableAbi: FormatAbi<[ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName>]>
-		abi: [ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName>]
+		humanReadableAbi: FormatAbi<
+			[ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'payable' | 'nonpayable'>]
+		>
+		abi: [ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'payable' | 'nonpayable'>]
 		address: TAddress
 		to: TAddress
 	} & (TCode extends undefined ? {} : { code: TCode }) &
@@ -66,8 +70,10 @@ export type WriteActionCreator<
 				}) &
 		TAddressArgs) & {
 		functionName: TFunctionName
-		humanReadableAbi: FormatAbi<[ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName>]>
-		abi: [ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName>]
+		humanReadableAbi: FormatAbi<
+			[ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'payable' | 'nonpayable'>]
+		>
+		abi: [ExtractAbiFunction<ParseAbi<THumanReadableAbi>, TFunctionName, 'payable' | 'nonpayable'>]
 	} & (TCode extends undefined ? {} : { code: TCode }) &
 		TAddressArgs
 }

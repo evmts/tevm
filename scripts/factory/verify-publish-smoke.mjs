@@ -8,6 +8,8 @@ import { pathToFileURL } from 'node:url'
 import ts from 'typescript'
 import { repositoryRoot } from './lib.mjs'
 
+/** @typedef {{ dir: string, manifest: Record<string, any> }} SmokePackage */
+
 const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'))
 const isFile = (path) => statSync(path, { throwIfNoEntry: false })?.isFile()
 const isTevm = (name) => name === 'tevm' || name.startsWith('@tevm/')
@@ -83,6 +85,48 @@ function validTarget(target) {
 	)
 }
 
+// Read the exported configuration without evaluating package build scripts.
+function tsupEntries(config) {
+	const source = ts.createSourceFile(config, readFileSync(config, 'utf8'), ts.ScriptTarget.Latest)
+	const bindings = new Map()
+	function entries(node, seen = new Set()) {
+		if (!node || seen.has(node)) return
+		seen.add(node)
+		if (ts.isIdentifier(node)) return entries(bindings.get(node.text), seen)
+		if (ts.isCallExpression(node)) return entries(node.arguments[0], seen)
+		if (!ts.isObjectLiteralExpression(node)) return
+		// Later properties (including spreads) override earlier ones.
+		for (const item of [...node.properties].reverse()) {
+			if (ts.isPropertyAssignment(item) && item.name.text === 'entry') {
+				return ts.isArrayLiteralExpression(item.initializer)
+					? item.initializer.elements.filter(ts.isStringLiteralLike).map((element) => element.text)
+					: []
+			}
+			if (ts.isSpreadAssignment(item)) {
+				const inherited = entries(item.expression, seen)
+				if (inherited) return inherited
+			}
+		}
+	}
+	let exported
+	for (const node of source.statements) {
+		if (ts.isVariableStatement(node)) {
+			for (const decl of node.declarationList.declarations) {
+				if (ts.isIdentifier(decl.name)) bindings.set(decl.name.text, decl.initializer)
+			}
+		} else if (ts.isExportAssignment(node)) exported = node.expression
+		else if (
+			ts.isExpressionStatement(node) &&
+			ts.isBinaryExpression(node.expression) &&
+			node.expression.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+			node.expression.left.getText(source) === 'module.exports'
+		) {
+			exported = node.expression.right
+		}
+	}
+	return entries(exported) ?? ['src/index.js']
+}
+
 // Map missing outputs back to the configured tsup entry or tsc source.
 // An arbitrary file under dist/ or types/ is insufficient evidence.
 function buildSource({ dir, manifest }, target) {
@@ -95,9 +139,7 @@ function buildSource({ dir, manifest }, target) {
 		const name = stem.slice('dist/'.length)
 		const config = globSync('tsup.config.{ts,js,mjs,cjs}', { cwd: dir })[0]
 		if (config) {
-			const content = readFileSync(join(dir, config), 'utf8')
-			const entry = /\bentry\s*:\s*\[([^\]]*)\]/.exec(content)
-			const entries = entry ? [...entry[1].matchAll(/['"]([^'"]+)['"]/g)].map((match) => match[1]) : ['src/index.js']
+			const entries = tsupEntries(join(dir, config))
 			const source = entries.find(
 				(file) =>
 					file
@@ -131,7 +173,12 @@ function isWasiBuildOutput(pkg, target, packagesByDir) {
 	)
 }
 
-const hasExportFile = (dir, target) =>
+/** Check a literal or wildcard export target for at least one regular file.
+ * @param {string} dir
+ * @param {string} target
+ * @returns {boolean}
+ */
+export const hasExportFile = (dir, target) =>
 	target.includes('*')
 		? globSync(target, { cwd: dir }).some((path) => isFile(join(dir, path)))
 		: isFile(join(dir, target))
@@ -184,22 +231,71 @@ function manifestTarget(manifest, subpath, mode, types) {
 	}
 }
 
-function inspectModules(packages, paths) {
+/**
+ * Map an exported runtime condition to its source before preparing a release.
+ * @param {SmokePackage} pkg
+ * @param {'import' | 'require'} mode
+ * @returns {string | undefined}
+ */
+export function sourcePackageEntry(pkg, mode) {
+	const target = manifestTarget(pkg.manifest, '.', mode, false)
+	if (validTarget(target)) {
+		const path = join(pkg.dir, target)
+		if (target.startsWith('./src/') && isFile(path)) return path
+		const source = buildSource(pkg, target)
+		if (source) return source
+	}
+	const exts = mode === 'require' ? ['cts', 'cjs', 'ts', 'js', 'mts', 'mjs'] : ['mts', 'mjs', 'ts', 'js', 'cts', 'cjs']
+	return exts.map((ext) => join(pkg.dir, 'src', `index.${ext}`)).find(isFile)
+}
+
+/**
+ * Check statically named workspace imports, following the selected module condition and barrel bindings.
+ * @template {SmokePackage} P
+ * @param {P[]} packages
+ * @param {string[] | Set<string>} paths
+ * @param {(pkg: P, mode: 'import' | 'require') => string | undefined} [sourceEntry] Source resolver before dist exists.
+ * @returns {{ path: string, message: string, name?: string, specifier: string }[]}
+ */
+export function inspectModules(packages, paths, sourceEntry) {
 	const findings = []
 	const modules = new Map()
 	const byName = new Map(packages.map((pkg) => [pkg.manifest.name, pkg]))
 	const options = { allowJs: true, module: ts.ModuleKind.NodeNext, noLib: true, noResolve: true, types: [] }
 	const text = (node) => (node && (ts.isIdentifier(node) || ts.isStringLiteralLike(node)) ? node.text : undefined)
 
+	const program = ts.createProgram([...paths], options)
 	function inspect(path) {
 		if (modules.has(path)) return modules.get(path)
-		const program = ts.createProgram([path], options)
-		const source = program.getSourceFile(path)
-		const checker = program.getTypeChecker()
+		const owner = program.getSourceFile(path) ? program : ts.createProgram([path], options)
+		const source = owner.getSourceFile(path)
+		const checker = owner.getTypeChecker()
 		const symbol = source && checker.getSymbolAtLocation(source)
-		const exports = symbol ? checker.getExportsOfModule(symbol) : []
+		const exports = new Map()
+		for (const exported of symbol ? checker.getExportsOfModule(symbol) : []) {
+			const local = exported.declarations?.find(
+				(decl) => ts.isExportSpecifier(decl) && !decl.parent.parent.moduleSpecifier,
+			)
+			const binding = local ? checker.getExportSpecifierLocalTargetSymbol(local) : exported
+			if (!binding?.declarations?.length) continue
+			const runtime =
+				binding.flags & (ts.SymbolFlags.Value | ts.SymbolFlags.Alias) &&
+				!exported.declarations?.every(ts.isTypeOnlyImportOrExportDeclaration)
+			exports.set(exported.name, Boolean(runtime))
+		}
 		const references = []
-		const info = { exports, references }
+		const commonJS =
+			/\.c[jt]s$/.test(path) ||
+			(path.endsWith('.js') &&
+				source?.impliedNodeFormat === ts.ModuleKind.CommonJS &&
+				!source.statements.some(
+					(node) =>
+						ts.isImportDeclaration(node) ||
+						ts.isExportDeclaration(node) ||
+						ts.isExportAssignment(node) ||
+						node.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword),
+				))
+		const info = { exports, references, commonJS }
 		modules.set(path, info)
 		if (!source) return info
 
@@ -244,6 +340,29 @@ function inspectModules(packages, paths) {
 				add(specifier, defaultMode, undefined, clause?.isTypeOnly, star)
 				if (clause?.name) add(specifier, defaultMode, 'default', clause.isTypeOnly)
 				for (const item of bindings?.elements ?? []) {
+					if (!specifier && ts.isExportSpecifier(item)) {
+						const local = checker.getExportSpecifierLocalTargetSymbol(item)?.declarations?.[0]
+						if (local && ts.isImportSpecifier(local)) {
+							const clause = local.parent.parent
+							add(
+								text(clause.parent.moduleSpecifier),
+								defaultMode,
+								text(local.propertyName ?? local.name),
+								clause.isTypeOnly || local.isTypeOnly || item.isTypeOnly,
+								false,
+								text(item.name),
+							)
+						} else if (local && ts.isImportClause(local)) {
+							add(
+								text(local.parent.moduleSpecifier),
+								defaultMode,
+								'default',
+								local.isTypeOnly || item.isTypeOnly,
+								false,
+								text(item.name),
+							)
+						}
+					}
 					add(
 						specifier,
 						defaultMode,
@@ -302,6 +421,7 @@ function inspectModules(packages, paths) {
 		if (name) {
 			const pkg = byName.get(name)
 			if (!pkg) return
+			if (sourceEntry && !subpath) return sourceEntry(pkg, mode)
 			const target = manifestTarget(pkg.manifest, subpath ? `.${subpath}` : '.', mode, types)
 			if (!validTarget(target)) return
 			const path = join(pkg.dir, target)
@@ -311,7 +431,12 @@ function inspectModules(packages, paths) {
 			const path = resolve(dirname(from), specifier)
 			if (isFile(path) && !types) return path
 			const stem = path.replace(/\.[cm]?js$/, '')
-			return [`${stem}.ts`, `${stem}.d.ts`, `${stem}.tsx`, path, join(path, 'index.js')].find(isFile)
+			const extensions = path.endsWith('.mjs')
+				? ['.mts', '.d.mts']
+				: path.endsWith('.cjs')
+					? ['.cts', '.d.cts']
+					: ['.ts', '.d.ts', '.tsx']
+			return [...extensions.map((ext) => stem + ext), path, join(path, 'index.js')].find(isFile)
 		}
 		if (types) return ts.resolveModuleName(specifier, from, options, ts.sys).resolvedModule?.resolvedFileName
 		try {
@@ -322,27 +447,30 @@ function inspectModules(packages, paths) {
 	}
 
 	function hasExport(path, ref, seen = new Set()) {
-		if (seen.has(path)) return false
-		seen.add(path)
+		const binding = JSON.stringify([path, ref.name])
+		if (seen.has(binding)) return false
+		seen.add(binding)
 		const info = inspect(path)
 		const namedForward = info.references.find((forward) => forward.exported === ref.name)
 		if (namedForward) {
 			const target = resolveImport(path, namedForward)
+			// Source preflight can run before third-party dependencies have been
+			// linked. Their explicit named re-exports are checked again by smoke.
+			if (
+				!target &&
+				sourceEntry &&
+				!namedForward.specifier.startsWith('.') &&
+				!namedForward.specifier.startsWith('@tevm/')
+			) {
+				return ref.types || !namedForward.types
+			}
 			return (
 				target && (ref.types || !namedForward.types) && hasExport(target, { ...ref, name: namedForward.name }, seen)
 			)
 		}
-		if (
-			info.exports.some(
-				(symbol) =>
-					symbol.name === ref.name &&
-					(ref.types ||
-						(symbol.flags & (ts.SymbolFlags.Value | ts.SymbolFlags.Alias) &&
-							!symbol.declarations?.every(ts.isTypeOnlyImportOrExportDeclaration))),
-			)
-		)
-			return true
-		if (ref.name === 'default') return false
+		if (info.exports.has(ref.name) && (ref.types || info.exports.get(ref.name))) return true
+		// ESM import of a CommonJS module always exposes module.exports as its default.
+		if (ref.name === 'default') return !ref.types && ref.mode === 'import' && info.commonJS
 		return info.references.some((forward) => {
 			if (!forward.star || (forward.types && !ref.types)) return false
 			const target = resolveImport(path, forward)
@@ -354,6 +482,8 @@ function inspectModules(packages, paths) {
 		const seen = new Set()
 		for (const ref of inspect(path).references) {
 			if (!ref.specifier.startsWith('@tevm/')) continue
+			// Source preflight checks runtime bindings for package roots with a source entry.
+			if (sourceEntry && (ref.types || !ref.name || !byName.has(ref.specifier))) continue
 			const target = resolveImport(path, ref)
 			const problem = !target
 				? 'cannot resolve workspace export'
@@ -364,7 +494,7 @@ function inspectModules(packages, paths) {
 			const message = `${ref.mode}${ref.types ? ' types' : ''} ${ref.specifier}: ${problem}`
 			if (seen.has(message)) continue
 			seen.add(message)
-			findings.push({ path, message })
+			findings.push({ path, message, name: ref.name, specifier: ref.specifier })
 		}
 	}
 	return findings

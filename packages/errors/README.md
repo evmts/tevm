@@ -19,6 +19,8 @@ const error = new NoSignerAvailableError('No unlocked signer available for trans
 console.log(error instanceof BaseError, error.code, error.name)
 ```
 
+`JSON.stringify(error)` includes enumerable subclass fields and causes. It renders bigints as decimal strings and ancestor references as `"[Circular]"`. The original objects keep their values and identity.
+
 ## Documentation
 
 Visit [tevm.sh](https://tevm.sh/) for full documentation.

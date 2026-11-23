@@ -101,7 +101,7 @@ describe('@tevm/server protocol, framing, HTTP, WebSocket, and IPC fuzzing', () 
 				async (rawBytes, cutIndices, maxBodySize) => {
 					const fullBuf = Buffer.from(rawBytes)
 					const decodedExpected = fullBuf.toString('utf8')
-					const expectedByteLen = Buffer.byteLength(decodedExpected, 'utf8')
+					const expectedByteLen = fullBuf.length
 					const cuts = [...new Set(cutIndices.filter((c) => c > 0 && c < fullBuf.length))].sort((a, b) => a - b)
 
 					const req = new EventEmitter() as EventEmitter & { pause: () => void }

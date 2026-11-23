@@ -1,9 +1,22 @@
-import { existsSync, globSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+	existsSync,
+	globSync,
+	linkSync,
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs'
 import { createRequire } from 'node:module'
-import { dirname, join, relative, resolve } from 'node:path'
+import { dirname, join, matchesGlob, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import ts from 'typescript'
+import { hasExportFile, inspectModules, sourcePackageEntry } from './factory/verify-publish-smoke.mjs'
 
-const SEMVER_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/
+const SEMVER_RE =
+	/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/
 const FORBIDDEN_PROTOCOL_RE = /^(?:file:|link:|portal:)/
 const RUNTIME_DEP_FIELDS = /** @type {const} */ (['dependencies', 'peerDependencies', 'optionalDependencies'])
 const RETIRED_PACKAGES = [
@@ -28,7 +41,7 @@ function escapeRegex(str) {
 }
 
 /**
- * Minimal glob matcher for npm `files` entries and pnpm workspace patterns.
+ * Compile a simple path glob supporting single stars, globstars and question marks.
  * @param {string} pattern
  * @returns {RegExp}
  */
@@ -47,6 +60,8 @@ export function globToRegExp(pattern) {
 			}
 		} else if (ch === '*') {
 			out += '[^/]*'
+		} else if (ch === '?') {
+			out += '[^/]'
 		} else {
 			out += escapeRegex(ch)
 		}
@@ -66,19 +81,20 @@ export function parseWorkspacePatterns(yamlText) {
 	const exclude = []
 	let inPackages = false
 	for (const rawLine of yamlText.split(/\r?\n/)) {
-		const line = rawLine.replace(/#.*$/, '')
-		if (/^packages\s*:/.test(line)) {
+		if (/^packages\s*:/.test(rawLine)) {
 			inPackages = true
 			continue
 		}
-		if (inPackages && /^\S/.test(line)) {
-			inPackages = false
+		if (!inPackages || /^\s*(?:#|$)/.test(rawLine)) continue
+		const item = /^\s*-\s+(.+?)\s*$/.exec(rawLine)
+		if (!item) {
+			if (/^\S/.test(rawLine)) inPackages = false
 			continue
 		}
-		if (!inPackages) continue
-		const m = line.match(/^\s*-\s*['"]?([^'"]+)['"]?\s*$/)
-		if (!m) continue
-		const pattern = m[1].trim()
+		const quoted = /^(?:'((?:[^']|'')*)'|"((?:[^"\\]|\\.)*)")\s*(?:#.*)?$/.exec(item[1])
+		const pattern = quoted
+			? (quoted[1]?.replaceAll("''", "'") ?? JSON.parse(`"${quoted[2]}"`))
+			: item[1].replace(/\s+#.*$/, '').trim()
 		if (pattern.startsWith('!')) exclude.push(pattern.slice(1))
 		else include.push(pattern)
 	}
@@ -94,22 +110,18 @@ export function discoverWorkspacePackages(repoRoot) {
 	const wsPath = join(repoRoot, 'pnpm-workspace.yaml')
 	if (!existsSync(wsPath)) throw new Error(`Missing pnpm-workspace.yaml at ${wsPath}`)
 	const { include, exclude } = parseWorkspacePatterns(readFileSync(wsPath, 'utf8'))
-	const excludeRes = exclude.map((p) => globToRegExp(p))
-	/** @type {Map<string, WorkspacePackage>} */
+	const normalize = (pattern) => pattern.replace(/^\.\//, '').replace(/\/+$/, '')
+	const negatives = exclude.map((pattern) => `${normalize(pattern)}/package.json`)
+	const manifests = [...new Set(include.map((pattern) => `${normalize(pattern)}/package.json`))]
 	const seen = new Map()
-
-	for (const pattern of include) {
-		const manifestPattern = pattern.endsWith('/') ? `${pattern}package.json` : `${pattern}/package.json`
-		for (const match of globSync(manifestPattern, { cwd: repoRoot })) {
-			const manifestPath = resolve(repoRoot, match)
-			const dir = dirname(manifestPath)
-			const relDir = relative(repoRoot, dir).replace(/\\/g, '/')
-			if (relDir.includes('node_modules')) continue
-			if (excludeRes.some((re) => re.test(relDir))) continue
-			if (seen.has(manifestPath)) continue
-			const pkg = JSON.parse(readFileSync(manifestPath, 'utf8'))
-			seen.set(manifestPath, { dir, manifestPath, relDir, pkg })
-		}
+	const dependencyDir = (name) => name === 'node_modules' || name === 'bower_components'
+	for (const match of globSync(manifests, { cwd: repoRoot, exclude: (path) => path.split('/').some(dependencyDir) })) {
+		const manifestPath = resolve(repoRoot, match)
+		const dir = dirname(manifestPath)
+		const relDir = relative(repoRoot, dir).replace(/\\/g, '/')
+		if (negatives.some((pattern) => matchesGlob(`${relDir}/package.json`, pattern)) || seen.has(manifestPath)) continue
+		const pkg = JSON.parse(readFileSync(manifestPath, 'utf8'))
+		seen.set(manifestPath, { dir, manifestPath, relDir, pkg })
 	}
 	return [...seen.values()].sort((a, b) => a.relDir.localeCompare(b.relDir))
 }
@@ -144,9 +156,30 @@ export function isCoveredByNpmFiles(targetRel, filesField) {
  * @returns {{ major: number, minor: number, patch: number, prerelease: string | null } | null}
  */
 export function parseSemver(version) {
-	const m = version.match(/^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+.*)?$/)
-	if (!m) return null
+	const m = SEMVER_RE.exec(version)
+	if (!m || m[0] !== version || [m[1], m[2], m[3]].some((n) => !Number.isSafeInteger(Number(n)))) return null
+	if (m[4]?.split('.').some((id) => /^0\d+$/.test(id))) return null
 	return { major: Number(m[1]), minor: Number(m[2]), patch: Number(m[3]), prerelease: m[4] ?? null }
+}
+
+/** Compare dot-separated prerelease identifiers according to SemVer precedence. */
+function comparePrerelease(a, b) {
+	if (a === b) return 0
+	if (a === null) return 1
+	if (b === null) return -1
+	const left = a.split('.')
+	const right = b.split('.')
+	for (let i = 0; i < Math.min(left.length, right.length); i++) {
+		const x = left[i]
+		const y = right[i]
+		if (x === y) continue
+		const numericX = /^\d+$/.test(x)
+		const numericY = /^\d+$/.test(y)
+		if (numericX !== numericY) return numericX ? -1 : 1
+		if (numericX && x.length !== y.length) return x.length - y.length
+		return x < y ? -1 : 1
+	}
+	return left.length - right.length
 }
 
 /**
@@ -156,23 +189,18 @@ export function parseSemver(version) {
  * @returns {boolean}
  */
 export function satisfiesRange(version, range) {
+	const op = /^[~^]/.exec(range)?.[0] ?? ''
 	const v = parseSemver(version)
-	if (!v) return false
-	if (range.startsWith('^')) {
-		const r = parseSemver(range.slice(1))
-		if (!r) return false
-		if (v.prerelease && (v.major !== r.major || v.minor !== r.minor || v.patch !== r.patch)) return false
-		if (r.major > 0) return v.major === r.major && (v.minor > r.minor || (v.minor === r.minor && v.patch >= r.patch))
-		if (r.minor > 0) return v.major === 0 && v.minor === r.minor && v.patch >= r.patch
-		return v.major === 0 && v.minor === 0 && v.patch === r.patch
+	const r = parseSemver(range.slice(op.length))
+	if (!v || !r || v.major !== r.major) return false
+	if (v.minor === r.minor && v.patch === r.patch) {
+		if (v.prerelease && !r.prerelease) return false
+		const cmp = comparePrerelease(v.prerelease, r.prerelease)
+		return op ? cmp >= 0 : cmp === 0
 	}
-	if (range.startsWith('~')) {
-		const r = parseSemver(range.slice(1))
-		if (!r) return false
-		if (v.prerelease && (v.major !== r.major || v.minor !== r.minor || v.patch !== r.patch)) return false
-		return v.major === r.major && v.minor === r.minor && v.patch >= r.patch
-	}
-	return version === range
+	if (!op || v.prerelease || v.minor < r.minor || (v.minor === r.minor && v.patch < r.patch)) return false
+	if (op === '~') return v.minor === r.minor
+	return r.major > 0 || (r.minor > 0 && v.minor === r.minor)
 }
 
 /**
@@ -241,7 +269,11 @@ function inspectEntryTargets(pkg, label) {
 			targets.push(node)
 			return
 		}
-		if (!node || typeof node !== 'object' || Array.isArray(node)) return
+		if (!node || typeof node !== 'object') return
+		if (Array.isArray(node)) {
+			for (const item of node) walkExports(item, ctx)
+			return
+		}
 		const keys = Object.keys(node)
 		const typesIdx = keys.indexOf('types')
 		const defaultIdx = keys.indexOf('default')
@@ -271,7 +303,7 @@ function inspectEntryTargets(pkg, label) {
 		) {
 			errors.push(`${label}: top-level "types" (${pkg.types}) disagrees with exports["."] types (${importTypes})`)
 		}
-	}
+	} else if (pkg.exports) walkExports(pkg.exports, '.')
 
 	return { targets, errors }
 }
@@ -292,7 +324,7 @@ export function validatePackageManifests(allPackages, { repoRoot, checkDist = fa
 		const { pkg, dir, relDir } = entry
 		const label = `${pkg.name ?? relDir} (${relDir}/package.json)`
 
-		if (typeof pkg.version !== 'string' || !SEMVER_RE.test(pkg.version)) {
+		if (typeof pkg.version !== 'string' || !parseSemver(pkg.version)) {
 			errors.push(`${label}: invalid semver version "${pkg.version}"`)
 		}
 		const isNapiPlatform = /\/npm\/[^/]+$/.test(relDir)
@@ -312,7 +344,7 @@ export function validatePackageManifests(allPackages, { repoRoot, checkDist = fa
 			if (!isCoveredByNpmFiles(target, pkg.files)) {
 				errors.push(`${label}: entry target "${target}" is not covered by files[]`)
 			}
-			if (checkDist && !existsSync(join(dir, target))) {
+			if (checkDist && !hasExportFile(dir, target)) {
 				errors.push(`${label}: built entry target "${target}" does not exist on disk`)
 			}
 		}
@@ -328,7 +360,12 @@ export function validatePackageManifests(allPackages, { repoRoot, checkDist = fa
 			if (!deps || typeof deps !== 'object') continue
 			for (const [depName, spec] of Object.entries(deps)) {
 				if (typeof spec !== 'string') continue
-				if (FORBIDDEN_PROTOCOL_RE.test(spec) || spec.endsWith('.tgz')) {
+				const trimmed = spec.trim()
+				if (
+					FORBIDDEN_PROTOCOL_RE.test(trimmed) ||
+					trimmed.endsWith('.tgz') ||
+					(spec !== trimmed && trimmed.startsWith('workspace:'))
+				) {
 					errors.push(`${label}: ${field}.${depName} uses unpublishable specifier "${spec}"`)
 				}
 				if (spec.startsWith('workspace:')) {
@@ -388,14 +425,16 @@ export async function validateCommonAgainstViem(repoRoot) {
 	}
 
 	const chainKeys = new Set(Object.keys(chainsMod))
-	// Check every explicit named import/re-export from 'viem/chains'
-	const namedRe = /(?:import|export)\s*\{([^}]+)\}\s*from\s*['"]viem\/chains['"]/g
-	for (const match of src.matchAll(namedRe)) {
-		for (const rawPart of match[1].split(',')) {
-			const cleaned = rawPart.replace(/^\s*type\s+/, '').trim()
-			if (!cleaned) continue
-			const importedName = cleaned.split(/\s+as\s+/)[0].trim()
-			if (!chainKeys.has(importedName)) {
+	const source = ts.createSourceFile(commonIndexPath, src, ts.ScriptTarget.Latest)
+	for (const statement of source.statements) {
+		if (!(ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement))) continue
+		if (statement.moduleSpecifier?.text !== 'viem/chains') continue
+		const clause = ts.isImportDeclaration(statement) ? statement.importClause : statement
+		if (clause?.isTypeOnly) continue
+		const bindings = ts.isImportDeclaration(statement) ? clause?.namedBindings : statement.exportClause
+		for (const item of bindings?.elements ?? []) {
+			const importedName = (item.propertyName ?? item.name).text
+			if (!item.isTypeOnly && !chainKeys.has(importedName)) {
 				errors.push(
 					`@tevm/common: imports/re-exports "${importedName}" from viem/chains, which is missing in viem@${viemVersion}`,
 				)
@@ -408,104 +447,39 @@ export async function validateCommonAgainstViem(repoRoot) {
 	return { errors, chainCount: chainKeys.size, viemVersion }
 }
 
-/** Strip block and line comments so JSDoc `@example` snippets are never misread as live imports. */
-/** @param {string} src */
-function stripComments(src) {
-	return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:\\])\/\/[^\n]*/g, '$1')
-}
-
 /**
- * Collect exported runtime symbol names from a package's source tree (recursive barrel walk).
- * @param {string} entryFile
- * @param {Set<string>} [visited]
- * @returns {{ symbols: Set<string>, hasExternalStar: boolean }}
- */
-function collectSourceExports(entryFile, visited = new Set()) {
-	/** @type {Set<string>} */
-	const symbols = new Set()
-	let hasExternalStar = false
-	const abs = resolve(entryFile)
-	if (visited.has(abs) || !existsSync(abs)) return { symbols, hasExternalStar }
-	visited.add(abs)
-	const src = stripComments(readFileSync(abs, 'utf8'))
-
-	// export const/let/var/function/class Name
-	for (const m of src.matchAll(/\bexport\s+(?:async\s+)?(?:const|let|var|function|class)\s+([A-Za-z_$][\w$]*)/g)) {
-		symbols.add(m[1])
-	}
-	// export { a, b as c } [from '...']
-	for (const m of src.matchAll(/\bexport\s*\{([^}]+)\}/g)) {
-		for (const part of m[1].split(',')) {
-			const trimmed = part.trim()
-			if (!trimmed || /^type\s+/.test(trimmed)) continue
-			const asMatch = trimmed.match(/^([A-Za-z_$][\w$]*)\s+as\s+([A-Za-z_$][\w$]*)$/)
-			symbols.add(asMatch ? asMatch[2] : trimmed)
-		}
-	}
-	// export * from '...'
-	for (const m of src.matchAll(/\bexport\s+\*\s+from\s*['"]([^'"]+)['"]/g)) {
-		const spec = m[1]
-		if (!spec.startsWith('.')) {
-			hasExternalStar = true
-			continue
-		}
-		const base = resolve(dirname(abs), spec.replace(/\.(?:js|mjs|cjs)$/, ''))
-		for (const candidate of [`${base}.ts`, `${base}.js`, join(base, 'index.ts'), join(base, 'index.js')]) {
-			if (existsSync(candidate)) {
-				const child = collectSourceExports(candidate, visited)
-				for (const name of child.symbols) symbols.add(name)
-				if (child.hasExternalStar) hasExternalStar = true
-				break
-			}
-		}
-	}
-	return { symbols, hasExternalStar }
-}
-
-/**
- * Static Issue #2097 regression guard: verify runtime named imports between `@tevm/*` packages
- * actually exist in the target package's source exports (e.g. `NoSignerAvailableError` in `@tevm/errors`).
+ * Verify runtime references between workspace source packages before dist exists.
  * @param {WorkspacePackage[]} allPackages
  * @returns {string[]}
  */
 export function validateCrossPackageSymbols(allPackages) {
-	/** @type {string[]} */
-	const errors = []
-	const publishable = allPackages.filter((p) => !p.pkg.private && !p.relDir.startsWith('..'))
-	/** @type {Map<string, { symbols: Set<string>, hasExternalStar: boolean }>} */
-	const exportCache = new Map()
-
-	for (const pkg of publishable) {
-		const entry = [join(pkg.dir, 'src', 'index.ts'), join(pkg.dir, 'src', 'index.js')].find((p) => existsSync(p))
-		if (entry) exportCache.set(pkg.pkg.name, collectSourceExports(entry))
-	}
-
-	const importRe = /\bimport\s+(?!type\b)\{([^}]+)\}\s*from\s*['"](@tevm\/[^'"/]+)['"]/g
-	for (const pkg of publishable) {
-		const srcDir = join(pkg.dir, 'src')
-		if (!existsSync(srcDir)) continue
-		for (const relFile of globSync('**/*.{js,ts}', { cwd: srcDir })) {
-			if (/\.(?:spec|test|d)\.[jt]s$/.test(relFile)) continue
-			const content = stripComments(readFileSync(join(srcDir, relFile), 'utf8'))
-			for (const match of content.matchAll(importRe)) {
-				const targetName = match[2]
-				if (targetName === pkg.pkg.name) continue
-				const targetInfo = exportCache.get(targetName)
-				if (!targetInfo || targetInfo.hasExternalStar || targetInfo.symbols.size === 0) continue
-				for (const rawPart of match[1].split(',')) {
-					const trimmed = rawPart.trim()
-					if (!trimmed || /^type\s+/.test(trimmed)) continue
-					const imported = trimmed.split(/\s+as\s+/)[0].trim()
-					if (!targetInfo.symbols.has(imported)) {
-						errors.push(
-							`${pkg.pkg.name} (${pkg.relDir}/src/${relFile}): imports "${imported}" from "${targetName}", which does not export it`,
-						)
-					}
-				}
-			}
+	const packages = []
+	const owners = new Map()
+	for (const pkg of allPackages) {
+		if (pkg.pkg.private || pkg.relDir.startsWith('..')) continue
+		const src = join(pkg.dir, 'src')
+		if (!existsSync(src)) continue
+		const files = globSync('**/*.{js,ts,cjs,cts,mjs,mts}', { cwd: src })
+		const workspace = { dir: pkg.dir, manifest: pkg.pkg }
+		const entries = {
+			import: sourcePackageEntry(workspace, 'import'),
+			require: sourcePackageEntry(workspace, 'require'),
+		}
+		if (entries.import || entries.require) packages.push({ ...workspace, entries })
+		for (const file of files) {
+			if (/\.(?:spec|test|d)\.[cm]?[jt]s$/.test(file)) continue
+			const path = join(src, file)
+			// Some workspaces keep both a JS and TS root barrel. Only the one
+			// selected by the build can provide package-root re-exports.
+			if (/^index\.[cm]?[jt]s$/.test(file) && !Object.values(entries).includes(path)) continue
+			owners.set(path, pkg)
 		}
 	}
-	return errors
+	const sourceEntry = (pkg, mode) => pkg.entries[mode]
+	return inspectModules(packages, [...owners.keys()], sourceEntry).map(({ path, name, specifier }) => {
+		const pkg = owners.get(path)
+		return `${pkg.pkg.name} (${pkg.relDir}/${relative(pkg.dir, path)}): imports "${name}" from "${specifier}", which does not export it`
+	})
 }
 
 /**
@@ -570,9 +544,18 @@ export function validateTevmFacade(repoRoot) {
  * @returns {string[]}
  */
 export function findStrayTarballs(repoRoot) {
-	return globSync('**/*.tgz', { cwd: repoRoot }).filter(
-		(rel) => !/(?:^|\/)(?:node_modules|\.git|\.jj|\.nx|vendor|artifacts)\//.test(rel),
-	)
+	const ignored = new Set(['node_modules', '.git', '.jj', '.nx', 'vendor', 'artifacts'])
+	const found = []
+	function walk(dir) {
+		for (const entry of readdirSync(join(repoRoot, dir), { withFileTypes: true })) {
+			const path = join(dir, entry.name)
+			if (entry.isDirectory()) {
+				if (!ignored.has(entry.name)) walk(path)
+			} else if (entry.name.endsWith('.tgz')) found.push(path)
+		}
+	}
+	walk('')
+	return found.sort()
 }
 
 /**
@@ -609,7 +592,7 @@ export function planZevmPublishResolution(allPackages, repoRoot) {
 					errors.push(`${entry.pkg.name}: depends on "${depName}" (${spec}) but sibling ../zevm checkout is missing`)
 					continue
 				}
-				if (typeof sibling.pkg.version !== 'string' || !SEMVER_RE.test(sibling.pkg.version)) {
+				if (typeof sibling.pkg.version !== 'string' || !parseSemver(sibling.pkg.version)) {
 					errors.push(`${depName}: invalid sibling version "${sibling.pkg.version}"`)
 					continue
 				}
@@ -716,7 +699,22 @@ export function applyPublishPrep(edits, backupPath) {
 		originals[edit.path] = readFileSync(edit.path, 'utf8')
 	}
 	mkdirSync(dirname(backupPath), { recursive: true })
-	writeFileSync(backupPath, `${JSON.stringify({ version: 1, files: originals }, null, 2)}\n`)
+	// Publish a complete backup without replacing an existing one, even if
+	// another prepare process passed the existence check at the same time.
+	const staging = mkdtempSync(join(dirname(backupPath), '.publish-backup-'))
+	try {
+		const staged = join(staging, 'originals')
+		writeFileSync(staged, `${JSON.stringify({ version: 1, files: originals }, null, 2)}\n`)
+		try {
+			linkSync(staged, backupPath)
+		} catch (error) {
+			if (error.code === 'EEXIST')
+				throw new Error(`Backup file already exists at ${backupPath}; run --restore before applying again`)
+			throw error
+		}
+	} finally {
+		rmSync(staging, { recursive: true, force: true })
+	}
 	for (const edit of edits) {
 		writeFileSync(edit.path, edit.nextContent)
 	}

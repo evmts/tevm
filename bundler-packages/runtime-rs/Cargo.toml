@@ -29,5 +29,9 @@ libc = "0.2.191"
 napi-build = "2.6.0"
 
 [dev-dependencies]
-proptest = "1.6"
+# Standalone Rust test and example binaries run outside a Node host.
+napi = { version = "3.16.2", default-features = false, features = ["dyn-symbols"] }
+proptest = "1.12"
 
+# Parse generated JS, TS and declarations and check for duplicate bindings in tests.
+oxc = { version = "0.159", default-features = false, features = ["semantic"] }

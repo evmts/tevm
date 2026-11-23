@@ -2,7 +2,7 @@ use alloy_primitives::Bytes;
 use foundry_compilers::artifacts::Contract;
 use napi_derive::napi;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashSet};
 use strum::EnumString;
 use strum_macros::Display;
 #[cfg(test)]
@@ -178,7 +178,43 @@ fn contract_deployed_bytecode(contract: &Contract) -> Option<Bytes> {
         .cloned()
 }
 
-/// Generates runtime code for Tevm contracts
+// Preserve usable export names. Encode other names reversibly and leave their
+// original spelling in the artifact and declaration data.
+fn export_name(name: &str, contracts: &BTreeMap<String, TevmContract>) -> String {
+    static IDENTIFIER: once_cell::sync::Lazy<regex::Regex> = once_cell::sync::Lazy::new(|| {
+        regex::Regex::new(r"^[\p{ID_Start}$_][\p{ID_Continue}$\u{200C}\u{200D}]*$").unwrap()
+    });
+    // Strict-mode BindingIdentifier exclusions, followed by generator-reserved names.
+    const RESERVED: &[&str] = &[
+        "arguments", "eval", "await", "break", "case", "catch", "class", "const", "continue",
+        "debugger", "default", "delete", "do", "else", "enum", "export", "extends", "false",
+        "finally", "for", "function", "if", "implements", "import", "in", "instanceof",
+        "interface", "let", "new", "null", "package", "private", "protected", "public",
+        "return", "static", "super", "switch", "this", "throw", "true", "try", "typeof",
+        "var", "void", "while", "with", "yield",
+        "artifacts", "createContract", "__proto__",
+    ];
+    if IDENTIFIER.is_match(name) && !RESERVED.contains(&name) {
+        return name.to_owned();
+    }
+    let mut alias = format!("Tevm${}", hex::encode(name));
+    while contracts.contains_key(&alias) {
+        alias.push('$');
+    }
+    alias
+}
+
+fn private_name(prefix: &str, name: &str, used: &mut HashSet<String>) -> String {
+    let mut local = format!("{prefix}{name}");
+    while !used.insert(local.clone()) {
+        local.push('$');
+    }
+    local
+}
+
+/// Generates CJS, MJS, TypeScript or declarations in contract-name order.
+/// Original names remain keys of the artifacts export. Names that cannot serve
+/// as export bindings are encoded as described in the crate README.
 pub fn generate_runtime(
     contracts: Vec<(String, Contract)>,
     module_type: ModuleType,
@@ -187,8 +223,7 @@ pub fn generate_runtime(
 ) -> String {
     let package = contract_package.to_string();
     
-    // Convert the contracts into a HashMap of TevmContract objects
-    let mut tevm_contracts = HashMap::new();
+    let mut tevm_contracts = BTreeMap::new();
     
     for (name, contract) in contracts {
         let bytecode = if include_bytecode {
@@ -220,90 +255,73 @@ pub fn generate_runtime(
         return "// No contracts found in the solc output".to_string();
     }
 
-    // Create a JSON string version of all contracts
-    let contracts_json = serde_json::to_string_pretty(&tevm_contracts).unwrap_or_default();
+    let bindings: Vec<_> = tevm_contracts
+        .values()
+        .map(|contract| (export_name(&contract.name, &tevm_contracts), contract))
+        .collect();
+    let mut used: HashSet<_> = bindings.iter().map(|(name, _)| name.clone()).collect();
+    let contract_type = if matches!(module_type, ModuleType::Dts) && used.contains("Contract") {
+        private_name("_", "ContractType", &mut used)
+    } else {
+        "Contract".to_owned()
+    };
+    let mut output = match module_type {
+        ModuleType::Cjs => format!("const {{ createContract }} = require('{package}');\n\n"),
+        ModuleType::Dts if contract_type != "Contract" => {
+            format!("import type {{ Contract as {contract_type} }} from '{package}';\n\n")
+        }
+        ModuleType::Dts => format!("import type {{ Contract }} from '{package}';\n\n"),
+        _ => format!("import {{ createContract }} from '{package}';\n\n"),
+    };
 
-    // Generate code based on module type
-    match module_type {
-        ModuleType::Cjs => {
-            let mut output = format!("const {{ createContract }} = require('{}');\n\n", package);
-
-            for (name, contract) in &tevm_contracts {
-                let contract_json = serde_json::to_string_pretty(contract).unwrap_or_default();
-                output.push_str(&format!("const _{0} = {1};\n\n", name, contract_json));
-                output.push_str(&format!("/**\n * Contract implementation for {0}\n * @see [contract docs](https://tevm.sh/learn/contracts/) for more documentation\n */\n", name));
-                output.push_str(&format!(
-                    "module.exports.{0} = createContract(_{0});\n\n",
-                    name
-                ));
-            }
-
-            output.push_str(&format!("module.exports.artifacts = {};\n", contracts_json));
-            output
+    let export = if matches!(module_type, ModuleType::Cjs) {
+        "module.exports."
+    } else {
+        "export const "
+    };
+    let mut entries = Vec::new();
+    for (name, contract) in bindings {
+        let key = serde_json::to_string(&contract.name).expect("serializable contract name");
+        if matches!(module_type, ModuleType::Dts) {
+            let name_type = private_name("_name", &name, &mut used);
+            let abi_type = private_name("_abi", &name, &mut used);
+            output.push_str(&format!(
+                "// Contract name type\ndeclare const {name_type}: {key};\n// ABI type\ndeclare const {abi_type}: any[];\n\n"
+            ));
+            output.push_str(&format!(
+                "export const {name}: {contract_type}<\n  typeof {name_type},\n  typeof {abi_type},\n  undefined,\n  `0x${{string}}`,\n  `0x${{string}}`,\n  undefined\n>;\n\n"
+            ));
+            continue;
         }
 
-        ModuleType::Ts => {
-            let mut output = format!("import {{ createContract }} from '{}';\n\n", package);
-
-            for (name, contract) in &tevm_contracts {
-                let contract_json = serde_json::to_string_pretty(contract).unwrap_or_default();
-                output.push_str(&format!(
-                    "const _{0} = {1} as const;\n\n",
-                    name, contract_json
-                ));
-                output.push_str(&format!("/**\n * Contract implementation for {0}\n * @see [contract docs](https://tevm.sh/learn/contracts/) for more documentation\n */\n", name));
-                output.push_str(&format!(
-                    "export const {0} = createContract(_{0});\n\n",
-                    name
-                ));
-            }
-
-            output.push_str(&format!("export const artifacts = {};\n", contracts_json));
-            output
-        }
-
-        ModuleType::Mjs => {
-            let mut output = format!("import {{ createContract }} from '{}';\n\n", package);
-
-            for (name, contract) in &tevm_contracts {
-                let contract_json = serde_json::to_string_pretty(contract).unwrap_or_default();
-                output.push_str(&format!("const _{0} = {1};\n\n", name, contract_json));
-                output.push_str(&format!("/**\n * Contract implementation for {0}\n * @see [contract docs](https://tevm.sh/learn/contracts/) for more documentation\n */\n", name));
-                output.push_str(&format!(
-                    "export const {0} = createContract(_{0});\n\n",
-                    name
-                ));
-            }
-
-            output.push_str(&format!("export const artifacts = {};\n", contracts_json));
-            output
-        }
-
-        ModuleType::Dts => {
-            let mut output = format!("import type {{ Contract }} from '{}';\n\n", package);
-
-            for (name, _) in &tevm_contracts {
-                output.push_str(&format!(
-                    "// Contract name type\ndeclare const _name{0}: \"{0}\";\n",
-                    name
-                ));
-                output.push_str(&format!(
-                    "// ABI type\ndeclare const _abi{0}: any[];\n\n",
-                    name
-                ));
-                output.push_str(&format!(
-                    "/**\n * Contract type definition for {0}\n * @see [contract docs](https://tevm.sh/learn/contracts/) for more documentation\n */\n", name
-                ));
-                output.push_str(&format!(
-                    "export const {0}: Contract<\n  typeof _name{0},\n  typeof _abi{0},\n  undefined,\n  `0x${{string}}`,\n  `0x${{string}}`,\n  undefined\n>;\n\n",
-                    name
-                ));
-            }
-
-            output.push_str("export const artifacts: Record<string, any>;\n");
-            output
-        }
+        let local = private_name("_", &name, &mut used);
+        let json = serde_json::to_string_pretty(contract).expect("serializable TevmContract");
+        let assertion = if matches!(module_type, ModuleType::Ts) {
+            " as const"
+        } else {
+            ""
+        };
+        output.push_str(&format!("const {local} = {json}{assertion};\n\n"));
+        output.push_str(&format!("/**\n * Contract implementation for {name}\n * @see [contract docs](https://tevm.sh/learn/contracts/) for more documentation\n */\n"));
+        output.push_str(&format!("{export}{name} = createContract({local});\n\n"));
+        // A computed key keeps __proto__ an ordinary own property in JS object literals.
+        let property = if contract.name == "__proto__" {
+            format!("[{key}]")
+        } else {
+            key
+        };
+        entries.push(format!("  {property}: {json}"));
     }
+
+    if matches!(module_type, ModuleType::Dts) {
+        output.push_str("export const artifacts: Record<string, any>;\n");
+    } else {
+        output.push_str(&format!(
+            "{export}artifacts = {{\n{}\n}};\n",
+            entries.join(",\n")
+        ));
+    }
+    output
 }
 
 #[cfg(test)]
@@ -770,7 +788,7 @@ pub fn generate_runtime_js(
     include_bytecode: bool,
     contract_package: String,
 ) -> napi::Result<String> {
-    let contracts = match serde_json::from_str::<HashMap<String, Contract>>(&contracts_json) {
+    let contracts = match serde_json::from_str::<BTreeMap<String, Contract>>(&contracts_json) {
         Ok(contracts) => contracts.into_iter().collect(),
         Err(_) => serde_json::from_str::<Vec<(String, Contract)>>(&contracts_json)?,
     };

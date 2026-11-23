@@ -51,14 +51,16 @@ export const loadRemappings = (configFilePath) => {
 			}
 			const remappingEntries = remappings
 				.trim()
-				.split(/\r?\n/)
+				// remappings.txt may use LF, CRLF or lone CR line endings
+				.split(/\r\n|\r|\n/)
 				.map((entry) => entry.trim())
 				.filter((entry) => entry.length > 0)
 
 			// validate remappings
 			for (const remapping of remappingEntries) {
-				const remappingArr = remapping.split('=')
-				if (remappingArr.length !== 2) {
+				// Like solc and foundry, only the first `=` separates prefix from target.
+				// The target path itself may contain `=`. An empty prefix would match every import.
+				if (remapping.indexOf('=') < 1) {
 					return fail(
 						new InvalidRemappingsError(
 							`Invalid remapping ${remapping}. Remapping in remapping.txt should look like @solmate-utils/=lib/solmate/src/utils/`,
@@ -77,7 +79,9 @@ export const loadRemappings = (configFilePath) => {
 			const config = {
 				remappings: Object.fromEntries(
 					remappingEntries.map((remapping) => {
-						const [from, to = ''] = remapping.split('=')
+						const separatorIndex = remapping.indexOf('=')
+						const from = remapping.slice(0, separatorIndex)
+						const to = remapping.slice(separatorIndex + 1)
 						const relativeTarget = to.replace(/^[/\\]+/, '')
 						return /** @type {[string, string]}*/ ([from, `${baseDir}${relativeTarget}`])
 					}),

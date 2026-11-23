@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 import { BaseError } from './BaseError.js'
 
 describe('BaseError (additional cases)', () => {
@@ -13,6 +13,22 @@ describe('BaseError (additional cases)', () => {
 	class CustomErrorWithType extends Error {
 		errorType = 'CustomTypeError'
 	}
+
+	it('keeps standard JSON encodings for existing diagnostic fields', () => {
+		const date = new Date(0)
+		const shared = { date, bytes: Buffer.from([1]), boxed: Object(123), optional: undefined }
+		const error = new CustomError('bad', { cause: { first: shared, again: shared } })
+		expectTypeOf(error.toJSON()).toEqualTypeOf<Record<string, unknown>>()
+		expect(JSON.parse(JSON.stringify(error)).cause).toEqual(JSON.parse(JSON.stringify(error.cause)))
+	})
+
+	it('serializes nested bigints and cycles without changing the cause', () => {
+		const cause: unknown[] = [0n, Object(1n)]
+		cause.push(cause)
+		const error = new CustomError('bad', { cause })
+		expect(JSON.parse(JSON.stringify(error)).cause).toEqual(['0', '1', '[Circular]'])
+		expect(error.cause).toBe(cause)
+	})
 
 	it('should handle null cause', () => {
 		const error = new CustomError('Error with null cause', {

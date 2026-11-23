@@ -33,6 +33,15 @@ pub fn resolve_import_path(
     import_path: &str,
     cfg: &Config,
 ) -> Result<PathBuf, ResolveImportPathError> {
+    let invalid_path = |message| ResolveImportPathError::InvalidRelativePath {
+        context_path: context_path.display().to_string(),
+        import_path: import_path.to_owned(),
+        err: io::Error::new(io::ErrorKind::InvalidInput, message),
+    };
+    if import_path.contains('\0') {
+        return Err(invalid_path("NUL in import path"));
+    }
+
     // Extract the directory from the file path
     let dir_path = if context_path.is_file() || !context_path.exists() {
         context_path.parent().unwrap_or(&context_path).to_path_buf()
@@ -71,7 +80,20 @@ pub fn resolve_import_path(
     for (k, v) in cfg.remappings.iter() {
         if let Some(rest) = import_path.strip_prefix(k) {
             let rest = rest.trim_start_matches(&['/', '\\'][..]);
-            return Ok(PathBuf::from(v).join(rest));
+            // Normalize only the suffix. Parent imports within a package are valid,
+            // but they cannot remove a component of the configured target itself.
+            let mut suffix = PathBuf::new();
+            for component in Path::new(rest).components() {
+                match component {
+                    Component::CurDir => (),
+                    Component::Normal(part) if Path::new(part).file_name() == Some(part) => {
+                        suffix.push(part)
+                    }
+                    Component::ParentDir if suffix.pop() => (),
+                    _ => return Err(invalid_path("path leaves remapping target")),
+                }
+            }
+            return Ok(v.join(suffix));
         }
     }
 

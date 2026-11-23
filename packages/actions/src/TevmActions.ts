@@ -27,6 +27,7 @@ export type SetAccountParams = {
 	balance?: bigint
 	nonce?: bigint
 	deployedBytecode?: Hex
+	/** Hex storage slots and values of up to 32 bytes, left-padded to EVM words on the wire. */
 	storage?: Record<Hex, Hex>
 }
 export type GetAccountParams = { address: Address }

@@ -4,7 +4,7 @@ use crate::resolve_imports::ResolveImportsError;
 use crate::state::State;
 use crate::Config;
 use futures::{stream::FuturesUnordered, StreamExt};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use tokio::task;
 
@@ -64,74 +64,32 @@ pub async fn module_factory(
     )
     .await?;
 
-    if state.graph.lock().await.get(&entrypoint_id).expect(
-        "UnexpectedError: The entrypoint never got inserted. This indicates a bug in the program.",
-    ).imported_ids.is_empty() {
-        let graph = state.graph.lock().await.clone();
-        return Ok(graph);
-    }
-
+    let mut scheduled = HashSet::from([entrypoint_path.clone()]);
     let mut in_flight = FuturesUnordered::new();
-
-    for entrypoint_import in state.graph.lock().await.get(&entrypoint_id).expect(
-        "UnexpectedError: The entrypoint never got inserted. This indicates a bug in the program.",
-    ).imported_ids.iter() {
-        let state2 = state.clone();
-        let permit = state2.sem.clone().acquire_owned().await.unwrap();
-        let cfg2 = cfg.clone();
-        let entrypoint_import2 = entrypoint_import.to_path_buf();
-        in_flight.push(task::spawn(async move {
-            process_module(&entrypoint_import2, None, &cfg2, state2.clone(), permit).await
-        }));
-    }
-
-    while let Some(joined) = in_flight.next().await {
-        match joined {
-            Ok(Ok(next_module_id)) => {
-                // Get imported_ids safely with proper borrowing
-                let imported_ids = {
-                    let graph = state.graph.lock().await;
-                    match graph.get(&next_module_id) {
-                        Some(info) => info.imported_ids.clone(),
-                        None => {
-                            // Module wasn't inserted for some reason
-                            println!("Warning: Module {} not found in graph", next_module_id);
-                            continue;
-                        }
-                    }
-                };
-
-                for imp in imported_ids.iter() {
-                    let imp2 = imp.to_path_buf();
-                    let state2 = state.clone();
-                    let cfg2 = cfg.clone();
-                    let permit = state2.sem.clone().acquire_owned().await.unwrap();
-                    in_flight.push(task::spawn(async move {
-                        process_module(&imp2, None, &cfg2, state2, permit).await
-                    }))
-                }
-            }
-            Ok(Err(err)) => {
-                return Err(vec![ResolveImportsError::PathResolutionError {
-                    context_path: PathBuf::from("Unknown path"),
-                    cause:
-                        crate::resolve_import_path::ResolveImportPathError::NotFoundAbsolutePath {
-                            import_path: format!("Process module error: {:?}", err),
-                            causes: vec![],
-                        },
-                }]);
-            }
-            Err(err) => {
-                return Err(vec![ResolveImportsError::PathResolutionError {
-                    context_path: PathBuf::from("Unknown path"),
-                    cause:
-                        crate::resolve_import_path::ResolveImportPathError::NotFoundAbsolutePath {
-                            import_path: format!("Task join error: {:?}", err),
-                            causes: vec![],
-                        },
-                }]);
+    let mut completed = entrypoint_id;
+    loop {
+        // Release the graph lock before waiting for any I/O permits.
+        let imports = state.graph.lock().await[&completed].imported_ids.clone();
+        for path in imports {
+            if scheduled.insert(path.clone()) {
+                let permit = state.sem.clone().acquire_owned().await.unwrap();
+                let state = state.clone();
+                let cfg = cfg.clone();
+                in_flight.push(task::spawn(async move {
+                    process_module(&path, None, &cfg, state, permit).await
+                }));
             }
         }
+
+        let Some(joined) = in_flight.next().await else {
+            break;
+        };
+        completed = joined.map_err(|err| {
+            vec![ResolveImportsError::ReadError {
+                context_path: entrypoint_path.clone(),
+                message: format!("Module task failed: {err}"),
+            }]
+        })??;
     }
 
     let out = state.graph.lock().await.clone();

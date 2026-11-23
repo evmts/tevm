@@ -68,8 +68,12 @@
 		"viem": "^2.58.4"
 	},
 	"devDependencies": {
+		"@tevm/common": "workspace:^",
+		"@tevm/contract": "workspace:^",
+		"@tevm/predeploys": "workspace:^",
 		"@tevm/tsconfig": "workspace:^",
-		"@tevm/tsupconfig": "workspace:^"
+		"@tevm/tsupconfig": "workspace:^",
+		"fast-check": "^4.11.0"
 	},
 	"peerDependencies": {
 		"viem": "^2.58.4"

@@ -86,7 +86,10 @@ console.log(moduleInfo);
 
 ### resolveImports(filePath, code, remappings?, libs?)
 
-Resolves all import paths found in the given Solidity code.
+Resolves all import paths found in the given Solidity code. Each call parses the supplied text,
+including edits at the same file path. A remapped path can use `..` within its configured target.
+A suffix that would leave that target returns an error. Ordinary relative imports retain their
+usual parent-directory resolution.
 
 - **filePath** `string` - The absolute path of the file containing the imports
 - **code** `string` - The source code to scan for imports

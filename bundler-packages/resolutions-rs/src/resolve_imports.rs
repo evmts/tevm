@@ -2,18 +2,12 @@ use crate::resolve_import_path::resolve_import_path;
 use crate::resolve_import_path::ResolveImportPathError;
 use crate::Config;
 use crate::ResolvedImport;
-use once_cell::sync::Lazy;
 use solar::{
     interface::{diagnostics::ErrorGuaranteed, source_map::FileName, Session},
     parse::Parser,
 };
+use std::ops::Range;
 use std::path::{Path, PathBuf};
-
-static SOLAR_SESSION: Lazy<Session> = Lazy::new(|| {
-    Session::builder()
-        .with_buffer_emitter(solar::interface::ColorChoice::Auto)
-        .build()
-});
 
 #[derive(Debug)]
 pub enum ResolveImportsError {
@@ -67,55 +61,87 @@ pub fn resolve_imports_detailed(
     code: &str,
     cfg: &Config,
 ) -> Result<Vec<ResolvedImport>, Vec<ResolveImportsError>> {
+    Ok(resolve_imports_spanned(context_path, code, cfg)?
+        .into_iter()
+        .map(|(_, import)| import)
+        .collect())
+}
+
+pub(crate) fn resolve_imports_spanned(
+    context_path: &Path,
+    code: &str,
+    cfg: &Config,
+) -> Result<Vec<(Range<usize>, ResolvedImport)>, Vec<ResolveImportsError>> {
     let mut imports = Vec::new();
-    let mut errors = vec![];
+    let mut errors = Vec::new();
 
+    // Solar caches source text by filename for the lifetime of a session.
+    // Each call can supply different text for the same path.
+    let session = Session::builder().with_silent_emitter(None).build();
     let arena = solar::ast::Arena::new();
-
-    let _ = SOLAR_SESSION
-        .enter_sequential(|| -> Result<_, ErrorGuaranteed> {
-            let mut parser = Parser::from_source_code(
-                &SOLAR_SESSION,
-                &arena,
-                FileName::Real(context_path.to_path_buf()),
-                code.to_string(),
-            )?;
-            let ast = parser.parse_file().map_err(|err| err.emit())?;
-            for item in ast.items.iter() {
-                if let solar::ast::ItemKind::Import(import_dir) = &item.kind {
-                    match resolve_import_path(
-                        context_path.to_path_buf(),
-                        import_dir.path.value.as_str(),
-                        cfg,
-                    ) {
-                        Ok(p) => {
-                            let path_str = p.to_string_lossy().to_string();
-                            imports.push(ResolvedImport {
-                                original: import_dir.path.value.to_string(),
-                                absolute: path_str.clone(),
-                                updated: path_str,
-                            });
+    let parsed = session.enter_sequential(|| -> Result<(), ErrorGuaranteed> {
+        let mut parser = Parser::from_source_code(
+            &session,
+            &arena,
+            FileName::Real(context_path.to_owned()),
+            code,
+        )?;
+        let ast = parser.parse_file().map_err(|err| err.emit())?;
+        session.dcx.has_errors()?;
+        for item in ast.items.iter() {
+            let solar::ast::ItemKind::Import(import) = &item.kind else {
+                continue;
+            };
+            let literal = &import.path;
+            let original = literal.value.as_str();
+            let (bytes, _) = solar::parse::unescape::parse_string_literal(
+                original,
+                solar::ast::StrKind::Str,
+                literal.span,
+                &session,
+            );
+            session.dcx.has_errors()?;
+            let path = std::str::from_utf8(&bytes).map_err(|_| {
+                session
+                    .dcx
+                    .err("import path is not valid UTF-8")
+                    .span(literal.span)
+                    .emit()
+            })?;
+            match resolve_import_path(context_path.to_owned(), path, cfg) {
+                Ok(path) => {
+                    let absolute = path.to_string_lossy().into_owned();
+                    // This session has exactly one source starting at byte zero.
+                    let span = literal.span.lo().to_usize()..literal.span.hi().to_usize();
+                    imports.push((
+                        span,
+                        ResolvedImport {
+                            original: original.to_owned(),
+                            updated: absolute.clone(),
+                            absolute,
                         },
-                        Err(cause) => errors.push(ResolveImportsError::PathResolutionError {
-                            context_path: context_path.to_path_buf(),
-                            cause,
-                        }),
-                    };
+                    ));
                 }
+                Err(cause) => errors.push(ResolveImportsError::PathResolutionError {
+                    context_path: context_path.to_owned(),
+                    cause,
+                }),
             }
-            Ok(())
-        })
-        .map_err(|cause| {
-            errors.push(ResolveImportsError::ParseError {
-                context_path: context_path.to_path_buf(),
-                cause,
-            })
+        }
+        Ok(())
+    });
+    if let Err(cause) = parsed {
+        errors.push(ResolveImportsError::ParseError {
+            context_path: context_path.to_owned(),
+            cause,
         });
-
-    if !errors.is_empty() {
-        return Err(errors);
     }
-    Ok(imports)
+
+    if errors.is_empty() {
+        Ok(imports)
+    } else {
+        Err(errors)
+    }
 }
 
 #[cfg(test)]

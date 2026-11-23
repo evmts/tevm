@@ -25,6 +25,7 @@ export const tevmContract = async (client, params) => {
 				/** @type {import('viem').DecodeFunctionResultParameters} */ ({
 					abi: params.abi,
 					functionName: params.functionName,
+					args: params.args,
 					data: result.rawData,
 				}),
 			)

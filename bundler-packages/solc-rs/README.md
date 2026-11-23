@@ -151,6 +151,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 - `SolcOutput` - Type for the output from the solc compiler
 - `SolcError` - Error type for solc compilation errors
 
+Diagnostic byte offsets preserve solc's `-1` sentinel for whole-file warnings. The Rust
+`append_cbor` metadata setting serializes to the Standard JSON key `appendCBOR`.
+
 ### Main Functions
 
 - `create_solc(version: &str) -> Result<Solc, SolcError>` - Creates a solc compiler instance for the specified version

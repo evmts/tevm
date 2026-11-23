@@ -55,7 +55,7 @@ export class BaseError extends Error {
 				return args.cause
 			}
 			if (typeof args.cause !== 'object') {
-				return args
+				return String(args.cause)
 			}
 			if ('message' in args.cause) {
 				return /** @type {string}*/ (args.cause.message)
@@ -106,7 +106,7 @@ export class BaseError extends Error {
 		 * @type {number}
 		 */
 		this.code = code
-		if (args.cause) {
+		if (args.cause !== undefined && args.cause !== null) {
 			this.cause = /**@type {any} */ (args.cause)
 		}
 
@@ -123,6 +123,16 @@ export class BaseError extends Error {
 			...(details ? [`Details: ${details}`] : []),
 			`Version: ${this.version}`,
 		].join('\n')
+	}
+
+	/**
+	 * Return the enumerable error fields as JSON diagnostics. Bigints use decimal strings
+	 * and references back to an ancestor use `[Circular]`. Live causes and data retain their types.
+	 * @returns {Record<string, unknown>} A serializable snapshot including subclass fields.
+	 */
+	toJSON() {
+		const ancestors = new WeakSet([this])
+		return Object.fromEntries(Object.entries(this).map(([key, value]) => [key, snapshot(value, ancestors, key)]))
 	}
 
 	/**
@@ -145,4 +155,25 @@ function walk(err, fn) {
 	if (fn?.(err)) return err
 	if (err && typeof err === 'object' && 'cause' in err) return walk(err.cause, fn)
 	return fn ? null : err
+}
+
+/** @param {unknown} value @param {WeakSet<object>} ancestors @param {string} key @returns {unknown} */
+function snapshot(value, ancestors, key) {
+	if (typeof value === 'bigint') return value.toString()
+	if (value === null || typeof value !== 'object') return value
+	if (ancestors.has(value)) return '[Circular]'
+	if (value instanceof Number || value instanceof String || value instanceof Boolean) return value.valueOf()
+	if (value instanceof BigInt) return value.toString()
+	ancestors.add(value)
+	try {
+		if ('toJSON' in value && typeof value.toJSON === 'function' && value.toJSON !== BaseError.prototype.toJSON) {
+			const json = value.toJSON(key)
+			if (json !== value) return snapshot(json, ancestors, key)
+		}
+		return Array.isArray(value)
+			? value.map((item, index) => snapshot(item, ancestors, String(index)))
+			: Object.fromEntries(Object.entries(value).map(([key, item]) => [key, snapshot(item, ancestors, key)]))
+	} finally {
+		ancestors.delete(value)
+	}
 }

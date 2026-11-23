@@ -115,6 +115,7 @@ pub struct SolcDebugSettings {
 #[serde(rename_all = "camelCase")]
 pub struct SolcMetadataSettings {
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "appendCBOR", alias = "appendCbor")]
     pub append_cbor: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub use_literal_content: Option<bool>,
@@ -181,16 +182,18 @@ pub struct SolcErrorEntry {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct SolcSourceLocation {
     pub file: String,
-    pub start: u32,
-    pub end: u32,
+    /// Byte offset, or -1 for a diagnostic covering the whole file.
+    pub start: i64,
+    pub end: i64,
 }
 
 // Secondary source location in solc output
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct SolcSecondarySourceLocation {
     pub file: String,
-    pub start: u32,
-    pub end: u32,
+    /// Byte offset, or -1 for a diagnostic covering the whole file.
+    pub start: i64,
+    pub end: i64,
     pub message: String,
 }
 

@@ -10,8 +10,16 @@ const addJsdocScript = S.file('jsdoc-helper/add-jsdoc.js')
 const batchAddJsdocScript = S.file('jsdoc-helper/batch-add-jsdoc.js')
 const createBarrelFilesScript = S.file('createBarrelFiles.ts')
 const updateBiomeConfigScript = S.file('updateBiomeConfig.ts')
-const prepareChangesetPublishScript = S.file('prepare-changeset-publish.mjs')
-const prepareChangesetPublishTestScript = S.file('prepare-changeset-publish.test.mjs')
+const publishGuardSources = S.Filegroup({
+	srcs: S.glob(['prepare-changeset-publish.mjs', 'factory/verify-publish-smoke.mjs', 'factory/lib.mjs']),
+})
+const publishGuardTests = S.Filegroup({
+	srcs: S.glob([
+		'prepare-changeset-publish*.test.mjs',
+		'factory/verify-publish-smoke*.test.mjs',
+		'test-support/publish-fuzz.mjs',
+	]),
+})
 const pnpmPublishWrapperScript = S.file('pnpm-publish-wrapper/pnpm')
 const publishJsrScript = S.file('publish-jsr.js')
 const tevmJsrJson = S.file('//tevm/jsr.json')
@@ -85,14 +93,14 @@ const claudeTriage = S.Shell.Run({
 // cross-package symbols, and @evmts/zevm registry resolution before publish.
 const prepareChangesetPublish = S.Shell.Run({
 	bin: S.Runtime.bin,
-	args: ['prepare-changeset-publish.mjs'],
-	data: [prepareChangesetPublishScript],
+	args: ['scripts/prepare-changeset-publish.mjs'],
+	data: [publishGuardSources],
 })
 
 const prepareChangesetPublishTest = S.Shell.Test({
-	bin: S.Runtime.bin,
-	args: ['--test', 'prepare-changeset-publish.test.mjs'],
-	data: [prepareChangesetPublishScript, prepareChangesetPublishTestScript, pnpmPublishWrapperScript],
+	bin: S.PackageManager.bin,
+	args: ['-w', 'run', 'release:verify:test'],
+	data: [S.file('//package.json'), publishGuardSources, publishGuardTests, pnpmPublishWrapperScript],
 })
 
 // publish-jsr.js rewrites tevm/jsr.json to the workspace version and runs

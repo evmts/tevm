@@ -4,7 +4,10 @@ const S = Smithers
 import { scopedShell } from '../../factory/scoped-shell.js'
 import { vitestBench } from '../../factory/bench.js'
 import { Package as pkg_actions } from '../actions/PACKAGE.js'
+import { Package as pkg_common } from '../common/PACKAGE.js'
+import { Package as pkg_contract } from '../contract/PACKAGE.js'
 import { Package as pkg_node } from '../node/PACKAGE.js'
+import { Package as pkg_predeploys } from '../predeploys/PACKAGE.js'
 
 const Shell = scopedShell('packages/memory-client')
 
@@ -37,6 +40,7 @@ const benches = S.Filegroup({
 })
 
 const deps = S.Filegroup({ srcs: [packageJson, pkg_actions.build, pkg_node.build] })
+const fuzzDeps = S.Filegroup({ srcs: [pkg_common.build, pkg_contract.build, pkg_predeploys.build] })
 
 const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
@@ -67,7 +71,7 @@ const typecheck = Shell.Test({
 const test = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run'],
-	data: [srcs, tests, deps, vitestConfig, tsconfig, nativeAddon],
+	data: [srcs, tests, deps, fuzzDeps, vitestConfig, tsconfig, nativeAddon],
 })
 
 // vitest.config.ts sets `autoUpdate: true`; see packages/contract/PACKAGE.ts for
@@ -75,7 +79,7 @@ const test = Shell.Test({
 const testCoverage = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', '--coverage'],
-	data: [srcs, tests, deps, vitestConfig, tsconfig, nativeAddon],
+	data: [srcs, tests, deps, fuzzDeps, vitestConfig, tsconfig, nativeAddon],
 })
 
 const coverageGate = S.Alias(testCoverage)

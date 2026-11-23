@@ -1,5 +1,6 @@
 import { formatAbi } from 'abitype'
 import { succeed } from 'effect/Effect'
+import { needsExportAlias } from './needsExportAlias.js'
 
 /** @param {string | null | undefined} value */
 const escapeJSDoc = (value) =>
@@ -60,6 +61,12 @@ export const generateDtsBody = (artifacts, includeBytecode) => {
 						natspec.unshift(` * @notice ${escapeJSDoc(userdoc.notice)}`)
 					}
 
+					// Reserved words such as `class` are valid Solidity contract names but cannot be
+					// declared with `export const`. Declare them under an internal name and alias the export.
+					const aliased = needsExportAlias(contractName)
+					const declaration = aliased ? `declare const _tevm_${contractName}` : `export const ${contractName}`
+					const aliasExport = aliased ? `export { _tevm_${contractName} as ${contractName} };` : ''
+
 					// Generate type declaration for contracts with bytecode
 					if (includeBytecode) {
 						// biome-ignore lint/suspicious/noTemplateCurlyInString: generates TypeScript template literal type
@@ -82,7 +89,7 @@ export const generateDtsBody = (artifacts, includeBytecode) => {
 							' */',
 
 							// Type declaration for the contract
-							`export const ${contractName}: Contract<`,
+							`${declaration}: Contract<`,
 							`  typeof _name${contractName},`, // Contract name
 							`  typeof _abi${contractName},`, // ABI
 							'  undefined,', // Address placeholder
@@ -90,6 +97,7 @@ export const generateDtsBody = (artifacts, includeBytecode) => {
 							`  ${deployedBytecodeType},`, // Deployed bytecode
 							'  undefined', // Additional data - removed trailing comma
 							'>;',
+							aliasExport,
 						].filter(Boolean)
 					}
 
@@ -108,7 +116,8 @@ export const generateDtsBody = (artifacts, includeBytecode) => {
 						' */',
 
 						// Type declaration for the contract (without bytecode)
-						`export const ${contractName}: Contract<typeof _name${contractName}, typeof _abi${contractName}, undefined, undefined, undefined, undefined>;`,
+						`${declaration}: Contract<typeof _name${contractName}, typeof _abi${contractName}, undefined, undefined, undefined, undefined>;`,
+						aliasExport,
 					].filter(Boolean)
 				})
 				.join('\n')}

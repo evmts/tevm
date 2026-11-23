@@ -44,7 +44,9 @@ export const resolveImportPath = (absolutePath, importPath, remappings, libs, sy
 	// Remappings
 	for (const [key, value] of Object.entries(remappings).sort(([a], [b]) => b.length - a.length)) {
 		if (importPath.startsWith(key)) {
-			return succeed(formatPath(pathResolve(importPath.replace(key, value))))
+			// Do not use String.prototype.replace here: `$&`, `$'` and friends in the
+			// remapping target would be interpreted as replacement patterns.
+			return succeed(formatPath(pathResolve(`${value}${importPath.slice(key.length)}`)))
 		}
 	}
 	// Local import "./LocalContract.sol"

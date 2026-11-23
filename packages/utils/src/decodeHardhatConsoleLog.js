@@ -1,4 +1,4 @@
-import { decodeAbiParameters, toFunctionSelector } from 'viem'
+import { decodeAbiParameters, hexToBytes, toFunctionSelector } from 'viem'
 
 /** Argument types used by `log(...)` overloads with one to four arguments. */
 const LOG_TYPES = ['uint256', 'int256', 'string', 'bool', 'address']
@@ -35,18 +35,19 @@ const buildSelectorTable = () => {
 	const table = new Map()
 	for (const { name, types } of entries) {
 		const signature = `${name}(${types.join(',')})`
-		table.set(toFunctionSelector(signature), { signature, types })
+		const entry = { signature, types }
+		table.set(toFunctionSelector(signature), entry)
 		const legacy = `${name}(${types.map((type) => type.replace(/^(u?int)256$/, '$1')).join(',')})`
-		if (legacy !== signature) {
-			const selector = toFunctionSelector(legacy)
-			if (!table.has(selector)) table.set(selector, { signature, types })
-		}
+		const legacySelector = toFunctionSelector(legacy)
+		if (!table.has(legacySelector)) table.set(legacySelector, entry)
 	}
 	return table
 }
 
 /** @type {Map<string, {signature: string; types: string[]}> | undefined} */
 let selectorTable
+
+const utf8 = new TextDecoder('utf-8', { ignoreBOM: true })
 
 /**
  * Render one decoded console argument the way Hardhat prints it.
@@ -70,9 +71,8 @@ const formatArgs = (args) => {
 		const value = rest[index++]
 		if (specifier === 's') return formatValue(value)
 		if (specifier === 'o') return typeof value === 'string' ? `'${value}'` : formatValue(value)
-		if (typeof value === 'bigint') return value.toString()
-		if (typeof value === 'number') return Math.trunc(value).toString()
-		return 'NaN'
+		// The only numeric console overloads are 256-bit integers, decoded as bigint.
+		return typeof value === 'bigint' ? value.toString() : 'NaN'
 	})
 	return [head, ...rest.slice(index).map(formatValue)].join(' ')
 }
@@ -98,9 +98,14 @@ export const decodeHardhatConsoleLog = (calldata) => {
 	const entry = selectorTable.get(/** @type {`0x${string}`} */ (calldata.slice(0, 10).toLowerCase()))
 	if (!entry) return null
 	try {
-		const args = decodeAbiParameters(
-			entry.types.map((type) => ({ type })),
+		// ABI strings have the wire layout of bytes. Decode their exact length until
+		// viem's string decoder preserves leading NULs and the U+FEFF code point.
+		const values = decodeAbiParameters(
+			entry.types.map((type) => ({ type: type === 'string' ? 'bytes' : type })),
 			/** @type {`0x${string}`} */ (`0x${calldata.slice(10)}`),
+		)
+		const args = values.map((value, i) =>
+			entry.types[i] === 'string' ? utf8.decode(hexToBytes(/** @type {`0x${string}`} */ (value))) : value,
 		)
 		return { formatted: formatArgs(args), args, signature: entry.signature }
 	} catch {

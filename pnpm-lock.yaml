@@ -1328,6 +1328,9 @@ importers:
       '@tevm/tsupconfig':
         specifier: workspace:^
         version: link:../../configs/tsupconfig
+      fast-check:
+        specifier: ^4.11.0
+        version: 4.11.0
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -1404,12 +1407,21 @@ importers:
         specifier: ^2.49.3
         version: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     devDependencies:
+      '@tevm/errors':
+        specifier: workspace:^
+        version: link:../errors
+      '@tevm/node':
+        specifier: workspace:^
+        version: link:../node
       '@tevm/tsconfig':
         specifier: workspace:^
         version: link:../../configs/tsconfig
       '@tevm/tsupconfig':
         specifier: workspace:^
         version: link:../../configs/tsupconfig
+      fast-check:
+        specifier: ^4.11.0
+        version: 4.11.0
 
   packages/logger:
     dependencies:
@@ -1467,12 +1479,24 @@ importers:
         specifier: ^2.49.3
         version: 2.49.3(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@4.4.3)
     devDependencies:
+      '@tevm/common':
+        specifier: workspace:^
+        version: link:../common
+      '@tevm/contract':
+        specifier: workspace:^
+        version: link:../contract
+      '@tevm/predeploys':
+        specifier: workspace:^
+        version: link:../predeploys
       '@tevm/tsconfig':
         specifier: workspace:^
         version: link:../../configs/tsconfig
       '@tevm/tsupconfig':
         specifier: workspace:^
         version: link:../../configs/tsupconfig
+      fast-check:
+        specifier: ^4.11.0
+        version: 4.11.0
 
   packages/node:
     dependencies:
@@ -1542,6 +1566,9 @@ importers:
       express:
         specifier: ^5.2.1
         version: 5.2.1
+      fast-check:
+        specifier: ^4.11.0
+        version: 4.11.0
       next:
         specifier: ^16.2.6
         version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)

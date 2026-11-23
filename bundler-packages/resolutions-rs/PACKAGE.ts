@@ -56,7 +56,7 @@ const buildDebug = S.Cargo.Build({
 // set (root CI's "Tests Rust" step).
 const testRust = S.Cargo.Test({
 	package: 'tevm_resolutions_rs',
-	data: [srcs],
+	data: [srcs, S.file('proptest-regressions/fuzz_proptest.txt')],
 })
 
 // build:napi. The local package-mode Flows release does not yet wrap napi,

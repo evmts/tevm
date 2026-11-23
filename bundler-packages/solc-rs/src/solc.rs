@@ -61,11 +61,17 @@ pub fn solc_compile(solc: &Solc, input: &SolcInputDescription) -> Result<SolcOut
         ));
     }
     
-    // Parse the output JSON
-    let output_json = String::from_utf8_lossy(&output.stdout);
-    let solc_output: SolcOutput = serde_json::from_str(&output_json)
-        .map_err(|e| SolcError::SerializationError(format!("Failed to parse solc output: {}", e)))?;
-    
+    parse_output(&output.stdout)
+}
+
+pub(crate) fn parse_output(stdout: &[u8]) -> Result<SolcOutput, SolcError> {
+    // Serde skips unknown fields without checking the encoding of their strings.
+    let text = std::str::from_utf8(stdout)
+        .map_err(|e| SolcError::SerializationError(format!("Invalid UTF-8 in solc output: {e}")))?;
+    let solc_output: SolcOutput = serde_json::from_str(text).map_err(|e| {
+        SolcError::SerializationError(format!("Failed to parse solc output: {}", e))
+    })?;
+
     // Check for compilation errors
     if let Some(errors) = &solc_output.errors {
         for error in errors {
@@ -81,7 +87,7 @@ pub fn solc_compile(solc: &Solc, input: &SolcInputDescription) -> Result<SolcOut
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::{SolcLanguage, SolcInputSource};
+    use crate::models::{SolcInputSource, SolcLanguage, SolcSettings};
     use std::collections::HashMap;
     use std::env;
     
@@ -126,14 +132,16 @@ mod tests {
             .expect("Failed to execute solc command");
         
         let version_output = String::from_utf8_lossy(&output.stdout);
-        let version = version_output.split(' ').nth(2).unwrap_or("Unknown");
+        let version = version_output.lines()
+            .find_map(|line| line.strip_prefix("Version: "))
+            .expect("version field in solc --version");
         
         // Create solc instance
         let solc = Solc::new(solc_path, version.to_string());
         
         // Create a simple contract
         let contract = r#"
-            pragma solidity >=0.8.0;
+            pragma solidity >=0.4.16;
             
             contract SimpleStorage {
                 uint256 private storedData;
@@ -162,31 +170,25 @@ mod tests {
         let input = SolcInputDescription {
             language: SolcLanguage::Solidity,
             sources,
-            settings: None,
+            settings: Some(SolcSettings {
+                output_selection: Some(HashMap::from([(
+                    "*".into(),
+                    HashMap::from([("*".into(), vec!["abi".into()])]),
+                )])),
+                ..Default::default()
+            }),
         };
-        
-        // Compile the contract
-        match solc.compile(&input) {
-            Ok(output) => {
-                // Check if the compilation was successful
-                assert!(output.errors.is_none() || output.errors.as_ref().unwrap().iter().all(|e| e.severity != "error"));
-                
-                // Check if the contract was compiled
-                if let Some(contracts) = output.contracts {
-                    if let Some(simple_storage) = contracts.get("SimpleStorage.sol") {
-                        assert!(simple_storage.contains_key("SimpleStorage"));
-                    } else {
-                        panic!("SimpleStorage.sol not found in output contracts");
-                    }
-                } else {
-                    panic!("No contracts found in output");
-                }
-            },
-            Err(e) => {
-                // If compilation fails, it might be due to solidity version incompatibility
-                // Just print the error and don't fail the test
-                println!("Compilation error (possibly due to solidity version incompatibility): {}", e);
-            }
-        }
+
+        let output = solc.compile(&input).expect("compile SimpleStorage");
+        let contracts = output.contracts.expect("requested contract output");
+        let abi = contracts["SimpleStorage.sol"]["SimpleStorage"]
+            .abi
+            .as_ref()
+            .unwrap();
+        assert!(abi
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item["name"] == "get"));
     }
 }
