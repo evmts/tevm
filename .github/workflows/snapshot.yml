@@ -12,9 +12,6 @@ env:
   TEVM_RPC_URLS_MAINNET: "${{ secrets.TEVM_RPC_URLS_MAINNET }}"
   TEVM_RPC_URLS_OPTIMISM: "${{ secrets.TEVM_RPC_URLS_OPTIMISM }}"
   TEVM_TEST_ALCHEMY_KEY: "${{ secrets.TEVM_TEST_ALCHEMY_KEY }}"
-  NPM_TOKEN: "${{ secrets.NPM_TOKEN }}"
-  GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-  NPM_CONFIG_PROVENANCE: "true"
 jobs:
   snapshot:
     runs-on: ubuntu-latest
@@ -25,4 +22,13 @@ jobs:
       - name: Checkout pinned native sources
         run: node scripts/factory/checkout-native.mjs
       - uses: "./.github/actions/setup"
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          registry-url: https://registry.npmjs.org
       - run: pnpm exec smthrs target //:snapshot
+        env:
+          NPM_TOKEN: "${{ secrets.NPM_TOKEN }}"
+          NODE_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          NPM_CONFIG_PROVENANCE: "true"

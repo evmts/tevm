@@ -174,6 +174,14 @@ import { B } from 'OtherContract.sol';`)
 })
 
 describe('updateImportPath lexical scanning', () => {
+	it('rewrites decoded paths and escapes each replacement for its surrounding quotes', () => {
+		const source = String.raw`import '\x41.sol'; import "\u0041.sol";`
+		const path = `/Users/josé/foo's/"B"/C\\D.sol`
+		const expected = String.raw`import '/Users/jos\u00e9/foo\'s/"B"/C\\D.sol'; import "/Users/jos\u00e9/foo's/\"B\"/C\\D.sol";`
+		expect(updateImportPath(source, 'A.sol', path)).toBe(expected)
+		expect(runSync(updateImportPaths(source, [{ original: 'A.sol', updated: path, absolute: path }]))).toBe(expected)
+	})
+
 	it('rewrites imports after a line comment containing /* and leaves strings alone', () => {
 		const source = '// /*\nimport "./A.sol"; string constant s = "import \\"./A.sol\\";";'
 		expect(updateImportPath(source, './A.sol', '/abs/A.sol')).toBe(

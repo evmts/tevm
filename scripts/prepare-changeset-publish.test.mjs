@@ -39,15 +39,21 @@ function writeJson(filePath, data, indent = '\t') {
 /**
  * Create an isolated temporary TEVM + sibling ZEVM workspace fixture for unit tests.
  */
-function createFixtureWorkspace() {
+function createFixtureWorkspace({ viemVersion = '2.58.4' } = {}) {
 	const parent = mkdtempSync(join(tmpdir(), 'tevm-publish-prep-'))
 	const repoRoot = join(parent, 'tevm')
 	const zevmNpm = join(parent, 'zevm', 'npm')
 	mkdirSync(repoRoot, { recursive: true })
 	mkdirSync(zevmNpm, { recursive: true })
 
-	// Symlink root node_modules so viem/chains resolves cleanly in fixture
-	symlinkSync(join(REPO_ROOT, 'node_modules'), join(repoRoot, 'node_modules'))
+	const viem = join(repoRoot, 'node_modules', 'viem')
+	writeJson(join(viem, 'package.json'), {
+		name: 'viem',
+		version: viemVersion,
+		type: 'module',
+		exports: { './package.json': './package.json', './chains': './chains.js' },
+	})
+	writeFileSync(join(viem, 'chains.js'), 'export const foundry = { id: 31337 }\n')
 
 	writeFileSync(join(repoRoot, 'pnpm-workspace.yaml'), `packages:\n  - 'packages/*'\n  - 'tevm'\n  - '../zevm/npm/*'\n`)
 	writeJson(join(repoRoot, 'package.json'), {
@@ -162,6 +168,13 @@ function createFixtureWorkspace() {
 	writeFileSync(join(repoRoot, 'tevm', 'index.ts'), `export { createZevmEngine } from '@tevm/node'\n`)
 	writeFileSync(join(repoRoot, 'tevm', 'index.d.ts'), `export { createZevmEngine } from '@tevm/node';\n`)
 	writeFileSync(join(repoRoot, 'tevm', 'index.d.cts'), `export { createZevmEngine } from '@tevm/node';\n`)
+	writeFileSync(join(repoRoot, 'tevm', 'index.js'), "export { createZevmEngine } from '@tevm/node'\n")
+	for (const name of ['actions', 'common', 'errors', 'node']) {
+		const dist = join(repoRoot, 'packages', name, 'dist')
+		mkdirSync(dist)
+		writeFileSync(join(dist, 'index.js'), 'export {}\n')
+		writeFileSync(join(dist, 'index.d.ts'), 'export {}\n')
+	}
 
 	// Sibling @evmts/zevm
 	writeJson(join(zevmNpm, 'zevm', 'package.json'), { name: '@evmts/zevm', version: '0.1.0', main: 'index.js' }, 2)
@@ -252,6 +265,24 @@ describe('publish preflight & lifecycle', () => {
 			assert.ok(res.errors.some((e) => e.includes('NoSignerAvailableError') && e.includes('@tevm/errors')))
 		} finally {
 			fx.cleanup()
+		}
+	})
+
+	it('rejects an installed viem outside the declared range during dist or registry checks', async (t) => {
+		const fx = createFixtureWorkspace({ viemVersion: '2.49.3' })
+		t.after(fx.cleanup)
+		for (const checks of [{ checkDist: true }, { checkRegistry: true }]) {
+			const result = await runPublishPrep({
+				...checks,
+				repoRoot: fx.repoRoot,
+				mode: 'apply',
+				fetchImpl: async () => Response.json({ versions: { '0.1.0': {} } }),
+			})
+			assert.equal(result.ok, false)
+			assert.deepEqual(result.errors, [
+				'package.json: installed viem@2.49.3 does not satisfy devDependencies.viem "^2.58.4"',
+			])
+			assert.equal(existsSync(join(fx.repoRoot, '.changeset/.publish-prep-backup.json')), false)
 		}
 	})
 
@@ -479,7 +510,7 @@ describe('release:publish transaction', () => {
 		const tools = {
 			pnpm: 'exit 0',
 			nx: 'exit 0',
-			node: 'if [ "$2" = --restore ] && [ -f fail-restore ]; then exit 73; fi\nexec "$NODE_BIN" "$PREP" "$2" --repo-root "$PWD"',
+			node: 'if [ "$2" = --restore ] && [ -f fail-restore ]; then exit 73; fi\nshift\nexec "$NODE_BIN" "$PREP" "$@" --repo-root "$PWD"',
 			changeset,
 		}
 		for (const [name, body] of Object.entries(tools))
@@ -494,6 +525,9 @@ describe('release:publish transaction', () => {
 				NODE_BIN: process.execPath,
 				PREP: join(REPO_ROOT, 'scripts/prepare-changeset-publish.mjs'),
 				GITHUB_ACTIONS: 'false',
+				NODE_ENV: 'test',
+				TEVM_SKIP_REGISTRY_CHECK: '1',
+				npm_config_registry: 'file:///offline-registry',
 			},
 		}
 		const manifest = join(fx.repoRoot, 'packages/node/package.json')
@@ -502,6 +536,27 @@ describe('release:publish transaction', () => {
 		const entry = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'))).scripts['release:publish']
 		return { ...fx, entry, options, manifest, original, backup }
 	}
+
+	it('checks dist and registry before a local publish and only skips the registry on request', (t) => {
+		const fx = setup(t, 'exit 99')
+		rmSync(join(fx.repoRoot, 'packages/node/dist/index.js'))
+		for (const [nodeEnv, skip] of [
+			['test', '0'],
+			['test', '1'],
+			['production', '1'],
+		]) {
+			fx.options.env.NODE_ENV = nodeEnv
+			fx.options.env.TEVM_SKIP_REGISTRY_CHECK = skip
+			const result = spawnSync('sh', ['-c', fx.entry], { ...fx.options, encoding: 'utf8' })
+			assert.equal(result.status, 1)
+			assert.match(result.stderr, /built entry target ".*index.js" does not exist/)
+			assert.equal(
+				result.stderr.includes('registry lookup for @evmts/zevm errored'),
+				nodeEnv !== 'test' || skip === '0',
+			)
+			assert.equal(readFileSync(fx.manifest, 'utf8'), fx.original)
+		}
+	})
 
 	for (const signal of ['SIGINT', 'SIGTERM']) {
 		it(`restores original bytes after ${signal} reaches the publishing shell`, { timeout: 10_000 }, async (t) => {

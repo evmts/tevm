@@ -16,7 +16,11 @@ export function createHttpHandler(client, options = {}) {
 			if (req.method === 'OPTIONS') return void res.writeHead(204).end()
 		}
 		if (req.method !== 'POST') return void res.writeHead(405, { Allow: 'POST' }).end()
-		req.setTimeout(options.requestTimeout ?? 30_000, () => req.destroy())
+		// Mocked and adapter request objects (Express or Next.js test doubles) may not be sockets-backed streams.
+		if (typeof req.setTimeout === 'function')
+			req.setTimeout(options.requestTimeout ?? 30_000, () => {
+				if (typeof req.destroy === 'function') req.destroy()
+			})
 		const body = await getRequestBody(req, { maxBodySize: options.maxBodySize ?? 1024 * 1024 })
 		if (typeof body !== 'string') {
 			const status = { oversized: 413, invalid: 400, read_error: 500 }[body.kind]

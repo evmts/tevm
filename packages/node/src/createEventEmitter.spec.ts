@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createEventEmitter } from './createEventEmitter.js'
 
 describe('createEventEmitter', () => {
@@ -126,4 +126,87 @@ describe('createEventEmitter', () => {
 		])
 		expect(() => events.on('block', 'nope' as never)).toThrow(new TypeError('listener must be a function'))
 	})
+
+	it('runs a once listener a single time when an earlier listener emits the same event reentrantly', () => {
+		const events = createEventEmitter()
+		let depth = 0
+		let calls = 0
+		// The outer emit holds a snapshot that still contains the once entry the inner emit fired.
+		events.on('block', () => {
+			if (depth++ === 0) events.emit('block')
+		})
+		events.once('block', () => calls++)
+		events.emit('block')
+		expect(calls).toBe(1)
+		expect(events.listenerCount('block')).toBe(1)
+		events.emit('block')
+		expect(calls).toBe(1)
+	})
+
+	it('removes the most recent registration without Array.prototype.findLast (Chrome 91, Firefox 90)', () => {
+		vi.spyOn(Array.prototype, 'findLast').mockImplementation(() => {
+			throw new TypeError('findLast is not a function')
+		})
+		const events = createEventEmitter()
+		const seen: string[] = []
+		const listener = () => seen.push('x')
+		const other = () => seen.push('other')
+		events.once('block', listener)
+		events.on('block', other)
+		events.on('block', listener)
+		// The most recent registration is the `on` one: the `once` registration survives.
+		expect(events.off('block', listener)).toBe(events)
+		expect(events.listenerCount('block')).toBe(2)
+		events.emit('block')
+		events.emit('block')
+		expect(seen).toEqual(['x', 'other', 'other'])
+	})
+
+	it('reports an async listener rejection to onListenerError instead of leaving it unhandled', async () => {
+		const unhandled: unknown[] = []
+		const onUnhandled = (reason: unknown) => unhandled.push(reason)
+		process.on('unhandledRejection', onUnhandled)
+		try {
+			const errors: unknown[] = []
+			const events = createEventEmitter({
+				onListenerError: (error, event) => {
+					errors.push([event, (error as Error).message])
+					throw new Error('a throwing reporter is contained')
+				},
+			})
+			const seen: string[] = []
+			events.on('block', async () => {
+				throw new Error('async rejection')
+			})
+			events.on('block', () => ({
+				// biome-ignore lint/suspicious/noThenProperty: a hand-written thenable is the case under test
+				then: (_resolve: unknown, reject: (error: Error) => void) => reject(new Error('thenable rejection')),
+			}))
+			events.on('block', () => ({
+				// biome-ignore lint/suspicious/noThenProperty: a throwing `then` getter is the case under test
+				get then() {
+					throw new Error('then getter')
+				},
+			}))
+			events.on('block', async () => void seen.push('resolved'))
+			events.on('block', () => seen.push('sync'))
+			expect(events.emit('block')).toBe(true)
+			// Two macrotask turns let Node raise unhandledRejection if a rejection had no handler.
+			await new Promise((resolve) => setTimeout(resolve, 0))
+			await new Promise((resolve) => setTimeout(resolve, 0))
+			expect(seen).toEqual(['resolved', 'sync'])
+			expect(errors).toEqual([
+				['block', 'thenable rejection'],
+				['block', 'then getter'],
+				['block', 'async rejection'],
+			])
+			expect(unhandled).toEqual([])
+		} finally {
+			process.off('unhandledRejection', onUnhandled)
+		}
+	})
+})
+
+afterEach(() => {
+	vi.restoreAllMocks()
 })

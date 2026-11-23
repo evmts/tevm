@@ -1,4 +1,8 @@
+import { execFileSync } from 'node:child_process'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { runInNewContext } from 'node:vm'
 import { describe, expect, it } from 'vitest'
@@ -110,5 +114,68 @@ describe('browser bundle', () => {
 			code: 3,
 			data: '0x',
 		})
+	}, 60_000)
+})
+
+describe('CommonJS bundle', () => {
+	it('loads, drives an injected backend and resolves the native fallback without import.meta.url', async () => {
+		// The same transform as the published dist/index.cjs: esbuild compiles import.meta.url to undefined.
+		const result = await esbuild.build({
+			entryPoints: [fileURLToPath(new URL('./index.js', import.meta.url))],
+			alias: { '@tevm/utils': fileURLToPath(new URL('../../utils/src/index.ts', import.meta.url)) },
+			platform: 'node',
+			bundle: true,
+			write: false,
+			format: 'cjs',
+			logLevel: 'silent',
+		})
+		expect(result.errors).toEqual([])
+		const code = result.outputFiles[0]!.text
+		expect(code).toMatch(/import_meta\s*=\s*\{\}/)
+		// An empty directory outside any node_modules tree: `@evmts/zevm` is not resolvable from it.
+		const directory = mkdtempSync(join(tmpdir(), 'tevm-node-cjs-'))
+		try {
+			const file = join(directory, 'index.cjs')
+			writeFileSync(file, code)
+			// A separate plain Node process: no test-runner module hooks and no inherited NODE_PATH.
+			const script = join(directory, 'smoke.cjs')
+			writeFileSync(
+				script,
+				`const api = require('./index.cjs')
+const sent = []
+const engine = api.createZevmEngine({
+	backend: {
+		rpc: async (json) => {
+			const { id, method } = JSON.parse(json)
+			sent.push(method)
+			return JSON.stringify({ jsonrpc: '2.0', id, result: '0x1' })
+		},
+		close: () => {},
+	},
+})
+engine.request({ method: 'eth_chainId' }).then(async (result) => {
+	await engine.close()
+	let fallback
+	try {
+		api.createZevmEngine()
+		fallback = { created: true }
+	} catch (error) {
+		fallback = { code: error.code, message: error.message, causeCode: error.cause && error.cause.code }
+	}
+	console.log(JSON.stringify({ result, sent, fallback }))
+})
+`,
+			)
+			const { NODE_PATH: _nodePath, ...env } = process.env
+			const output = JSON.parse(execFileSync(process.execPath, [script], { cwd: directory, env, encoding: 'utf8' }))
+			expect(output.result).toBe('0x1')
+			expect(output.sent).toEqual(['eth_chainId'])
+			// The fallback reached module resolution: createRequire accepted the CommonJS filename.
+			expect(output.fallback.code).not.toBe('ERR_INVALID_ARG_VALUE')
+			expect(output.fallback.causeCode).toBe('MODULE_NOT_FOUND')
+			expect(output.fallback.message).toMatch(/could not find the optional dependency `@evmts\/zevm`/)
+		} finally {
+			rmSync(directory, { recursive: true, force: true })
+		}
 	}, 60_000)
 })

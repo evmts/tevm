@@ -18,7 +18,7 @@ const isShellError = (err) =>
 export const run = async ([scriptPath, ...positionals] = parseArgs(process.argv).positionals) => {
 	try {
 		const args = runArgs(/** @type {string} */ (scriptPath), positionals)
-		console.log(`[tevm-run] bun ${args.join(' ')}`)
+		console.log(`[tevm-run] ${scriptPath}`)
 		return await $`bun ${args}`
 	} catch (err) {
 		if (!isShellError(err)) throw err

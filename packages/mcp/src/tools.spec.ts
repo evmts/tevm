@@ -186,6 +186,55 @@ describe('Tevm MCP tools', () => {
 		expect(trace.steps[0].op).toBeTypeOf('string')
 	})
 
+	it('reports a caller gas limit as gasLimit and an estimate as estimatedGas', async () => {
+		const request = vi.spyOn(sessions.get(session).transport.tevm, 'request')
+		const send = { session, address: contractAddress, signature: 'set(uint256)', args: ['43'] }
+		const limited: any = await executeTool('evm_send_transaction', { ...send, gasLimit: '100000' }, sessions)
+		expect(limited.gasLimit).toBe('100000')
+		expect(limited).not.toHaveProperty('estimatedGas')
+		expect(request.mock.calls.map(([payload]) => payload.method)).not.toContain('eth_estimateGas')
+		await executeTool('evm_mine', { session }, sessions)
+		request.mockClear()
+		const estimated: any = await executeTool('evm_send_transaction', send, sessions)
+		expect(BigInt(estimated.estimatedGas)).toBeGreaterThan(21000n)
+		expect(estimated).not.toHaveProperty('gasLimit')
+		expect(request.mock.calls.map(([payload]) => payload.method)).toContain('eth_estimateGas')
+		request.mockRestore()
+		await executeTool('evm_mine', { session }, sessions)
+	})
+
+	it('returns cachedStorage only when includeCachedStorage is true', async () => {
+		const query = { session, address: contractAddress }
+		expect(await executeTool('evm_get_account', query, sessions)).not.toHaveProperty('cachedStorage')
+		expect(
+			await executeTool('evm_get_account', { ...query, includeCachedStorage: false }, sessions),
+		).not.toHaveProperty('cachedStorage')
+		expect(await executeTool('evm_get_account', { ...query, includeCachedStorage: true }, sessions)).toHaveProperty(
+			'cachedStorage',
+		)
+	})
+
+	it('reports a deployment whose transaction cannot be looked up instead of a raw TypeError', async () => {
+		const engine = sessions.get(session).transport.tevm
+		const native = engine.request.bind(engine)
+		const request = vi
+			.spyOn(engine, 'request')
+			.mockImplementation((payload) =>
+				payload.method === 'eth_getTransactionByHash' ? Promise.resolve(null) : native(payload),
+			)
+		const deploy = executeTool(
+			'evm_deploy_contract',
+			{ session, bytecode: artifact.bytecode, abi: artifact.abi, args: ['7'] },
+			sessions,
+		)
+		const error: any = await deploy.catch((caught) => caught)
+		request.mockRestore()
+		expect(error).toBeInstanceOf(Error)
+		expect(error).not.toBeInstanceOf(TypeError)
+		expect(error.message).toMatch(/^Deployment transaction 0x[0-9a-f]{64} was not found by eth_getTransactionByHash$/)
+		await executeTool('evm_mine', { session }, sessions)
+	})
+
 	it('surfaces a decode failure', async () => {
 		await expect(
 			executeTool(

@@ -1,18 +1,24 @@
 import * as fsSync from 'node:fs'
 import * as fsPromises from 'node:fs/promises'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { runInNewContext } from 'node:vm'
 import { createCache } from '@tevm/bundler-cache'
 import { defineConfig } from '@tevm/config'
 import { parseJson } from '@tevm/effect'
+import { createLogger } from '@tevm/logger'
 import { generateRuntime } from '@tevm/runtime'
 import { knownChains, parseUri } from '@tevm/whatsabi'
 import fc from 'fast-check'
 import ts from 'typescript'
-import { getAddress } from 'viem'
+import { getAddress, InvalidAddressError } from 'viem'
 import { describe, expect, it } from 'vitest'
+import { compileContracts } from '../../../bundler-packages/compiler/src/compiler/new/compiler/internal/compileContracts.js'
 import { resolveImports } from '../../../bundler-packages/resolutions/src/resolveImports.js'
+import { updateImportPath } from '../../../bundler-packages/resolutions/src/utils/updateImportPath.js'
+import type { SolcStorageLayout } from '../../../bundler-packages/solc/src/solcTypes.js'
 import { addressArb, hexBytesArb, solidityIdentifierArb } from './arbitraries.js'
 import { fcParams } from './config.js'
 
@@ -77,7 +83,11 @@ describe('Bundler packages and @tevm/effect fuzzing', () => {
 		await fc.assert(
 			fc.asyncProperty(fc.string({ maxLength: 256 }), async (raw) => {
 				const res = await runTevmEffect(parseJson(raw))
-				expect(['Right', 'Left']).toContain(res._tag)
+				if (res._tag === 'Left') {
+					expect(res.left).toMatchObject({ _tag: 'Fail', error: { _tag: 'ParseJsonError' } })
+				} else {
+					expect(res.right).toBeDefined()
+				}
 			}),
 			fcParams('pure', { numRuns: 300 }),
 		)
@@ -148,6 +158,49 @@ describe('Bundler packages and @tevm/effect fuzzing', () => {
 			),
 			fcParams('pure', { numRuns: 200 }),
 		)
+	})
+
+	it('compiles escaped imports and preserves anonymous events on a contract named __proto__', async () => {
+		const solc = createRequire(new URL('../../../bundler-packages/solc/package.json', import.meta.url))('solc')
+		const path = "/josé/it's/🚀.sol"
+		const source = updateImportPath("import './Dep.sol';", './Dep.sol', path)
+		const { compilationResult } = compileContracts(
+			solc,
+			{
+				[path]: 'contract Dep {}',
+				['__proto__']: `${source} contract __proto__ is Dep { event Seen(uint indexed value) anonymous; }`,
+			},
+			{
+				language: 'Solidity',
+				compilationOutput: ['abi', 'evm.bytecode', 'userdoc', 'storageLayout'],
+				hardfork: 'cancun',
+				solcVersion: solc.version().split('+')[0],
+				throwOnVersionMismatch: true,
+				throwOnCompilationError: true,
+			},
+			createLogger({ name: 'bundler-regression', level: 'error' }),
+		)
+
+		expect(Object.hasOwn(compilationResult, '__proto__')).toBe(true)
+		const contracts = compilationResult['__proto__']!.contract
+		expect(Object.keys(contracts)).toEqual(['__proto__'])
+		const artifact = contracts['__proto__']!
+		expect(artifact.storageLayout).toEqual({ storage: [], types: null } satisfies SolcStorageLayout)
+
+		const runtime = await runTevmEffect<string>(
+			generateRuntime({ ['__proto__']: { ...artifact, contractName: '__proto__' } }, 'cjs', false, '@tevm/contract'),
+		)
+		if (runtime._tag === 'Left') throw runtime.left
+		const module = { exports: {} as Record<string, { abi: unknown }> }
+		runInNewContext(runtime.right, { module, require: createRequire(import.meta.url) })
+		expect(module.exports['__proto__']?.abi).toEqual([
+			{
+				type: 'event',
+				name: 'Seen',
+				anonymous: true,
+				inputs: [{ type: 'uint256', internalType: 'uint256', name: 'value', indexed: true }],
+			},
+		])
 	})
 
 	it('fuzz: @tevm/resolutions resolveImports never crashes on arbitrary Solidity/comment/import inputs', async () => {
@@ -272,23 +325,31 @@ describe('Bundler packages and @tevm/effect fuzzing', () => {
 					expect(parsed).toBeDefined()
 					expect(parsed?.chainId).toBe(chainId)
 					expect(parsed?.address).toBe(getAddress(addr))
-					expect(parsed?.followProxies).toBe(followProxies === true ? true : undefined)
+					expect(parsed?.followProxies).toBe(followProxies)
 				},
 			),
 			fcParams('pure', { numRuns: 200 }),
 		)
 
+		const address = '0x0000000000000000000000000000000000000000'
+		expect(parseUri(`evm://${Number.MAX_SAFE_INTEGER}/${address}` as never)?.chainId).toBe(Number.MAX_SAFE_INTEGER)
+		for (const chain of ['9007199254740992', '9007199254740993', '9'.repeat(310)]) {
+			expect(parseUri(`evm://${chain}/${address}` as never)).toBeUndefined()
+		}
+
 		// Arbitrary adversarial strings MUST either return undefined or a valid ParsedUri (or cleanly reject bad EIP-55 checksum).
 		fc.assert(
 			fc.property(fc.string({ maxLength: 128 }), (raw) => {
+				let parsed: ReturnType<typeof parseUri>
 				try {
-					const parsed = parseUri(raw as never)
-					if (parsed !== undefined) {
-						expect(Number.isInteger(parsed.chainId)).toBe(true)
-						expect(parsed.address).toMatch(/^0x[0-9a-fA-F]{40}$/)
-					}
+					parsed = parseUri(raw as never)
 				} catch (error) {
-					expect(error).toBeInstanceOf(Error)
+					if (error instanceof InvalidAddressError) return
+					throw error
+				}
+				if (parsed !== undefined) {
+					expect(Number.isSafeInteger(parsed.chainId)).toBe(true)
+					expect(parsed.address).toMatch(/^0x[0-9a-fA-F]{40}$/)
 				}
 			}),
 			fcParams('pure', { numRuns: 300 }),

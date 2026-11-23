@@ -12,6 +12,7 @@ export const parseUri = (uri) => {
 	}
 
 	const chainId = Number.parseInt(match.groups?.['chainId'] ?? '1', 10)
+	if (!Number.isSafeInteger(chainId)) return undefined
 	const address = getAddress(/** @type {string}*/ (match.groups?.['address']))
 	const query = match.groups?.['query']
 

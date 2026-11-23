@@ -295,7 +295,7 @@ def splitLines (text : List Char) : List (List Char) := splitLinesGo [] false te
 
 def isSlash (c : Char) : Bool := c == '/' || c == '\\'
 
-/-- The directory prefix joined onto every target, with the separator the config path uses. -/
+/-- The directory prefix joined onto relative targets, with the separator the config path uses. -/
 def baseDir (configPath : List Char) : List Char :=
   let sep := if configPath.contains '\\' && !configPath.contains '/' then '\\' else '/'
   match configPath.getLast? with
@@ -306,7 +306,20 @@ def invalidMessage (entry : List Char) : List Char :=
   "Invalid remapping ".toList ++ entry ++
     ". Remapping in remapping.txt should look like @solmate-utils/=lib/solmate/src/utils/".toList
 
-/-- One trimmed entry: split on the first `=`, trim both halves, reject an empty prefix, strip leading slashes. -/
+/-- A POSIX or Windows root, including UNC paths and drive-qualified roots. -/
+def isAbsoluteTarget : List Char → Bool
+  | '/' :: _ | '\\' :: _ => true
+  | drive :: ':' :: sep :: _ => drive.isAlpha && isSlash sep
+  | _ => false
+
+/-- Join only relative targets to the config directory. -/
+def resolveTarget (base target : List Char) : List Char :=
+  if isAbsoluteTarget target then target else base ++ target
+
+theorem resolveTarget_absolute (base target : List Char) (h : isAbsoluteTarget target = true) :
+    resolveTarget base target = target := by simp [resolveTarget, h]
+
+/-- One trimmed entry: split at the first '=' and resolve the target of a non-empty prefix. -/
 def parseEntry (base entry : List Char) : Except (List Char) Entry :=
   match splitFirst '=' entry with
   | ([], _) => .error (invalidMessage entry)
@@ -314,7 +327,7 @@ def parseEntry (base entry : List Char) : Except (List Char) Entry :=
   | (c :: cs, some target) =>
     let key := jsTrim (c :: cs)
     if key.isEmpty then .error (invalidMessage entry)
-    else .ok (key, base ++ (jsTrim target).dropWhile isSlash)
+    else .ok (key, resolveTarget base (jsTrim target))
 
 def parseEntries (base : List Char) : List (List Char) → Except (List Char) (List Entry)
   | [] => .ok []
@@ -343,10 +356,10 @@ def parse (configPath text : List Char) : Except (List Char) (List Entry) :=
 
 /-! ### Well-formedness -/
 
-/-- A well-formed entry: non-empty prefix without `=`, target rooted at `base` without a leading slash. -/
+/-- An entry has a non-empty, '='-free prefix and an absolute or base-relative target. -/
 def EntryWF (base : List Char) (p : Entry) : Prop :=
   p.1 ≠ [] ∧ '=' ∉ p.1 ∧
-    ∃ t, p.2 = base ++ t ∧ t.head? ≠ some '/' ∧ t.head? ≠ some '\\'
+    (isAbsoluteTarget p.2 = true ∨ ∃ t, isAbsoluteTarget t = false ∧ p.2 = base ++ t)
 
 theorem splitFirst_not_mem (sep : Char) (l : List Char) : sep ∉ (splitFirst sep l).1 := by
   induction l with
@@ -356,17 +369,6 @@ theorem splitFirst_not_mem (sep : Char) (l : List Char) : sep ∉ (splitFirst se
     · simp [splitFirst, h]
     · simp only [splitFirst, h, if_false, List.mem_cons, not_or]
       exact ⟨fun h' => h h'.symm, ih⟩
-
-theorem head_dropWhile_isSlash (l : List Char) :
-    (l.dropWhile isSlash).head? ≠ some '/' ∧ (l.dropWhile isSlash).head? ≠ some '\\' := by
-  induction l with
-  | nil => simp
-  | cons c cs ih =>
-    by_cases h : isSlash c = true
-    · simpa [List.dropWhile, h] using ih
-    · have h' : isSlash c = false := by simpa using h
-      simp only [List.dropWhile, h', List.head?_cons]
-      constructor <;> intro hc <;> injection hc with hc <;> subst hc <;> simp [isSlash] at h'
 
 theorem mem_dropWhile {α : Type} (p : α → Bool) {l : List α} {x : α} (h : x ∈ l.dropWhile p) : x ∈ l := by
   induction l with
@@ -400,7 +402,10 @@ theorem parseEntry_wf {base entry : List Char} {p : Entry} (h : parseEntry base 
     · rename_i hneKey
       cases h
       refine ⟨by simpa [List.isEmpty_iff] using hneKey, fun hmem => hne (mem_jsTrim hmem),
-        (jsTrim target).dropWhile isSlash, rfl, head_dropWhile_isSlash (jsTrim target)⟩
+        ?_⟩
+      cases ht : isAbsoluteTarget (jsTrim target) with
+      | true => exact Or.inl (by simpa [resolveTarget, ht] using ht)
+      | false => exact Or.inr ⟨jsTrim target, ht, by simp [resolveTarget, ht]⟩
 
 theorem parseEntries_wf {base : List Char} {lines : List (List Char)} {ps : List Entry}
     (h : parseEntries base lines = .ok ps) : ∀ p ∈ ps, EntryWF base p := by
@@ -485,7 +490,7 @@ theorem nodup_foldl_upsert {ps m : List Entry} (h : (m.map Prod.fst).Nodup) :
   | nil => simpa using h
   | cons p rest ih => simpa using ih (nodup_upsert p h)
 
-/-- Well-formedness: every accepted remapping has a non-empty `=`-free prefix and a based target. -/
+/-- Well-formedness: every accepted remapping has a non-empty `=`-free prefix and an absolute or base-relative target. -/
 theorem parse_wf {configPath text : List Char} {m : List Entry}
     (h : parse configPath text = .ok m) : ∀ p ∈ m, EntryWF (baseDir configPath) p := by
   unfold parse at h

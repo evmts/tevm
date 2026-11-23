@@ -15,12 +15,11 @@ describe(runArgs.name, () => {
 		])
 	})
 
-	it('logs exactly the command that run executes', async () => {
+	it('logs only the script path when positional arguments are supplied', async () => {
 		const log = spyOn(console, 'log')
 		try {
-			await run(['./example/vanilla.ts'])
-			expect(log).toHaveBeenCalledWith(`[tevm-run] bun ${runArgs('./example/vanilla.ts', []).join(' ')}`)
-			expect(log.mock.calls.flat().join('\n')).not.toContain('--bun')
+			await run(['./example/vanilla.ts', 'private-positional'])
+			expect(log.mock.calls).toEqual([['[tevm-run] ./example/vanilla.ts']])
 		} finally {
 			log.mockRestore()
 		}

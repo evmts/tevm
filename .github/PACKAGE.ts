@@ -82,18 +82,19 @@ const release = S.Github.Workflow({
 		workflowDispatch: true,
 	},
 	concurrency: { group: 'release-${{ github.ref }}', cancelInProgress: false },
+	environment: 'npm-release',
 	permissions: { contents: 'write', pullRequests: 'write', idToken: 'write' },
 	setup,
 	env: rpcEnvironment,
 	steps: releaseSteps,
 })
 
-// prerelease.yml: every push to main publishes under the `next` tag with
-// trusted publishing (id-token, no NPM_TOKEN).
+// Main uses the same approval environment as the stable release train.
 const prerelease = S.Github.Workflow({
 	name: 'prerelease',
 	on: { push: { branches: ['main'] } },
 	concurrency: { group: 'prerelease-${{ github.ref }}', cancelInProgress: false },
+	environment: 'npm-release',
 	permissions: { contents: 'write', pullRequests: 'write', idToken: 'write' },
 	setup,
 	env: rpcEnvironment,
@@ -141,13 +142,23 @@ const snapshot = S.Github.Workflow({
 	concurrency: { group: 'snapshot-${{ github.ref }}', cancelInProgress: false },
 	setup,
 	permissions: { contents: 'read', idToken: 'write' },
-	env: {
-		...rpcEnvironment,
-		NPM_TOKEN: '${{ secrets.NPM_TOKEN }}',
-		GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}',
-		NPM_CONFIG_PROVENANCE: 'true',
-	},
-	steps: nativeSteps('pnpm exec smthrs target //:snapshot'),
+	env: rpcEnvironment,
+	steps: [
+		...nativeSetup(),
+		{
+			uses: 'actions/setup-node@v4',
+			with: { 'node-version-file': '.nvmrc', 'registry-url': 'https://registry.npmjs.org' },
+		},
+		{
+			run: 'pnpm exec smthrs target //:snapshot',
+			env: {
+				NPM_TOKEN: '${{ secrets.NPM_TOKEN }}',
+				NODE_AUTH_TOKEN: '${{ secrets.NPM_TOKEN }}',
+				GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}',
+				NPM_CONFIG_PROVENANCE: 'true',
+			},
+		},
+	],
 })
 
 // jsr-publish.yml: dispatch with a dry-run switch. //tevm:publishJsr carries
@@ -246,7 +257,7 @@ const benchmarks = S.Github.Workflow({
 // (the daily Claude Code maintenance job; its work is the agent lanes under
 // workflows/ once those run on a schedule), and claude-code-review.yml, which
 // //:prReview reads as its prompt. Factory intake and settlement remain
-// hand-written because they use a two-job approval/artifact boundary the
+// hand-written because they use an approval and artifact boundary the
 // current renderer cannot express.
 // The pinned renderer interpolates cache inputs directly into a shell program.
 // Use its graph renderer with a local composite-action adapter until upstream

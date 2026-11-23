@@ -19,7 +19,7 @@
 
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { registerHooks, stripTypeScriptTypes } from 'node:module'
 import { join } from 'node:path'
 import { after, before, test } from 'node:test'
@@ -27,7 +27,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { buildOracle, REPO_ROOT as REPO, VOLTAIRE_TS } from '../oracle.mjs'
 
 const HERE = import.meta.dirname
-const VOLTAIRE = join(VOLTAIRE_TS, 'src')
+const sourceDir = join(VOLTAIRE_TS, 'src')
+// Node passes physical file URLs to the load hook, even when VOLTAIRE_DIR is a symlink.
+const VOLTAIRE = existsSync(sourceDir) ? realpathSync(sourceDir) : sourceDir
 /** Path of the compiled oracle, set by the `before` hook's incremental `lake build`. */
 let ORACLE
 const SEED = Number(process.env.PROTOCOL_FUZZ_SEED ?? 0x7e5a0ca)
@@ -55,7 +57,7 @@ registerHooks({
 		return next(specifier, context)
 	},
 	load(url, context, next) {
-		if (!url.endsWith('.ts') || !url.startsWith(pathToFileURL(VOLTAIRE).href)) return next(url, context)
+		if (!url.endsWith('.ts') || !url.startsWith(pathToFileURL(`${VOLTAIRE}/`).href)) return next(url, context)
 		const source = readFileSync(fileURLToPath(url), 'utf8').replace(
 			/export enum (\w+) \{([^}]*)\}/g,
 			(_, name, body) => `export const ${name} = {${body.replace(/(\w+)\s*=/g, '$1:')}}`,

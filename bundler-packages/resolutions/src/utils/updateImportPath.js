@@ -2,6 +2,19 @@ import { succeed } from 'effect/Effect'
 import { scanSolidityImports } from './scanSolidityImports.js'
 
 /**
+ * @param {string} path
+ * @param {string} quote
+ */
+const escapePath = (path, quote) =>
+	path.replace(/['"\\]|[^\x20-\x7e]/gu, (char) => {
+		if (char === quote || char === '\\') return `\\${char}`
+		if (char === '"' || char === "'") return char
+		// solc encodes each \u escape separately, so use UTF-8 bytes for supplementary characters.
+		if (char.length === 2) return Array.from(Buffer.from(char), (byte) => `\\x${byte.toString(16)}`).join('')
+		return `\\u${char.charCodeAt(0).toString(16).padStart(4, '0')}`
+	})
+
+/**
  * Replaces the path of every import statement found by `scanSolidityImports`.
  * Uses the same scanner as `resolveImports`, so both agree on what an import is.
  * @param {string} code Source code to update
@@ -16,7 +29,7 @@ const replaceImportPaths = (code, getReplacement) => {
 		if (replacement === undefined) {
 			continue
 		}
-		updated += `${code.slice(lastIndex, start)}${replacement}`
+		updated += `${code.slice(lastIndex, start)}${escapePath(replacement, code.charAt(start - 1))}`
 		lastIndex = end
 	}
 	return `${updated}${code.slice(lastIndex)}`

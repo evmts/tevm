@@ -18,6 +18,7 @@ env:
 jobs:
   prerelease:
     runs-on: ubuntu-latest
+    environment: npm-release
     steps:
       - uses: actions/checkout@v5
         with:

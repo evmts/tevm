@@ -97,3 +97,116 @@ it('preserves native batch boundaries, notifications, subscription errors and va
 		await engine.close()
 	}
 })
+
+it('caps live subscriptions per connection with error -32005, counting installs in flight', async () => {
+	let filters = 0
+	const uninstalled: unknown[] = []
+	const engine = {
+		rpc: async () => null,
+		request: async ({ method, params }: EngineRequest) => {
+			if (method === 'eth_uninstallFilter') uninstalled.push(params?.[0])
+			// Yield, so concurrent eth_subscribe calls overlap while their filters install.
+			await Promise.resolve()
+			return method === 'eth_newBlockFilter' ? `0xf${++filters}` : true
+		},
+	}
+	const sent: any[] = []
+	const conn = createRpcConnection(engine, (json) => sent.push(JSON.parse(json)), { maxSubscriptions: 2 })
+	const call = (id: number, method: string, params: unknown[]) =>
+		conn.rpc(JSON.stringify({ jsonrpc: '2.0', id, method, params }))
+	const limit = { code: -32005, message: 'Subscription limit exceeded: at most 2 per connection' }
+	try {
+		// Three concurrent subscribes: the third is rejected before any filter finishes installing.
+		await Promise.all([1, 2, 3].map((id) => call(id, 'eth_subscribe', ['newHeads'])))
+		expect(sent.sort((a, b) => a.id - b.id)).toEqual([
+			{ jsonrpc: '2.0', id: 1, result: '0x1' },
+			{ jsonrpc: '2.0', id: 2, result: '0x2' },
+			{ jsonrpc: '2.0', id: 3, error: limit },
+		])
+		// The rejected subscribe installed no native filter.
+		expect(filters).toBe(2)
+		await call(4, 'eth_subscribe', ['syncing'])
+		expect(sent.at(-1)).toEqual({ jsonrpc: '2.0', id: 4, error: limit })
+		// Unsubscribing frees a slot.
+		await call(5, 'eth_unsubscribe', ['0x1'])
+		await call(6, 'eth_subscribe', ['newHeads'])
+		expect(sent.at(-1)).toEqual({ jsonrpc: '2.0', id: 6, result: '0x3' })
+		await call(7, 'eth_subscribe', ['newHeads'])
+		expect(sent.at(-1)).toEqual({ jsonrpc: '2.0', id: 7, error: limit })
+		expect(uninstalled).toEqual(['0xf1'])
+	} finally {
+		await conn.close()
+	}
+})
+
+it('defaults the subscription cap to 256 and validates maxSubscriptions', async () => {
+	const engine = { rpc: async () => null, request: async () => '0x1' }
+	const sent: any[] = []
+	const conn = createRpcConnection(engine, (json) => sent.push(JSON.parse(json)))
+	try {
+		for (let id = 1; id <= 257; id++)
+			await conn.rpc(JSON.stringify({ jsonrpc: '2.0', id, method: 'eth_subscribe', params: ['newHeads'] }))
+		expect(sent.filter((message) => 'result' in message)).toHaveLength(256)
+		expect(sent.at(-1)).toEqual({
+			jsonrpc: '2.0',
+			id: 257,
+			error: { code: -32005, message: 'Subscription limit exceeded: at most 256 per connection' },
+		})
+	} finally {
+		await conn.close()
+	}
+	for (const maxSubscriptions of [-1, 1.5, Number.NaN, '2' as never])
+		expect(() => createRpcConnection(engine, () => {}, { maxSubscriptions })).toThrow(
+			new TypeError('maxSubscriptions must be an unsigned safe integer'),
+		)
+	const none = createRpcConnection(engine, (json) => sent.push(JSON.parse(json)), { maxSubscriptions: 0 })
+	await none.rpc(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_subscribe', params: ['newHeads'] }))
+	expect(sent.at(-1).error.code).toBe(-32005)
+	await none.close()
+})
+
+it('drops a subscription whose filter the backend no longer knows instead of polling it forever', async () => {
+	vi.useFakeTimers()
+	const polls: unknown[] = []
+	let filters = 0
+	const engine = {
+		rpc: async () => null,
+		request: async ({ method, params }: EngineRequest) => {
+			if (method === 'eth_newPendingTransactionFilter') return `0xf${++filters}`
+			if (method !== 'eth_getFilterChanges') return true
+			polls.push(params?.[0])
+			if (params?.[0] === '0xf1') throw Object.assign(new Error('filter not found'), { code: -32000 })
+			if (params?.[0] === '0xf2') throw new Error('backend busy')
+			return ['0xab']
+		},
+	}
+	const sent: any[] = []
+	const conn = createRpcConnection(engine, (json) => sent.push(JSON.parse(json)))
+	const call = (method: string, params: unknown[]) =>
+		conn.rpc(JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }))
+	try {
+		for (let i = 0; i < 3; i++) await call('eth_subscribe', ['newPendingTransactions'])
+		await vi.advanceTimersByTimeAsync(50)
+		expect(polls).toEqual(['0xf1', '0xf2', '0xf3'])
+		// The missing filter is gone. A transient failure is retried, and the healthy filter delivers.
+		await vi.advanceTimersByTimeAsync(50)
+		expect(polls).toEqual(['0xf1', '0xf2', '0xf3', '0xf2', '0xf3'])
+		expect(sent.filter((message) => message.method === 'eth_subscription')).toHaveLength(2)
+		await call('eth_unsubscribe', ['0x1'])
+		expect(sent.at(-1)).toEqual({ jsonrpc: '2.0', id: 1, result: false })
+		// Dropping the last subscription stops the poll timer.
+		await call('eth_unsubscribe', ['0x2'])
+		await call('eth_unsubscribe', ['0x3'])
+		await call('eth_subscribe', ['newPendingTransactions'])
+		expect(vi.getTimerCount()).toBe(1)
+		engine.request = async ({ method }: EngineRequest) => {
+			if (method === 'eth_getFilterChanges') throw { shortMessage: 'Filter 0xf4 not found' }
+			return true
+		}
+		await vi.advanceTimersByTimeAsync(50)
+		expect(vi.getTimerCount()).toBe(0)
+	} finally {
+		await conn.close()
+		vi.useRealTimers()
+	}
+})

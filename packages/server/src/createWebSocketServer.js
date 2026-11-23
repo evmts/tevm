@@ -4,7 +4,8 @@ import { createRpcConnection } from './internal/createRpcConnection.js'
 /** Attach native JSON-RPC and subscriptions to an HTTP server.
  * @param {import('./Client.js').Client} client
  * @param {import('node:http').Server} server
- * @param {{maxPayload?: number; path?: string}} [options]
+ * @param {{maxPayload?: number; path?: string; maxSubscriptions?: number}} [options] `maxSubscriptions` caps live
+ * `eth_subscribe` subscriptions per connection (default 256).
  * @returns {WebSocketServer}
  */
 export function createWebSocketServer(client, server, options = {}) {
@@ -19,9 +20,13 @@ export function createWebSocketServer(client, server, options = {}) {
 		// ws closes malformed/oversized frames itself; consume its error event
 		// so a peer's protocol violation cannot terminate the host process.
 		socket.on('error', () => {})
-		const connection = createRpcConnection(client.transport.tevm, (json) => {
-			if (socket.readyState === WebSocket.OPEN) socket.send(json)
-		})
+		const connection = createRpcConnection(
+			client.transport.tevm,
+			(json) => {
+				if (socket.readyState === WebSocket.OPEN) socket.send(json)
+			},
+			options.maxSubscriptions === undefined ? {} : { maxSubscriptions: options.maxSubscriptions },
+		)
 		let queue = Promise.resolve()
 		socket.on('message', (data) => {
 			queue = queue

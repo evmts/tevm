@@ -116,4 +116,24 @@ describe('native memory client', () => {
 			await client.tevmClose()
 		}
 	})
+
+	it('does not claim chain 31337 for an injected backend that owns another chain ID', async () => {
+		const backend = () => ({
+			rpc: async (json: string) => JSON.stringify({ jsonrpc: '2.0', id: JSON.parse(json).id, result: '0x1' }),
+			close: () => {},
+		})
+		// Without `common` or `chainId` the client has no chain to contradict the backend.
+		const injected = create({ backend: backend() })
+		expect(injected.chain).toBeUndefined()
+		expect(await injected.getChainId()).toBe(1)
+		// An explicit chain is still honored, and the engine verifies it against the backend.
+		const explicit = create({ backend: backend(), chainId: 1 })
+		expect(explicit.chain.id).toBe(1)
+		expect(await explicit.getChainId()).toBe(1)
+		const common = create({ backend: backend(), common: { ...foundry, id: 1 } })
+		expect(common.chain.id).toBe(1)
+		// The default native backend runs Foundry's chain.
+		const native = create()
+		expect(native.chain.id).toBe(await native.getChainId())
+	})
 })

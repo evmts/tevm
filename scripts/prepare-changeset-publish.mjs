@@ -838,6 +838,16 @@ export async function runPublishPrep({
 		...zevmPlan.errors,
 	]
 
+	const installedViem = join(repoRoot, 'node_modules/viem/package.json')
+	if ((checkDist || checkRegistry) && expectedViemRange && existsSync(installedViem)) {
+		const { version } = JSON.parse(readFileSync(installedViem, 'utf8'))
+		if (!satisfiesRange(version, expectedViemRange)) {
+			errors.push(
+				`package.json: installed viem@${version} does not satisfy devDependencies.viem "${expectedViemRange}"`,
+			)
+		}
+	}
+
 	if (checkRegistry && zevmPlan.rewrites.length > 0) {
 		errors.push(...(await verifyExternalRegistryAvailability(zevmPlan.rewrites, { registryUrl, fetchImpl })))
 	}

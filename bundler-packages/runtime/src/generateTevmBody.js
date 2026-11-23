@@ -71,7 +71,10 @@ export const generateTevmBody = (artifacts, moduleType, includeBytecode) => {
 				// Create the contract configuration object
 				const contract = toObjectLiteral({
 					name: contractName,
-					humanReadableAbi: formatAbi(abi),
+					// Human-readable event signatures omit the anonymous flag.
+					...(abi.some((item) => item.type === 'event' && item.anonymous)
+						? { abi }
+						: { humanReadableAbi: formatAbi(abi) }),
 					// Include bytecode if requested and available (checking for empty string for interfaces)
 					...(includeBytecode
 						? {

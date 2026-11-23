@@ -109,3 +109,24 @@ it('classifies body failures and decodes precisely the supplied byte view', asyn
 	expect(() => stream.emit('error', new Error('late error'))).not.toThrow()
 	stream.destroy()
 })
+
+it('returns a read error for a stream that was already consumed instead of hanging', async () => {
+	const req = new PassThrough()
+	req.end('{"jsonrpc":"2.0"}')
+	// Another body reader drains the stream first, as un-configured middleware does.
+	for await (const _chunk of req) {
+		// Discard.
+	}
+	expect(req.readableEnded).toBe(true)
+	const listeners = () => ['data', 'end', 'error', 'close', 'aborted'].map((event) => req.listenerCount(event))
+	const before = listeners()
+	const result = await Promise.race([
+		getRequestBody(req as any),
+		new Promise((resolve) => setTimeout(() => resolve('hung'), 100)),
+	])
+	expect(result).toBeInstanceOf(ReadRequestBodyError)
+	expect((result as ReadRequestBodyError).kind).toBe('read_error')
+	expect((result as ReadRequestBodyError).message).toMatch(/already consumed/)
+	// No listener is left behind on the dead stream.
+	expect(listeners()).toEqual(before)
+})

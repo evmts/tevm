@@ -8,6 +8,20 @@ describe('scanSolidityImports', () => {
 		expect(paths('// /*\nimport "./A.sol";')).toEqual(['./A.sol'])
 	})
 
+	it('ends a line comment at a lone carriage return', () => {
+		expect(paths('// import "Hidden.sol";\rimport "Visible.sol";')).toEqual(['Visible.sol'])
+	})
+
+	it('decodes Solidity escapes while retaining source offsets', () => {
+		const raw = String.raw`./\x41\u0042/\xC3\xA9/\\u0043/it\'s\".sol`
+		const code = `import '${raw}';`
+		expect(scanSolidityImports(code)).toEqual([{ path: `./AB/é/\\u0043/it's".sol`, start: 8, end: 8 + raw.length }])
+	})
+
+	it.each(['\n', '\r\n', '\r'])('decodes a UTF-8 path split by a line continuation (%j)', (eol) => {
+		expect(paths(`import "\\xC3\\${eol}\\xA9.sol";`)).toEqual(['é.sol'])
+	})
+
 	it('finds multiple imports on one line', () => {
 		expect(paths('import "./A.sol"; import \'./B.sol\';import {C} from "./C.sol";')).toEqual([
 			'./A.sol',

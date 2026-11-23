@@ -52,7 +52,9 @@ With an injected `backend`, the backend owns its chain ID. When `chainId` or `co
 | `error` | the thrown value | When observer work fails. See below. |
 | `close` | none | Once, when the engine closes or initialization fails. Listeners are then removed. |
 
-Listeners are observers. A throwing listener, a throwing `consoleLog` handler, a failed console log drain and a failed block fetch never replace an RPC result and never mask a revert error. The failure is emitted as an `error` event, and dropped when there is no `error` listener.
+Listeners are observers. A throwing listener, a throwing `consoleLog` handler, a failed console log drain and a failed block fetch never replace an RPC result and never mask a revert error. The failure is emitted as an `error` event, and dropped when there is no `error` listener. A listener or `consoleLog` handler that returns a rejecting promise is reported the same way and never causes an unhandled rejection. `request` and `response` listeners receive copies of the payload: mutating one changes neither the dispatched request nor the caller's result.
+
+A backend response must be JSON-RPC 2.0 with exactly one of `result` and `error`, and `error` must be an object with an integer `code` and a string `message`. Anything else rejects the request as a transport fault instead of a `NativeRpcError`.
 
 While a `block` listener is subscribed, the engine polls every 50 ms and runs at most one poll at a time. A block that the backend reports as `null` is retried by the next poll. When more than 64 blocks appear between two polls, only the tip block is emitted.
 

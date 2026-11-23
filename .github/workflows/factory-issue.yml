@@ -32,6 +32,9 @@ jobs:
       issue: ${{ steps.context.outputs.issue }}
       type: ${{ steps.context.outputs.type }}
       route: ${{ steps.intake.outputs.route }}
+      body_digest: ${{ steps.intake.outputs.body_digest }}
+      artifact: ${{ steps.upload.outputs.artifact-id }}
+      patch_digest: ${{ steps.patch.outputs.digest }}
     steps:
       - name: Check out a tokenless clean base
         uses: actions/checkout@v5
@@ -111,6 +114,7 @@ jobs:
             *) echo "Unsupported automatic route: $route" >&2; exit 1 ;;
           esac
           printf 'route=%s\n' "$route" >> "$GITHUB_OUTPUT"
+          printf 'body_digest=%s\n' "$(jq -er '.bodyDigest' "$RUNNER_TEMP/intake.json")" >> "$GITHUB_OUTPUT"
 
       - name: Produce and gate the routed candidate with local Flows
         shell: bash
@@ -148,35 +152,38 @@ jobs:
           git add --intent-to-add --all
           git diff --binary --no-ext-diff > "$RUNNER_TEMP/candidate.patch"
           test -s "$RUNNER_TEMP/candidate.patch"
-          (cd "$RUNNER_TEMP" && sha256sum candidate.patch > candidate.patch.sha256)
-          cp "$RUNNER_TEMP/intake.json" "$RUNNER_TEMP/factory-intake.json"
+          printf 'digest=%s\n' "$(sha256sum "$RUNNER_TEMP/candidate.patch" | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
 
       - name: Upload the candidate for independently approved settlement
+        id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: factory-candidate-${{ steps.context.outputs.issue }}-${{ github.run_id }}
-          path: |
-            ${{ runner.temp }}/candidate.patch
-            ${{ runner.temp }}/candidate.patch.sha256
-            ${{ runner.temp }}/factory-intake.json
+          name: factory-candidate-${{ steps.context.outputs.issue }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/candidate.patch
           retention-days: 3
           if-no-files-found: error
 
-  settle:
+  verify-candidate:
     needs: candidate
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    environment: factory-approval
     permissions:
-      contents: write
-      issues: read
-      pull-requests: write
+      contents: read
+    outputs:
+      base: ${{ steps.base.outputs.commit }}
+      artifact: ${{ steps.upload.outputs.artifact-id }}
+      patch_digest: ${{ needs.candidate.outputs.patch_digest }}
+      body_digest: ${{ needs.candidate.outputs.body_digest }}
+      type: ${{ needs.candidate.outputs.type }}
+      route: ${{ needs.candidate.outputs.route }}
     steps:
       - name: Check out the approved base
+        id: base
         uses: actions/checkout@v5
         with:
           ref: main
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Initialize the vendored checkouts
         shell: bash
@@ -185,34 +192,54 @@ jobs:
       - name: Download candidate artifact
         uses: actions/download-artifact@v4
         with:
-          name: factory-candidate-${{ needs.candidate.outputs.issue }}-${{ github.run_id }}
+          artifact-ids: ${{ needs.candidate.outputs.artifact }}
+          merge-multiple: true
           path: ${{ runner.temp }}/factory-candidate
 
       - name: Validate and apply the exact candidate
         shell: bash
+        env:
+          ISSUE: ${{ needs.candidate.outputs.issue }}
+          ROUTE: ${{ needs.candidate.outputs.route }}
+          BODY_DIGEST: ${{ needs.candidate.outputs.body_digest }}
+          PATCH_DIGEST: ${{ needs.candidate.outputs.patch_digest }}
         run: |
           set -euo pipefail
-          cd "$RUNNER_TEMP/factory-candidate"
-          sha256sum --check candidate.patch.sha256
-          cd "$GITHUB_WORKSPACE"
           patch="$RUNNER_TEMP/factory-candidate/candidate.patch"
+          [[ "$PATCH_DIGEST" =~ ^[0-9a-f]{64}$ ]]
+          printf '%s  %s\n' "$PATCH_DIGEST" "$patch" | sha256sum --check --status
           # Inspect the proposed index against the trusted checkout before any
           # candidate files enter the working tree or any repository code runs.
           git apply --cached "$patch"
-          if ! git diff --cached --quiet HEAD -- .github scripts/factory; then
-            echo "Candidate changes protected workflow or factory files" >&2
+          if ! git diff --cached --quiet HEAD -- .github scripts/factory PACKAGE.ts WORKSPACE.ts mise.toml pnpm-workspace.yaml package.json; then
+            echo "Candidate changes protected workflow, toolchain, or factory files" >&2
             exit 1
           fi
-          if ! git diff --cached --quiet HEAD -- package.json; then
-            git show HEAD:package.json | jq -cSe '.scripts' > "$RUNNER_TEMP/base-scripts.json"
-            git show :package.json | jq -cSe '.scripts' > "$RUNNER_TEMP/candidate-scripts.json"
-            if ! cmp -s "$RUNNER_TEMP/base-scripts.json" "$RUNNER_TEMP/candidate-scripts.json"; then
-              echo "Candidate changes protected root package scripts" >&2
-              exit 1
-            fi
+          [[ "$BODY_DIGEST" =~ ^[0-9a-f]{64}$ ]]
+          plan="factory/queue/issues/issue-$ISSUE.md"
+          check_plan() {
+            local digest
+            digest="$(git show "$1" | sed -n '1,/^---$/s/^bodyDigest:[[:blank:]]*//p')"
+            [[ "$digest" == "$BODY_DIGEST" ]] || { echo "Queue plan and intake body digests differ" >&2; exit 1; }
+          }
+          if [[ "$ROUTE" == issue-to-pr ]] && git cat-file -e "HEAD:$plan" 2>/dev/null; then
+            check_plan "HEAD:$plan"
+          fi
+          if [[ "$ROUTE" != issue-to-pr ]] || git cat-file -e ":$plan" 2>/dev/null; then
+            check_plan ":$plan"
           fi
           git diff --cached --check
           git apply "$patch"
+
+      # Seal the checked bytes before executing any candidate build code.
+      - name: Retain the patch for settlement after all gates pass
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: factory-verified-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/factory-candidate/candidate.patch
+          retention-days: 3
+          if-no-files-found: error
 
       - name: Checkout pinned native sources
         run: node scripts/factory/checkout-native.mjs
@@ -234,20 +261,54 @@ jobs:
           fi
           git diff --check
 
+  open-pr:
+    needs: [verify-candidate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: factory-pr-settlement
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out the trusted main branch
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download the verified patch
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ needs.verify-candidate.outputs.artifact }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/factory-verified
+
       - name: Open the approved pull request
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          ISSUE: ${{ needs.candidate.outputs.issue }}
-          ISSUE_TYPE: ${{ needs.candidate.outputs.type }}
-          ROUTE: ${{ needs.candidate.outputs.route }}
+          ISSUE: ${{ github.event.issue.number || inputs.issue }}
+          ISSUE_TYPE: ${{ needs.verify-candidate.outputs.type }}
+          ROUTE: ${{ needs.verify-candidate.outputs.route }}
+          BASE: ${{ needs.verify-candidate.outputs.base }}
+          PATCH_DIGEST: ${{ needs.verify-candidate.outputs.patch_digest }}
+          BODY_DIGEST: ${{ needs.verify-candidate.outputs.body_digest }}
         run: |
           set -euo pipefail
-          metadata="$RUNNER_TEMP/factory-candidate/factory-intake.json"
-          [[ "$(jq -r '.ready' "$metadata")" == "true" ]]
-          [[ "$(jq -r '.issue.number' "$metadata")" == "$ISSUE" ]]
-          [[ "$(jq -r '.type' "$metadata")" == "$ISSUE_TYPE" ]]
-          [[ "$(jq -r '.route' "$metadata")" == "$ROUTE" ]]
+          [[ "$BASE" =~ ^[0-9a-f]{40}$ && "$PATCH_DIGEST" =~ ^[0-9a-f]{64}$ ]]
+          git merge-base --is-ancestor "$BASE" HEAD
+          git switch --detach "$BASE"
+          patch="$RUNNER_TEMP/factory-verified/candidate.patch"
+          printf '%s  %s\n' "$PATCH_DIGEST" "$patch" | sha256sum --check --status
+
+          # Use the trusted base's GitHub API intake after environment approval.
+          # Strict intake checks open state, factory:ready, holds, and risk.
+          metadata="$RUNNER_TEMP/live-intake.json"
+          node scripts/factory/issue-intake.mjs --issue "$ISSUE" --public --format json --strict > "$metadata"
+          jq -e --arg repo "$GITHUB_REPOSITORY" --argjson issue "$ISSUE" --arg type "$ISSUE_TYPE" \
+            --arg route "$ROUTE" --arg digest "$BODY_DIGEST" \
+            '.ready and .repository == $repo and .issue.number == $issue and .type == $type and
+             .route == $route and .bodyDigest == $digest' "$metadata" > /dev/null
           title="$(jq -r '.issue.title | gsub("[\\r\\n]+"; " ")' "$metadata")"
           if [[ "$ROUTE" == "issue-to-pr" ]]; then
             candidate_kind="implementation"
@@ -272,14 +333,14 @@ jobs:
           - Candidate kind: \`${candidate_kind}\`
           - Candidate run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
           - Intake body digest: \`$(jq -r '.bodyDigest' "$metadata")\`
-          - Approval: \`factory:ready\` label plus the protected \`factory-approval\` environment
+          - Approval: \`factory:ready\` label plus the protected \`factory-pr-settlement\` environment
 
           The candidate passed its declared mechanical and agentic checks before settlement, then the deterministic settlement gates were rerun against the exact uploaded patch.
           EOF
-          git config user.name tevm-factory[bot]
+          git config user.name 'tevm-factory[bot]'
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git switch -c "$branch"
-          git add --all
-          git commit -m "🤖 ${commit_subject}"
+          # Stage only the verified patch. Candidate files never enter this job's working tree.
+          git apply --cached "$patch"
+          git -c core.hooksPath=/dev/null commit -m "🤖 ${commit_subject}"
           git push origin "HEAD:refs/heads/$branch"
           gh pr create --base main --head "$branch" --title "$pr_title" --body-file "$body"

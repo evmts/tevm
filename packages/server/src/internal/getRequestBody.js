@@ -110,6 +110,15 @@ export const getRequestBody = (req, options = {}) => {
 			}
 
 			const onClose = () => finish(new ReadRequestBodyError('Request stream closed before the body was complete'))
+			// An ended stream never emits `data` or `end` again: fail now instead of waiting forever.
+			if (req.readableEnded) {
+				done = true
+				return resolve(
+					new ReadRequestBodyError(
+						'Request body stream was already consumed. Pass the parsed body as `req.body`, or call the handler before another body reader.',
+					),
+				)
+			}
 			req.on('error', onError)
 			req.on('aborted', onClose)
 			req.on('close', onClose)

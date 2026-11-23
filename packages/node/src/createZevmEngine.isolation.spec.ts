@@ -227,6 +227,97 @@ describe('block polling', () => {
 	})
 })
 
+describe('observers cannot change a request, a result, or crash the process', () => {
+	it('dispatches the request as issued and returns the backend result when listeners mutate their payloads', async () => {
+		const backendResult = { number: '0x1', transactions: ['0xaa'] }
+		const { engine, chain, errors } = harness(({ method }) =>
+			method === 'eth_getBlockByNumber' ? backendResult : undefined,
+		)
+		const seen: unknown[] = []
+		engine.events.on('request', (emitted) => {
+			seen.push(structuredClone(emitted))
+			emitted.method = 'evm_mine'
+			;(emitted.params as JsonValue[])[0] = 'tampered'
+			;(emitted.params as JsonValue[]).push('extra')
+		})
+		engine.events.on('response', (response) => {
+			seen.push(structuredClone(response))
+			response.request.method = 'tampered'
+			;(response.result as { number: string; transactions: string[] }).number = '0xdead'
+			;(response.result as { number: string; transactions: string[] }).transactions.push('0xbb')
+			response.result = null
+		})
+		const request = { method: 'eth_getBlockByNumber', params: ['0x1', false] }
+		const result = await engine.request(request)
+		expect(result).toEqual({ number: '0x1', transactions: ['0xaa'] })
+		expect(request).toEqual({ method: 'eth_getBlockByNumber', params: ['0x1', false] })
+		expect(chain.sent).toEqual([{ jsonrpc: '2.0', id: 1, method: 'eth_getBlockByNumber', params: ['0x1', false] }])
+		expect(seen).toEqual([request, { request, result: { number: '0x1', transactions: ['0xaa'] } }])
+		expect(errors).toEqual([])
+	})
+
+	it('copies payloads through JSON where structuredClone is unavailable', async () => {
+		const { engine, chain } = harness()
+		vi.stubGlobal('structuredClone', undefined)
+		const seen: unknown[] = []
+		engine.events.on('request', (emitted) => {
+			seen.push({ ...emitted })
+			emitted.method = 'tampered'
+		})
+		engine.events.on('response', (response) => {
+			seen.push(response.result)
+			response.result = 'tampered'
+		})
+		const request = { method: 'eth_chainId' }
+		expect(await engine.request(request)).toBe('0x7a69')
+		expect(request).toEqual({ method: 'eth_chainId' })
+		expect(chain.sent.map(({ method }) => method)).toEqual(['eth_chainId'])
+		expect(seen).toEqual([{ method: 'eth_chainId' }, '0x7a69'])
+	})
+
+	it('reports async listener and consoleLog handler rejections as error events, never as unhandled rejections', async () => {
+		const unhandled: unknown[] = []
+		const onUnhandled = (reason: unknown) => unhandled.push(reason)
+		process.on('unhandledRejection', onUnhandled)
+		try {
+			// console.log("hi") as Hardhat calldata: log(string).
+			const calldata = `0x41304fac${'20'.padStart(64, '0')}${'2'.padStart(64, '0')}${'6869'.padEnd(64, '0')}`
+			const { engine, errors } = harness(
+				({ method }) => (method === 'tevm_drainConsoleLogs' ? [calldata] : undefined),
+				{
+					consoleLog: (async (message: string) => {
+						throw new Error(`consoleLog handler: ${message}`)
+					}) as never,
+				},
+			)
+			engine.events.on('request', async () => {
+				throw new Error('async request listener')
+			})
+			engine.events.on('response', async () => {
+				throw new Error('async response listener')
+			})
+			engine.events.on('consoleLog', async () => {
+				throw new Error('async consoleLog listener')
+			})
+			engine.events.on('error', async () => {
+				throw new Error('async error listener')
+			})
+			expect(await engine.request({ method: 'eth_call' })).toBe('ok')
+			await new Promise((resolve) => setTimeout(resolve, 0))
+			await new Promise((resolve) => setTimeout(resolve, 0))
+			expect(messages(errors).sort()).toEqual([
+				'async consoleLog listener',
+				'async request listener',
+				'async response listener',
+				'consoleLog handler: hi',
+			])
+			expect(unhandled).toEqual([])
+		} finally {
+			process.off('unhandledRejection', onUnhandled)
+		}
+	})
+})
+
 describe('request validation', () => {
 	it.each([
 		null,
@@ -270,6 +361,54 @@ describe('response validation', () => {
 		['no id', () => JSON.stringify({ jsonrpc: '2.0', result: 1 }), /response with id undefined/],
 		['a null id on a result', () => JSON.stringify({ jsonrpc: '2.0', id: null, result: 1 }), /response with id null/],
 		['neither result nor error', (id: number) => JSON.stringify({ jsonrpc: '2.0', id }), /invalid JSON-RPC response/],
+		[
+			'both result and error',
+			(id: number) =>
+				JSON.stringify({ jsonrpc: '2.0', id, result: 1, error: { code: 3, message: 'execution reverted' } }),
+			/both `result` and `error`/,
+		],
+		[
+			'a result and a null error',
+			(id: number) => JSON.stringify({ jsonrpc: '2.0', id, result: 1, error: null }),
+			/both `result` and `error`/,
+		],
+		[
+			'a null id on a response with both result and error',
+			() => JSON.stringify({ jsonrpc: '2.0', id: null, result: 1, error: { code: 3, message: 'execution reverted' } }),
+			/response with id null/,
+		],
+		['a null error', (id: number) => JSON.stringify({ jsonrpc: '2.0', id, error: null }), /error must be an object/],
+		[
+			'a string error',
+			(id: number) => JSON.stringify({ jsonrpc: '2.0', id, error: 'execution reverted' }),
+			/error must be an object/,
+		],
+		['an array error', (id: number) => JSON.stringify({ jsonrpc: '2.0', id, error: [] }), /error must be an object/],
+		[
+			'an error without a code',
+			(id: number) => JSON.stringify({ jsonrpc: '2.0', id, error: { message: 'no code' } }),
+			/integer `code`/,
+		],
+		[
+			'a fractional error code',
+			(id: number) => JSON.stringify({ jsonrpc: '2.0', id, error: { code: 1.5, message: 'x' } }),
+			/integer `code`/,
+		],
+		[
+			'a string error code',
+			(id: number) => JSON.stringify({ jsonrpc: '2.0', id, error: { code: '3', message: 'x' } }),
+			/integer `code`/,
+		],
+		[
+			'an error without a message',
+			(id: number) => JSON.stringify({ jsonrpc: '2.0', id, error: { code: 3 } }),
+			/string `message`/,
+		],
+		[
+			'a non-string error message',
+			(id: number) => JSON.stringify({ jsonrpc: '2.0', id, error: { code: 3, message: 7 } }),
+			/string `message`/,
+		],
 	] as const)('rejects a response with %s as a transport fault', async (_name, reply, message) => {
 		const { engine } = harness(({ method, id }) => (method === 'eth_call' ? new Raw(reply(id)) : undefined))
 		const responses: unknown[] = []

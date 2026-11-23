@@ -9,7 +9,7 @@
  * Like solc and foundry, only the first `=` separates prefix from target, so a target may
  * contain `=`. Blank entries are skipped and both halves are trimmed. An entry without a
  * non-empty prefix is invalid, because an empty prefix would match every import.
- * Targets resolve relative to `configFilePath`.
+ * Rooted targets are preserved. Relative targets resolve against `configFilePath`.
  *
  * The result is built from entries rather than by assignment, so prefixes such as
  * `__proto__`, `constructor` and `prototype` stay ordinary own keys and never touch
@@ -39,7 +39,8 @@ export const parseRemappings = (entries, configFilePath) => {
 		if (separatorIndex < 1) return { invalid: entry }
 		const prefix = entry.slice(0, separatorIndex).trim()
 		const target = entry.slice(separatorIndex + 1).trim()
-		parsed.push([prefix, `${baseDir}${target.replace(/^[/\\]+/, '')}`])
+		const absolute = /^(?:[A-Za-z]:)?[/\\]/.test(target)
+		parsed.push([prefix, absolute ? target : `${baseDir}${target}`])
 	}
 	return { remappings: Object.fromEntries(parsed) }
 }

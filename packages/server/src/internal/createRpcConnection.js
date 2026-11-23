@@ -10,14 +10,35 @@ const isSubscriptionRequest = (value) =>
 	'method' in value &&
 	(value.method === 'eth_subscribe' || value.method === 'eth_unsubscribe')
 
+/** Default cap on live `eth_subscribe` subscriptions per connection. */
+const DEFAULT_MAX_SUBSCRIPTIONS = 256
+
+/**
+ * A backend that has dropped a filter answers `eth_getFilterChanges` with "filter not found".
+ * @param {unknown} error
+ */
+const isFilterNotFound = (error) => {
+	const cause = /** @type {{shortMessage?: unknown; message?: unknown} | null} */ (error)
+	return [cause?.shortMessage, cause?.message].some(
+		(message) => typeof message === 'string' && /filter\b.*\bnot found/i.test(message),
+	)
+}
+
 /**
  * Connection-scoped subscriptions backed by native filters. The host only
  * delivers events; ZEVM selects and stores logs, blocks and pending transactions.
  * @param {Pick<import('@tevm/node').ZevmEngine, 'request' | 'rpc'>} engine
  * @param {(json: string) => void} send
+ * @param {{maxSubscriptions?: number}} [options] `maxSubscriptions` caps live subscriptions on this
+ * connection (default 256). An `eth_subscribe` over the cap fails with JSON-RPC error -32005.
  * @returns {{rpc: (json: string) => Promise<void>; close: () => Promise<void>}}
  */
-export function createRpcConnection(engine, send) {
+export function createRpcConnection(engine, send, options = {}) {
+	const maxSubscriptions = options.maxSubscriptions ?? DEFAULT_MAX_SUBSCRIPTIONS
+	if (!Number.isSafeInteger(maxSubscriptions) || maxSubscriptions < 0)
+		throw new TypeError('maxSubscriptions must be an unsigned safe integer')
+	// Subscriptions whose filter is still being installed. They count toward the cap.
+	let installing = 0
 	/** @type {Map<string, {kind: string; filter?: string; last?: string}>} */
 	const subscriptions = new Map()
 	let nextId = 0
@@ -56,8 +77,13 @@ export function createRpcConnection(engine, send) {
 								: change
 						notify(id, result)
 					}
-				} catch {
-					// A failed filter must not prevent polling the remaining subscriptions.
+				} catch (error) {
+					// A failed filter must not prevent polling the remaining subscriptions. A filter the
+					// backend no longer knows can never recover, so its subscription is dropped.
+					if (isFilterNotFound(error)) {
+						subscriptions.delete(id)
+						if (!subscriptions.size) stopTimer()
+					}
 				}
 			}
 		} finally {
@@ -67,6 +93,24 @@ export function createRpcConnection(engine, send) {
 	const stopTimer = () => {
 		clearInterval(timer)
 		timer = undefined
+	}
+	/**
+	 * Install the native filter (or syncing baseline) behind subscription `id`.
+	 * @param {string} kind @param {string} id @param {import('@tevm/node').JsonValue | undefined} criteria
+	 */
+	const install = async (kind, id, criteria) => {
+		if (kind === 'syncing') {
+			const last = JSON.stringify(await engine.request({ method: 'eth_syncing' }))
+			if (!closed) subscriptions.set(id, { kind, last })
+			return
+		}
+		const method =
+			kind === 'newHeads' ? 'eth_newBlockFilter' : kind === 'logs' ? 'eth_newFilter' : 'eth_newPendingTransactionFilter'
+		const filter = /** @type {string} */ (
+			await engine.request({ method, params: kind === 'logs' ? [criteria ?? {}] : [] })
+		)
+		if (closed) await engine.request({ method: 'eth_uninstallFilter', params: [filter] })
+		else subscriptions.set(id, { kind, filter })
 	}
 	/** @param {SubscriptionRequest} request */
 	const dispatch = async (request) => {
@@ -91,24 +135,20 @@ export function createRpcConnection(engine, send) {
 			if (params.length === 2 && (params[1] === null || typeof params[1] !== 'object' || Array.isArray(params[1])))
 				return invalidParams
 
+			if (subscriptions.size + installing >= maxSubscriptions)
+				return {
+					jsonrpc: '2.0',
+					id,
+					error: { code: -32005, message: `Subscription limit exceeded: at most ${maxSubscriptions} per connection` },
+				}
 			const result = `0x${(++nextId).toString(16)}`
-			if (kind === 'syncing') {
-				const last = JSON.stringify(await engine.request({ method: 'eth_syncing' }))
-				if (!closed) subscriptions.set(result, { kind, last })
-			} else {
-				const method =
-					kind === 'newHeads'
-						? 'eth_newBlockFilter'
-						: kind === 'logs'
-							? 'eth_newFilter'
-							: 'eth_newPendingTransactionFilter'
-				const filter = /** @type {string} */ (
-					await engine.request({ method, params: kind === 'logs' ? [params[1] ?? {}] : [] })
-				)
-				if (closed) await engine.request({ method: 'eth_uninstallFilter', params: [filter] })
-				else subscriptions.set(result, { kind, filter })
+			installing++
+			try {
+				await install(kind, result, params[1])
+			} finally {
+				installing--
 			}
-			if (!closed && !timer) {
+			if (!closed && !timer && subscriptions.size) {
 				timer = setInterval(poll, 50)
 				timer.unref()
 			}

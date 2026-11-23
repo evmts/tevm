@@ -1018,6 +1018,10 @@ const INVALID_RESPONSES: (string | null)[] = [
 	'{"jsonrpc":"2.0","id":-1,"result":1}',
 	'{"jsonrpc":"2.0","id":"1","result":1}',
 	'{"jsonrpc":"2.0","id":"__ID__"}',
+	// `result` and `error` are mutually exclusive.
+	'{"jsonrpc":"2.0","id":"__ID__","result":1,"error":null}',
+	'{"jsonrpc":"2.0","id":"__ID__","result":1,"error":{"code":3,"message":"execution reverted"}}',
+	'{"jsonrpc":"2.0","id":null,"result":1,"error":{"code":3,"message":"execution reverted"}}',
 ]
 
 const genResponseOp = (r: Rng): ResponseOp => {
@@ -1043,7 +1047,7 @@ const genResponseOp = (r: Rng): ResponseOp => {
 			return {
 				k: 'rawOk',
 				v,
-				out: JSON.stringify({ jsonrpc: '2.0', id: '__ID__', result: v, ...(r.bool() ? { error: null } : {}) }),
+				out: JSON.stringify({ jsonrpc: '2.0', id: '__ID__', result: v }),
 			}
 		}
 		default:
@@ -1084,14 +1088,16 @@ async function propResponses(s: ResponseScenario): Promise<void> {
 			if (result.ok) throw new Error(`request resolved with ${show(result.value)} for backend scenario ${show(op)}`)
 			const error = result.error as NativeRpcError & { shortMessage: string }
 			expect(error).toBeInstanceOf(Error)
-			if (op.k === 'error') {
+			if (op.k === 'error' && !Number.isInteger(op.e.code)) {
+				// A non-integer code is not a JSON-RPC error object: a transport fault.
+				expect(error).not.toBeInstanceOf(NativeRpcError)
+				expect(error.message).toContain('invalid JSON-RPC response')
+			} else if (op.k === 'error') {
 				expect(error).toBeInstanceOf(NativeRpcError)
 				expect(error.code).toBe(op.e.code)
 				expect(error.shortMessage).toBe(op.e.message)
 				expect(error.message).toContain(op.e.message)
 				expect(error.data).toEqual(op.e.data)
-			} else if (op.k === 'badError') {
-				expect(error).toBeInstanceOf(NativeRpcError)
 			} else {
 				// Corrupt output is a transport fault, not a structured node error.
 				expect(error).not.toBeInstanceOf(NativeRpcError)
@@ -1102,8 +1108,10 @@ async function propResponses(s: ResponseScenario): Promise<void> {
 		for (const [index, entry] of log.entries()) {
 			const expected = expectedLog[index] as (typeof log)[number]
 			expect(entry.type).toBe(expected.type)
-			expect(entry.request).toBe(expected.request)
-			if (entry.type === 'response') expect(entry.result).toBe(expected.result)
+			// Listeners observe copies, never the caller's request or result objects.
+			expect(entry.request).toEqual(expected.request)
+			expect(entry.request).not.toBe(expected.request)
+			if (entry.type === 'response') expect(entry.result).toEqual(expected.result)
 		}
 		expect(state.maxInFlight).toBeLessThanOrEqual(1)
 		expect(await engine.request({ method: 'fuzz_echo', params: ['alive'] })).toBe('alive')
@@ -1379,9 +1387,10 @@ async function propEvents(s: EventScenario): Promise<void> {
 	expect(log.map((entry) => entry.type)).toEqual(expected.map((entry) => entry.type))
 	for (const [index, entry] of log.entries()) {
 		const want = expected[index] as Entry
-		// Events carry the caller's request object and the exact result the promise resolved with.
-		expect(entry.request).toBe(want.request)
-		expect(entry.result).toBe(want.result)
+		// Events carry copies equal to the caller's request and the result the promise resolved with.
+		expect(entry.request).toEqual(want.request)
+		if (want.request !== undefined) expect(entry.request).not.toBe(want.request)
+		expect(entry.result).toEqual(want.result)
 		expect(entry.number).toBe(want.number)
 	}
 	for (const name of ['request', 'response', 'block', 'close']) expect(engine.events.listenerCount(name)).toBe(0)

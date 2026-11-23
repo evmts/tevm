@@ -30,7 +30,11 @@ cleanup() {
 trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
-node scripts/prepare-changeset-publish.mjs --apply
+checks=(--check-dist --check-registry)
+if [[ "${NODE_ENV:-}" == test && "${TEVM_SKIP_REGISTRY_CHECK:-}" == 1 ]]; then
+	checks=(--check-dist --skip-registry)
+fi
+node scripts/prepare-changeset-publish.mjs --apply "${checks[@]}"
 export TEVM_REAL_PNPM="$(command -v pnpm)"
 export PATH="$PWD/scripts/pnpm-publish-wrapper:$PATH"
 # A separate process group lets a signal to this shell stop publish and its children.

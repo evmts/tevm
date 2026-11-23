@@ -457,10 +457,10 @@ export type SolcStorageLayout<T extends SolcStorageLayoutTypes = SolcStorageLayo
 	 */
 	storage: Array<SolcStorageLayoutItem<T>>
 	/**
-	 * A record of all types relevant to the stored variables with additional encoding information.
+	 * Type encodings for stored variables. solc emits null when there are no stored variables.
 	 * @see {@link SolcStorageLayoutTypes}
 	 */
-	types: T
+	types: T | null
 }
 
 /**

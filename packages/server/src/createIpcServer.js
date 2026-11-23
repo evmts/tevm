@@ -6,7 +6,8 @@ import { extractJsonRpcFrames } from './internal/extractJsonRpcFrames.js'
 /** Create an IPC server supporting native RPC and connection-scoped subscriptions.
  * @param {import('./Client.js').Client} client
  * @param {import('node:net').ServerOpts} [options]
- * @param {{maxMessageSize?: number}} [limits]
+ * @param {{maxMessageSize?: number; maxSubscriptions?: number}} [limits] `maxSubscriptions` caps live
+ * `eth_subscribe` subscriptions per connection (default 256).
  * @returns {import('node:net').Server}
  */
 export function createIpcServer(client, options = {}, limits = {}) {
@@ -15,9 +16,13 @@ export function createIpcServer(client, options = {}, limits = {}) {
 		const decoder = new StringDecoder('utf8')
 		let buffer = ''
 		let queue = Promise.resolve()
-		const connection = createRpcConnection(client.transport.tevm, (json) => {
-			if (!socket.destroyed) socket.write(`${json}\n`)
-		})
+		const connection = createRpcConnection(
+			client.transport.tevm,
+			(json) => {
+				if (!socket.destroyed) socket.write(`${json}\n`)
+			},
+			limits.maxSubscriptions === undefined ? {} : { maxSubscriptions: limits.maxSubscriptions },
+		)
 		socket.on('data', (data) => {
 			buffer += decoder.write(data)
 			const [frames, remaining] = extractJsonRpcFrames(buffer)

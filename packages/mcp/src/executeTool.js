@@ -160,25 +160,29 @@ export const executeTool = async (name, input, sessions) => {
 						decodedOutput: decodeFunctionResult({ ...resolved, data: rawData }),
 					})
 				}
-				const estimatedGas =
-					call.gas ??
-					BigInt(
-						/** @type {string} */ (
-							await client.transport.tevm.request({
-								method: 'eth_estimateGas',
-								params: [
-									{
-										to: call.to,
-										data: call.data,
-										...(call.from ? { from: call.from } : {}),
-										...(call.value === undefined ? {} : { value: toHex(call.value) }),
-									},
-								],
-							})
-						),
-					)
+				// A caller-supplied limit is not an estimate: report it as `gasLimit` and skip eth_estimateGas.
+				const gas =
+					call.gas !== undefined
+						? { gasLimit: call.gas }
+						: {
+								estimatedGas: BigInt(
+									/** @type {string} */ (
+										await client.transport.tevm.request({
+											method: 'eth_estimateGas',
+											params: [
+												{
+													to: call.to,
+													data: call.data,
+													...(call.from ? { from: call.from } : {}),
+													...(call.value === undefined ? {} : { value: toHex(call.value) }),
+												},
+											],
+										})
+									),
+								),
+							}
 				const { txHash, rawData } = await client.tevmCall({ ...call, addToMempool: true })
-				return toJsonValue({ txHash, rawOutput: rawData, estimatedGas })
+				return toJsonValue({ txHash, rawOutput: rawData, ...gas })
 			} catch (error) {
 				const reason = decodeRevertReason(/** @type {{data?:unknown}} */ (error)?.data, args.abi)
 				if (reason) throw new Error(reason, { cause: error })
@@ -201,9 +205,11 @@ export const executeTool = async (name, input, sessions) => {
 				...(args.gasLimit ? { gas: BigInt(args.gasLimit) } : {}),
 				addToMempool: true,
 			})
-			const tx = /** @type {{from: `0x${string}`; nonce: string; gas: string}} */ (
-				await client.transport.tevm.request({ method: 'eth_getTransactionByHash', params: [result.txHash ?? '0x'] })
+			if (!result.txHash) throw new Error('Deployment did not return a transaction hash')
+			const tx = /** @type {{from: `0x${string}`; nonce: string; gas: string} | null} */ (
+				await client.transport.tevm.request({ method: 'eth_getTransactionByHash', params: [result.txHash] })
 			)
+			if (!tx) throw new Error(`Deployment transaction ${result.txHash} was not found by eth_getTransactionByHash`)
 			return toJsonValue({
 				contractAddress: getContractAddress({ from: tx.from, nonce: BigInt(tx.nonce) }),
 				transactionHash: result.txHash,
@@ -227,7 +233,7 @@ export const executeTool = async (name, input, sessions) => {
 				codeHash: keccak256(account.deployedBytecode),
 				isContract: account.deployedBytecode !== '0x',
 				isEmpty: account.deployedBytecode === '0x' && account.balance === 0n && account.nonce === 0n,
-				cachedStorage: account.storage,
+				...(args.includeCachedStorage ? { cachedStorage: account.storage } : {}),
 				...(args.storageSlot ? { storageSlot: args.storageSlot, storageValue } : {}),
 			})
 		}

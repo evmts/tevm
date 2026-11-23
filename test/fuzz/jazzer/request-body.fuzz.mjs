@@ -1,5 +1,6 @@
 import { EventEmitter } from 'node:events'
 import { FuzzedDataProvider } from '@jazzer.js/core'
+import { ReadRequestBodyError } from '../../../packages/server/src/errors/ReadRequestBodyError.js'
 import { getRequestBody } from '../../../packages/server/src/internal/getRequestBody.js'
 
 /**
@@ -15,7 +16,6 @@ export async function fuzz(data) {
 	const payload = Buffer.from(provider.consumeRemainingAsBytes())
 
 	const decodedExpected = payload.toString('utf8')
-	const expectedBytes = Buffer.byteLength(decodedExpected, 'utf8')
 
 	const req = new EventEmitter()
 	req.pause = () => {}
@@ -31,11 +31,9 @@ export async function fuzz(data) {
 	req.emit('end')
 
 	const res = await promise
-	if (expectedBytes > maxBodySize) {
-		if (!(res instanceof Error)) {
-			throw new Error(
-				`maxBodySize=${maxBodySize} bypassed: got string of ${Buffer.byteLength(String(res), 'utf8')} UTF-8 bytes`,
-			)
+	if (payload.length > maxBodySize) {
+		if (!(res instanceof ReadRequestBodyError) || res.kind !== 'oversized') {
+			throw new Error(`Expected oversized for ${payload.length} wire bytes with maxBodySize=${maxBodySize}`)
 		}
 	} else if (res !== decodedExpected) {
 		throw new Error(`Decoded body mismatch for maxBodySize=${maxBodySize}`)

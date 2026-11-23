@@ -1,6 +1,6 @@
 /**
  * @typedef {object} ScannedImport
- * @property {string} path - The raw import path between the quotes
+ * @property {string} path - The decoded Solidity import path
  * @property {number} start - Offset of the first path character in the source
  * @property {number} end - Offset just past the last path character in the source
  */
@@ -17,8 +17,9 @@ const isIdentifierChar = (char) => char !== undefined && /[A-Za-z0-9_$]/.test(ch
 const skipComment = (code, index) => {
 	if (code[index] !== '/') return index
 	if (code[index + 1] === '/') {
-		const newline = code.indexOf('\n', index + 2)
-		return newline === -1 ? code.length : newline
+		let end = index + 2
+		while (end < code.length && code[end] !== '\n' && code[end] !== '\r') end++
+		return end
 	}
 	if (code[index + 1] === '*') {
 		const close = code.indexOf('*/', index + 2)
@@ -40,14 +41,38 @@ const skipString = (code, index) => {
 	while (i < code.length) {
 		const char = code[i]
 		if (char === '\\') {
-			i += 2
+			i += code[i + 1] === '\r' && code[i + 2] === '\n' ? 3 : 2
 			continue
 		}
 		if (char === quote) return i + 1
-		if (char === '\n') return i
+		if (char === '\n' || char === '\r') return i
 		i++
 	}
 	return code.length
+}
+
+/** @param {string} raw */
+const decodePath = (raw) => {
+	if (!raw.includes('\\')) return raw
+	// A continuation contributes no bytes, even between hex escapes. Skip escaped backslashes in pairs.
+	const joined = raw.replace(/\\\\|\\(?:\r\n|[\r\n])/g, (sequence) => (sequence === '\\\\' ? sequence : ''))
+	return joined.replace(/(?:\\x[\da-fA-F]{2})+|\\u[\da-fA-F]{4}|\\[rtn\\"']/g, (sequence) => {
+		switch (sequence[1]) {
+			case 'x':
+				// Hex escapes denote bytes. A UTF-8 character can span multiple escapes.
+				return Buffer.from(sequence.replaceAll('\\x', ''), 'hex').toString('utf8')
+			case 'u':
+				return String.fromCharCode(Number.parseInt(sequence.slice(2), 16))
+			case 'n':
+				return '\n'
+			case 'r':
+				return '\r'
+			case 't':
+				return '\t'
+			default:
+				return sequence.charAt(1)
+		}
+	})
 }
 
 /**
@@ -72,7 +97,7 @@ const parseImportStatement = (code, index) => {
 		if (char === '"' || char === "'") {
 			const end = skipString(code, i)
 			const pathEnd = end - 1 > i && code[end - 1] === char ? end - 1 : end
-			return { found: { path: code.slice(i + 1, pathEnd), start: i + 1, end: pathEnd }, next: end }
+			return { found: { path: decodePath(code.slice(i + 1, pathEnd)), start: i + 1, end: pathEnd }, next: end }
 		}
 		i++
 	}

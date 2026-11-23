@@ -25,6 +25,34 @@ const executesConsoleLogMethod = (json) => {
 }
 
 /**
+ * Copy a JSON-RPC payload for an observer, so a listener that mutates it cannot change the
+ * dispatched request or the caller's result. Falls back to a JSON round trip where
+ * `structuredClone` is missing or rejects the value.
+ * @template T
+ * @param {T} value
+ * @returns {T}
+ */
+const snapshot = (value) => {
+	try {
+		return structuredClone(value)
+	} catch {
+		return JSON.parse(JSON.stringify(value))
+	}
+}
+
+/**
+ * Resolve the module that `createRequire` resolves `@evmts/zevm` from. A CommonJS bundle has no
+ * `import.meta.url` (esbuild compiles it to `undefined`), so it uses `__filename`.
+ * @returns {string}
+ */
+const requireBase = () => {
+	const url = /** @type {string | undefined} */ (import.meta.url)
+	if (typeof url === 'string' && url !== '') return url
+	if (typeof __filename === 'string' && __filename !== '') return __filename
+	return `${/** @type {any} */ (globalThis).process.cwd()}/package.json`
+}
+
+/**
  * Load `NativeNode` from the optional `@evmts/zevm` dependency without a static `node:` import,
  * so browser and WASM bundles of this module contain no Node built-ins.
  * @returns {new (config: {chain_id?: number}) => import('./ZevmEngine.js').ZevmBackend}
@@ -40,7 +68,7 @@ const loadNativeNode = () => {
 			'@tevm/node cannot load the native ZEVM addon in this environment. The default backend requires Node.js >= 22.12. In a browser or WASM host, pass a `backend` that implements `{ rpc(json), close() }`: createZevmEngine({ backend }).',
 		)
 	try {
-		return nodeModule.createRequire(import.meta.url)('@evmts/zevm').NativeNode
+		return nodeModule.createRequire(requireBase())('@evmts/zevm').NativeNode
 	} catch (cause) {
 		const error = /** @type {{code?: unknown; message?: unknown}} */ (cause)
 		if (error?.code !== 'MODULE_NOT_FOUND' || !String(error.message).includes('@evmts/zevm')) throw cause
@@ -56,8 +84,10 @@ const loadNativeNode = () => {
  * Uses a caller-supplied pluggable `backend` (such as a WASM EVM adapter) when
  * provided, and defaults to `@evmts/zevm`'s `NativeNode` otherwise. The native
  * addon is loaded only when no `backend` is given, so this module bundles for browsers.
- * Event listeners and the `consoleLog` handler are observers: their errors are delivered
- * to `error` listeners and never change an RPC result.
+ * Event listeners and the `consoleLog` handler are observers: their errors and async rejections
+ * are delivered to `error` listeners and never change an RPC result. `request` and `response`
+ * listeners receive copies of the payload, so mutating one changes neither the dispatched
+ * request nor the caller's result.
  * @param {import('./ZevmEngine.js').ZevmEngineOptions} [options]
  * @returns {import('./ZevmEngine.js').ZevmEngine}
  * @throws {Error} If configuration is invalid or the default native addon is unavailable.
@@ -174,6 +204,17 @@ export function createZevmEngine(options = {}) {
 		}
 	}
 	/**
+	 * Run synchronous observer delivery. A payload that cannot be copied is reported, never thrown.
+	 * @param {() => void} deliver
+	 */
+	const notify = (deliver) => {
+		try {
+			deliver()
+		} catch (error) {
+			reportError(error)
+		}
+	}
+	/**
 	 * Decode one JSON-RPC response. A backend that answers with anything other than a JSON-RPC 2.0
 	 * response to request `expectedId` is a transport fault, so it throws instead of yielding `undefined`.
 	 * An error response may carry a null id: the backend could not read the request id.
@@ -187,13 +228,30 @@ export function createZevmEngine(options = {}) {
 			throw new Error('backend returned an invalid JSON-RPC response')
 		if (response.jsonrpc !== '2.0')
 			throw new Error('backend returned an invalid JSON-RPC response: jsonrpc must be "2.0"')
-		if (response.id !== expectedId && !(response.id === null && response.error))
+		const hasResult = 'result' in response
+		const hasError = 'error' in response
+		if (response.id !== expectedId && !(response.id === null && hasError && !hasResult))
 			throw new Error(
 				`backend returned a JSON-RPC response with id ${JSON.stringify(response.id)} for request id ${expectedId}`,
 			)
-		if (response.error) throw new NativeRpcError(response.error)
-		if (!('result' in response)) throw new Error('backend returned an invalid JSON-RPC response')
-		return response.result
+		// JSON-RPC 2.0: exactly one of `result` and `error` is present.
+		if (hasResult === hasError)
+			throw new Error(
+				`backend returned an invalid JSON-RPC response: ${hasResult ? 'both `result` and `error` are present' : 'neither `result` nor `error` is present'}`,
+			)
+		if (!hasError) return response.result
+		const error = response.error
+		if (
+			error === null ||
+			typeof error !== 'object' ||
+			Array.isArray(error) ||
+			!Number.isInteger(error.code) ||
+			typeof error.message !== 'string'
+		)
+			throw new Error(
+				'backend returned an invalid JSON-RPC response: error must be an object with an integer `code` and a string `message`',
+			)
+		throw new NativeRpcError(error)
 	}
 	/**
 	 * Send one request to the backend. `jsonrpc` and `id` are written last so caller fields cannot replace them.
@@ -234,8 +292,17 @@ export function createZevmEngine(options = {}) {
 			events.emit('consoleLog', event)
 			// A throwing handler must not drop the remaining drained messages.
 			try {
-				if (typeof consoleLog === 'function') consoleLog(event.message, { calldata: event.calldata, args: event.args })
-				else console.log(event.message)
+				if (typeof consoleLog === 'function') {
+					const returned = /** @type {unknown} */ (
+						consoleLog(event.message, { calldata: event.calldata, args: event.args })
+					)
+					// An async handler's rejection is reported instead of becoming an unhandled rejection.
+					const then =
+						returned !== null && (typeof returned === 'object' || typeof returned === 'function')
+							? /** @type {{then?: unknown}} */ (returned).then
+							: undefined
+					if (typeof then === 'function') then.call(returned, undefined, reportError)
+				} else console.log(event.message)
 			} catch (error) {
 				reportError(error)
 			}
@@ -340,16 +407,19 @@ export function createZevmEngine(options = {}) {
 			return enqueue(async () => {
 				await ready
 				if (closed) throw new Error('engine is closed')
-				events.emit('request', request)
+				// Serialize before any observer runs: a listener cannot change the dispatched request.
 				const requestId = ++id
 				const json = JSON.stringify({ ...request, jsonrpc: '2.0', id: requestId })
+				if (events.listenerCount('request') > 0) notify(() => events.emit('request', snapshot(request)))
 				// Drain even when execution fails: Hardhat prints logs emitted before a revert.
 				// Observer work in `finally` never throws, so it cannot replace the result or mask the error.
 				try {
 					const response = await backend.rpc(json)
 					await pollBlocks()
 					const result = parseResponse(response, requestId)
-					events.emit('response', { request, result })
+					// Listeners receive copies, so they cannot change the result returned to the caller.
+					if (events.listenerCount('response') > 0)
+						notify(() => events.emit('response', { request: snapshot(request), result: snapshot(result) }))
 					return result
 				} finally {
 					if (CONSOLE_LOG_METHODS.has(request.method)) await observe(drainConsoleLogs)

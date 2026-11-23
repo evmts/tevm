@@ -54,7 +54,7 @@ export const compileContracts = (solc, sources, options, logger) => {
 	logger.debug(`Compiling ${Object.keys(sources).length} sources`)
 	const solcOutput = solcCompile(solc, solcInput)
 	/** @type {import('./CompileContractsResult.js').CompileContractsResult} */
-	const result = { compilationResult: {} }
+	const result = { compilationResult: Object.create(null) }
 
 	if (solcOutput.errors) {
 		result.errors = solcOutput.errors
@@ -81,7 +81,9 @@ export const compileContracts = (solc, sources, options, logger) => {
 
 	// Process each source file
 	Object.keys(sources).forEach((sourcePath) => {
-		const output = /** @type {import('./CompiledSource.js').CompiledSource<TCompilationOutput>} */ ({ contract: {} })
+		const output = /** @type {import('./CompiledSource.js').CompiledSource<TCompilationOutput>} */ ({
+			contract: Object.create(null),
+		})
 
 		const solcAstOutput = solcOutput.sources?.[sourcePath]
 		const solcContractOutput = solcOutput.contracts?.[sourcePath]

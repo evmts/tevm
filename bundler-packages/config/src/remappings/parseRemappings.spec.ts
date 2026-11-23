@@ -6,6 +6,14 @@ describe('parseRemappings', () => {
 		expect(parseRemappings([' @a/ = lib/a=b/ ', '', '  '], '/p')).toEqual({ remappings: { '@a/': '/p/lib/a=b/' } })
 	})
 
+	it.each(['/project', 'C:\\project'])('preserves rooted targets when the config directory is %s', (base) => {
+		for (const target of ['/opt/lib/', 'D:\\deps\\', 'd:/deps/', '\\\\server\\share\\lib']) {
+			expect(parseRemappings([`lib/ = ${target} `], base)).toEqual({ remappings: { 'lib/': target } })
+		}
+		const sep = base.startsWith('/') ? '/' : '\\'
+		expect(parseRemappings(['lib/=C:relative'], base)).toEqual({ remappings: { 'lib/': `${base}${sep}C:relative` } })
+	})
+
 	it('reports the first entry without a non-empty prefix', () => {
 		expect(parseRemappings(['ok/=x/', 'no-separator', '=y'], '/p')).toEqual({ invalid: 'no-separator' })
 		expect(parseRemappings(['=y'], '/p')).toEqual({ invalid: '=y' })

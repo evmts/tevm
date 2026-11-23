@@ -43,6 +43,7 @@ import { Package as predeploys } from './packages/predeploys/PACKAGE.js'
 import { Package as server } from './packages/server/PACKAGE.js'
 import { Package as utils } from './packages/utils/PACKAGE.js'
 import { Package as scripts } from './scripts/PACKAGE.js'
+import { Package as lean } from './specs/lean/PACKAGE.js'
 import { Package as tevmFacade } from './tevm/PACKAGE.js'
 
 // PACKAGE.ts files are discovered automatically: the CLI globs the tree and
@@ -63,7 +64,7 @@ const changesetConfig = S.file('//.changeset/config.json')
 // The root-level files the root `lint` script formats and checks (biome.json,
 // package.json, *.md, *.ts). Package trees are linted by their own //<dir>:lint.
 const rootFiles = S.Filegroup({
-	srcs: S.glob(['biome.json', 'package.json', '*.md', '*.ts', 'jsr.json']),
+	srcs: S.glob(['biome.json', 'package.json', '*.md', '*.ts']),
 })
 
 const changesets = S.Filegroup({
@@ -662,7 +663,12 @@ const snapshot = S.Shell.Run({
 	data: [allBuilds, allTypes, allDeclarations],
 	env: nxEnvironment,
 	gates: [ci],
-	secrets: [S.Secret('NPM_TOKEN'), S.Secret('GITHUB_TOKEN')],
+	// Shell targets inherit neither setup-node's npmrc path nor its token variable.
+	secrets: [
+		S.Secret('NPM_TOKEN'),
+		S.Secret('GITHUB_TOKEN'),
+		...(process.env.GITHUB_ACTIONS === 'true' ? [S.Secret('NPM_CONFIG_USERCONFIG'), S.Secret('NODE_AUTH_TOKEN')] : []),
+	],
 	sandbox: 'none',
 	approval: 'required',
 })
@@ -829,6 +835,7 @@ export const Package = S.Package({
 		externalIntegrationTests,
 		format,
 		jsdocLint,
+		leanSpecs: S.Suite({ tests: [lean.check] }),
 		lint,
 		mechanicalPrePush,
 		noMocksLint,
