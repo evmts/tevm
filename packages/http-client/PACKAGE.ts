@@ -1,11 +1,12 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
-import { scopedShell } from '../../factory/scoped-shell.js'
+import { Package as tsupconfigPkg } from '../../configs/tsupconfig/PACKAGE.js'
+import { Package as pkg_viem } from '../../extensions/viem/PACKAGE.js'
 import { vitestBench } from '../../factory/bench.js'
+import { scopedShell } from '../../factory/scoped-shell.js'
 import { Package as pkg_memory_client } from '../memory-client/PACKAGE.js'
 import { Package as pkg_server } from '../server/PACKAGE.js'
-import { Package as pkg_viem } from '../../extensions/viem/PACKAGE.js'
 
 const Shell = scopedShell('packages/http-client')
 
@@ -33,10 +34,12 @@ const benches = S.Filegroup({
 
 const deps = S.Filegroup({ srcs: [packageJson, pkg_memory_client.build, pkg_server.build, pkg_viem.build] })
 
+const typeDeps = S.Filegroup({ srcs: [pkg_memory_client.types, pkg_server.types, pkg_viem.types] })
+
 // build:dist.
 const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
-	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
+	data: [srcs, deps, tsupConfig, tsupconfigPkg.build, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
@@ -44,7 +47,7 @@ const build = Shell.Build({
 const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
-	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
+	data: [srcs, deps, tsupConfig, tsupconfigPkg.build, tsconfig, packageJson, typeDeps, build],
 	outDirs: ['dist'],
 })
 

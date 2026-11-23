@@ -1,8 +1,9 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
-import { scopedShell } from '../../factory/scoped-shell.js'
+import { Package as tsupconfigPkg } from '../../configs/tsupconfig/PACKAGE.js'
 import { vitestBench } from '../../factory/bench.js'
+import { scopedShell } from '../../factory/scoped-shell.js'
 import { Package as pkg_common } from '../common/PACKAGE.js'
 import { Package as pkg_memory_client } from '../memory-client/PACKAGE.js'
 
@@ -33,11 +34,13 @@ const benches = S.Filegroup({
 
 const deps = S.Filegroup({ srcs: [packageJson, pkg_common.build, pkg_memory_client.build] })
 
+const typeDeps = S.Filegroup({ srcs: [pkg_common.types, pkg_memory_client.types] })
+
 // build:dist. tsup builds both entries from tsup.config.js: the library and
 // the tevm-mcp CLI the manifest's bin points at.
 const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
-	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
+	data: [srcs, deps, tsupConfig, tsupconfigPkg.build, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
@@ -45,7 +48,7 @@ const build = Shell.Build({
 const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
-	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
+	data: [srcs, deps, tsupConfig, tsupconfigPkg.build, tsconfig, packageJson, typeDeps, build],
 	outDirs: ['dist'],
 })
 

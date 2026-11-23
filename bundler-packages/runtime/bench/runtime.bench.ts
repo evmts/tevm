@@ -8,8 +8,20 @@ const sampleArtifacts = {
 	ERC20Token: {
 		abi: [
 			{ type: 'function', name: 'name', inputs: [], outputs: [{ name: '', type: 'string' }], stateMutability: 'view' },
-			{ type: 'function', name: 'symbol', inputs: [], outputs: [{ name: '', type: 'string' }], stateMutability: 'view' },
-			{ type: 'function', name: 'totalSupply', inputs: [], outputs: [{ name: '', type: 'uint256' }], stateMutability: 'view' },
+			{
+				type: 'function',
+				name: 'symbol',
+				inputs: [],
+				outputs: [{ name: '', type: 'string' }],
+				stateMutability: 'view',
+			},
+			{
+				type: 'function',
+				name: 'totalSupply',
+				inputs: [],
+				outputs: [{ name: '', type: 'uint256' }],
+				stateMutability: 'view',
+			},
 			{
 				type: 'function',
 				name: 'balanceOf',

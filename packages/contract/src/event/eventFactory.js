@@ -41,35 +41,38 @@ import { formatAbi } from '@tevm/utils'
  * const logs = await tevm.eth.getLogs(transferFilter)
  * ```
  */
-export const eventsFactory = ({ events, bytecode, deployedBytecode, address }) =>
-	Object.fromEntries(
-		events.map((eventAbi) => {
-			/**
-			 * Creates an event filter for a specific event.
-			 * @param {object} params - The parameters for creating the event filter.
-			 * @param {import('@tevm/utils').BlockNumber | import('@tevm/utils').BlockTag} [params.fromBlock] - The starting block for the filter.
-			 * @param {import('@tevm/utils').BlockNumber | import('@tevm/utils').BlockTag} [params.toBlock] - The ending block for the filter.
-			 * @param {object} [params.args] - The indexed arguments to filter by.
-			 * @param {boolean} [params.strict] - Whether to use strict matching for arguments.
-			 * @returns {object} An object representing the event filter, including ABI and bytecode information.
-			 */
-			const creator = (params) => {
-				return {
-					eventName: /**@type any*/ (eventAbi).name,
-					abi: [eventAbi],
-					humanReadableAbi: formatAbi([eventAbi]),
-					bytecode,
-					deployedBytecode,
-					address,
-					...params,
-				}
-			}
-			creator.abi = [eventAbi]
-			creator.eventName = /**@type any*/ (eventAbi).name
-			creator.humanReadableAbi = formatAbi([eventAbi])
-			creator.bytecode = bytecode
-			creator.deployedBytecode = deployedBytecode
-			creator.address = address
-			return [/**@type any*/ (eventAbi).name, creator]
-		}),
-	)
+export const eventsFactory = ({ events, bytecode, deployedBytecode, address }) => {
+	/** @type {Record<string, any>} */
+	const result = {}
+	for (const eventAbi of events) {
+		const eventName = /**@type any*/ (eventAbi).name
+		const singleEventAbi = [eventAbi]
+		const humanReadableAbi = formatAbi(singleEventAbi)
+		/**
+		 * Creates an event filter for a specific event.
+		 * @param {object} [params] - The parameters for creating the event filter.
+		 * @param {import('@tevm/utils').BlockNumber | import('@tevm/utils').BlockTag} [params.fromBlock] - The starting block for the filter.
+		 * @param {import('@tevm/utils').BlockNumber | import('@tevm/utils').BlockTag} [params.toBlock] - The ending block for the filter.
+		 * @param {object} [params.args] - The indexed arguments to filter by.
+		 * @param {boolean} [params.strict] - Whether to use strict matching for arguments.
+		 * @returns {object} An object representing the event filter, including ABI and bytecode information.
+		 */
+		const creator = (params) => ({
+			eventName,
+			abi: singleEventAbi,
+			humanReadableAbi,
+			bytecode,
+			deployedBytecode,
+			address,
+			...params,
+		})
+		creator.abi = singleEventAbi
+		creator.eventName = eventName
+		creator.humanReadableAbi = humanReadableAbi
+		creator.bytecode = bytecode
+		creator.deployedBytecode = deployedBytecode
+		creator.address = address
+		result[eventName] = creator
+	}
+	return result
+}

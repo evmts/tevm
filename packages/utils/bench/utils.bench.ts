@@ -8,8 +8,8 @@ import {
 	getAddress,
 	hexToBytes,
 	keccak256,
-	parseAbi,
 	PREFUNDED_PUBLIC_KEYS,
+	parseAbi,
 	toHex,
 	toRlp,
 } from '../src/index.js'
@@ -33,7 +33,6 @@ const erc20Abi = parseAbi(erc20HumanAbi)
 const payloadBytes = new Uint8Array(1024).map((_, i) => i & 0xff)
 const payloadHex = bytesToHex(payloadBytes)
 const rlpInput = [toHex(1n), toHex(21000n), PREFUNDED_PUBLIC_KEYS[0], toHex(1000000000000000000n), payloadHex]
-const encodedRlp = toRlp(rlpInput)
 const encodedBalanceResult = '0x0000000000000000000000000000000000000000000000056bc75e2d63100000' as const
 
 describe('@tevm/utils', () => {

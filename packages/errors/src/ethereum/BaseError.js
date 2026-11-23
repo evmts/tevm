@@ -108,19 +108,24 @@ export class BaseError extends Error {
 			this.cause = /**@type {any} */ (args.cause)
 		}
 
+		let message = `${shortMessage || 'An error occurred.'}\n`
+		if (args.metaMessages) {
+			for (let i = 0; i < args.metaMessages.length; i++) {
+				message += `\n${args.metaMessages[i]}`
+			}
+			message += '\n'
+		}
+		if (docsPath) {
+			message += `\nDocs: ${args.docsBaseUrl ?? 'https://tevm.sh'}${docsPath}${args.docsSlug ? `#${args.docsSlug}` : ''}`
+		}
+		if (details) {
+			message += `\nDetails: ${details}`
+		}
+		message += `\nVersion: ${this.version}`
 		/**
 		 * @type {string}
 		 */
-		this.message = [
-			shortMessage || 'An error occurred.',
-			'',
-			...(args.metaMessages ? [...args.metaMessages, ''] : []),
-			...(docsPath
-				? [`Docs: ${args.docsBaseUrl ?? 'https://tevm.sh'}${docsPath}${args.docsSlug ? `#${args.docsSlug}` : ''}`]
-				: []),
-			...(details ? [`Details: ${details}`] : []),
-			`Version: ${this.version}`,
-		].join('\n')
+		this.message = message
 	}
 
 	/**

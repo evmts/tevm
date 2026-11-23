@@ -68,5 +68,12 @@ const bench = cargoBench('bundler-packages/runtime-rs', {
 export const Package = S.Package({
 	targets: {
 		bench,
-		benches, build, buildDebug, napi, srcs, testRust, wasmSize },
+		benches,
+		build,
+		buildDebug,
+		napi,
+		srcs,
+		testRust,
+		wasmSize,
+	},
 })

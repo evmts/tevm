@@ -4,8 +4,23 @@ import { parseCliAbi } from '../src/utils/parse-cli-abi.js'
 
 const benchOpts = { time: 200, warmupTime: 50, warmupIterations: 5, throws: true }
 const inlineAbiJson = JSON.stringify([
-	{ type: 'function', name: 'balanceOf', inputs: [{ name: 'owner', type: 'address' }], outputs: [{ type: 'uint256' }], stateMutability: 'view' },
-	{ type: 'function', name: 'transfer', inputs: [{ name: 'to', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ type: 'bool' }], stateMutability: 'nonpayable' },
+	{
+		type: 'function',
+		name: 'balanceOf',
+		inputs: [{ name: 'owner', type: 'address' }],
+		outputs: [{ type: 'uint256' }],
+		stateMutability: 'view',
+	},
+	{
+		type: 'function',
+		name: 'transfer',
+		inputs: [
+			{ name: 'to', type: 'address' },
+			{ name: 'amount', type: 'uint256' },
+		],
+		outputs: [{ type: 'bool' }],
+		stateMutability: 'nonpayable',
+	},
 ])
 
 describe('@tevm/cli', () => {

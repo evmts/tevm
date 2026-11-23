@@ -1,6 +1,6 @@
-import { createMemoryClient } from '@tevm/memory-client'
 import type { AddressInfo } from 'node:net'
 import { Readable } from 'node:stream'
+import { createMemoryClient } from '@tevm/memory-client'
 import { afterAll, beforeAll, bench, describe } from 'vitest'
 import { createServer } from '../src/index.js'
 import { getRequestBody } from '../src/internal/getRequestBody.js'

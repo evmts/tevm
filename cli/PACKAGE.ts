@@ -1,13 +1,13 @@
 /// <reference path="../smithers.d.ts" />
 const S = Smithers
 
-import { scopedShell } from '../factory/scoped-shell.js'
-import { vitestBench } from '../factory/bench.js'
-import { Package as pkg_actions } from '../packages/actions/PACKAGE.js'
 import { Package as pkg_base_bundler } from '../bundler-packages/base-bundler/PACKAGE.js'
 import { Package as pkg_bundler_cache } from '../bundler-packages/bundler-cache/PACKAGE.js'
-import { Package as pkg_common } from '../packages/common/PACKAGE.js'
 import { Package as pkg_config } from '../bundler-packages/config/PACKAGE.js'
+import { vitestBench } from '../factory/bench.js'
+import { scopedShell } from '../factory/scoped-shell.js'
+import { Package as pkg_actions } from '../packages/actions/PACKAGE.js'
+import { Package as pkg_common } from '../packages/common/PACKAGE.js'
 import { Package as pkg_contract } from '../packages/contract/PACKAGE.js'
 import { Package as pkg_memory_client } from '../packages/memory-client/PACKAGE.js'
 import { Package as pkg_server } from '../packages/server/PACKAGE.js'
@@ -36,13 +36,39 @@ const benches = S.Filegroup({
 	srcs: S.glob(['bench/**']),
 })
 
-const deps = S.Filegroup({ srcs: [packageJson, pkg_actions.build, pkg_base_bundler.build, pkg_bundler_cache.build, pkg_common.build, pkg_config.build, pkg_contract.build, pkg_memory_client.build, pkg_server.build, pkg_utils.build] })
+const deps = S.Filegroup({
+	srcs: [
+		packageJson,
+		pkg_actions.build,
+		pkg_base_bundler.build,
+		pkg_bundler_cache.build,
+		pkg_common.build,
+		pkg_config.build,
+		pkg_contract.build,
+		pkg_memory_client.build,
+		pkg_server.build,
+		pkg_utils.build,
+	],
+})
 
 // build:app, first half: `tsc --skipLibCheck` into dist.
 const compile = Shell.Build({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--skipLibCheck'],
-	data: [srcs, deps, tsconfig],
+	data: [
+		srcs,
+		deps,
+		pkg_actions.types,
+		pkg_base_bundler.types,
+		pkg_bundler_cache.types,
+		pkg_common.types,
+		pkg_config.types,
+		pkg_contract.types,
+		pkg_memory_client.types,
+		pkg_server.types,
+		pkg_utils.types,
+		tsconfig,
+	],
 	outDirs: ['dist'],
 })
 

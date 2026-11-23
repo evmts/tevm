@@ -434,4 +434,60 @@ describe(createContract.name, () => {
 		const updatedContract = contract.withCode('0xabcdef')
 		expect(updatedContract.code).toBe('0xabcdef')
 	})
+
+	it('preserves ABI partitions, overloaded actions, events, and metadata across withAddress and withCode', () => {
+		const address = `0x${'11'.repeat(20)}` as const
+		const contract = createContract({
+			abi: dummyAbi,
+			name: 'DummyContract',
+			bytecode: '0x6001',
+			deployedBytecode: '0x6002',
+		})
+
+		// Unconfigured contract omits address/to and omits args when none are passed.
+		const bareRead = contract.read.exampleReadNoArgs()
+		expect(bareRead).not.toHaveProperty('args')
+		expect(bareRead).not.toHaveProperty('address')
+		expect(bareRead).not.toHaveProperty('to')
+		expect(contract.read.overloadedRead().abi.filter((entry) => entry.type === 'function')).toHaveLength(2)
+		expect(contract.write.overloadedWrite().abi.filter((entry) => entry.type === 'function')).toHaveLength(2)
+		expect(contract.write.overloadedWrite()).not.toHaveProperty('args')
+		expect(contract.events.exampleEvent({})).toMatchObject({
+			eventName: 'exampleEvent',
+			bytecode: '0x6001',
+			deployedBytecode: '0x6002',
+		})
+
+		// withAddress and withCode preserve parsed ABI/metadata and propagate to read/write/event creators.
+		const addressed = contract.withAddress(address)
+		const withCode = addressed.withCode('0x6003')
+		expect(addressed.abi).toBe(contract.abi)
+		expect(addressed.humanReadableAbi).toBe(contract.humanReadableAbi)
+		expect(withCode.address).toBe(address)
+		expect(withCode.code).toBe('0x6003')
+		expect(withCode.read.exampleRead('hi', 1n)).toMatchObject({
+			address,
+			to: address,
+			code: '0x6003',
+			args: ['hi', 1n],
+		})
+		expect(withCode.write.exampleWrite('hi', 2n)).toMatchObject({
+			address,
+			to: address,
+			code: '0x6003',
+			args: ['hi', 2n],
+		})
+		expect(withCode.events.exampleEvent({})).toMatchObject({
+			address,
+			eventName: 'exampleEvent',
+			bytecode: '0x6001',
+			deployedBytecode: '0x6002',
+		})
+
+		// Mutating one returned action does not leak into subsequent calls.
+		const firstWrite = withCode.write.overloadedWrite('a') as { functionName: string }
+		firstWrite.functionName = 'mutated'
+		expect(withCode.write.overloadedWrite('b').functionName).toBe('overloadedWrite')
+		expect(contract.address).toBeUndefined()
+	})
 })

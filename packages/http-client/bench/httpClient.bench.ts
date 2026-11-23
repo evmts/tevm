@@ -1,6 +1,6 @@
+import type { AddressInfo } from 'node:net'
 import { createMemoryClient } from '@tevm/memory-client'
 import { createServer } from '@tevm/server'
-import type { AddressInfo } from 'node:net'
 import { afterAll, beforeAll, bench, describe } from 'vitest'
 import { createHttpClient } from '../src/index.js'
 

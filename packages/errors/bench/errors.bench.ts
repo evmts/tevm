@@ -1,11 +1,5 @@
 import { bench, describe } from 'vitest'
-import {
-	ExecutionError,
-	InternalError,
-	InvalidParamsError,
-	RevertError,
-	rpcErrorCodeToMessage,
-} from '../src/index.js'
+import { ExecutionError, InternalError, InvalidParamsError, RevertError, rpcErrorCodeToMessage } from '../src/index.js'
 
 const benchOpts = { time: 200, warmupTime: 50, warmupIterations: 5, throws: true }
 

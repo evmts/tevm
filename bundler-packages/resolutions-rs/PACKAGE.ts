@@ -1,6 +1,7 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
+import { cargoBench } from '../../factory/bench.js'
 import { scopedShell } from '../../factory/scoped-shell.js'
 import { cargoBench } from '../../factory/bench.js'
 

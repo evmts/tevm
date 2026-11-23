@@ -30,6 +30,25 @@ const extraRustflags =
 			: ''
 const rustflags = [process.env.RUSTFLAGS, extraRustflags].filter(Boolean).join(' ')
 const cargoTargetDir = process.env.TEVM_CARGO_BENCH_TARGET_DIR || join(tmpdir(), 'tevm-cargo-bench-target')
+mkdirSync(cargoTargetDir, { recursive: true })
+const svmReleasesJson = process.env.SVM_RELEASES_LIST_JSON || join(cargoTargetDir, 'svm-releases.json')
+if (!process.env.SVM_RELEASES_LIST_JSON) {
+	writeFileSync(
+		svmReleasesJson,
+		`${JSON.stringify({
+			builds: [
+				{
+					version: '0.8.28',
+					sha256: '0x0000000000000000000000000000000000000000000000000000000000000000',
+				},
+			],
+			releases: {
+				'0.8.28': 'solc-v0.8.28',
+			},
+		})}\n`,
+		'utf8',
+	)
+}
 
 const stdout = execFileSync(
 	'cargo',
@@ -54,12 +73,22 @@ const stdout = execFileSync(
 		env: {
 			...process.env,
 			CARGO_TARGET_DIR: cargoTargetDir,
+			SVM_RELEASES_LIST_JSON: svmReleasesJson,
 			...(rustflags ? { RUSTFLAGS: rustflags } : {}),
 		},
 	},
 )
 
-const parsed = JSON.parse(stdout.trim())
+const jsonLine = stdout
+	.trim()
+	.split('\n')
+	.map((line) => line.trim())
+	.reverse()
+	.find((line) => line.startsWith('{') && line.endsWith('}'))
+if (!jsonLine) {
+	throw new Error(`Rust benchmark ${cargoPkg} (${exampleName}) did not emit JSON output`)
+}
+const parsed = JSON.parse(jsonLine)
 const benchmarks = parsed.benchmarks ?? []
 if (!Array.isArray(benchmarks) || benchmarks.length === 0) {
 	throw new Error(`Rust benchmark ${cargoPkg} (${exampleName}) emitted no benchmarks`)

@@ -1,8 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
-import { scopedShell } from '../../factory/scoped-shell.js'
 import { vitestBench } from '../../factory/bench.js'
+import { scopedShell } from '../../factory/scoped-shell.js'
 import { Package as pkg_lsp } from '../lsp/PACKAGE.js'
 
 const Shell = scopedShell('lsp/vscode')
@@ -93,5 +93,15 @@ const bench = vitestBench('lsp/vscode', {
 export const Package = S.Package({
 	targets: {
 		bench,
-		benches, build, clean, coverageGate, pack, release, srcs, testCoverage, tests, watch },
+		benches,
+		build,
+		clean,
+		coverageGate,
+		pack,
+		release,
+		srcs,
+		testCoverage,
+		tests,
+		watch,
+	},
 })

@@ -160,4 +160,39 @@ describe('BaseError', () => {
 
 		expect(result).toBe(cause)
 	})
+
+	it('formats details and message consistently for null, falsy primitives, and circular object causes', () => {
+		class CustomError extends BaseError {
+			constructor(message: string, args: any) {
+				super(message, args, 'CustomError')
+			}
+		}
+
+		const circular: Record<string, unknown> = { label: 'loop' }
+		circular.self = circular
+
+		const nullCause = new CustomError('Null cause', { cause: null })
+		expect(nullCause.details).toBeUndefined()
+		expect(nullCause.message).not.toContain('Details:')
+
+		const emptyStringCause = new CustomError('Empty string cause', { cause: '' })
+		expect(emptyStringCause.details).toBeUndefined()
+		expect(emptyStringCause.message).not.toContain('Details:')
+
+		const zeroArgs = { cause: 0 }
+		const zeroCause = new CustomError('Zero cause', zeroArgs)
+		expect(zeroCause.details).toBe(zeroArgs)
+
+		const falseArgs = { cause: false }
+		const falseCause = new CustomError('False cause', falseArgs)
+		expect(falseCause.details).toBe(falseArgs)
+
+		const numberArgs = { cause: 42 }
+		const numberCause = new CustomError('Number cause', numberArgs)
+		expect(numberCause.details).toBe(numberArgs)
+
+		const circularCause = new CustomError('Circular cause', { cause: circular })
+		expect(circularCause.details).toBe('Unable to parse error details')
+		expect(circularCause.message).toContain('Details: Unable to parse error details')
+	})
 })

@@ -42,7 +42,12 @@ beforeAll(() => {
 	tempDir = mkdtempSync(join(tmpdir(), 'tevm-bundler-cache-bench-'))
 	solPath = join(tempDir, 'Counter.sol')
 	writeFileSync(solPath, 'pragma solidity ^0.8.20; contract Counter { uint256 public count; }')
-	sampleArtifacts.modules[solPath] = { id: solPath, rawCode: 'pragma solidity ^0.8.20;', code: 'pragma solidity ^0.8.20;', importedIds: [] }
+	sampleArtifacts.modules[solPath] = {
+		id: solPath,
+		rawCode: 'pragma solidity ^0.8.20;',
+		code: 'pragma solidity ^0.8.20;',
+		importedIds: [],
+	}
 	cache = createCache('.tevm', fao as any, tempDir)
 	cache.writeArtifactsSync(solPath, sampleArtifacts as any, 'bench-fp-1')
 	cache.writeDtsSync(solPath, 'export declare const Counter: unknown;\n')

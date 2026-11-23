@@ -59,23 +59,28 @@ const isWithinRemappingTarget = (value, rest, target) => {
  * ```
  */
 export const resolveImportPath = (absolutePath, importPath, remappings, libs, sync) => {
-	// Remappings
-	for (const [key, value] of Object.entries(remappings).sort(([a], [b]) => b.length - a.length)) {
-		if (importPath.startsWith(key)) {
-			// Do not use String.prototype.replace here: `$&`, `$'` and friends in the
-			// remapping target would be interpreted as replacement patterns.
-			const rest = importPath.slice(key.length)
-			const target = formatPath(pathResolve(`${value}${rest}`))
-			if (!isWithinRemappingTarget(value, rest, target)) {
-				return fail(
-					new CouldNotResolveImportError(
-						importPath,
-						absolutePath,
-						new Error(`Import ${importPath} escapes remapping target ${value} for prefix ${key}`),
-					),
-				)
+	// Remappings (skip allocation/sort when remappings is empty)
+	const remappingKeys = Object.keys(remappings)
+	if (remappingKeys.length > 0) {
+		if (remappingKeys.length > 1) remappingKeys.sort((a, b) => b.length - a.length)
+		for (const key of remappingKeys) {
+			if (importPath.startsWith(key)) {
+				const value = /** @type {string} */ (remappings[key])
+				// Do not use String.prototype.replace here: `$&`, `$'` and friends in the
+				// remapping target would be interpreted as replacement patterns.
+				const rest = importPath.slice(key.length)
+				const target = formatPath(pathResolve(`${value}${rest}`))
+				if (!isWithinRemappingTarget(value, rest, target)) {
+					return fail(
+						new CouldNotResolveImportError(
+							importPath,
+							absolutePath,
+							new Error(`Import ${importPath} escapes remapping target ${value} for prefix ${key}`),
+						),
+					)
+				}
+				return succeed(target)
 			}
-			return succeed(target)
 		}
 	}
 	// Local import "./LocalContract.sol"

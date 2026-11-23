@@ -1,7 +1,7 @@
-import { runPromise } from 'effect/Effect'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { runPromise } from 'effect/Effect'
 import { afterAll, beforeAll, bench, describe } from 'vitest'
 import { defineConfig, loadConfig } from '../src/index.js'
 

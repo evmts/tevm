@@ -27,11 +27,15 @@ export function createHttpHandler(client, options = {}) {
 			return void res.writeHead(status).end()
 		}
 		if (options.maxBatchSize !== undefined) {
-			try {
-				const parsed = JSON.parse(body)
-				if (Array.isArray(parsed) && parsed.length > options.maxBatchSize) return void res.writeHead(413).end()
-			} catch {
-				/* The native parser returns the JSON-RPC parse error. */
+			let i = 0
+			while (i < body.length && body.charCodeAt(i) <= 32) i++
+			if (body.charCodeAt(i) === 91 /* '[' */) {
+				try {
+					const parsed = JSON.parse(body)
+					if (Array.isArray(parsed) && parsed.length > options.maxBatchSize) return void res.writeHead(413).end()
+				} catch {
+					/* The native parser returns the JSON-RPC parse error. */
+				}
 			}
 		}
 		try {

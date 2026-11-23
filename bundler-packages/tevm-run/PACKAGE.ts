@@ -1,10 +1,10 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
-import { scopedShell } from '../../factory/scoped-shell.js'
 import { vitestBench } from '../../factory/bench.js'
-import { Package as pkg_bun } from '../bun/PACKAGE.js'
+import { scopedShell } from '../../factory/scoped-shell.js'
 import { Package as pkg_tevm } from '../../tevm/PACKAGE.js'
+import { Package as pkg_bun } from '../bun/PACKAGE.js'
 
 const Shell = scopedShell('bundler-packages/tevm-run')
 

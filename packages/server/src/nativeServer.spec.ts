@@ -301,6 +301,28 @@ describe('native server transports', () => {
 		socket.write(`{${' '.repeat(110)}`)
 		await closed
 	})
+	it('applies HTTP maxBatchSize only to JSON arrays (including leading whitespace and malformed arrays) and allows non-batch objects', async () => {
+		const { url } = await start({ maxBatchSize: 2 })
+		// Leading whitespace before JSON array over maxBatchSize is rejected.
+		const overLimit = await fetch(url, {
+			method: 'POST',
+			body: `  \n\t${JSON.stringify([request('eth_chainId', [], 1), request('eth_chainId', [], 2), request('eth_chainId', [], 3)])}`,
+		})
+		expect(overLimit.status).toBe(413)
+		expect(await overLimit.text()).toBe('')
+
+		// Malformed array falls through to JSON-RPC parse error (-32700), not batch-size error.
+		const malformedArray = await fetch(url, { method: 'POST', body: '  [{"jsonrpc":' })
+		expect(await malformedArray.json()).toMatchObject({ jsonrpc: '2.0', error: { code: -32700 } })
+
+		// Single object request with array params longer than maxBatchSize is NOT treated as a batch.
+		const singleObject = await fetch(url, {
+			method: 'POST',
+			body: JSON.stringify(request('eth_chainId', [], 42)),
+		})
+		expect(singleObject.status).toBe(200)
+		expect(await singleObject.json()).toEqual({ jsonrpc: '2.0', id: 42, result: '0x7a69' })
+	})
 })
 
 it('forwards the WebSocket upgrade path and payload limit and closes idle clients on shutdown', async () => {

@@ -43,49 +43,59 @@ import { formatAbi } from '@tevm/utils'
  * console.log('Transaction hash:', result.transactionHash)
  * ```
  */
-export const writeFactory = ({ methods, errors, address, code }) =>
-	Object.fromEntries(
-		methods
-			.filter(({ type }) => type === 'function')
-			.filter((method) => {
-				const abiFunction = /** @type {import('@tevm/utils').AbiFunction} */ (method)
-				return abiFunction.stateMutability === 'payable' || abiFunction.stateMutability === 'nonpayable'
-			})
-			.map((method, _index, eligibleMethods) => {
-				/**
-				 * Creates a write action for a specific contract method.
-				 * @param {...any} args - The arguments for the contract method.
-				 * @returns {object} An object representing the write action, including ABI and method information.
-				 */
-				const creator = (...args) => {
-					// Handle case where there is an overload
-					// TODO: make this more efficient
-					const methodAbi = eligibleMethods
-						.filter(
-							(m) =>
-								/**@type {import('@tevm/utils').AbiFunction}*/ (m).name ===
-								/**@type {import('@tevm/utils').AbiFunction}*/ (method)?.name,
-						)
-						.concat(errors)
-					// viem and wagmi barf if we pass in undefined or [] for args so do this to accommodate viem and wagmi
-					const maybeArgs = args.length > 0 ? { args } : {}
-					return {
-						abi: methodAbi,
-						humanReadableAbi: formatAbi([method]),
-						functionName: /**@type {import('@tevm/utils').AbiFunction}*/ (method).name,
-						...(address !== undefined ? { address, to: address } : {}),
-						...(code !== undefined ? { code } : {}),
-						...maybeArgs,
-					}
-				}
-				creator.abi = [method]
-				creator.functionName = /** @type {import('@tevm/utils').AbiFunction} */ (method).name
-				creator.humanReadableAbi = formatAbi([method])
-				creator.code = code
-				if (address !== undefined) {
-					creator.address = address
-					creator.to = address
-				}
-				return [/**@type {import('@tevm/utils').AbiFunction}*/ (method).name, creator]
-			}),
-	)
+export const writeFactory = ({ methods, errors, address, code }) => {
+	// Overloads share a name; an action's ABI lists only the eligible overloads
+	// for that name, so group them once instead of filtering on every call.
+	/** @type {Map<string, Array<import('@tevm/utils').AbiFunction>>} */
+	const byName = new Map()
+	/** @type {Array<import('@tevm/utils').AbiFunction>} */
+	const eligibleMethods = []
+	for (const item of methods) {
+		if (item.type !== 'function') continue
+		const fn = /** @type {import('@tevm/utils').AbiFunction} */ (item)
+		if (fn.stateMutability !== 'payable' && fn.stateMutability !== 'nonpayable') continue
+		eligibleMethods.push(fn)
+		const existing = byName.get(fn.name)
+		if (existing) {
+			existing.push(fn)
+		} else {
+			byName.set(fn.name, [fn])
+		}
+	}
+	/** @type {Record<string, any>} */
+	const result = {}
+	for (const method of eligibleMethods) {
+		const functionName = method.name
+		const overloads = /** @type {Array<import('@tevm/utils').AbiFunction>} */ (byName.get(functionName))
+		const humanReadableAbi = formatAbi([method])
+		/**
+		 * Creates a write action for a specific contract method.
+		 * @param {...any} args - The arguments for the contract method.
+		 * @returns {object} An object representing the write action, including ABI and method information.
+		 */
+		const creator = (...args) => {
+			/** @type {{ abi: import('@tevm/utils').Abi; humanReadableAbi: ReadonlyArray<string>; functionName: string; code?: import('@tevm/utils').Hex; address?: import('@tevm/utils').Address; to?: import('@tevm/utils').Address; args?: Array<any> }} */
+			const action = {
+				abi: /** @type {import('@tevm/utils').Abi} */ ([...overloads, ...errors]),
+				humanReadableAbi,
+				functionName,
+			}
+			if (address !== undefined) {
+				action.address = address
+				action.to = address
+			}
+			if (code !== undefined) action.code = code
+			// viem and wagmi reject undefined or [] args, so omit args when none are passed.
+			if (args.length > 0) action.args = args
+			return action
+		}
+		creator.abi = [method]
+		creator.functionName = functionName
+		creator.humanReadableAbi = humanReadableAbi
+		creator.code = code
+		// Omit address/to entirely when no address is set.
+		if (address !== undefined) Object.assign(creator, { address, to: address })
+		result[functionName] = creator
+	}
+	return result
+}

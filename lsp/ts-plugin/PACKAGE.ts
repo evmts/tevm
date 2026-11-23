@@ -1,11 +1,12 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
-import { scopedShell } from '../../factory/scoped-shell.js'
-import { vitestBench } from '../../factory/bench.js'
 import { Package as pkg_base_bundler } from '../../bundler-packages/base-bundler/PACKAGE.js'
 import { Package as pkg_bundler_cache } from '../../bundler-packages/bundler-cache/PACKAGE.js'
 import { Package as pkg_config } from '../../bundler-packages/config/PACKAGE.js'
+import { Package as tsupconfigPkg } from '../../configs/tsupconfig/PACKAGE.js'
+import { vitestBench } from '../../factory/bench.js'
+import { scopedShell } from '../../factory/scoped-shell.js'
 import { Package as pkg_contract } from '../../packages/contract/PACKAGE.js'
 
 const Shell = scopedShell('lsp/ts-plugin')
@@ -39,13 +40,28 @@ const benches = S.Filegroup({
 	srcs: S.glob(['bench/**']),
 })
 
-const deps = S.Filegroup({ srcs: [packageJson, pkg_base_bundler.build, pkg_bundler_cache.build, pkg_config.build, pkg_contract.build] })
+const deps = S.Filegroup({
+	srcs: [packageJson, pkg_base_bundler.build, pkg_bundler_cache.build, pkg_config.build, pkg_contract.build],
+})
+
+const typeDeps = S.Filegroup({
+	srcs: [
+		pkg_base_bundler.types,
+		pkg_base_bundler.declarations,
+		pkg_bundler_cache.types,
+		pkg_bundler_cache.declarations,
+		pkg_config.types,
+		pkg_config.declarations,
+		pkg_contract.types,
+		pkg_contract.declarations,
+	],
+})
 
 // build:dist. tsup reads @tevm/tsupconfig through the config file; the
 // preset is a workspace dependency, so deps already covers it.
 const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
-	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
+	data: [srcs, deps, tsupConfig, tsupconfigPkg.build, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
@@ -53,7 +69,7 @@ const build = Shell.Build({
 const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
-	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
+	data: [srcs, deps, tsupConfig, tsupconfigPkg.build, tsconfig, packageJson, typeDeps, build],
 	outDirs: ['dist'],
 })
 
@@ -62,7 +78,7 @@ const types = Shell.Build({
 const declarations = Shell.Build({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--emitDeclarationOnly', '--declaration'],
-	data: [srcs, deps, tsconfig],
+	data: [srcs, deps, typeDeps, tsconfig],
 	outDirs: ['types'],
 })
 
@@ -71,7 +87,7 @@ const declarations = Shell.Build({
 const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
-	data: [srcs, tests, deps, tsconfig],
+	data: [srcs, tests, deps, typeDeps, tsconfig],
 })
 
 // test:run. The `test` script is the same run in watch mode and adds

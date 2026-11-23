@@ -102,11 +102,7 @@ const aggregate = {
 writeFileSync(resolve(outDir, 'report.json'), `${JSON.stringify(aggregate, null, 2)}\n`, 'utf8')
 
 const fmtHz = (hz) =>
-	hz >= 1_000_000
-		? `${(hz / 1_000_000).toFixed(2)}M`
-		: hz >= 1_000
-			? `${(hz / 1_000).toFixed(2)}k`
-			: hz.toFixed(1)
+	hz >= 1_000_000 ? `${(hz / 1_000_000).toFixed(2)}M` : hz >= 1_000 ? `${(hz / 1_000).toFixed(2)}k` : hz.toFixed(1)
 
 const fmtMs = (ms) => (ms < 0.01 ? `${(ms * 1000).toFixed(2)}µs` : `${ms.toFixed(3)}ms`)
 
@@ -137,11 +133,7 @@ const summaryMd = `${mdLines.join('\n')}\n`
 writeFileSync(resolve(outDir, 'summary.md'), summaryMd, 'utf8')
 
 const esc = (s) =>
-	String(s)
-		.replaceAll('&', '&amp;')
-		.replaceAll('<', '&lt;')
-		.replaceAll('>', '&gt;')
-		.replaceAll('"', '&quot;')
+	String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;')
 
 const htmlRows = rows
 	.map(

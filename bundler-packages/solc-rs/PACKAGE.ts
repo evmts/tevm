@@ -45,5 +45,10 @@ const bench = cargoBench('bundler-packages/solc-rs', {
 export const Package = S.Package({
 	targets: {
 		bench,
-		benches, build, buildDebug, srcs, testRust },
+		benches,
+		build,
+		buildDebug,
+		srcs,
+		testRust,
+	},
 })

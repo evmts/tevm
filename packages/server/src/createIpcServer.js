@@ -1,7 +1,7 @@
 import { createServer } from 'node:net'
 import { StringDecoder } from 'node:string_decoder'
 import { createRpcConnection } from './internal/createRpcConnection.js'
-import { extractJsonRpcFrames } from './internal/extractJsonRpcFrames.js'
+import { createJsonRpcFrameExtractor } from './internal/extractJsonRpcFrames.js'
 import { getMaxSubscriptions } from './internal/getMaxSubscriptions.js'
 
 /** Create an IPC server supporting native RPC and connection-scoped subscriptions.
@@ -14,10 +14,11 @@ import { getMaxSubscriptions } from './internal/getMaxSubscriptions.js'
  */
 export function createIpcServer(client, options = {}, limits = {}) {
 	const maxSubscriptions = getMaxSubscriptions(limits.maxSubscriptions)
+	const maxMessageSize = limits.maxMessageSize ?? 1024 * 1024
 	return createServer(options, (socket) => {
 		socket.on('error', () => socket.destroy())
 		const decoder = new StringDecoder('utf8')
-		let buffer = ''
+		const extractor = createJsonRpcFrameExtractor()
 		let queue = Promise.resolve()
 		const connection = createRpcConnection(
 			client.transport.tevm,
@@ -27,12 +28,14 @@ export function createIpcServer(client, options = {}, limits = {}) {
 			{ maxSubscriptions },
 		)
 		socket.on('data', (data) => {
-			buffer += decoder.write(data)
-			const [frames, remaining] = extractJsonRpcFrames(buffer)
-			const limit = limits.maxMessageSize ?? 1024 * 1024
-			if (Buffer.byteLength(remaining) > limit || frames.some((frame) => Buffer.byteLength(frame) > limit))
+			// The limit applies to each frame and to the unframed remainder, not to a
+			// chunk that carries many complete small frames.
+			const frames = extractor.push(decoder.write(data))
+			if (
+				Buffer.byteLength(extractor.remaining(), 'utf8') > maxMessageSize ||
+				frames.some((frame) => Buffer.byteLength(frame, 'utf8') > maxMessageSize)
+			)
 				return void socket.destroy()
-			buffer = remaining
 			for (const frame of frames)
 				queue = queue
 					.then(() => connection.rpc(frame))

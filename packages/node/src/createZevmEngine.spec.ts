@@ -235,4 +235,33 @@ describe('native ZEVM engine', () => {
 		await node.ready()
 		expect(await node.request({ method: 'anvil_getAutomine' })).toBe(false)
 	})
+	it('handles idle fast-path calls, listener-gated events, and idempotent close', async () => {
+		const node = create()
+		await node.ready()
+		// Subsequent ready() calls resolve immediately without re-initializing.
+		await node.ready()
+		expect(await node.request({ method: 'eth_chainId' })).toBe('0x7a69')
+		expect(JSON.parse(await node.rpc(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_blockNumber' })))).toEqual({
+			jsonrpc: '2.0',
+			id: 1,
+			result: '0x0',
+		})
+
+		// Mining without listeners attached succeeds without emitting; attaching a listener receives events.
+		await node.request({ method: 'evm_mine' })
+		const blocks: Array<{ number: string }> = []
+		const onBlock = (block: { number: string }) => blocks.push(block)
+		node.events.on('block', onBlock)
+		await node.request({ method: 'evm_mine' })
+		expect(blocks).toHaveLength(1)
+		expect(blocks[0]?.number).toBe('0x2')
+		node.events.off('block', onBlock)
+		await node.request({ method: 'evm_mine' })
+		expect(blocks).toHaveLength(1)
+
+		// close() is idempotent and subsequent requests reject cleanly.
+		await node.close()
+		await node.close()
+		await expect(node.request({ method: 'eth_chainId' })).rejects.toThrow('engine is closed')
+	})
 })

@@ -87,6 +87,27 @@ it('enforces maxBodySize when trailing incomplete UTF-8 bytes flush on stream en
 	expect(await result).toBeInstanceOf(ReadRequestBodyError)
 })
 
+it('counts UTF-8 bytes across chunks, stops immediately when maxBodySize is exceeded, and decodes large multi-chunk Unicode bodies', async () => {
+	// '€' is 3 UTF-8 bytes; two chunks of 2 chars = 12 bytes > maxBodySize 10.
+	const oversized = new PassThrough()
+	const oversizedPromise = getRequestBody(oversized as never, { maxBodySize: 10 })
+	oversized.write(Buffer.from('€€'))
+	oversized.write(Buffer.from('€€'))
+	// Resolves with ReadRequestBodyError immediately without waiting for stream.end().
+	expect(await oversizedPromise).toBeInstanceOf(ReadRequestBodyError)
+
+	// Multi-chunk 64 KB Unicode payload decodes losslessly.
+	const stream = new PassThrough()
+	const decodedPromise = getRequestBody(stream as never)
+	const payload = JSON.stringify({ jsonrpc: '2.0', id: 1, params: ['€'.repeat(20_000)] })
+	const bytes = Buffer.from(payload, 'utf8')
+	for (let offset = 0; offset < bytes.length; offset += 1024) {
+		stream.write(bytes.subarray(offset, offset + 1024))
+	}
+	stream.end()
+	expect(await decodedPromise).toBe(payload)
+})
+
 it.each(['aborted', 'close'])('settles a partial stream on %s and absorbs late errors', async (event) => {
 	const stream = new PassThrough()
 	const body = getRequestBody(stream as never)

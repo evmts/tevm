@@ -1,13 +1,14 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
-import { scopedShell } from '../../factory/scoped-shell.js'
+import { Package as tsupconfigPkg } from '../../configs/tsupconfig/PACKAGE.js'
 import { vitestBench } from '../../factory/bench.js'
-import { Package as pkg_config } from '../config/PACKAGE.js'
+import { scopedShell } from '../../factory/scoped-shell.js'
 import { Package as pkg_logger } from '../../packages/logger/PACKAGE.js'
+import { Package as pkg_utils } from '../../packages/utils/PACKAGE.js'
+import { Package as pkg_config } from '../config/PACKAGE.js'
 import { Package as pkg_resolutions } from '../resolutions/PACKAGE.js'
 import { Package as pkg_solc } from '../solc/PACKAGE.js'
-import { Package as pkg_utils } from '../../packages/utils/PACKAGE.js'
 
 const Shell = scopedShell('bundler-packages/compiler')
 
@@ -46,12 +47,18 @@ const benches = S.Filegroup({
 const sourceFixture = S.file('source.ts')
 const testContractFixture = S.file('TestContract.d.ts')
 
-const deps = S.Filegroup({ srcs: [packageJson, pkg_config.build, pkg_logger.build, pkg_resolutions.build, pkg_solc.build, pkg_utils.build] })
+const deps = S.Filegroup({
+	srcs: [packageJson, pkg_config.build, pkg_logger.build, pkg_resolutions.build, pkg_solc.build, pkg_utils.build],
+})
+
+const typeDeps = S.Filegroup({
+	srcs: [pkg_config.types, pkg_logger.types, pkg_resolutions.types, pkg_solc.types, pkg_utils.types],
+})
 
 // build:dist.
 const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
-	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
+	data: [srcs, deps, tsupConfig, tsupconfigPkg.build, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
@@ -59,7 +66,7 @@ const build = Shell.Build({
 const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
-	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
+	data: [srcs, deps, tsupConfig, tsupconfigPkg.build, tsconfig, packageJson, typeDeps, build],
 	outDirs: ['dist'],
 })
 

@@ -34,7 +34,7 @@ const build = Shell.Build({
 const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
-	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
+	data: [srcs, deps, tsupConfig, tsconfig, packageJson, build],
 	outDirs: ['dist'],
 })
 

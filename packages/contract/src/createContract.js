@@ -5,6 +5,108 @@ import { readFactory } from './read/readFactory.js'
 import { writeFactory } from './write/writeFactory.js'
 
 /**
+ * Internal builder that reuses already-parsed ABI partitions so `.withAddress()`
+ * and `.withCode()` do not re-run `formatAbi()` or re-filter the ABI.
+ * @param {{
+ *   name: string | undefined
+ *   abi: import('@tevm/utils').Abi
+ *   humanReadableAbi: ReadonlyArray<string>
+ *   methods: import('@tevm/utils').Abi
+ *   events: import('@tevm/utils').Abi
+ *   errors: import('@tevm/utils').Abi
+ *   address?: import('@tevm/utils').Address | undefined
+ *   code?: import('@tevm/utils').Hex | undefined
+ *   bytecode?: import('@tevm/utils').Hex | undefined
+ *   deployedBytecode?: import('@tevm/utils').Hex | undefined
+ * }} params
+ */
+const buildContract = ({
+	name,
+	abi,
+	humanReadableAbi,
+	methods,
+	events,
+	errors,
+	address,
+	code,
+	bytecode,
+	deployedBytecode,
+}) => {
+	const normalizedAddress = address !== undefined ? getAddress(address) : undefined
+	const optionalArgs = {
+		...(normalizedAddress !== undefined ? { address: normalizedAddress } : {}),
+		...(code !== undefined ? { code } : {}),
+		...(bytecode !== undefined ? { bytecode } : {}),
+		...(deployedBytecode !== undefined ? { deployedBytecode } : {}),
+	}
+	const baseContract = {
+		...optionalArgs,
+		name,
+		abi,
+		humanReadableAbi,
+		// TODO make this more internally typesafe
+		events: eventsFactory({ events, ...optionalArgs }),
+		// TODO make this more internally typesafe
+		write: writeFactory({ methods, errors, ...optionalArgs }),
+		// TODO make this more internally typesafe
+		read: readFactory({ methods, errors, address: normalizedAddress, ...optionalArgs }),
+	}
+	/**
+	 * @param {import('@tevm/utils').Address} nextAddress
+	 */
+	const withAddress = (nextAddress) =>
+		buildContract({
+			name,
+			abi,
+			humanReadableAbi,
+			methods,
+			events,
+			errors,
+			address: nextAddress,
+			code,
+			bytecode,
+			deployedBytecode,
+		})
+
+	/**
+	 * @param {import('@tevm/utils').Hex} encodedBytecode
+	 */
+	const withCode = (encodedBytecode) =>
+		buildContract({
+			name,
+			abi,
+			humanReadableAbi,
+			methods,
+			events,
+			errors,
+			address,
+			code: encodedBytecode,
+			bytecode,
+			deployedBytecode,
+		})
+
+	return /**@type any*/ ({
+		...baseContract,
+		withCode,
+		withAddress,
+		/**
+		 * @param {Array<any>} args
+		 */
+		deploy: (...args) => {
+			const maybeArgs = args.length > 0 ? { args } : {}
+			if (!baseContract.bytecode) {
+				throw new Error('Bytecode is required to generate deploy data')
+			}
+			return {
+				...maybeArgs,
+				bytecode: baseContract.bytecode,
+				abi,
+			}
+		},
+	})
+}
+
+/**
  * Creates a Tevm Contract instance from a human-readable ABI or JSON ABI.
  * This function is the core of Tevm's contract interaction capabilities,
  * allowing for type-safe and easy-to-use contract interfaces.
@@ -79,87 +181,33 @@ export const createContract = ({
 	code,
 	bytecode,
 }) => {
-	const { abi, humanReadableAbi } = (() => {
-		if (_abi) {
-			return { abi: _abi, humanReadableAbi: formatAbi(_abi) }
-		}
-		if (_humanReadableAbi) {
-			return { abi: parseAbi(_humanReadableAbi), humanReadableAbi: _humanReadableAbi }
-		}
+	let abi
+	let humanReadableAbi
+	if (_abi) {
+		abi = _abi
+		humanReadableAbi = formatAbi(_abi)
+	} else if (_humanReadableAbi) {
+		abi = parseAbi(_humanReadableAbi)
+		humanReadableAbi = _humanReadableAbi
+	} else {
 		throw new InvalidParamsError('Must provide either humanReadableAbi or abi', {
 			docsPath: '/learn/contracts/',
 		})
-	})()
-
-	const methods = abi.filter((field) => {
-		return field.type === 'function'
-	})
-	const events = abi.filter((field) => {
-		return field.type === 'event'
-	})
-	const errors = abi.filter((field) => {
-		return field.type === 'error'
-	})
-	const optionalArgs = {
-		...(address !== undefined ? { address: getAddress(address) } : {}),
-		...(code !== undefined ? { code } : {}),
-		...(bytecode !== undefined ? { bytecode } : {}),
-		...(deployedBytecode !== undefined ? { deployedBytecode } : {}),
 	}
-	const baseContract = {
-		...optionalArgs,
+
+	const methods = abi.filter((field) => field.type === 'function')
+	const events = abi.filter((field) => field.type === 'event')
+	const errors = abi.filter((field) => field.type === 'error')
+	return buildContract({
 		name,
-		abi: abi,
+		abi,
 		humanReadableAbi,
-		// TODO make this more internally typesafe
-		events: eventsFactory({ events, ...optionalArgs }),
-		// TODO make this more internally typesafe
-		write: writeFactory({ methods, errors, ...optionalArgs }),
-		// TODO make this more internally typesafe
-		read: readFactory({ methods, errors, address, ...optionalArgs }),
-	}
-	/**
-	 * @param {import('@tevm/utils').Address} address
-	 */
-	const withAddress = (address) => {
-		const formattedAddress = getAddress(address)
-		return createContract(
-			/** @type {any}*/ ({
-				...baseContract,
-				address: formattedAddress,
-			}),
-		)
-	}
-
-	/**
-	 * @param {import('@tevm/utils').Hex} encodedBytecode
-	 */
-	const withCode = (encodedBytecode) => {
-		return createContract(
-			/** @type {any} */ ({
-				...baseContract,
-				code: encodedBytecode,
-			}),
-		)
-	}
-
-	return /**@type any*/ ({
-		...baseContract,
-		withCode,
-		withAddress,
-		/**
-		 * @param {Array<any>} args
-		 */
-		deploy: (...args) => {
-			const maybeArgs = args.length > 0 ? { args } : {}
-			if (!baseContract.bytecode) {
-				throw new Error('Bytecode is required to generate deploy data')
-			}
-			return {
-				...maybeArgs,
-				bytecode: baseContract.bytecode,
-				abi,
-			}
-		},
+		methods,
+		events,
+		errors,
+		address,
+		code,
+		bytecode,
+		deployedBytecode,
 	})
 }

@@ -1,8 +1,9 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
-import { scopedShell } from '../../factory/scoped-shell.js'
+import { Package as tsupconfigPkg } from '../../configs/tsupconfig/PACKAGE.js'
 import { vitestBench } from '../../factory/bench.js'
+import { scopedShell } from '../../factory/scoped-shell.js'
 import { Package as pkg_errors } from '../errors/PACKAGE.js'
 
 const Shell = scopedShell('packages/utils')
@@ -41,10 +42,12 @@ const benches = S.Filegroup({
 // dependency in this manifest, in topological order.
 const deps = S.Filegroup({ srcs: [packageJson, pkg_errors.build] })
 
+const typeDeps = S.Filegroup({ srcs: [pkg_errors.types] })
+
 // build:dist.
 const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
-	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
+	data: [srcs, deps, tsupConfig, tsupconfigPkg.build, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
@@ -52,7 +55,7 @@ const build = Shell.Build({
 const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
-	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
+	data: [srcs, deps, tsupConfig, tsupconfigPkg.build, tsconfig, packageJson, typeDeps, build],
 	outDirs: ['dist'],
 })
 

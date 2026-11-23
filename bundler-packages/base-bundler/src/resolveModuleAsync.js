@@ -104,25 +104,28 @@ export const resolveModuleAsync = async (
 			logger.warn(message)
 		}
 
-		// The `writeCache` function is intentionally not awaited to allow non-blocking cache writes.
-		// This enables the rest of the module resolution to proceed without waiting for the cache operation to complete.
-		writeCache(
-			logger,
-			cache,
-			{ solcInput, solcOutput, asts, artifacts, modules },
-			code,
-			cacheModulePath,
-			moduleType,
-			// This is kinda quick and dirty but works for now
-			// We are skipping writing artifacts if there is an error
-			// But still write dts and mjs files since they always
-			// fall back to generating an empty file with error messages
-			artifactsExist,
-			compileFingerprint,
-		).catch((e) => {
-			logger.error(e)
-			logger.error('there was an error writing to the cache. This may cause peformance issues')
-		})
+		// Only persist to disk on cache misses; on warm cache hits artifacts and metadata are already valid on disk.
+		if (!cachedResult) {
+			// The `writeCache` function is intentionally not awaited to allow non-blocking cache writes.
+			// This enables the rest of the module resolution to proceed without waiting for the cache operation to complete.
+			writeCache(
+				logger,
+				cache,
+				{ solcInput, solcOutput, asts, artifacts, modules },
+				code,
+				cacheModulePath,
+				moduleType,
+				// This is kinda quick and dirty but works for now
+				// We are skipping writing artifacts if there is an error
+				// But still write dts and mjs files since they always
+				// fall back to generating an empty file with error messages
+				artifactsExist,
+				compileFingerprint,
+			).catch((e) => {
+				logger.error(e)
+				logger.error('there was an error writing to the cache. This may cause peformance issues')
+			})
+		}
 
 		return {
 			solcInput,

@@ -1,6 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
+import { Package as tsupconfigPkg } from '../../configs/tsupconfig/PACKAGE.js'
+import { vitestBench } from '../../factory/bench.js'
 import { scopedShell } from '../../factory/scoped-shell.js'
 import { vitestBench } from '../../factory/bench.js'
 
@@ -41,7 +43,7 @@ const deps = S.Filegroup({ srcs: [packageJson] })
 // build:dist.
 const build = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
-	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
+	data: [srcs, deps, tsupConfig, tsupconfigPkg.build, tsconfig, packageJson],
 	outDirs: ['dist'],
 })
 
@@ -49,7 +51,7 @@ const build = Shell.Build({
 const types = Shell.Build({
 	bin: S.NodeModule.Bin('tsup'),
 	args: ['--dts-only'],
-	data: [srcs, deps, tsupConfig, tsconfig, packageJson],
+	data: [srcs, deps, tsupConfig, tsupconfigPkg.build, tsconfig, packageJson, build],
 	outDirs: ['dist'],
 })
 

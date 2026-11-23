@@ -1,4 +1,1268 @@
 {
-	"schemaVersion": 1,
-	"packages": []
+  "schemaVersion": 1,
+  "packages": [
+    {
+      "package": "@tevm/base-bundler",
+      "dir": "bundler-packages/base-bundler",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/base-bundler",
+          "name": "getContractPath normalization",
+          "hz": 10171.76,
+          "meanMs": 0.098311,
+          "medianMs": 0.092917,
+          "p99Ms": 0.157125
+        },
+        {
+          "suite": "@tevm/base-bundler",
+          "name": "resolveEsmModuleSync (warm cache)",
+          "hz": 5604.58,
+          "meanMs": 0.178425,
+          "medianMs": 0.16825,
+          "p99Ms": 0.326375
+        },
+        {
+          "suite": "@tevm/base-bundler",
+          "name": "resolveEsmModule async (warm cache)",
+          "hz": 2511.83,
+          "meanMs": 0.398116,
+          "medianMs": 0.380688,
+          "p99Ms": 0.583208
+        },
+        {
+          "suite": "@tevm/base-bundler",
+          "name": "resolveDtsSync (warm cache)",
+          "hz": 6219.44,
+          "meanMs": 0.160786,
+          "medianMs": 0.1515,
+          "p99Ms": 0.312208
+        }
+      ]
+    },
+    {
+      "package": "@tevm/bun-plugin",
+      "dir": "bundler-packages/bun",
+      "runner": "bun",
+      "benchmarks": [
+        {
+          "suite": "@tevm/bun-plugin",
+          "name": "bunPluginTevm() instantiation (real Bun runtime)",
+          "hz": 20204410.42,
+          "meanMs": 0.000049,
+          "medianMs": 0.000042,
+          "p99Ms": 0.000125
+        }
+      ]
+    },
+    {
+      "package": "@tevm/bundler-cache",
+      "dir": "bundler-packages/bundler-cache",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/bundler-cache",
+          "name": "readArtifactsSync (cache hit)",
+          "hz": 15652.71,
+          "meanMs": 0.063887,
+          "medianMs": 0.059833,
+          "p99Ms": 0.119042
+        },
+        {
+          "suite": "@tevm/bundler-cache",
+          "name": "readArtifacts async (cache hit)",
+          "hz": 5845.53,
+          "meanMs": 0.171071,
+          "medianMs": 0.164833,
+          "p99Ms": 0.282459
+        },
+        {
+          "suite": "@tevm/bundler-cache",
+          "name": "writeArtifactsSync",
+          "hz": 5699.53,
+          "meanMs": 0.175453,
+          "medianMs": 0.1555,
+          "p99Ms": 0.430542
+        },
+        {
+          "suite": "@tevm/bundler-cache",
+          "name": "readDtsSync + readMjsSync",
+          "hz": 19311.31,
+          "meanMs": 0.051783,
+          "medianMs": 0.05,
+          "p99Ms": 0.076042
+        }
+      ]
+    },
+    {
+      "package": "@tevm/compiler",
+      "dir": "bundler-packages/compiler",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/compiler",
+          "name": "resolveArtifactsSync (Counter.sol)",
+          "hz": 93.97,
+          "meanMs": 10.642235,
+          "medianMs": 10.484876,
+          "p99Ms": 14.812166
+        },
+        {
+          "suite": "@tevm/compiler",
+          "name": "resolveArtifacts async (Counter.sol)",
+          "hz": 120.24,
+          "meanMs": 8.31693,
+          "medianMs": 8.336459,
+          "p99Ms": 11.36825
+        }
+      ]
+    },
+    {
+      "package": "@tevm/config",
+      "dir": "bundler-packages/config",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/config",
+          "name": "defineConfig().configFn()",
+          "hz": 42359.68,
+          "meanMs": 0.023607,
+          "medianMs": 0.020708,
+          "p99Ms": 0.059292
+        },
+        {
+          "suite": "@tevm/config",
+          "name": "loadConfig (from tevm.config.json)",
+          "hz": 5794.47,
+          "meanMs": 0.172578,
+          "medianMs": 0.159666,
+          "p99Ms": 0.473708
+        }
+      ]
+    },
+    {
+      "package": "@tevm/esbuild-plugin",
+      "dir": "bundler-packages/esbuild",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/esbuild-plugin",
+          "name": "esbuildPluginTevm() instantiation",
+          "hz": 5833961.44,
+          "meanMs": 0.000171,
+          "medianMs": 0.000166,
+          "p99Ms": 0.000292
+        }
+      ]
+    },
+    {
+      "package": "@tevm/requirejs-plugin",
+      "dir": "bundler-packages/requirejs",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/requirejs-plugin",
+          "name": "requirejsPluginTevm() instantiation",
+          "hz": 5917677.66,
+          "meanMs": 0.000169,
+          "medianMs": 0.000166,
+          "p99Ms": 0.000333
+        },
+        {
+          "suite": "@tevm/requirejs-plugin",
+          "name": "plugin.normalize() path normalization",
+          "hz": 25056184,
+          "meanMs": 0.00004,
+          "medianMs": 0.000042,
+          "p99Ms": 0.000083
+        }
+      ]
+    },
+    {
+      "package": "@tevm/resolutions-rs",
+      "dir": "bundler-packages/resolutions-rs",
+      "runner": "cargo",
+      "benchmarks": [
+        {
+          "suite": "@tevm/resolutions-rs",
+          "name": "resolve_imports (2 relative imports)",
+          "hz": 36251.45,
+          "meanMs": 0.027585,
+          "medianMs": 0.026417,
+          "p99Ms": 0.041666
+        },
+        {
+          "suite": "@tevm/resolutions-rs",
+          "name": "module_factory (3-file async graph)",
+          "hz": 1584.35,
+          "meanMs": 0.631175,
+          "medianMs": 0.599875,
+          "p99Ms": 1.936834
+        }
+      ]
+    },
+    {
+      "package": "@tevm/resolutions",
+      "dir": "bundler-packages/resolutions",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/resolutions",
+          "name": "resolveImports (sync, 2 relative imports)",
+          "hz": 180734,
+          "meanMs": 0.005533,
+          "medianMs": 0.005042,
+          "p99Ms": 0.008959
+        },
+        {
+          "suite": "@tevm/resolutions",
+          "name": "moduleFactory (sync, 3-file dependency graph)",
+          "hz": 12631.33,
+          "meanMs": 0.079168,
+          "medianMs": 0.074584,
+          "p99Ms": 0.165583
+        },
+        {
+          "suite": "@tevm/resolutions",
+          "name": "moduleFactory (async, 3-file dependency graph)",
+          "hz": 4243.21,
+          "meanMs": 0.235671,
+          "medianMs": 0.224541,
+          "p99Ms": 0.362125
+        }
+      ]
+    },
+    {
+      "package": "@tevm/rollup-plugin",
+      "dir": "bundler-packages/rollup",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/rollup-plugin",
+          "name": "rollupPluginTevm() instantiation",
+          "hz": 6814541.49,
+          "meanMs": 0.000147,
+          "medianMs": 0.000125,
+          "p99Ms": 0.000375
+        }
+      ]
+    },
+    {
+      "package": "@tevm/rspack-plugin",
+      "dir": "bundler-packages/rspack",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/rspack-plugin",
+          "name": "rspackPluginTevm() instantiation",
+          "hz": 19800920,
+          "meanMs": 0.000051,
+          "medianMs": 0.000042,
+          "p99Ms": 0.000084
+        }
+      ]
+    },
+    {
+      "package": "@tevm/runtime-rs",
+      "dir": "bundler-packages/runtime-rs",
+      "runner": "cargo",
+      "benchmarks": [
+        {
+          "suite": "@tevm/runtime-rs",
+          "name": "generate_runtime (mjs with bytecode)",
+          "hz": 107139.38,
+          "meanMs": 0.009334,
+          "medianMs": 0.008917,
+          "p99Ms": 0.010917
+        },
+        {
+          "suite": "@tevm/runtime-rs",
+          "name": "generate_runtime (dts declarations)",
+          "hz": 119307.85,
+          "meanMs": 0.008382,
+          "medianMs": 0.008041,
+          "p99Ms": 0.00975
+        }
+      ]
+    },
+    {
+      "package": "@tevm/runtime",
+      "dir": "bundler-packages/runtime",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/runtime",
+          "name": "generateRuntime (mjs with bytecode)",
+          "hz": 83826.79,
+          "meanMs": 0.011929,
+          "medianMs": 0.011167,
+          "p99Ms": 0.022834
+        },
+        {
+          "suite": "@tevm/runtime",
+          "name": "generateRuntime (ts with bytecode)",
+          "hz": 83617.04,
+          "meanMs": 0.011959,
+          "medianMs": 0.011083,
+          "p99Ms": 0.017
+        },
+        {
+          "suite": "@tevm/runtime",
+          "name": "generateRuntime (dts declarations)",
+          "hz": 101551.54,
+          "meanMs": 0.009847,
+          "medianMs": 0.009375,
+          "p99Ms": 0.014334
+        },
+        {
+          "suite": "@tevm/runtime",
+          "name": "generateRuntime (cjs)",
+          "hz": 105247.63,
+          "meanMs": 0.009501,
+          "medianMs": 0.009084,
+          "p99Ms": 0.013333
+        }
+      ]
+    },
+    {
+      "package": "@tevm/solc-rs",
+      "dir": "bundler-packages/solc-rs",
+      "runner": "cargo",
+      "benchmarks": [
+        {
+          "suite": "@tevm/solc-rs",
+          "name": "SolcInputDescription JSON serialize",
+          "hz": 3300951.79,
+          "meanMs": 0.000303,
+          "medianMs": 0.000292,
+          "p99Ms": 0.000458
+        },
+        {
+          "suite": "@tevm/solc-rs",
+          "name": "SolcOutput JSON deserialize",
+          "hz": 548151.53,
+          "meanMs": 0.001824,
+          "medianMs": 0.001791,
+          "p99Ms": 0.002167
+        }
+      ]
+    },
+    {
+      "package": "@tevm/solc",
+      "dir": "bundler-packages/solc",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/solc",
+          "name": "solcCompile (Counter.sol)",
+          "hz": 170.3,
+          "meanMs": 5.872077,
+          "medianMs": 5.854917,
+          "p99Ms": 6.856042
+        },
+        {
+          "suite": "@tevm/solc",
+          "name": "solcCompile (ERC20 Token.sol)",
+          "hz": 22.3,
+          "meanMs": 44.852487,
+          "medianMs": 44.368709,
+          "p99Ms": 47.036
+        }
+      ]
+    },
+    {
+      "package": "tevm-run",
+      "dir": "bundler-packages/tevm-run",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "tevm-run",
+          "name": "parseArgs (script + flags)",
+          "hz": 1183209.34,
+          "meanMs": 0.000845,
+          "medianMs": 0.000708,
+          "p99Ms": 0.001459
+        }
+      ]
+    },
+    {
+      "package": "@tevm/unplugin",
+      "dir": "bundler-packages/unplugin",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/unplugin",
+          "name": "tevmUnplugin() creation",
+          "hz": 9617106.15,
+          "meanMs": 0.000104,
+          "medianMs": 0.000084,
+          "p99Ms": 0.000167
+        },
+        {
+          "suite": "@tevm/unplugin",
+          "name": "loadInclude() filter check (.sol vs .ts)",
+          "hz": 109916.91,
+          "meanMs": 0.009098,
+          "medianMs": 0.008917,
+          "p99Ms": 0.011333
+        },
+        {
+          "suite": "@tevm/unplugin",
+          "name": "load() warm-cache Solidity transform",
+          "hz": 1207.14,
+          "meanMs": 0.828403,
+          "medianMs": 0.607875,
+          "p99Ms": 1.757375
+        }
+      ]
+    },
+    {
+      "package": "@tevm/vite-plugin",
+      "dir": "bundler-packages/vite",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/vite-plugin",
+          "name": "vitePluginTevm() instantiation",
+          "hz": 5404955.68,
+          "meanMs": 0.000185,
+          "medianMs": 0.000167,
+          "p99Ms": 0.000334
+        }
+      ]
+    },
+    {
+      "package": "@tevm/webpack-plugin",
+      "dir": "bundler-packages/webpack",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/webpack-plugin",
+          "name": "new WebpackPluginTevm() instantiation",
+          "hz": 1726068.14,
+          "meanMs": 0.000579,
+          "medianMs": 0.000542,
+          "p99Ms": 0.00075
+        }
+      ]
+    },
+    {
+      "package": "@tevm/whatsabi",
+      "dir": "bundler-packages/whatsabi",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/whatsabi",
+          "name": "contractUriPattern regex test (4 chains)",
+          "hz": 1404221.6,
+          "meanMs": 0.000712,
+          "medianMs": 0.000708,
+          "p99Ms": 0.000958
+        },
+        {
+          "suite": "@tevm/whatsabi",
+          "name": "parseUri (4 chain URIs)",
+          "hz": 126904.41,
+          "meanMs": 0.00788,
+          "medianMs": 0.007625,
+          "p99Ms": 0.01225
+        },
+        {
+          "suite": "@tevm/whatsabi",
+          "name": "knownChains lookup",
+          "hz": 182220.47,
+          "meanMs": 0.005488,
+          "medianMs": 0.005291,
+          "p99Ms": 0.00675
+        }
+      ]
+    },
+    {
+      "package": "@tevm/cli",
+      "dir": "cli",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/cli",
+          "name": "parseCliAbi (inline JSON ABI)",
+          "hz": 625354.71,
+          "meanMs": 0.001599,
+          "medianMs": 0.001542,
+          "p99Ms": 0.002625
+        },
+        {
+          "suite": "@tevm/cli",
+          "name": "generateRandomName()",
+          "hz": 12472008.63,
+          "meanMs": 0.00008,
+          "medianMs": 0.000083,
+          "p99Ms": 0.000167
+        }
+      ]
+    },
+    {
+      "package": "@tevm/ethers",
+      "dir": "extensions/ethers",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/ethers",
+          "name": "TevmProvider.getBlockNumber()",
+          "hz": 848.27,
+          "meanMs": 1.178866,
+          "medianMs": 1.182834,
+          "p99Ms": 1.281166
+        },
+        {
+          "suite": "@tevm/ethers",
+          "name": "TevmProvider.getBalance()",
+          "hz": 829.73,
+          "meanMs": 1.205207,
+          "medianMs": 1.24298,
+          "p99Ms": 1.581958
+        },
+        {
+          "suite": "@tevm/ethers",
+          "name": "TevmProvider.call()",
+          "hz": 804.39,
+          "meanMs": 1.243176,
+          "medianMs": 1.241979,
+          "p99Ms": 1.372916
+        },
+        {
+          "suite": "@tevm/ethers",
+          "name": "TevmProvider.send(\"eth_chainId\", [])",
+          "hz": 866.78,
+          "meanMs": 1.153699,
+          "medianMs": 1.165666,
+          "p99Ms": 1.223833
+        }
+      ]
+    },
+    {
+      "package": "@tevm/viem",
+      "dir": "extensions/viem",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/viem",
+          "name": "tevmViemExtension().tevmCall()",
+          "hz": 67411.01,
+          "meanMs": 0.014834,
+          "medianMs": 0.014542,
+          "p99Ms": 0.019083
+        },
+        {
+          "suite": "@tevm/viem",
+          "name": "tevmViemExtension().tevmContract()",
+          "hz": 39439.2,
+          "meanMs": 0.025355,
+          "medianMs": 0.024667,
+          "p99Ms": 0.037208
+        },
+        {
+          "suite": "@tevm/viem",
+          "name": "tevmViemExtension().tevmGetAccount()",
+          "hz": 230596.75,
+          "meanMs": 0.004337,
+          "medianMs": 0.00425,
+          "p99Ms": 0.00525
+        }
+      ]
+    },
+    {
+      "package": "@tevm/lsp",
+      "dir": "lsp/lsp",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/lsp",
+          "name": "language.getLanguageId (.sol & .ts)",
+          "hz": 14444867.96,
+          "meanMs": 0.000069,
+          "medianMs": 0.000083,
+          "p99Ms": 0.000125
+        },
+        {
+          "suite": "@tevm/lsp",
+          "name": "language.createVirtualCode (warm SolFile)",
+          "hz": 2607.94,
+          "meanMs": 0.383444,
+          "medianMs": 0.350771,
+          "p99Ms": 0.824416
+        }
+      ]
+    },
+    {
+      "package": "@tevm/ts-plugin",
+      "dir": "lsp/ts-plugin",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/ts-plugin",
+          "name": "isSolidity classification (5 paths)",
+          "hz": 5474047.87,
+          "meanMs": 0.000183,
+          "medianMs": 0.000167,
+          "p99Ms": 0.00025
+        }
+      ]
+    },
+    {
+      "package": "@tevm/vscode",
+      "dir": "lsp/vscode",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/vscode",
+          "name": "activateExtension() wiring",
+          "hz": 1810858.9,
+          "meanMs": 0.000552,
+          "medianMs": 0.000458,
+          "p99Ms": 0.001041
+        }
+      ]
+    },
+    {
+      "package": "@tevm/actions",
+      "dir": "packages/actions",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/actions",
+          "name": "tevmCall (pure eth_call)",
+          "hz": 57814.26,
+          "meanMs": 0.017297,
+          "medianMs": 0.016833,
+          "p99Ms": 0.022708
+        },
+        {
+          "suite": "@tevm/actions",
+          "name": "tevmContract (ABI encode + eth_call + ABI decode)",
+          "hz": 32380.24,
+          "meanMs": 0.030883,
+          "medianMs": 0.029834,
+          "p99Ms": 0.046542
+        },
+        {
+          "suite": "@tevm/actions",
+          "name": "tevmGetAccount",
+          "hz": 180909.42,
+          "meanMs": 0.005528,
+          "medianMs": 0.004959,
+          "p99Ms": 0.007833
+        },
+        {
+          "suite": "@tevm/actions",
+          "name": "tevmSetAccount (balance + nonce)",
+          "hz": 115326.87,
+          "meanMs": 0.008671,
+          "medianMs": 0.008375,
+          "p99Ms": 0.010542
+        },
+        {
+          "suite": "@tevm/actions",
+          "name": "tevmDeal (balance set)",
+          "hz": 137944.46,
+          "meanMs": 0.007249,
+          "medianMs": 0.006583,
+          "p99Ms": 0.011
+        },
+        {
+          "suite": "@tevm/actions",
+          "name": "tevmMine (1 block)",
+          "hz": 5285.1,
+          "meanMs": 0.189211,
+          "medianMs": 0.188917,
+          "p99Ms": 0.312042
+        },
+        {
+          "suite": "@tevm/actions",
+          "name": "tevmDumpState + tevmLoadState",
+          "hz": 13094.35,
+          "meanMs": 0.076369,
+          "medianMs": 0.070417,
+          "p99Ms": 0.133875
+        }
+      ]
+    },
+    {
+      "package": "@tevm/common",
+      "dir": "packages/common",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/common",
+          "name": "chain preset lookup & clone (tevmDefault / mainnet / optimism / base)",
+          "hz": 356930.07,
+          "meanMs": 0.002802,
+          "medianMs": 0.00275,
+          "p99Ms": 0.003375
+        },
+        {
+          "suite": "@tevm/common",
+          "name": "custom chain config derivation from tevmDefault",
+          "hz": 13168530.09,
+          "meanMs": 0.000076,
+          "medianMs": 0.000083,
+          "p99Ms": 0.000125
+        }
+      ]
+    },
+    {
+      "package": "@tevm/contract",
+      "dir": "packages/contract",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/contract",
+          "name": "createContract from humanReadableAbi (ERC20)",
+          "hz": 25233.06,
+          "meanMs": 0.039631,
+          "medianMs": 0.038542,
+          "p99Ms": 0.077958
+        },
+        {
+          "suite": "@tevm/contract",
+          "name": "createContract from JSON abi (ERC20)",
+          "hz": 146944.53,
+          "meanMs": 0.006805,
+          "medianMs": 0.00625,
+          "p99Ms": 0.009417
+        },
+        {
+          "suite": "@tevm/contract",
+          "name": "ERC20.withAddress(addr)",
+          "hz": 192849.48,
+          "meanMs": 0.005185,
+          "medianMs": 0.004916,
+          "p99Ms": 0.007875
+        },
+        {
+          "suite": "@tevm/contract",
+          "name": "contract.read.balanceOf(user) action creation",
+          "hz": 27831800.96,
+          "meanMs": 0.000036,
+          "medianMs": 0.000042,
+          "p99Ms": 0.000042
+        },
+        {
+          "suite": "@tevm/contract",
+          "name": "contract.write.transfer(to, amount) action creation",
+          "hz": 28314242.17,
+          "meanMs": 0.000035,
+          "medianMs": 0.000042,
+          "p99Ms": 0.000042
+        },
+        {
+          "suite": "@tevm/contract",
+          "name": "contract.events.Transfer(filter) creation",
+          "hz": 21182024.79,
+          "meanMs": 0.000047,
+          "medianMs": 0.000042,
+          "p99Ms": 0.000084
+        },
+        {
+          "suite": "@tevm/contract",
+          "name": "SimpleContract.deploy(42n) action creation",
+          "hz": 14416290.68,
+          "meanMs": 0.000069,
+          "medianMs": 0.000083,
+          "p99Ms": 0.000084
+        }
+      ]
+    },
+    {
+      "package": "@tevm/effect",
+      "dir": "packages/effect",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/effect",
+          "name": "parseJson (small JSON-RPC payload)",
+          "hz": 222938.96,
+          "meanMs": 0.004486,
+          "medianMs": 0.00375,
+          "p99Ms": 0.006791
+        },
+        {
+          "suite": "@tevm/effect",
+          "name": "parseJson (50-contract ABI manifest)",
+          "hz": 2867.53,
+          "meanMs": 0.348732,
+          "medianMs": 0.349105,
+          "p99Ms": 0.506583
+        },
+        {
+          "suite": "@tevm/effect",
+          "name": "fileExists (existing file)",
+          "hz": 44824.45,
+          "meanMs": 0.022309,
+          "medianMs": 0.019125,
+          "p99Ms": 0.049875
+        }
+      ]
+    },
+    {
+      "package": "@tevm/errors",
+      "dir": "packages/errors",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/errors",
+          "name": "ExecutionError instantiation",
+          "hz": 209348.26,
+          "meanMs": 0.004777,
+          "medianMs": 0.004875,
+          "p99Ms": 0.006416
+        },
+        {
+          "suite": "@tevm/errors",
+          "name": "InvalidParamsError + InternalError with cause",
+          "hz": 79586.36,
+          "meanMs": 0.012565,
+          "medianMs": 0.011916,
+          "p99Ms": 0.014333
+        },
+        {
+          "suite": "@tevm/errors",
+          "name": "RevertError instantiation",
+          "hz": 120818.37,
+          "meanMs": 0.008277,
+          "medianMs": 0.005959,
+          "p99Ms": 0.027584
+        },
+        {
+          "suite": "@tevm/errors",
+          "name": "rpcErrorCodeToMessage lookup",
+          "hz": 4306635.82,
+          "meanMs": 0.000232,
+          "medianMs": 0.000209,
+          "p99Ms": 0.000334
+        }
+      ]
+    },
+    {
+      "package": "@tevm/http-client",
+      "dir": "packages/http-client",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/http-client",
+          "name": "getBlockNumber() over HTTP",
+          "hz": 4290.08,
+          "meanMs": 0.233096,
+          "medianMs": 0.213041,
+          "p99Ms": 0.620417
+        },
+        {
+          "suite": "@tevm/http-client",
+          "name": "tevmCall() over HTTP",
+          "hz": 4733.35,
+          "meanMs": 0.211267,
+          "medianMs": 0.195813,
+          "p99Ms": 0.382375
+        },
+        {
+          "suite": "@tevm/http-client",
+          "name": "tevmGetAccount() over HTTP",
+          "hz": 5587.74,
+          "meanMs": 0.178963,
+          "medianMs": 0.153458,
+          "p99Ms": 0.3915
+        }
+      ]
+    },
+    {
+      "package": "@tevm/jsonrpc",
+      "dir": "packages/jsonrpc",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/jsonrpc",
+          "name": "createJsonRpcFetcher instantiation",
+          "hz": 6510117.85,
+          "meanMs": 0.000154,
+          "medianMs": 0.000083,
+          "p99Ms": 0.000125
+        },
+        {
+          "suite": "@tevm/jsonrpc",
+          "name": "request (success envelope)",
+          "hz": 2001262.54,
+          "meanMs": 0.0005,
+          "medianMs": 0.000375,
+          "p99Ms": 0.000708
+        },
+        {
+          "suite": "@tevm/jsonrpc",
+          "name": "request (error envelope formatting)",
+          "hz": 151449.99,
+          "meanMs": 0.006603,
+          "medianMs": 0.006042,
+          "p99Ms": 0.007584
+        },
+        {
+          "suite": "@tevm/jsonrpc",
+          "name": "10 concurrent requests",
+          "hz": 415706.58,
+          "meanMs": 0.002406,
+          "medianMs": 0.002333,
+          "p99Ms": 0.003209
+        }
+      ]
+    },
+    {
+      "package": "@tevm/logger",
+      "dir": "packages/logger",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/logger",
+          "name": "createLogger instantiation",
+          "hz": 45689.53,
+          "meanMs": 0.021887,
+          "medianMs": 0.02,
+          "p99Ms": 0.042166
+        },
+        {
+          "suite": "@tevm/logger",
+          "name": "silent logger info/debug calls (suppressed fast path)",
+          "hz": 20284792.06,
+          "meanMs": 0.000049,
+          "medianMs": 0.000042,
+          "p99Ms": 0.000084
+        },
+        {
+          "suite": "@tevm/logger",
+          "name": "error-level logger suppressed trace/debug/info calls",
+          "hz": 17058519.4,
+          "meanMs": 0.000059,
+          "medianMs": 0.000042,
+          "p99Ms": 0.000084
+        }
+      ]
+    },
+    {
+      "package": "@tevm/mcp",
+      "dir": "packages/mcp",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/mcp",
+          "name": "toJsonValue (nested bigint/Uint8Array/Set/object)",
+          "hz": 392886.15,
+          "meanMs": 0.002545,
+          "medianMs": 0.002541,
+          "p99Ms": 0.003333
+        },
+        {
+          "suite": "@tevm/mcp",
+          "name": "executeTool(\"evm_get_account\")",
+          "hz": 74472.45,
+          "meanMs": 0.013428,
+          "medianMs": 0.013,
+          "p99Ms": 0.017667
+        },
+        {
+          "suite": "@tevm/mcp",
+          "name": "executeTool(\"evm_mine\")",
+          "hz": 6602.5,
+          "meanMs": 0.151458,
+          "medianMs": 0.140167,
+          "p99Ms": 0.364291
+        }
+      ]
+    },
+    {
+      "package": "@tevm/memory-client",
+      "dir": "packages/memory-client",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/memory-client",
+          "name": "createMemoryClient + tevmReady + tevmClose",
+          "hz": 25224.48,
+          "meanMs": 0.039644,
+          "medianMs": 0.03825,
+          "p99Ms": 0.057084
+        },
+        {
+          "suite": "@tevm/memory-client",
+          "name": "viem getBlockNumber()",
+          "hz": 293903.36,
+          "meanMs": 0.003402,
+          "medianMs": 0.003291,
+          "p99Ms": 0.005458
+        },
+        {
+          "suite": "@tevm/memory-client",
+          "name": "viem getBalance()",
+          "hz": 250497.5,
+          "meanMs": 0.003992,
+          "medianMs": 0.003833,
+          "p99Ms": 0.0055
+        },
+        {
+          "suite": "@tevm/memory-client",
+          "name": "viem readContract()",
+          "hz": 34922.61,
+          "meanMs": 0.028635,
+          "medianMs": 0.02725,
+          "p99Ms": 0.046208
+        },
+        {
+          "suite": "@tevm/memory-client",
+          "name": "tevmContract() read",
+          "hz": 40927.97,
+          "meanMs": 0.024433,
+          "medianMs": 0.023875,
+          "p99Ms": 0.030958
+        },
+        {
+          "suite": "@tevm/memory-client",
+          "name": "tevmCall() + addToBlockchain (ETH transfer)",
+          "hz": 1868.28,
+          "meanMs": 0.535252,
+          "medianMs": 0.524771,
+          "p99Ms": 0.68725
+        }
+      ]
+    },
+    {
+      "package": "@tevm/node",
+      "dir": "packages/node",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/node (native ZEVM)",
+          "name": "createZevmEngine + ready + close lifecycle",
+          "hz": 29798.28,
+          "meanMs": 0.033559,
+          "medianMs": 0.032709,
+          "p99Ms": 0.044416
+        },
+        {
+          "suite": "@tevm/node (native ZEVM)",
+          "name": "raw rpc(\"eth_blockNumber\")",
+          "hz": 430016.45,
+          "meanMs": 0.002325,
+          "medianMs": 0.002167,
+          "p99Ms": 0.003292
+        },
+        {
+          "suite": "@tevm/node (native ZEVM)",
+          "name": "request({ method: \"eth_blockNumber\" })",
+          "hz": 351004.17,
+          "meanMs": 0.002849,
+          "medianMs": 0.00275,
+          "p99Ms": 0.003917
+        },
+        {
+          "suite": "@tevm/node (native ZEVM)",
+          "name": "raw rpc(\"eth_call\") simple bytecode",
+          "hz": 39444.88,
+          "meanMs": 0.025352,
+          "medianMs": 0.02125,
+          "p99Ms": 0.042167
+        },
+        {
+          "suite": "@tevm/node (native ZEVM)",
+          "name": "request(\"eth_call\") simple bytecode",
+          "hz": 33285.62,
+          "meanMs": 0.030043,
+          "medianMs": 0.023541,
+          "p99Ms": 0.087125
+        },
+        {
+          "suite": "@tevm/node (native ZEVM)",
+          "name": "request(\"eth_getBalance\")",
+          "hz": 190273.46,
+          "meanMs": 0.005256,
+          "medianMs": 0.004834,
+          "p99Ms": 0.00675
+        },
+        {
+          "suite": "@tevm/node (native ZEVM)",
+          "name": "eth_sendTransaction (ETH transfer + automine)",
+          "hz": 1332.82,
+          "meanMs": 0.750289,
+          "medianMs": 0.737521,
+          "p99Ms": 0.99425
+        },
+        {
+          "suite": "@tevm/node (native ZEVM)",
+          "name": "eth_sendTransaction (SSTORE counter + automine)",
+          "hz": 1357.95,
+          "meanMs": 0.736405,
+          "medianMs": 0.696105,
+          "p99Ms": 1.181958
+        },
+        {
+          "suite": "@tevm/node (native ZEVM)",
+          "name": "evm_snapshot + evm_revert cycle",
+          "hz": 981.99,
+          "meanMs": 1.018337,
+          "medianMs": 0.987687,
+          "p99Ms": 1.37325
+        },
+        {
+          "suite": "@tevm/node (native ZEVM)",
+          "name": "anvil_dumpState + anvil_loadState",
+          "hz": 14299.52,
+          "meanMs": 0.069932,
+          "medianMs": 0.069875,
+          "p99Ms": 0.102
+        },
+        {
+          "suite": "@tevm/node (native ZEVM)",
+          "name": "25 concurrent eth_call requests",
+          "hz": 1441.05,
+          "meanMs": 0.693938,
+          "medianMs": 0.685917,
+          "p99Ms": 0.861041
+        }
+      ]
+    },
+    {
+      "package": "@tevm/predeploys",
+      "dir": "packages/predeploys",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/predeploys",
+          "name": "definePredeploy creation",
+          "hz": 1378164.68,
+          "meanMs": 0.000726,
+          "medianMs": 0.000708,
+          "p99Ms": 0.001083
+        },
+        {
+          "suite": "@tevm/predeploys",
+          "name": "predeploy.predeploy() accessor",
+          "hz": 33050892.36,
+          "meanMs": 0.00003,
+          "medianMs": 0.000041,
+          "p99Ms": 0.000042
+        }
+      ]
+    },
+    {
+      "package": "@tevm/server",
+      "dir": "packages/server",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/server",
+          "name": "HTTP JSON-RPC eth_blockNumber (loopback)",
+          "hz": 4757.71,
+          "meanMs": 0.210185,
+          "medianMs": 0.179375,
+          "p99Ms": 0.605834
+        },
+        {
+          "suite": "@tevm/server",
+          "name": "HTTP JSON-RPC 10-request batch (loopback)",
+          "hz": 5610.72,
+          "meanMs": 0.17823,
+          "medianMs": 0.156583,
+          "p99Ms": 0.3695
+        },
+        {
+          "suite": "@tevm/server",
+          "name": "getRequestBody (64 KB multi-chunk stream)",
+          "hz": 43846.94,
+          "meanMs": 0.022807,
+          "medianMs": 0.019708,
+          "p99Ms": 0.063417
+        }
+      ]
+    },
+    {
+      "package": "@tevm/utils",
+      "dir": "packages/utils",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "@tevm/utils",
+          "name": "keccak256 (1 KB bytes)",
+          "hz": 15048.54,
+          "meanMs": 0.066452,
+          "medianMs": 0.065458,
+          "p99Ms": 0.086167
+        },
+        {
+          "suite": "@tevm/utils",
+          "name": "bytesToHex + hexToBytes roundtrip (1 KB)",
+          "hz": 56424.29,
+          "meanMs": 0.017723,
+          "medianMs": 0.017,
+          "p99Ms": 0.023583
+        },
+        {
+          "suite": "@tevm/utils",
+          "name": "toRlp + fromRlp roundtrip (tx-shaped list)",
+          "hz": 16475.38,
+          "meanMs": 0.060697,
+          "medianMs": 0.055167,
+          "p99Ms": 0.10525
+        },
+        {
+          "suite": "@tevm/utils",
+          "name": "parseAbi (10-item ERC20 human-readable ABI)",
+          "hz": 39517.71,
+          "meanMs": 0.025305,
+          "medianMs": 0.025,
+          "p99Ms": 0.059542
+        },
+        {
+          "suite": "@tevm/utils",
+          "name": "formatAbi (10-item ERC20 JSON ABI)",
+          "hz": 643258.14,
+          "meanMs": 0.001555,
+          "medianMs": 0.001375,
+          "p99Ms": 0.002042
+        },
+        {
+          "suite": "@tevm/utils",
+          "name": "encodeFunctionData (ERC20 transfer)",
+          "hz": 84871.1,
+          "meanMs": 0.011783,
+          "medianMs": 0.01125,
+          "p99Ms": 0.017167
+        },
+        {
+          "suite": "@tevm/utils",
+          "name": "decodeFunctionResult (ERC20 balanceOf)",
+          "hz": 784811.24,
+          "meanMs": 0.001274,
+          "medianMs": 0.001167,
+          "p99Ms": 0.001791
+        },
+        {
+          "suite": "@tevm/utils",
+          "name": "getAddress checksum validation (10 accounts)",
+          "hz": 108303.41,
+          "meanMs": 0.009233,
+          "medianMs": 0.007917,
+          "p99Ms": 0.0215
+        }
+      ]
+    },
+    {
+      "package": "tevm",
+      "dir": "tevm",
+      "runner": "vitest",
+      "benchmarks": [
+        {
+          "suite": "tevm (meta facade)",
+          "name": "facade createMemoryClient + tevmContract read",
+          "hz": 40275.64,
+          "meanMs": 0.024829,
+          "medianMs": 0.024375,
+          "p99Ms": 0.031917
+        }
+      ]
+    }
+  ]
 }
