@@ -101,6 +101,7 @@ describe('Bundler packages and @tevm/effect fuzzing', () => {
 				'contains */ closing comment */ twice',
 				'line1\nline2\r\nline3 */ evil()',
 				'unicode 🚀 \u2028 \u2029',
+				// biome-ignore lint/suspicious/noTemplateCurlyInString: intentional hostile NatSpec fuzz fixture
 				'quotes "double" \'single\' `backtick` ${expr}',
 			),
 		)

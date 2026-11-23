@@ -45,6 +45,7 @@ import { Package as utils } from './packages/utils/PACKAGE.js'
 import { Package as scripts } from './scripts/PACKAGE.js'
 import { Package as lean } from './specs/lean/PACKAGE.js'
 import { Package as tevmFacade } from './tevm/PACKAGE.js'
+import { Package as fuzzPkg } from './test/fuzz/PACKAGE.js'
 
 // PACKAGE.ts files are discovered automatically: the CLI globs the tree and
 // indexes each file's Package export under path-derived labels
@@ -338,6 +339,8 @@ const cargoCheck = S.Shell.Test({
 	args: ['check', '--workspace', '--quiet'],
 	data: cargoInputs,
 })
+
+const fuzz = S.Alias(fuzzPkg.all)
 
 // Every PR touching a publishable package needs a changeset; status against
 // origin/main is the same check release:check runs.
@@ -834,6 +837,7 @@ export const Package = S.Package({
 		docsParityLint,
 		externalIntegrationTests,
 		format,
+		fuzz,
 		jsdocLint,
 		leanSpecs: S.Suite({ tests: [lean.check] }),
 		lint,

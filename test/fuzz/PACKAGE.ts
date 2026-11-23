@@ -1,12 +1,74 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
+import { Package as bundlerCache } from '../../bundler-packages/bundler-cache/PACKAGE.js'
+import { Package as configPkg } from '../../bundler-packages/config/PACKAGE.js'
+import { Package as resolutions } from '../../bundler-packages/resolutions/PACKAGE.js'
+import { Package as resolutionsRs } from '../../bundler-packages/resolutions-rs/PACKAGE.js'
+import { Package as runtime } from '../../bundler-packages/runtime/PACKAGE.js'
+import { Package as runtimeRs } from '../../bundler-packages/runtime-rs/PACKAGE.js'
+import { Package as solcRs } from '../../bundler-packages/solc-rs/PACKAGE.js'
+import { Package as whatsabi } from '../../bundler-packages/whatsabi/PACKAGE.js'
+import { Package as ethersExt } from '../../extensions/ethers/PACKAGE.js'
+import { Package as viemExt } from '../../extensions/viem/PACKAGE.js'
 import { scopedShell } from '../../factory/scoped-shell.js'
-import { Package as root } from '../../PACKAGE.js'
+import { Package as actions } from '../../packages/actions/PACKAGE.js'
+import { Package as common } from '../../packages/common/PACKAGE.js'
+import { Package as contract } from '../../packages/contract/PACKAGE.js'
+import { Package as effectPkg } from '../../packages/effect/PACKAGE.js'
+import { Package as errors } from '../../packages/errors/PACKAGE.js'
+import { Package as httpClient } from '../../packages/http-client/PACKAGE.js'
+import { Package as jsonrpc } from '../../packages/jsonrpc/PACKAGE.js'
+import { Package as logger } from '../../packages/logger/PACKAGE.js'
+import { Package as mcp } from '../../packages/mcp/PACKAGE.js'
+import { Package as memoryClient } from '../../packages/memory-client/PACKAGE.js'
+import { Package as nodePkg } from '../../packages/node/PACKAGE.js'
+import { Package as predeploys } from '../../packages/predeploys/PACKAGE.js'
+import { Package as server } from '../../packages/server/PACKAGE.js'
+import { Package as utils } from '../../packages/utils/PACKAGE.js'
+import { Package as tevmFacade } from '../../tevm/PACKAGE.js'
 
 const Shell = scopedShell('test/fuzz')
 
-const sources = S.Filegroup({
+const packageJson = S.file('package.json')
+const tsconfig = S.file('tsconfig.json')
+const vitestConfig = S.file('vitest.config.ts')
+const rootBiomeConfig = S.file('//biome.json')
+const nativePins = S.file('//factory/native-dependencies.json')
+
+const harnessShared = S.Filegroup({
+	srcs: [packageJson, tsconfig, vitestConfig, S.file('src/config.ts'), S.file('src/arbitraries.ts')],
+})
+
+const nodeSpecs = S.Filegroup({
+	srcs: [S.file('src/engine.fuzz.spec.ts'), S.file('src/evm-state-machine.fuzz.spec.ts')],
+})
+
+const clientSpecs = S.Filegroup({
+	srcs: [S.file('src/abi-memory-client.fuzz.spec.ts'), S.file('src/fork-and-facade.fuzz.spec.ts')],
+})
+
+const serverSpecs = S.Filegroup({
+	srcs: [S.file('src/server-protocol.fuzz.spec.ts'), S.file('src/jsonrpc-http-errors.fuzz.spec.ts')],
+})
+
+const mcpSpecs = S.Filegroup({
+	srcs: [S.file('src/mcp.fuzz.spec.ts')],
+})
+
+const bundlerSpecs = S.Filegroup({
+	srcs: [S.file('src/bundler-and-effect.fuzz.spec.ts')],
+})
+
+const effectSpecs = S.Filegroup({
+	srcs: [S.file('src/effect-feedback.fuzz.spec.ts')],
+})
+
+const jazzerSrcs = S.Filegroup({
+	srcs: S.glob(['jazzer/**', 'scripts/**', '__fuzz__/**']),
+})
+
+const allSources = S.Filegroup({
 	srcs: S.glob([
 		'package.json',
 		'tsconfig.json',
@@ -18,18 +80,91 @@ const sources = S.Filegroup({
 	]),
 })
 
-const test = Shell.Test({
+// Fine-grained per-slice Vitest fuzz targets: each keys strictly on its exact
+// upstream package builds instead of coarse root.allBuilds so editing one
+// package only invalidates the fuzz slices that exercise it.
+const testNode = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
-	args: ['run'],
-	data: [sources, root.allBuilds],
+	args: ['run', 'src/engine.fuzz.spec.ts', 'src/evm-state-machine.fuzz.spec.ts'],
+	data: [harnessShared, nodeSpecs, nodePkg.build, actions.build, errors.build, utils.build, nativePins],
 	sandbox: { network: 'loopback' },
+})
+
+const testClient = Shell.Test({
+	bin: S.NodeModule.Bin('vitest'),
+	args: ['run', 'src/abi-memory-client.fuzz.spec.ts', 'src/fork-and-facade.fuzz.spec.ts'],
+	data: [
+		harnessShared,
+		clientSpecs,
+		memoryClient.build,
+		actions.build,
+		contract.build,
+		predeploys.build,
+		server.build,
+		nodePkg.build,
+		viemExt.build,
+		ethersExt.build,
+		tevmFacade.dist,
+		resolutions.build,
+		configPkg.build,
+		configPkg.srcs,
+		whatsabi.build,
+		whatsabi.srcs,
+		effectPkg.build,
+		nativePins,
+	],
+	sandbox: { network: 'loopback' },
+})
+
+const testServer = Shell.Test({
+	bin: S.NodeModule.Bin('vitest'),
+	args: ['run', 'src/server-protocol.fuzz.spec.ts', 'src/jsonrpc-http-errors.fuzz.spec.ts'],
+	data: [
+		harnessShared,
+		serverSpecs,
+		server.build,
+		server.srcs,
+		memoryClient.build,
+		nodePkg.build,
+		jsonrpc.build,
+		httpClient.build,
+		errors.build,
+		utils.build,
+		common.build,
+		logger.build,
+		nativePins,
+	],
+	sandbox: { network: 'loopback' },
+})
+
+const testMcp = Shell.Test({
+	bin: S.NodeModule.Bin('vitest'),
+	args: ['run', 'src/mcp.fuzz.spec.ts'],
+	data: [harnessShared, mcpSpecs, mcp.build, memoryClient.build, nodePkg.build, nativePins],
+	sandbox: { network: 'loopback' },
+})
+
+const testBundler = Shell.Test({
+	bin: S.NodeModule.Bin('vitest'),
+	args: ['run', 'src/bundler-and-effect.fuzz.spec.ts'],
+	data: [
+		harnessShared,
+		bundlerSpecs,
+		effectPkg.build,
+		resolutions.build,
+		resolutions.srcs,
+		configPkg.build,
+		runtime.build,
+		bundlerCache.build,
+		whatsabi.build,
+	],
 })
 
 const effectFuzz = Shell.Test({
 	bin: S.NodeModule.Bin('vitest'),
 	args: ['run', 'src/effect-feedback.fuzz.spec.ts'],
 	env: { TEVM_FUZZ_MODE: 'campaign', TEVM_FUZZ_EFFECT_EXECUTIONS: '5000' },
-	data: [sources, root.allBuilds],
+	data: [harnessShared, effectSpecs, nodePkg.build, server.build, server.srcs, mcp.build, nativePins],
 	sandbox: { network: 'loopback' },
 })
 
@@ -37,24 +172,68 @@ const jazzer = Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['scripts/run-jazzer.mjs'],
 	env: { JAZZER_SECONDS: '5' },
-	data: [sources, root.allBuilds],
+	data: [
+		packageJson,
+		jazzerSrcs,
+		nodePkg.build,
+		server.build,
+		server.srcs,
+		mcp.build,
+		jsonrpc.build,
+		effectPkg.build,
+		runtime.build,
+		whatsabi.build,
+		nativePins,
+	],
 	sandbox: { network: 'loopback' },
+})
+
+const rustFuzz = S.Suite({
+	tests: [resolutionsRs.testRust, runtimeRs.testRust, solcRs.testRust],
 })
 
 const typecheck = Shell.Test({
 	bin: S.NodeModule.Bin('typescript', 'tsc'),
 	args: ['--noEmit'],
-	data: [sources, root.allTypes],
+	data: [
+		allSources,
+		actions.types,
+		bundlerCache.types,
+		common.types,
+		configPkg.types,
+		contract.types,
+		effectPkg.types,
+		errors.types,
+		ethersExt.types,
+		httpClient.types,
+		jsonrpc.types,
+		logger.types,
+		mcp.types,
+		memoryClient.types,
+		nodePkg.types,
+		predeploys.types,
+		resolutions.types,
+		runtime.types,
+		server.types,
+		tevmFacade.types,
+		utils.types,
+		viemExt.types,
+		whatsabi.types,
+	],
 })
 
 const lint = Shell.Test({
 	bin: S.NodeModule.Bin('@biomejs/biome'),
 	args: ['check', '.'],
-	data: [sources, S.file('//biome.json')],
+	data: [allSources, rootBiomeConfig],
+})
+
+const test = S.Suite({
+	tests: [testNode, testClient, testServer, testMcp, testBundler, effectFuzz],
 })
 
 const all = S.Suite({
-	tests: [test, effectFuzz, jazzer, typecheck, lint],
+	tests: [test, jazzer, rustFuzz, typecheck, lint],
 })
 
 export const Package = S.Package({
@@ -63,7 +242,13 @@ export const Package = S.Package({
 		effectFuzz,
 		jazzer,
 		lint,
+		rustFuzz,
 		test,
+		testBundler,
+		testClient,
+		testMcp,
+		testNode,
+		testServer,
 		typecheck,
 	},
 })

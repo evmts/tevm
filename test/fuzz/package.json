@@ -51,6 +51,7 @@
 		"effect": "4.1.1",
 		"ethers": "^6.13.4",
 		"fast-check": "^4.11.0",
+		"tevm": "workspace:*",
 		"typescript": "^6.0.3",
 		"viem": "^2.49.3",
 		"vitest": "^4.1.6",

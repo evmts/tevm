@@ -27,20 +27,20 @@ const benches = S.Filegroup({
 const build = S.Cargo.Build({
 	package: 'tevm_runtime_rs',
 	profile: 'release',
-	data: [srcs],
+	data: [srcs, solcRs.srcs],
 })
 
 // build:debug (cargo build).
 const buildDebug = S.Cargo.Build({
 	package: 'tevm_runtime_rs',
 	profile: 'dev',
-	data: [srcs],
+	data: [srcs, solcRs.srcs],
 })
 
 // test (cargo test).
 const testRust = S.Cargo.Test({
 	package: 'tevm_runtime_rs',
-	data: [srcs, S.file('proptest-regressions/fuzz_proptest.txt')],
+	data: [srcs, solcRs.srcs, S.file('proptest-regressions/fuzz_proptest.txt')],
 })
 
 // build:napi. The local package-mode Flows release does not yet wrap napi, so
@@ -48,7 +48,7 @@ const testRust = S.Cargo.Test({
 const napi = Shell.Build({
 	bin: S.NodeModule.Bin('@napi-rs/cli', 'napi'),
 	args: ['build', '--platform', '--release'],
-	data: [srcs, packageJson],
+	data: [srcs, solcRs.srcs, packageJson],
 	outFiles: ['index.node'],
 })
 
