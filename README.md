@@ -111,4 +111,30 @@ process.once('SIGINT', () => {
 
 WebSocket and IPC subscriptions use native block, log, and pending-transaction filters. HTTP passes batches, notifications, and JSON-RPC errors through the native dispatcher.
 
+## Repository map
+
+This repository holds the native engine host: `packages/*`, `extensions/viem`, the `tevm` facade, `cli/`, the docs sites, and the conformance and fuzz suites. Everything else lives in a standalone repository. Send issues and pull requests for those packages there.
+
+| Code | Canonical repository |
+| --- | --- |
+| Bundler plugins (`@tevm/vite-plugin`, `esbuild`, `rollup`, `rspack`, `webpack`, `bun`, `requirejs`, `unplugin`), `@tevm/base-bundler`, `@tevm/bundler-cache`, `@tevm/compiler`, `@tevm/config`, `@tevm/resolutions`, `@tevm/runtime`, `@tevm/solc`, `@tevm/whatsabi`, the `*-rs` Rust crates, `@tevm/effect`, `@tevm/lsp`, `@tevm/ts-plugin`, the VS Code extension | [evmts/tevm-bundler](https://github.com/evmts/tevm-bundler) |
+| `@tevm/test-utils`, `@tevm/test-matchers`, `@tevm/test-node` | [evmts/tevm-test](https://github.com/evmts/tevm-test) |
+| `@tevm/contract` | [evmts/tevm-contract](https://github.com/evmts/tevm-contract) |
+| `@tevm/logger` | [evmts/tevm-logger](https://github.com/evmts/tevm-logger) |
+| `@tevm/cli`, `tevm-run` | [evmts/tevm-cli](https://github.com/evmts/tevm-cli) |
+| `@tevm/ethers` | [evmts/tevm-ethers](https://github.com/evmts/tevm-ethers) |
+| Example apps | [evmts/tevm-examples](https://github.com/evmts/tevm-examples) |
+
+The `tevm` facade and `cli/` consume the bundler packages from the npm registry (`^1.0.0-rc.151`), so `tevm/bundler/*` keeps working without a workspace copy. This repository has no Cargo workspace. The Rust toolchain is still required because ZEVM's addon build runs `cargo` for Voltaire's Rust crypto.
+
+### Copies still kept here
+
+Three paths duplicate a standalone repository on purpose. Each has a removal condition.
+
+| Path | Why it stays | Remove when |
+| --- | --- | --- |
+| `packages/contract` (`@tevm/contract`) | `@tevm/memory-client`, `@tevm/predeploys`, `cli/` and the `tevm` facade depend on it through `workspace:^`. The registry copy (`1.0.0-rc.151`) predates the overload and anonymous-event fixes and resolves the registry `@tevm/utils` and `@tevm/errors` `rc.151`, which do not match the native packages here ([#2097](https://github.com/evmts/tevm/issues/2097)). | evmts/tevm-contract publishes a release that contains those fixes and this repository publishes `@tevm/utils` and `@tevm/errors` at a version that release accepts. Then replace `workspace:^` with the registry range and delete the directory. |
+| `cli/` (`@tevm/cli`) | It is the only CLI written against the native engine (`@tevm/server`, `tevmMine({ blocks })`, `tevmSetAccount({ storage })`). The `tevm` binary imports it. evmts/tevm-cli still targets the published JavaScript-engine API and did not port this code. | The native `@tevm/actions`, `@tevm/memory-client` and `@tevm/server` are published and evmts/tevm-cli ports this directory against them. |
+| `test/vitest-matchers/utils.ts` | `packages/contract/vitest.config.ts` loads it as a setup file. It is one file, not the `@tevm/test-matchers` package. | `packages/contract` is removed. |
+
 See [CONTRIBUTING.md](CONTRIBUTING.md) for repository gates and [AGENTS.md](AGENTS.md) for the contributor contract.

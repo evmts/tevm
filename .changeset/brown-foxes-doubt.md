@@ -1,7 +1,4 @@
 ---
-"@tevm/ts-plugin": minor
-"@tevm/config": minor
-"@tevm/ethers": minor
 "@tevm/contract": minor
 ---
 

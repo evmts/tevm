@@ -235,10 +235,10 @@ export function validateChangesetLockstep(repoRoot, packages) {
 		errors.push('.changeset/config.json: "linked" groups allow partial releases and version skew (#2097); use "fixed"')
 	}
 	const hasCoreLockstep = fixed.some(
-		(group) => Array.isArray(group) && ['@tevm/*', 'tevm', 'tevm-run'].every((name) => group.includes(name)),
+		(group) => Array.isArray(group) && ['@tevm/*', 'tevm'].every((name) => group.includes(name)),
 	)
 	if (!hasCoreLockstep) {
-		errors.push('.changeset/config.json: "fixed" must lockstep ["@tevm/*", "tevm", "tevm-run"] together')
+		errors.push('.changeset/config.json: "fixed" must lockstep ["@tevm/*", "tevm"] together')
 	}
 	const publicPackages = (packages ?? discoverWorkspacePackages(repoRoot)).filter(
 		({ pkg, relDir }) => !pkg.private && !relDir.startsWith('..'),

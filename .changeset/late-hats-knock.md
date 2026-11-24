@@ -1,39 +1,18 @@
 ---
-"@tevm/base-bundler": minor
-"@tevm/bun-plugin": minor
-"@tevm/bundler-cache": minor
-"@tevm/compiler": minor
-"@tevm/config": minor
-"@tevm/esbuild-plugin": minor
-"@tevm/resolutions": minor
-"@tevm/rollup-plugin": minor
-"@tevm/rspack-plugin": minor
-"@tevm/runtime": minor
-"@tevm/solc": minor
-"@tevm/unplugin": minor
-"@tevm/vite-plugin": minor
-"@tevm/webpack-plugin": minor
 "@tevm/tsconfig": minor
 "@tevm/tsupconfig": minor
-"@tevm/ethers": minor
 "@tevm/viem": minor
-"@tevm/lsp": minor
-"@tevm/ts-plugin": minor
-"@tevm/vscode": minor
 "@tevm/actions": minor
 "@tevm/node": minor
 "@tevm/common": minor
 "@tevm/contract": minor
-"@tevm/effect": minor
 "@tevm/errors": minor
 "@tevm/http-client": minor
 "@tevm/jsonrpc": minor
-"@tevm/logger": minor
 "@tevm/memory-client": minor
 "@tevm/predeploys": minor
 "@tevm/server": minor
 "@tevm/utils": minor
-"@tevm/test-utils": minor
 "tevm": minor
 ---
 

@@ -13,12 +13,10 @@ services:
     volumes:
       # Mount build cache to persist between runs
       - pnpm-store:/pnpm/store
-      - cargo-cache:/root/.cargo
       - zig-cache:/root/.cache/zig
       # Mount dist and build outputs if needed
       - ./dist:/app/dist
       - ./packages:/app/packages
-      - ./bundler-packages:/app/bundler-packages
     working_dir: /app
     # Run the full build command including Zig
     command: ["bun", "allz"]
@@ -34,5 +32,4 @@ services:
 
 volumes:
   pnpm-store:
-  cargo-cache:
   zig-cache:

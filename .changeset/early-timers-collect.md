@@ -9,7 +9,6 @@
 "@tevm/viem": patch
 "@tevm/common": patch
 "@tevm/errors": patch
-"@tevm/logger": patch
 "@tevm/server": patch
 "@tevm/utils": patch
 ---

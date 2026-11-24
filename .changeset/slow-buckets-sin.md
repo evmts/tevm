@@ -10,7 +10,6 @@
 "@tevm/common": minor
 "@tevm/errors": minor
 "@tevm/server": minor
-"@tevm/test-utils": minor
 "@tevm/utils": minor
 "tevm": minor
 ---

@@ -3,11 +3,8 @@
 // Setup: see ../oracle.mjs for LEAN_SKIP_BUILD and ELAN_HOME.
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
-import { registerHooks } from 'node:module'
-import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { after, before, describe, it } from 'node:test'
+import { before, describe, it } from 'node:test'
 import { pathToFileURL } from 'node:url'
 import { encodeFunctionData, getAddress, parseAbi, toFunctionSelector } from 'viem'
 import { buildOracle, REPO_ROOT } from '../oracle.mjs'
@@ -15,20 +12,7 @@ import { buildOracle, REPO_ROOT } from '../oracle.mjs'
 const here = import.meta.dirname
 const load = (relative) => import(pathToFileURL(join(REPO_ROOT, relative)).href)
 
-// `effect` is a dependency of `@tevm/config`, not of this directory. Resolve this file's
-// `effect` imports from that package with Node's own resolution, so the suite runs the
-// exact module instance `loadRemappings` builds its effects with.
-const configPackage = pathToFileURL(join(REPO_ROOT, 'bundler-packages/config/package.json')).href
-registerHooks({
-	resolve: (specifier, context, nextResolve) =>
-		context.parentURL === import.meta.url && (specifier === 'effect' || specifier.startsWith('effect/'))
-			? nextResolve(specifier, { ...context, parentURL: configPackage })
-			: nextResolve(specifier, context),
-})
-
 const { extractJsonRpcFrames } = await load('packages/server/src/internal/extractJsonRpcFrames.js')
-const { loadRemappings } = await load('bundler-packages/config/src/json/loadRemappingstxt.js')
-const { either, runSync } = await import('effect/Effect')
 const { decodeHardhatConsoleLog } = await load('packages/utils/src/decodeHardhatConsoleLog.js')
 const { parseSemver, resolveWorkspaceRange, satisfiesRange, validatePackageManifests } = await load(
 	'scripts/prepare-changeset-publish.mjs',
@@ -114,64 +98,9 @@ for (let i = 0; i < 400; i++) {
 	)
 }
 
-// 2. remappings.txt
-
-const scratch = mkdtempSync(join(tmpdir(), 'host-spec-'))
-after(() => rmSync(scratch, { recursive: true, force: true }))
-const REMAP_ALPHABET = [
-	...'==  \t//\\\\@ab-_.1',
-	'\n',
-	'\n',
-	'\r',
-	'\r\n',
-	' ',
-	' ',
-	'﻿',
-	'é',
-	'😀',
-	'@oz/=lib/oz/',
-	'forge-std/=/lib/forge-std/src/',
-	'a=b=c',
-	'ds-test/=\\lib\\ds-test\\',
-	'=empty',
-	'noequals',
-	'__proto__=x',
-	'1=one',
-]
-// Relative directories whose names contain `\` reach the Windows-separator branches on POSIX.
-const CONFIG_DIRS = ['plain', 'plain/', 'nested/dir', 'back\\slash', 'trail\\', 'mix\\ed/dir', 'mix/ed\\']
-const cwd = process.cwd()
-process.chdir(scratch)
-try {
-	for (const dir of CONFIG_DIRS) mkdirSync(dir, { recursive: true })
-	for (let i = 0; i < 600; i++) {
-		const relative = pick(CONFIG_DIRS)
-		const configPath = chance(0.4) ? relative : `${process.cwd()}/${relative}`
-		const missing = chance(0.03)
-		const contents = missing ? '' : text(REMAP_ALPHABET, 14)
-		const file = join(configPath, 'remappings.txt')
-		rmSync(file, { force: true })
-		if (!missing) writeFileSync(file, contents)
-		const result = runSync(either(loadRemappings(configPath)))
-		const expected =
-			result._tag === 'Left'
-				? { error: result.left.message }
-				: { entries: Object.entries(result.right.remappings ?? {}).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)) }
-		add('remappings', `R,${hex(configPath)},${hex(contents)}`, { configPath, contents }, (answer) => {
-			const fields = answer.split(',')
-			if (fields[0] === 'E') return assert.deepEqual({ error: unhex(fields[1]) }, expected)
-			assert.equal(fields[0], 'O')
-			/** @type {Array<[string, string]>} */
-			const entries = []
-			for (let k = 0; k < Number(fields[1]); k++) entries.push([unhex(fields[2 + 2 * k]), unhex(fields[3 + 2 * k])])
-			assert.equal(new Set(entries.map(([key]) => key)).size, entries.length, 'oracle emitted a duplicate prefix')
-			entries.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-			assert.deepEqual({ entries }, expected)
-		})
-	}
-} finally {
-	process.chdir(cwd)
-}
+// 2. remappings.txt: `loadRemappings` moved to evmts/tevm-bundler with @tevm/config
+// (packages/config/src/json/loadRemappingstxt.js). The `Remappings` model stays in
+// HostSpec.lean as the reference; its differential cases belong to that repository.
 
 // 3. Hardhat console.log format strings
 

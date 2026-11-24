@@ -24,12 +24,9 @@ bundler/*/docs
 extensions/*/docs
 docs/src/content/reference
 bundler/**/docs
-bundler-packages/**/docs
 configs/**/docs
-examples/**/docs
 experimental/**/docs
 extensions/**/docs
-lsp/**/docs
 packages/**/docs
 test/**/docs
 tevm/**/docs

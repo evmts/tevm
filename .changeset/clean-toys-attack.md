@@ -6,7 +6,6 @@
 "@tevm/jsonrpc": patch
 "@tevm/viem": patch
 "@tevm/common": patch
-"@tevm/test-utils": patch
 "@tevm/utils": patch
 ---
 

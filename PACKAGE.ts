@@ -1,41 +1,15 @@
 /// <reference path="./smithers.d.ts" />
 const S = Smithers
 
-import { Package as baseBundler } from './bundler-packages/base-bundler/PACKAGE.js'
-import { Package as bunPlugin } from './bundler-packages/bun/PACKAGE.js'
-import { Package as bundlerCache } from './bundler-packages/bundler-cache/PACKAGE.js'
-import { Package as compiler } from './bundler-packages/compiler/PACKAGE.js'
-import { Package as config } from './bundler-packages/config/PACKAGE.js'
-import { Package as esbuildPlugin } from './bundler-packages/esbuild/PACKAGE.js'
-import { Package as requirejsPlugin } from './bundler-packages/requirejs/PACKAGE.js'
-import { Package as resolutions } from './bundler-packages/resolutions/PACKAGE.js'
-import { Package as resolutionsRs } from './bundler-packages/resolutions-rs/PACKAGE.js'
-import { Package as rollupPlugin } from './bundler-packages/rollup/PACKAGE.js'
-import { Package as rspackPlugin } from './bundler-packages/rspack/PACKAGE.js'
-import { Package as runtime } from './bundler-packages/runtime/PACKAGE.js'
-import { Package as runtimeRs } from './bundler-packages/runtime-rs/PACKAGE.js'
-import { Package as solcPkg } from './bundler-packages/solc/PACKAGE.js'
-import { Package as solcRs } from './bundler-packages/solc-rs/PACKAGE.js'
-import { Package as tevmRun } from './bundler-packages/tevm-run/PACKAGE.js'
-import { Package as unplugin } from './bundler-packages/unplugin/PACKAGE.js'
-import { Package as vitePlugin } from './bundler-packages/vite/PACKAGE.js'
-import { Package as webpackPlugin } from './bundler-packages/webpack/PACKAGE.js'
-import { Package as whatsabi } from './bundler-packages/whatsabi/PACKAGE.js'
 import { Package as cli } from './cli/PACKAGE.js'
-import { Package as ethersExt } from './extensions/ethers/PACKAGE.js'
 import { Package as viem } from './extensions/viem/PACKAGE.js'
 import { Package as factory } from './factory/PACKAGE.js'
-import { Package as lsp } from './lsp/lsp/PACKAGE.js'
-import { Package as tsPlugin } from './lsp/ts-plugin/PACKAGE.js'
-import { Package as vscodeExt } from './lsp/vscode/PACKAGE.js'
 import { Package as actions } from './packages/actions/PACKAGE.js'
 import { Package as common } from './packages/common/PACKAGE.js'
 import { Package as contract } from './packages/contract/PACKAGE.js'
-import { Package as effectPkg } from './packages/effect/PACKAGE.js'
 import { Package as errors } from './packages/errors/PACKAGE.js'
 import { Package as httpClient } from './packages/http-client/PACKAGE.js'
 import { Package as jsonrpc } from './packages/jsonrpc/PACKAGE.js'
-import { Package as logger } from './packages/logger/PACKAGE.js'
 import { Package as mcp } from './packages/mcp/PACKAGE.js'
 import { Package as memoryClient } from './packages/memory-client/PACKAGE.js'
 import { Package as nodePkg } from './packages/node/PACKAGE.js'
@@ -57,8 +31,6 @@ import { Package as tevmFacade } from './tevm/PACKAGE.js'
 const packageJson = S.file('//package.json')
 const lockfile = S.file('//pnpm-lock.yaml')
 const workspaceConfig = S.file('//pnpm-workspace.yaml')
-const cargoManifest = S.file('//Cargo.toml')
-const cargoLockfile = S.file('//Cargo.lock')
 const biomeConfig = S.file('//biome.json')
 const changesetConfig = S.file('//.changeset/config.json')
 
@@ -141,9 +113,7 @@ const format = S.Shell.Diff({
 // tree into a scratch copy, which cost twelve minutes per run here.)
 const manifestGlobs = [
 	'package.json',
-	'bundler-packages/*/package.json',
 	'configs/*/package.json',
-	'examples/*/package.json',
 	'extensions/*/package.json',
 	'packages/*/package.json',
 	'tevm/package.json',
@@ -229,7 +199,7 @@ const allHermeticTests = S.Shell.Test({
 		'nx',
 		'run-many',
 		'--target=test:run',
-		'--exclude=@tevm/compiler,@tevm/viem,@tevm/mcp,@tevm/cli',
+		'--exclude=@tevm/viem,@tevm/mcp,@tevm/cli',
 		'--parallel=2',
 		'--skip-nx-cache',
 	],
@@ -239,7 +209,7 @@ const allHermeticTests = S.Shell.Test({
 })
 
 const externalIntegrationTests = S.Suite({
-	tests: [compiler.test, viem.test, mcp.test, mcp.testFork, cli.testVitest],
+	tests: [viem.test, mcp.test, mcp.testFork, cli.testVitest],
 })
 
 const allTests = S.Suite({
@@ -247,7 +217,7 @@ const allTests = S.Suite({
 })
 
 // The Nx coverage fan-out still reaches the packages whose suites fork live
-// chains (state, actions, blockchain, viem, cli, whatsabi, test), so it
+// chains (actions, viem, cli, mcp), so it
 // declares the same three integration secrets and egress those packages'
 // first-class targets declare; CI maps the secrets into the job for it.
 const integrationSecrets = [
@@ -309,37 +279,6 @@ const allFixtures = S.Shell.Test({
 	sandbox: { network: true },
 })
 
-const cargoInputs = [
-	cargoManifest,
-	cargoLockfile,
-	S.Filegroup({
-		srcs: [
-			S.glob('bundler-packages/*-rs/**/*.rs', { exclude: ['**/target/**', '**/node_modules/**'] }),
-			S.glob('bundler-packages/*-rs/Cargo.toml'),
-		],
-	}),
-]
-
-const cargoBuilds = S.Shell.Test({
-	bin: S.Host.bin('cargo'),
-	args: ['build', '--workspace'],
-	data: cargoInputs,
-})
-
-const cargoTests = S.Shell.Test({
-	bin: S.Host.bin('cargo'),
-	args: ['test', '--workspace'],
-	data: cargoInputs,
-})
-
-// CI's "Validate Cargo workspace" step: `cargo check --workspace --quiet`,
-// keyed through the cargo workspace layer on every crate's sources.
-const cargoCheck = S.Shell.Test({
-	bin: S.Host.bin('cargo'),
-	args: ['check', '--workspace', '--quiet'],
-	data: cargoInputs,
-})
-
 const fuzz = S.Alias(fuzzPkg.all)
 
 // Every PR touching a publishable package needs a changeset; status against
@@ -379,8 +318,8 @@ const changesetCandidateCheck = S.Shell.Test({
 const jsdocLint = S.Agent.Lint({
 	agent: S.Agents.luna,
 	prompt: S.file('//workflows/lints/jsdoc.md'),
-	data: [S.gitDiff({ paths: ['packages/**/src/**', 'bundler-packages/**/src/**', 'extensions/**/src/**'] })],
-	fixes: ['packages/**/src/**', 'bundler-packages/**/src/**', 'extensions/**/src/**'],
+	data: [S.gitDiff({ paths: ['packages/**/src/**', 'extensions/**/src/**'] })],
+	fixes: ['packages/**/src/**', 'extensions/**/src/**'],
 })
 
 // A diff that changes published source carries a changeset whose level
@@ -391,7 +330,7 @@ const changesetLint = S.Agent.Lint({
 	prompt: S.file('//workflows/lints/changeset.md'),
 	data: [
 		S.gitDiff({
-			paths: ['packages/**/src/**', 'bundler-packages/**/src/**', 'extensions/**/src/**', 'tevm/**', '.changeset/**'],
+			paths: ['packages/**/src/**', 'extensions/**/src/**', 'tevm/**', '.changeset/**'],
 		}),
 	],
 	fixes: ['.changeset/**'],
@@ -412,11 +351,11 @@ const barrelExportsLint = S.Agent.Lint({
 	prompt: S.file('//workflows/lints/barrel-exports.md'),
 	data: [
 		S.gitDiff({
-			added: ['packages/**/src/**', 'bundler-packages/**/src/**', 'extensions/**/src/**'],
+			added: ['packages/**/src/**', 'extensions/**/src/**'],
 			addedLines: '^export ',
 		}),
 	],
-	fixes: ['packages/**/src/**/index.{js,ts}', 'bundler-packages/**/src/**/index.{js,ts}', 'tevm/**/index.ts'],
+	fixes: ['packages/**/src/**/index.{js,ts}', 'tevm/**/index.ts'],
 })
 
 // Snapshots must not embed the recording machine (absolute paths, temp dirs).
@@ -427,7 +366,7 @@ const snapshotPathsLint = S.Agent.Lint({
 	fixes: ['**/__snapshots__/**', '**/__rpc_snapshots__/**', '**/*.spec.ts'],
 })
 
-// A new action, JSON-RPC handler, or bundler option needs guide coverage
+// A new action or JSON-RPC handler needs guide coverage
 // under docs/node or sites/core.
 const docsParityLint = S.Agent.Lint({
 	agent: S.Agents.luna,
@@ -485,7 +424,6 @@ const regressionProofLint = S.Agent.Lint({
 		S.gitDiff({
 			paths: [
 				'packages/**/src/**',
-				'bundler-packages/**/src/**',
 				'extensions/**/src/**',
 				'test/**/*.spec.ts',
 				'test/**/*.test.ts',
@@ -496,8 +434,6 @@ const regressionProofLint = S.Agent.Lint({
 	fixes: [
 		'packages/**/*.spec.ts',
 		'packages/**/*.test.ts',
-		'bundler-packages/**/*.spec.ts',
-		'bundler-packages/**/*.test.ts',
 		'extensions/**/*.spec.ts',
 		'extensions/**/*.test.ts',
 		'test/**',
@@ -571,10 +507,11 @@ const postCommit = S.Suite({
 })
 
 // ci.yml's steps as one suite, in its order: build dist, build types, tests,
-// fixtures, rust tests, typecheck, lint, lint deps, lint packages, docs,
-// cargo check. An unaffected target is a cache hit, so the whole suite is
-// cheap on a small PR. The `build:rust:app` step targets an nx project name
-// (my_rust_node_lib) that no longer exists; cargoBuilds covers what it meant.
+// fixtures, typecheck, lint, lint deps, lint packages, docs. An unaffected
+// target is a cache hit, so the whole suite is cheap on a small PR. The Rust
+// crates (resolutions-rs, runtime-rs, solc-rs) and their cargo gates moved to
+// evmts/tevm-bundler with the bundler packages; this repository has no Cargo
+// workspace.
 const ci = S.Suite({
 	tests: [
 		allBuilds,
@@ -582,15 +519,12 @@ const ci = S.Suite({
 		allDeclarations,
 		allCoverage,
 		allFixtures,
-		cargoTests,
 		allTypechecks,
 		allLints,
 		sortManifestsCheck,
 		allDepsLints,
 		allPackageLints,
 		allDocs,
-		cargoBuilds,
-		cargoCheck,
 		factory.check,
 		scripts.prepareChangesetPublishTest,
 		scripts.zigFuzzRunnerTest,
@@ -622,7 +556,7 @@ const version = S.Shell.Diff({
 const publish = S.Shell.Run({
 	bin: S.PackageManager.bin,
 	args: ['run', 'release:publish'],
-	data: [allBuilds, allTypes, allDeclarations, cargoBuilds],
+	data: [allBuilds, allTypes, allDeclarations],
 	env: nxEnvironment,
 	gates: [ci, allApiCompat],
 	secrets: [S.Secret('NPM_TOKEN')],
@@ -651,7 +585,7 @@ const prereleaseExit = S.Shell.Diff({
 const prerelease = S.Shell.Run({
 	bin: S.PackageManager.bin,
 	args: ['run', 'release:publish'],
-	data: [allBuilds, allTypes, allDeclarations, cargoBuilds, S.file('//.changeset/pre.json')],
+	data: [allBuilds, allTypes, allDeclarations, S.file('//.changeset/pre.json')],
 	env: nxEnvironment,
 	gates: [ci, allApiCompat],
 	secrets: [S.Secret('NPM_TOKEN')],
@@ -705,56 +639,24 @@ const coreBenchSpecs = [
 	['packages/actions/artifacts/bench.json', actions.bench],
 	['packages/common/artifacts/bench.json', common.bench],
 	['packages/contract/artifacts/bench.json', contract.bench],
-	['packages/effect/artifacts/bench.json', effectPkg.bench],
 	['packages/errors/artifacts/bench.json', errors.bench],
 	['packages/http-client/artifacts/bench.json', httpClient.bench],
 	['packages/jsonrpc/artifacts/bench.json', jsonrpc.bench],
-	['packages/logger/artifacts/bench.json', logger.bench],
 	['packages/mcp/artifacts/bench.json', mcp.bench],
 	['packages/memory-client/artifacts/bench.json', memoryClient.bench],
 	['packages/node/artifacts/bench.json', nodePkg.bench],
 	['packages/predeploys/artifacts/bench.json', predeploys.bench],
 	['packages/server/artifacts/bench.json', server.bench],
 	['packages/utils/artifacts/bench.json', utils.bench],
-	['extensions/ethers/artifacts/bench.json', ethersExt.bench],
 	['extensions/viem/artifacts/bench.json', viem.bench],
 ] as const
 
-const bundlerBenchSpecs = [
-	['bundler-packages/base-bundler/artifacts/bench.json', baseBundler.bench],
-	['bundler-packages/bun/artifacts/bench.json', bunPlugin.bench],
-	['bundler-packages/bundler-cache/artifacts/bench.json', bundlerCache.bench],
-	['bundler-packages/compiler/artifacts/bench.json', compiler.bench],
-	['bundler-packages/config/artifacts/bench.json', config.bench],
-	['bundler-packages/esbuild/artifacts/bench.json', esbuildPlugin.bench],
-	['bundler-packages/requirejs/artifacts/bench.json', requirejsPlugin.bench],
-	['bundler-packages/resolutions/artifacts/bench.json', resolutions.bench],
-	['bundler-packages/rollup/artifacts/bench.json', rollupPlugin.bench],
-	['bundler-packages/rspack/artifacts/bench.json', rspackPlugin.bench],
-	['bundler-packages/runtime/artifacts/bench.json', runtime.bench],
-	['bundler-packages/solc/artifacts/bench.json', solcPkg.bench],
-	['bundler-packages/tevm-run/artifacts/bench.json', tevmRun.bench],
-	['bundler-packages/unplugin/artifacts/bench.json', unplugin.bench],
-	['bundler-packages/vite/artifacts/bench.json', vitePlugin.bench],
-	['bundler-packages/webpack/artifacts/bench.json', webpackPlugin.bench],
-	['bundler-packages/whatsabi/artifacts/bench.json', whatsabi.bench],
-] as const
-
-const rustBenchSpecs = [
-	['bundler-packages/resolutions-rs/artifacts/bench.json', resolutionsRs.bench],
-	['bundler-packages/runtime-rs/artifacts/bench.json', runtimeRs.bench],
-	['bundler-packages/solc-rs/artifacts/bench.json', solcRs.bench],
-] as const
-
 const toolingBenchSpecs = [
-	['lsp/lsp/artifacts/bench.json', lsp.bench],
-	['lsp/ts-plugin/artifacts/bench.json', tsPlugin.bench],
-	['lsp/vscode/artifacts/bench.json', vscodeExt.bench],
 	['cli/artifacts/bench.json', cli.bench],
 	['tevm/artifacts/bench.json', tevmFacade.bench],
 ] as const
 
-const allBenchSpecs = [...coreBenchSpecs, ...bundlerBenchSpecs, ...rustBenchSpecs, ...toolingBenchSpecs] as const
+const allBenchSpecs = [...coreBenchSpecs, ...toolingBenchSpecs] as const
 
 const benchReport = S.Shell.Build({
 	bin: S.Runtime.bin,
@@ -781,8 +683,6 @@ function benchSubset(name: string, specs: ReadonlyArray<(typeof allBenchSpecs)[n
 }
 
 const benchCore = benchSubset('core', coreBenchSpecs)
-const benchBundlers = benchSubset('bundlers', bundlerBenchSpecs)
-const benchRust = benchSubset('rust', rustBenchSpecs)
 const benchTooling = benchSubset('tooling', toolingBenchSpecs)
 
 const benchBaseline = S.Shell.Diff({
@@ -820,14 +720,9 @@ export const Package = S.Package({
 		barrelExportsLint,
 		bench,
 		benchBaseline,
-		benchBundlers,
 		benchCore,
 		benchReport,
-		benchRust,
 		benchTooling,
-		cargoBuilds,
-		cargoCheck,
-		cargoTests,
 		changesetCandidateCheck,
 		changesetCheck,
 		changesetLint,

@@ -1,6 +1,0 @@
-ignores: [
-  "@tevm/client-types",
-  "@tevm/actions",
-  "@tevm/node"
-]
-skip-missing: true

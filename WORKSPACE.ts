@@ -6,7 +6,6 @@ import { Package as root } from './PACKAGE.js'
 const packageJson = S.file('//package.json')
 const lockfile = S.file('//pnpm-lock.yaml')
 const workspaceConfig = S.file('//pnpm-workspace.yaml')
-const cargoLockfile = S.file('//Cargo.lock')
 
 // engines.node (^24) comes from the manifest; .nvmrc pins the exact release
 // CI installs. Current Flows accepts one runtime authority, so the graph uses
@@ -36,12 +35,13 @@ const nodeModules = S.Npm.NodeModules({
 // service; package-level dependency fan-out remains represented by the
 // existing package targets and the aggregate compatibility gates.
 
-// Cargo targets resolve through the pinned Rust layer. Cargo.toml and
-// .cargo/config.toml remain ordinary target inputs, while rust-toolchain.toml
-// is the version authority shared by contributors and CI.
+// The Rust layer stays although this repository no longer has a Cargo
+// workspace (the bundler crates moved to evmts/tevm-bundler): ZEVM's
+// `zig build` shells out to cargo for Voltaire's Rust crypto archive, so CI
+// and contributors still need a toolchain. There is no Cargo.lock here; the
+// sibling Voltaire checkout owns its own.
 const rust = S.Rust.Toolchain({
 	toolchain: S.file('//rust-toolchain.toml'),
-	lockfile: cargoLockfile,
 })
 
 // mise.toml is the version authority for every tool outside Node, pnpm, and
@@ -59,13 +59,12 @@ const mise = S.Mise({ config: S.file('//mise.toml') })
 // Host binaries this workspace admits beyond the pinned layers. docker runs
 // the hive simulator and the docker sandbox; git materializes the vendored
 // submodules and clones hive; bash runs the hive and parity shell scripts;
-// cargo is the Rust layer's executable for the crates that shell to it;
-// python3 runs scripts/claude-triage; code is the VS Code CLI
-// //lsp/ts-plugin:dev opens for plugin debugging; codex is the coding-agent
-// CLI //evals:evalSuite spawns per case. Undeclared host binaries are a
+// cargo builds Voltaire's Rust crypto under the ZEVM addon build;
+// python3 runs scripts/claude-triage; codex is the coding-agent CLI
+// //evals:evalSuite spawns per case. Undeclared host binaries are a
 // graph-load error.
 const host = S.Host({
-	bins: ['docker', 'git', 'bash', 'cargo', 'python3', 'code', 'codex'],
+	bins: ['docker', 'git', 'bash', 'cargo', 'python3', 'codex'],
 })
 
 // The agent registry every S.Agent.* target references by name

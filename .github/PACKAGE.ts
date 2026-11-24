@@ -187,21 +187,6 @@ const jsrPublish = S.Github.Workflow({
 	],
 })
 
-// wasm-size-check.yml: the byte budget on the napi/wasm artifacts. The yml
-// today measures nothing (its Zig build was removed) and stores placeholder
-// baselines in .wasm-sizes.json; the graph's S.Size.Gate targets are the
-// real check, so the workflow reduces to running them.
-const wasmSize = S.Github.Workflow({
-	name: 'wasm-size-check',
-	on: {
-		push: { branches: ['main'] },
-		pullRequest: true,
-		workflowDispatch: true,
-	},
-	setup,
-	steps: nativeSteps('pnpm exec smthrs target //:cargoBuilds'),
-})
-
 // parity-suites.yml: the three parity jobs (RPC fast subset, bounded
 // conformance, hive smoke) on every PR; //:nightlyConformance keeps the
 // unbounded corpus run on its Cron, where hours are acceptable. Artifact upload is still retained in
@@ -305,6 +290,5 @@ export const Package = S.Package({
 		release,
 		review,
 		snapshot,
-		wasmSize,
 	},
 })

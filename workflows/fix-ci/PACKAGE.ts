@@ -18,9 +18,7 @@ const fixCi = S.Agent.Diff({
 	data: [root.ci, S.gitDiff()],
 	changes: [
 		'packages/*/src/**',
-		'bundler-packages/*/src/**',
 		'extensions/*/src/**',
-		'lsp/*/src/**',
 		'cli/src/**',
 		'tevm/**/index.ts',
 		'*/*/package.json',

@@ -1,3 +1,0 @@
-## @tevm/vscode
-
-Currently WIP.

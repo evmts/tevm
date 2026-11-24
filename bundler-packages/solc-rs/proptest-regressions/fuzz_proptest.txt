@@ -1,8 +1,0 @@
-# Seeds for failure cases proptest has generated in the past. It is
-# automatically read and these particular cases re-run before any
-# novel cases are generated.
-#
-# It is recommended to check this file in to source control so that
-# everyone who runs the test benefits from these saved cases.
-cc 12f75b05027bb5c9a214af73f56a0e030b2417c226c37cff0fd9194bdb6f7e09 # shrinks to text = "", octet = 128, cut = 0, kind = 2
-cc c7392c0775b86d64117d3e96d31e7ca1987d3bfd60b7dea1dfd2ea67d7b6756c # shrinks to language = "Solidity", sources = {"/.sol": ("", false)}, runs = 0, via_ir = false, cbor = false, mappings = []

@@ -1,9 +1,6 @@
 /// <reference path="../smithers.d.ts" />
 const S = Smithers
 
-import { Package as pkg_base_bundler } from '../bundler-packages/base-bundler/PACKAGE.js'
-import { Package as pkg_bundler_cache } from '../bundler-packages/bundler-cache/PACKAGE.js'
-import { Package as pkg_config } from '../bundler-packages/config/PACKAGE.js'
 import { vitestBench } from '../factory/bench.js'
 import { scopedShell } from '../factory/scoped-shell.js'
 import { Package as pkg_actions } from '../packages/actions/PACKAGE.js'
@@ -36,14 +33,14 @@ const benches = S.Filegroup({
 	srcs: S.glob(['bench/**']),
 })
 
+// @tevm/base-bundler, @tevm/bundler-cache and @tevm/config come from the
+// registry (evmts/tevm-bundler publishes them), so they are part of the
+// installed node_modules layer, not workspace build edges.
 const deps = S.Filegroup({
 	srcs: [
 		packageJson,
 		pkg_actions.build,
-		pkg_base_bundler.build,
-		pkg_bundler_cache.build,
 		pkg_common.build,
-		pkg_config.build,
 		pkg_contract.build,
 		pkg_memory_client.build,
 		pkg_server.build,
@@ -59,10 +56,7 @@ const compile = Shell.Build({
 		srcs,
 		deps,
 		pkg_actions.types,
-		pkg_base_bundler.types,
-		pkg_bundler_cache.types,
 		pkg_common.types,
-		pkg_config.types,
 		pkg_contract.types,
 		pkg_memory_client.types,
 		pkg_server.types,

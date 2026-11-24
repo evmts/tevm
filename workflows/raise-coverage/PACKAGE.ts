@@ -18,12 +18,7 @@ const raiseCoverage = S.Agent.Diff({
 		target: S.Input.Optional(S.Input.String('Target line coverage percentage; defaults to current + 5')),
 	},
 	data: [root.allCoverage],
-	changes: [
-		'packages/*/src/**/*.spec.ts',
-		'bundler-packages/*/src/**/*.spec.ts',
-		'extensions/*/src/**/*.spec.ts',
-		'*/*/vitest.config.ts',
-	],
+	changes: ['packages/*/src/**/*.spec.ts', 'extensions/*/src/**/*.spec.ts', '*/*/vitest.config.ts'],
 	gates: [root.allCoverage],
 	maxRounds: 3,
 })

@@ -1,9 +1,0 @@
-# Seeds for failure cases proptest has generated in the past. It is
-# automatically read and these particular cases re-run before any
-# novel cases are generated.
-#
-# It is recommended to check this file in to source control so that
-# everyone who runs the test benefits from these saved cases.
-cc bd074468451995cdee2499bb957cadad496e9bed29dd626b2eb909d5abf27344 # shrinks to parts = [".."]
-cc 4b4db480c834484d72bac6246e4b9f9730bbf8265b1385a632165ee66d514fd8 # shrinks to items = [("// import './decoy.sol';\nimport './a.sol';\n", "./a.sol")]
-cc 2b0a3408d4fa54ac858140d9cbc985909280526d34610fc45b3e02e3b4800490 # shrinks to edges = [[0]]

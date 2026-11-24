@@ -5,7 +5,7 @@ import { Package as root } from '../PACKAGE.js'
 
 // Conformance against the canonical Ethereum test suites, the EIP-3155 trace
 // tooling, hive, and the parity suites: the root package.json's test:* scripts
-// as targets. The workspace packages under test/* (bench, test-utils, the
+// as targets. The workspace packages under test/* (fuzz, the
 // integration suites) have their own PACKAGE.ts files.
 
 // Fixture locations are supplied through the runner's documented environment

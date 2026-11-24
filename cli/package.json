@@ -56,10 +56,10 @@
 	"dependencies": {
 		"@tanstack/react-query": "^5.100.11",
 		"@tevm/actions": "workspace:^",
-		"@tevm/base-bundler": "workspace:^",
-		"@tevm/bundler-cache": "workspace:^",
+		"@tevm/base-bundler": "^1.0.0-rc.151",
+		"@tevm/bundler-cache": "^1.0.0-rc.151",
 		"@tevm/common": "workspace:^",
-		"@tevm/config": "workspace:^",
+		"@tevm/config": "^1.0.0-rc.151",
 		"@tevm/contract": "workspace:^",
 		"@tevm/memory-client": "workspace:^",
 		"@tevm/server": "workspace:^",

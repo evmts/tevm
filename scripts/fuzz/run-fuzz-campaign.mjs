@@ -4,8 +4,7 @@
  *   1. Vitest + fast-check property & stateful model-based EVM fuzzing
  *   2. @smthrs/fuzz Effect feedback-guided fuzzing + FuzzSimulation interleavings
  *   3. Jazzer.js native LibFuzzer V8 coverage-guided fuzzing
- *   4. Rust proptest property fuzzing across resolutions-rs, runtime-rs, solc-rs
- *   5. Optional native Linux Zig `--fuzz` (locally on Linux or on Latitude Ubuntu host)
+ *   4. Optional native Linux Zig `--fuzz` (locally on Linux or on Latitude Ubuntu host)
  */
 import { spawnSync } from 'node:child_process'
 import { dirname, resolve } from 'node:path'
@@ -19,7 +18,6 @@ const args = new Set(process.argv.slice(2))
 const intensive = args.has('--intensive')
 const includeZig = args.has('--zig') || process.env['TEVM_FUZZ_INCLUDE_ZIG'] === '1'
 const skipJazzer = args.has('--skip-jazzer')
-const skipRust = args.has('--skip-rust')
 
 const env = {
 	...process.env,
@@ -69,14 +67,6 @@ if (!skipJazzer) {
 		[resolve(fuzzPkg, 'scripts/run-jazzer.mjs')],
 		fuzzPkg,
 	)
-}
-
-if (!skipRust) {
-	runStage('Rust Crate Proptest Fuzzing (resolutions-rs, runtime-rs, solc-rs)', 'cargo', [
-		'test',
-		'--workspace',
-		'fuzz_',
-	])
 }
 
 if (includeZig) {

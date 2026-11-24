@@ -17,7 +17,6 @@ import { dirname, join, resolve } from 'node:path'
 import { describe, it } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import {
-	discoverWorkspacePackages,
 	isCoveredByNpmFiles,
 	parseCliArgs,
 	parseWorkspacePatterns,
@@ -25,7 +24,6 @@ import {
 	runPublishPrep,
 	satisfiesRange,
 	validateChangesetLockstep,
-	validatePackageManifests,
 } from './prepare-changeset-publish.mjs'
 
 const REPO_ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
@@ -405,21 +403,12 @@ describe('publish preflight & lifecycle', () => {
 		}
 	})
 
-	it('excludes the native bundler parents and every platform manifest from dist validation', () => {
-		const packages = discoverWorkspacePackages(REPO_ROOT)
-		const parents = ['resolutions-rs', 'runtime-rs', 'solc-rs'].map((name) => `bundler-packages/${name}`)
-		const native = packages.filter(({ relDir }) =>
-			parents.some((dir) => relDir === dir || relDir.startsWith(`${dir}/npm/`)),
-		)
-		assert.equal(native.length, 23)
-		for (const { pkg } of native) assert.equal(pkg.private, true, pkg.name)
-		assert.deepEqual(validatePackageManifests(native, { repoRoot: REPO_ROOT, checkDist: true }), [])
-	})
-
 	it('validates the live TEVM monorepo in --dry-run mode cleanly', async () => {
 		const res = await runPublishPrep({ repoRoot: REPO_ROOT, mode: 'dry-run' })
 		assert.equal(res.ok, true, `Unexpected errors:\n${res.errors.join('\n')}`)
-		assert.ok(res.publishableCount >= 40)
+		// 17 public packages remain after the bundler, lsp, logger, effect, ethers and
+		// test-utils packages moved to their standalone repositories.
+		assert.ok(res.publishableCount >= 17)
 		assert.ok(res.chainCount > 100)
 		assert.ok(res.rewrites.some((r) => r.pkgName === '@tevm/node' && r.depName === '@evmts/zevm' && r.to === '0.1.0'))
 	})

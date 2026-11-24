@@ -4,7 +4,6 @@ type BuildAttrs = Parameters<typeof S.Shell.Build>[0]
 
 const vitestBenchRunner = S.file('//scripts/bench/run-vitest-bench.mjs')
 const vitestBenchConfig = S.file('//configs/vitest.bench.config.ts')
-const cargoBenchRunner = S.file('//scripts/bench/run-cargo-bench.mjs')
 
 const validateDirectory = (directory: string): void => {
 	if (!/^[A-Za-z0-9._/-]+$/.test(directory) || directory.startsWith('/') || directory.includes('..')) {
@@ -47,35 +46,5 @@ export const vitestBench = (
 		outFiles: ['artifacts/bench.json'],
 		...(options.sandbox === undefined ? {} : { sandbox: options.sandbox }),
 		...(options.env === undefined ? {} : { env: options.env }),
-	})
-}
-
-/**
- * Declares an incremental, content-cached Cargo release benchmark target for a
- * Rust crate emitting `artifacts/bench.json`.
- */
-export const cargoBench = (
-	directory: string,
-	options: {
-		readonly cargoPackage: string
-		readonly example?: string
-		readonly data: NonNullable<BuildAttrs['data']>
-	},
-) => {
-	validateDirectory(directory)
-	const prefix = rootPrefix(directory)
-	return S.Shell.Build({
-		bin: S.PackageManager.bin,
-		args: [
-			'--dir',
-			directory,
-			'exec',
-			'node',
-			`${prefix}/scripts/bench/run-cargo-bench.mjs`,
-			options.cargoPackage,
-			options.example ?? 'bench_json',
-		],
-		data: [...options.data, cargoBenchRunner, S.file('//Cargo.toml'), S.file('//Cargo.lock')],
-		outFiles: ['artifacts/bench.json'],
 	})
 }

@@ -2,7 +2,6 @@
 "@tevm/node": minor
 "@tevm/http-client": minor
 "@tevm/predeploys": minor
-"@tevm/ethers": minor
 "@tevm/contract": minor
 "@tevm/actions": minor
 "@tevm/jsonrpc": minor

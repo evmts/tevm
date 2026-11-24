@@ -11,12 +11,6 @@ const jazzerBin = resolve(fuzzRoot, 'node_modules/.bin/jazzer')
 const targets = [
 	{ name: 'ipc-framing', file: 'jazzer/ipc-framing.fuzz.mjs', includes: ['packages/server'] },
 	{ name: 'request-body', file: 'jazzer/request-body.fuzz.mjs', includes: ['packages/server'] },
-	{
-		name: 'bundler-parsers',
-		file: 'jazzer/bundler-parsers.fuzz.mjs',
-		includes: ['packages/effect', 'bundler-packages/whatsabi'],
-	},
-	{ name: 'runtime-codegen', file: 'jazzer/runtime-codegen.fuzz.mjs', includes: ['bundler-packages/runtime'] },
 	{ name: 'mcp-tools', file: 'jazzer/mcp-tools.fuzz.mjs', includes: ['packages/mcp'] },
 	{ name: 'jsonrpc-fetcher', file: 'jazzer/jsonrpc-fetcher.fuzz.mjs', includes: ['packages/jsonrpc'] },
 	{ name: 'zevm-rpc', file: 'jazzer/zevm-rpc.fuzz.mjs', includes: ['packages/node'] },

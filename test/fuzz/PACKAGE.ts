@@ -1,25 +1,14 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
-import { Package as bundlerCache } from '../../bundler-packages/bundler-cache/PACKAGE.js'
-import { Package as configPkg } from '../../bundler-packages/config/PACKAGE.js'
-import { Package as resolutions } from '../../bundler-packages/resolutions/PACKAGE.js'
-import { Package as resolutionsRs } from '../../bundler-packages/resolutions-rs/PACKAGE.js'
-import { Package as runtime } from '../../bundler-packages/runtime/PACKAGE.js'
-import { Package as runtimeRs } from '../../bundler-packages/runtime-rs/PACKAGE.js'
-import { Package as solcRs } from '../../bundler-packages/solc-rs/PACKAGE.js'
-import { Package as whatsabi } from '../../bundler-packages/whatsabi/PACKAGE.js'
-import { Package as ethersExt } from '../../extensions/ethers/PACKAGE.js'
 import { Package as viemExt } from '../../extensions/viem/PACKAGE.js'
 import { scopedShell } from '../../factory/scoped-shell.js'
 import { Package as actions } from '../../packages/actions/PACKAGE.js'
 import { Package as common } from '../../packages/common/PACKAGE.js'
 import { Package as contract } from '../../packages/contract/PACKAGE.js'
-import { Package as effectPkg } from '../../packages/effect/PACKAGE.js'
 import { Package as errors } from '../../packages/errors/PACKAGE.js'
 import { Package as httpClient } from '../../packages/http-client/PACKAGE.js'
 import { Package as jsonrpc } from '../../packages/jsonrpc/PACKAGE.js'
-import { Package as logger } from '../../packages/logger/PACKAGE.js'
 import { Package as mcp } from '../../packages/mcp/PACKAGE.js'
 import { Package as memoryClient } from '../../packages/memory-client/PACKAGE.js'
 import { Package as nodePkg } from '../../packages/node/PACKAGE.js'
@@ -54,10 +43,6 @@ const serverSpecs = S.Filegroup({
 
 const mcpSpecs = S.Filegroup({
 	srcs: [S.file('src/mcp.fuzz.spec.ts')],
-})
-
-const bundlerSpecs = S.Filegroup({
-	srcs: [S.file('src/bundler-and-effect.fuzz.spec.ts')],
 })
 
 const effectSpecs = S.Filegroup({
@@ -103,14 +88,7 @@ const testClient = Shell.Test({
 		server.build,
 		nodePkg.build,
 		viemExt.build,
-		ethersExt.build,
 		tevmFacade.dist,
-		resolutions.build,
-		configPkg.build,
-		configPkg.srcs,
-		whatsabi.build,
-		whatsabi.srcs,
-		effectPkg.build,
 		nativePins,
 	],
 	sandbox: { network: 'loopback' },
@@ -131,7 +109,6 @@ const testServer = Shell.Test({
 		errors.build,
 		utils.build,
 		common.build,
-		logger.build,
 		nativePins,
 	],
 	sandbox: { network: 'loopback' },
@@ -142,22 +119,6 @@ const testMcp = Shell.Test({
 	args: ['run', 'src/mcp.fuzz.spec.ts'],
 	data: [harnessShared, mcpSpecs, mcp.build, memoryClient.build, nodePkg.build, nativePins],
 	sandbox: { network: 'loopback' },
-})
-
-const testBundler = Shell.Test({
-	bin: S.NodeModule.Bin('vitest'),
-	args: ['run', 'src/bundler-and-effect.fuzz.spec.ts'],
-	data: [
-		harnessShared,
-		bundlerSpecs,
-		effectPkg.build,
-		resolutions.build,
-		resolutions.srcs,
-		configPkg.build,
-		runtime.build,
-		bundlerCache.build,
-		whatsabi.build,
-	],
 })
 
 const effectFuzz = Shell.Test({
@@ -172,24 +133,8 @@ const jazzer = Shell.Test({
 	bin: S.Runtime.bin,
 	args: ['scripts/run-jazzer.mjs'],
 	env: { JAZZER_SECONDS: '5' },
-	data: [
-		packageJson,
-		jazzerSrcs,
-		nodePkg.build,
-		server.build,
-		server.srcs,
-		mcp.build,
-		jsonrpc.build,
-		effectPkg.build,
-		runtime.build,
-		whatsabi.build,
-		nativePins,
-	],
+	data: [packageJson, jazzerSrcs, nodePkg.build, server.build, server.srcs, mcp.build, jsonrpc.build, nativePins],
 	sandbox: { network: 'loopback' },
-})
-
-const rustFuzz = S.Suite({
-	tests: [resolutionsRs.testRust, runtimeRs.testRust, solcRs.testRust],
 })
 
 const typecheck = Shell.Test({
@@ -198,27 +143,19 @@ const typecheck = Shell.Test({
 	data: [
 		allSources,
 		actions.types,
-		bundlerCache.types,
 		common.types,
-		configPkg.types,
 		contract.types,
-		effectPkg.types,
 		errors.types,
-		ethersExt.types,
 		httpClient.types,
 		jsonrpc.types,
-		logger.types,
 		mcp.types,
 		memoryClient.types,
 		nodePkg.types,
 		predeploys.types,
-		resolutions.types,
-		runtime.types,
 		server.types,
 		tevmFacade.types,
 		utils.types,
 		viemExt.types,
-		whatsabi.types,
 	],
 })
 
@@ -229,11 +166,11 @@ const lint = Shell.Test({
 })
 
 const test = S.Suite({
-	tests: [testNode, testClient, testServer, testMcp, testBundler, effectFuzz],
+	tests: [testNode, testClient, testServer, testMcp, effectFuzz],
 })
 
 const all = S.Suite({
-	tests: [test, jazzer, rustFuzz, typecheck, lint],
+	tests: [test, jazzer, typecheck, lint],
 })
 
 export const Package = S.Package({
@@ -242,9 +179,7 @@ export const Package = S.Package({
 		effectFuzz,
 		jazzer,
 		lint,
-		rustFuzz,
 		test,
-		testBundler,
 		testClient,
 		testMcp,
 		testNode,

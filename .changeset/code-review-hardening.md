@@ -4,14 +4,7 @@
 "@tevm/server": major
 "@tevm/mcp": patch
 "@tevm/errors": patch
-"@tevm/config": patch
-"@tevm/resolutions": patch
-"@tevm/runtime": patch
 "@tevm/contract": minor
-"@tevm/solc": patch
-"@tevm/unplugin": patch
-"@tevm/whatsabi": patch
-"tevm-run": patch
 "tevm": minor
 ---
 

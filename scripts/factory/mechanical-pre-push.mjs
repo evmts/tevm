@@ -15,14 +15,7 @@ const lanes = [
 	},
 	{
 		name: 'hermetic tests',
-		args: [
-			'exec',
-			'nx',
-			'run-many',
-			'--target=test:run',
-			'--exclude=@tevm/compiler,@tevm/viem,@tevm/mcp,@tevm/cli',
-			...common,
-		],
+		args: ['exec', 'nx', 'run-many', '--target=test:run', '--exclude=@tevm/viem,@tevm/mcp,@tevm/cli', ...common],
 	},
 ]
 

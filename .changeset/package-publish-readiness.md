@@ -1,26 +1,17 @@
 ---
 "@tevm/actions": patch
 "@tevm/cli": patch
-"@tevm/config": patch
 "@tevm/contract": patch
-"@tevm/effect": patch
 "@tevm/errors": patch
 "@tevm/http-client": patch
 "@tevm/jsonrpc": patch
-"@tevm/logger": patch
 "@tevm/mcp": patch
 "@tevm/node": patch
 "@tevm/predeploys": patch
-"@tevm/rollup-plugin": patch
 "@tevm/server": patch
-"@tevm/ts-plugin": patch
-"@tevm/unplugin": patch
 "@tevm/utils": patch
 "@tevm/viem": patch
-"@tevm/vite-plugin": patch
-"@tevm/whatsabi": patch
 "tevm": patch
-"tevm-run": patch
 ---
 
 Harden package manifests, exports, documentation, and runtime hygiene for publishing:
