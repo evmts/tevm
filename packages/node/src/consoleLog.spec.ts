@@ -201,13 +201,52 @@ describe('consoleLog option', () => {
 		expect(errors).toEqual(['listener', 'handler hello 42', 'listener', 'handler true'])
 	})
 
-	it('keeps eth_call working on the real native addon', async () => {
+	// Runtime code that forwards its calldata to the console address with STATICCALL, as
+	// console.sol does, and returns the call's success flag as one word.
+	const forwarder = `0x${[
+		'36', // CALLDATASIZE
+		'6000', // PUSH1 0
+		'6000', // PUSH1 0
+		'37', // CALLDATACOPY: memory[0:size] = calldata
+		'6000', // PUSH1 0: retSize
+		'6000', // PUSH1 0: retOffset
+		'36', // CALLDATASIZE: argsSize
+		'6000', // PUSH1 0: argsOffset
+		'73000000000000000000636f6e736f6c652e6c6f67', // PUSH20 console address
+		'5a', // GAS
+		'fa', // STATICCALL
+		'600052', // MSTORE(0, success)
+		'60206000f3', // RETURN(0, 32)
+	].join('')}`
+	const contract = '0x00000000000000000000000000000000c0ffee01'
+	const helloCall = ['hello 42', { calldata: hello, args: ['hello %d', 42n] }]
+	const helloEvent = { message: 'hello 42', signature: 'log(string,uint256)', calldata: hello, args: ['hello %d', 42n] }
+	/** A real-addon engine with `forwarder` deployed that records handler calls and `consoleLog` events. */
+	const nativeConsole = async () => {
 		const handler = vi.fn()
 		const node = create({ consoleLog: handler })
-		const result = await node.request({
-			method: 'eth_call',
-			params: [{ to: '0x000000000000000000636f6e736f6c652e6c6f67', data: hello }, 'latest'],
-		})
-		expect(result).toBe('0x')
+		const emitted: ConsoleLogEvent[] = []
+		node.events.on('consoleLog', (event) => emitted.push(event))
+		await node.request({ method: 'anvil_setCode', params: [contract, forwarder] })
+		return { node, handler, emitted }
+	}
+
+	it('delivers console.log from contract code in eth_call on the real native addon', async () => {
+		const { node, handler, emitted } = await nativeConsole()
+		const result = await node.request({ method: 'eth_call', params: [{ to: contract, data: hello }, 'latest'] })
+		expect(result).toBe(`0x${'0'.repeat(63)}1`)
+		expect(handler.mock.calls).toEqual([helloCall])
+		expect(emitted).toEqual([helloEvent])
+	})
+
+	it('delivers console.log once per eth_sendTransaction on the real native addon', async () => {
+		const { node, handler, emitted } = await nativeConsole()
+		const [from] = (await node.request({ method: 'eth_accounts' })) as string[]
+		await node.request({ method: 'eth_sendTransaction', params: [{ from, to: contract, data: hello, gas: '0x30000' }] })
+		expect(handler.mock.calls).toEqual([helloCall])
+		// Without `gas` the node estimates it first. That simulation must not log a second time.
+		await node.request({ method: 'eth_sendTransaction', params: [{ from, to: contract, data: hello }] })
+		expect(handler.mock.calls).toEqual([helloCall, helloCall])
+		expect(emitted).toEqual([helloEvent, helloEvent])
 	})
 })
