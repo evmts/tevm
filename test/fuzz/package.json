@@ -18,8 +18,9 @@
 		"fuzz:jazzer": "node ./scripts/run-jazzer.mjs",
 		"lint": "biome check . --write --unsafe",
 		"lint:check": "biome check .",
-		"test": "vitest --watch",
+		"test": "vitest run",
 		"test:run": "vitest run",
+		"test:watch": "vitest --watch",
 		"typecheck": "tsc --noEmit"
 	},
 	"devDependencies": {

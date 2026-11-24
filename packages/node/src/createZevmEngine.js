@@ -138,7 +138,15 @@ export function createZevmEngine(options = {}) {
 		backend = options.backend
 	} else {
 		const NativeNode = loadNativeNode()
-		backend = new NativeNode(chainId === undefined ? {} : { chain_id: chainId })
+		const native = new NativeNode(chainId === undefined ? {} : { chain_id: chainId })
+		backend = {
+			// Raw NUL bytes are invalid JSON (RFC 8259) and rejected at NativeNode's C-string boundary.
+			rpc: (json) =>
+				json.includes('\0')
+					? '{"jsonrpc":"2.0","id":null,"error":{"code":-32700,"message":"Parse error"}}'
+					: native.rpc(json),
+			close: () => native.close(),
+		}
 	}
 	let closed = false
 	let id = 0

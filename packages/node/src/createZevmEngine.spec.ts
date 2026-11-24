@@ -162,6 +162,9 @@ describe('native ZEVM engine', () => {
 		})
 		expect(JSON.stringify(JSON.parse(response!))).toBe(response)
 		expect(JSON.parse((await node.rpc('{'))!).error.code).toBe(-32700)
+		const nulResponse = await node.rpc('{"jsonrpc":"2.0"\0}')
+		expect(nulResponse).toBe('{"jsonrpc":"2.0","id":null,"error":{"code":-32700,"message":"Parse error"}}')
+		expect(JSON.stringify(JSON.parse(nulResponse!))).toBe(nulResponse)
 		expect(await node.rpc('{"jsonrpc":"2.0","method":"eth_chainId"}')).toBeNull()
 		const batch = JSON.parse(
 			(await node.rpc(

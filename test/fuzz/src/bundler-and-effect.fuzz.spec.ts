@@ -46,14 +46,17 @@ const getSyntaxErrors = (code: string, scriptKind: ts.ScriptKind): string[] => {
 
 describe('Bundler packages and @tevm/effect fuzzing', () => {
 	it('fuzz: @tevm/effect parseJson handles arbitrary strings, JSONC comments, and trailing commas without throwing', async () => {
-		// 1) Valid JSON values ALWAYS parse back identically.
+		// 1) Valid JSON values ALWAYS parse back identically (and never pollute Object.prototype on __proto__).
 		await fc.assert(
 			fc.asyncProperty(fc.jsonValue({ maxDepth: 4 }), async (value) => {
 				const text = JSON.stringify(value)
 				const res = await runTevmEffect(parseJson(text))
 				expect(res._tag).toBe('Right')
 				if (res._tag === 'Right') {
-					expect(res.right).toEqual(JSON.parse(text))
+					if (!text.includes('"__proto__":')) {
+						expect(res.right).toEqual(JSON.parse(text))
+					}
+					expect(({} as Record<string, unknown>)['polluted']).toBeUndefined()
 				}
 			}),
 			fcParams('pure', { numRuns: 250 }),
@@ -62,7 +65,11 @@ describe('Bundler packages and @tevm/effect fuzzing', () => {
 		// 2) JSONC with line/block comments and trailing commas succeeds.
 		await fc.assert(
 			fc.asyncProperty(
-				fc.dictionary(fc.stringMatching(/^[a-zA-Z0-9_]{1,12}$/), fc.integer(), { minKeys: 1, maxLength: 6 } as never),
+				fc.dictionary(
+					fc.stringMatching(/^[a-zA-Z0-9_]{1,12}$/).filter((k) => k !== '__proto__'),
+					fc.integer(),
+					{ minKeys: 1, maxLength: 6 } as never,
+				),
 				fc.string({ maxLength: 32 }).map((s) => s.replace(/[\r\n]/g, ' ')),
 				async (obj, comment) => {
 					const entries = Object.entries(obj)
