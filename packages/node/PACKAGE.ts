@@ -1,8 +1,8 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
-import { vitestBench } from '../../factory/bench.js'
 import { Package as tsupconfigPkg } from '../../configs/tsupconfig/PACKAGE.js'
+import { vitestBench } from '../../factory/bench.js'
 import { scopedShell } from '../../factory/scoped-shell.js'
 import { Package as pkg_errors } from '../errors/PACKAGE.js'
 import { Package as pkg_utils } from '../utils/PACKAGE.js'

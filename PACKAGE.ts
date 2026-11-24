@@ -44,8 +44,8 @@ import { Package as server } from './packages/server/PACKAGE.js'
 import { Package as utils } from './packages/utils/PACKAGE.js'
 import { Package as scripts } from './scripts/PACKAGE.js'
 import { Package as lean } from './specs/lean/PACKAGE.js'
-import { Package as tevmFacade } from './tevm/PACKAGE.js'
 import { Package as fuzzPkg } from './test/fuzz/PACKAGE.js'
+import { Package as tevmFacade } from './tevm/PACKAGE.js'
 
 // PACKAGE.ts files are discovered automatically: the CLI globs the tree and
 // indexes each file's Package export under path-derived labels

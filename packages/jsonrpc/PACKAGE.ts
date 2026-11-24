@@ -1,12 +1,12 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
-import { Package as pkg_viem } from '../../extensions/viem/PACKAGE.js'
-import { Package as pkg_errors } from '../errors/PACKAGE.js'
-import { Package as pkg_node } from '../node/PACKAGE.js'
 import { Package as tsupconfigPkg } from '../../configs/tsupconfig/PACKAGE.js'
+import { Package as pkg_viem } from '../../extensions/viem/PACKAGE.js'
 import { vitestBench } from '../../factory/bench.js'
 import { scopedShell } from '../../factory/scoped-shell.js'
+import { Package as pkg_errors } from '../errors/PACKAGE.js'
+import { Package as pkg_node } from '../node/PACKAGE.js'
 
 const Shell = scopedShell('packages/jsonrpc')
 

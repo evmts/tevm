@@ -168,7 +168,7 @@ describe('BaseError', () => {
 			}
 		}
 
-		const circular: Record<string, unknown> = { label: 'loop' }
+		const circular: { label: string; self?: unknown } = { label: 'loop' }
 		circular.self = circular
 
 		const nullCause = new CustomError('Null cause', { cause: null })
@@ -181,15 +181,15 @@ describe('BaseError', () => {
 
 		const zeroArgs = { cause: 0 }
 		const zeroCause = new CustomError('Zero cause', zeroArgs)
-		expect(zeroCause.details).toBe(zeroArgs)
+		expect(zeroCause.details).toBe('0')
 
 		const falseArgs = { cause: false }
 		const falseCause = new CustomError('False cause', falseArgs)
-		expect(falseCause.details).toBe(falseArgs)
+		expect(falseCause.details).toBe('false')
 
 		const numberArgs = { cause: 42 }
 		const numberCause = new CustomError('Number cause', numberArgs)
-		expect(numberCause.details).toBe(numberArgs)
+		expect(numberCause.details).toBe('42')
 
 		const circularCause = new CustomError('Circular cause', { cause: circular })
 		expect(circularCause.details).toBe('Unable to parse error details')

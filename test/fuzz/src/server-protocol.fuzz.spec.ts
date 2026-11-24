@@ -151,7 +151,10 @@ describe('@tevm/server protocol, framing, HTTP, WebSocket, and IPC fuzzing', () 
 				async (body, maxBodySize) => {
 					const res = await getRequestBody({ body }, { maxBodySize })
 					if (typeof res === 'string') {
-						expect(Buffer.byteLength(res, 'utf8')).toBeLessThanOrEqual(maxBodySize)
+						// Binary bodies are limited before decoding: invalid UTF-8 bytes decode to
+						// three-byte U+FFFD, so measure the raw Buffer, not the decoded string.
+						const size = Buffer.isBuffer(body) ? body.length : Buffer.byteLength(res, 'utf8')
+						expect(size).toBeLessThanOrEqual(maxBodySize)
 					} else {
 						expect(res).toBeInstanceOf(Error)
 					}

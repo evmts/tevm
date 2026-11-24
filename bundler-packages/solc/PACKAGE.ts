@@ -4,7 +4,6 @@ const S = Smithers
 import { Package as tsupconfigPkg } from '../../configs/tsupconfig/PACKAGE.js'
 import { vitestBench } from '../../factory/bench.js'
 import { scopedShell } from '../../factory/scoped-shell.js'
-import { vitestBench } from '../../factory/bench.js'
 
 const Shell = scopedShell('bundler-packages/solc')
 

@@ -3,7 +3,6 @@ const S = Smithers
 
 import { cargoBench } from '../../factory/bench.js'
 import { scopedShell } from '../../factory/scoped-shell.js'
-import { cargoBench } from '../../factory/bench.js'
 
 const Shell = scopedShell('bundler-packages/resolutions-rs')
 
