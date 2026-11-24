@@ -702,7 +702,7 @@ export async function verifyExternalRegistryAvailability(
 	for (const rw of rewrites) {
 		let versions = versionsCache.get(rw.depName)
 		if (!versions) {
-			const encoded = rw.depName.replace('/', '%2F')
+			const encoded = rw.depName.replaceAll('/', '%2F')
 			const url = `${registryUrl.replace(/\/+$/, '')}/${encoded}`
 			try {
 				const res = await fetchImpl(url, { headers: { accept: 'application/vnd.npm.install-v1+json' } })
