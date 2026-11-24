@@ -1,5 +1,37 @@
 # @tevm/errors
 
+## 1.0.0-rc.154
+
+### Major Changes
+
+- 138aae1: Replace the JavaScript execution stack with ZEVM's native node, built from sibling ZEVM, Voltaire and Guillotine Mini sources. Expose serialized JSON-RPC and lifecycle/block events, viem memory clients, ethers integration, and HTTP/WebSocket/IPC servers. Remove EthereumJS dependencies and the old internal VM/state/transaction packages and facade exports.
+
+  This is a breaking engine and public API migration. Native addons are required for in-process execution; browsers connect through JSON-RPC. State dumps, CLI sessions and direct mutable engine APIs change. See `docs/native-engine-migration.md` for supported replacements and removed surfaces.
+
+### Patch Changes
+
+- 30e5e79: - ZEVM validates RPC responses, isolates observer failures, and uses the submitted request for response events and Solidity console logs. The native backend loads in CommonJS, and the `tevm` facade exports the engine event types. With an injected backend or engine and no configured chain, `client.chain` is undefined. Use `client.getChainId()` to read the ID.
+  - HTTP enforces byte limits on request bodies. IPC and WebSocket servers throw `RangeError` at construction for invalid subscription limits, accept `Infinity` for unlimited subscriptions, and clean up expired filters. MCP tools distinguish pending transactions from mined receipts. Error serialization and cause traversal handle circular references.
+  - Solidity tooling preserves rooted remappings, resolves imports from Solidity syntax, and retains anonymous events in generated bindings and declarations. Matching bundled solc versions load locally. Declaration sidecars allow Solidity compilation, and proxy ABI resolution keeps the requested account’s address and bytecode together.
+  - `tevm-run` forwards script arguments and logs only the script path.
+- 6401089: Prevent issue #2097 package version skew permanently by moving the TEVM release group to lockstep (`fixed`) versioning, aligning `tevm` facade declarations with the thin ZEVM architecture, fixing standalone package runtime dependencies and `viem@^2.58.4` portability, and adding a minimal pluggable `backend` option (`ZevmBackend`) on `createZevmEngine` / `createMemoryClient` for WASM-based EVMs and custom JSON-RPC backends.
+- 48b37fa: Harden package manifests, exports, documentation, and runtime hygiene for publishing:
+  - Fix blank-line and Windows path handling in `@tevm/config` `remappings.txt` loading
+  - Remove stray debug `console.log` from `@tevm/unplugin` and stale debug scripts from `@tevm/viem` and `@tevm/ts-plugin`
+  - Add CommonJS `require` export mapping to `@tevm/mcp` so `publint --strict` and `attw --pack` pass across ESM and CJS
+  - Remove unused runtime and development dependencies across `@tevm/server`, `@tevm/http-client`, `@tevm/actions`, `@tevm/viem`, and `@tevm/cli`
+  - Sync `tevm/jsr.json` exports with the native ZEVM facade surface and update package READMEs and descriptions
+
+- 1d0e6ae: Optimize hot paths discovered by the new incremental package benchmark suite:
+  - `@tevm/contract`: remove per-call JSON-RPC metadata cloning and `Object.defineProperty` overhead in contract read/write/event action creators and `withAddress` (up to 14.8x faster write action creation and 3.1x faster read/event creation).
+  - `@tevm/server`: avoid repeated `Buffer.concat` allocations while buffering HTTP request bodies (6.9x faster on multi-chunk 64 KB payloads) and replace quadratic string slicing in IPC JSON-RPC frame extraction with an indexed scanner.
+  - `@tevm/node`: cache the native ZEVM constructor and fast-path idle `ready()`, `request()`, `rpc`, and `close()` calls without unnecessary listener allocations.
+  - `@tevm/base-bundler`: avoid redundant cache reads and fix concurrent cache-write races in `resolveModuleAsync` / `resolveModuleSync` (up to 2.6x faster warm cache resolution).
+  - `@tevm/errors` & `@tevm/resolutions`: trim repeated formatting and path-resolution overhead on hot paths.
+
+- 266283a: Count HTTP request bytes before UTF-8 decoding and preserve provider error messages and data through the viem adapter. Error diagnostics can now be serialized with bigint and circular values.
+- 42a8f85: Graduate the tested release candidate to the stable tevm 1.0.0 release. Every published package in the linked group is versioned together so that `tevm` and the `@tevm/*` entry points documented in the migration guide all resolve to `1.0.0`.
+
 ## 1.0.0-rc.151
 
 ### Patch Changes

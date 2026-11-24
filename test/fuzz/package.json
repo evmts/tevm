@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/fuzz",
-	"version": "0.0.0",
+	"version": "1.0.0-rc.154",
 	"private": true,
 	"description": "Comprehensive multi-engine fuzz testing suite for TEVM (fast-check, @smthrs/fuzz, Jazzer.js, and Zig)",
 	"repository": {
