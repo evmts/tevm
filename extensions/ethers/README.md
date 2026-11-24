@@ -7,11 +7,11 @@ import { TevmProvider } from '@tevm/ethers'
 
 const provider = await TevmProvider.createMemoryProvider()
 try {
-  console.log(await provider.getBlockNumber())
-  const signer = await provider.getSigner()
-  console.log(await signer.getAddress())
+	console.log(await provider.getBlockNumber())
+	const signer = await provider.getSigner()
+	console.log(await signer.getAddress())
 } finally {
-  provider.destroy()
+	provider.destroy()
 }
 ```
 

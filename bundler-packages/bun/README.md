@@ -12,7 +12,7 @@ pnpm install -D bun-types @tevm/bun-plugin @tevm/ts-plugin @tevm/contract solc
 
 ### Usage
 
-See [docs](./docs/functions/tevmBunPlugin.md) 
+See [docs](./docs/functions/tevmBunPlugin.md)
 
 ## License 📄
 

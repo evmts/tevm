@@ -8,17 +8,17 @@ import { createZevmEngine } from '@tevm/node'
 // Default: native ZEVM Node-API backend
 const engine = createZevmEngine()
 try {
-  console.log(await engine.request({ method: 'eth_chainId' }))
+	console.log(await engine.request({ method: 'eth_chainId' }))
 } finally {
-  await engine.close()
+	await engine.close()
 }
 
 // Pluggable: WASM EVM or custom JSON-RPC backend (never loads @evmts/zevm native addon)
 const wasmEngine = createZevmEngine({
-  backend: {
-    rpc: async (json) => wasmInstance.rpc(json),
-    close: () => wasmInstance.free(),
-  },
+	backend: {
+		rpc: async (json) => wasmInstance.rpc(json),
+		close: () => wasmInstance.free(),
+	},
 })
 ```
 
@@ -28,14 +28,14 @@ const wasmEngine = createZevmEngine({
 
 ## Options
 
-| Option | Type | Behavior |
-| --- | --- | --- |
-| `chainId` | `number` | Chain ID of the native node. Defaults to `common.id`, then 31337. |
-| `common` | `{ id: number }` | Chain definition. `chainId` and `common.id` must be equal when both are given; a conflict throws. |
-| `mining` | `{ auto?: boolean; interval?: number }` | Automine defaults to `true`. `interval` is whole seconds; `0` disables the timer. |
-| `fork` | `{ url: string; blockNumber?: number }` | Fork upstream state. Pin `blockNumber` for stable reads. |
-| `backend` | `{ rpc(json), close() }` | JSON-RPC backend that replaces the native addon. Required in browsers. |
-| `consoleLog` | `boolean \| (message, raw) => void` | Print Solidity `console.log` output. Disabled by default. |
+| Option       | Type                                    | Behavior                                                                                          |
+| ------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `chainId`    | `number`                                | Chain ID of the native node. Defaults to `common.id`, then 31337.                                 |
+| `common`     | `{ id: number }`                        | Chain definition. `chainId` and `common.id` must be equal when both are given; a conflict throws. |
+| `mining`     | `{ auto?: boolean; interval?: number }` | Automine defaults to `true`. `interval` is whole seconds; `0` disables the timer.                 |
+| `fork`       | `{ url: string; blockNumber?: number }` | Fork upstream state. Pin `blockNumber` for stable reads.                                          |
+| `backend`    | `{ rpc(json), close() }`                | JSON-RPC backend that replaces the native addon. Required in browsers.                            |
+| `consoleLog` | `boolean \| (message, raw) => void`     | Print Solidity `console.log` output. Disabled by default.                                         |
 
 With an injected `backend`, the backend owns its chain ID. When `chainId` or `common` is also given, the engine calls `eth_chainId` during initialization and `ready()` rejects on a mismatch. A backend without `eth_chainId` (`-32601`) is not checked.
 
@@ -43,14 +43,14 @@ With an injected `backend`, the backend owns its chain ID. When `chainId` or `co
 
 `engine.events` is a zero-dependency emitter with `on`, `once`, `off`, `removeListener`, `removeAllListeners`, `emit` and `listenerCount`. It is not a `node:events` `EventEmitter`.
 
-| Event | Payload | Emitted |
-| --- | --- | --- |
-| `request` | `{ method, params? }` | Before each `request()` dispatch. |
-| `response` | `{ request, result }` | After each successful `request()`. |
-| `block` | `eth_getBlockByNumber` result | For each block mined after the listener subscribed. |
-| `consoleLog` | `{ message, signature, calldata, args }` | For each decoded Solidity `console.log` call. Requires `consoleLog`. |
-| `error` | the thrown value | When observer work fails. See below. |
-| `close` | none | Once, when the engine closes or initialization fails. Listeners are then removed. |
+| Event        | Payload                                  | Emitted                                                                           |
+| ------------ | ---------------------------------------- | --------------------------------------------------------------------------------- |
+| `request`    | `{ method, params? }`                    | Before each `request()` dispatch.                                                 |
+| `response`   | `{ request, result }`                    | After each successful `request()`.                                                |
+| `block`      | `eth_getBlockByNumber` result            | For each block mined after the listener subscribed.                               |
+| `consoleLog` | `{ message, signature, calldata, args }` | For each decoded Solidity `console.log` call. Requires `consoleLog`.              |
+| `error`      | the thrown value                         | When observer work fails. See below.                                              |
+| `close`      | none                                     | Once, when the engine closes or initialization fails. Listeners are then removed. |
 
 Listeners are observers. A throwing listener, a throwing `consoleLog` handler, a failed console log drain and a failed block fetch never replace an RPC result and never mask a revert error. The failure is emitted as an `error` event, and dropped when there is no `error` listener. A listener or `consoleLog` handler that returns a rejecting promise is reported the same way and never causes an unhandled rejection. `request` and `response` listeners receive copies of the payload: mutating one changes neither the dispatched request nor the caller's result.
 
@@ -62,11 +62,11 @@ While a `block` listener is subscribed, the engine polls every 50 ms and runs at
 
 ```js
 const engine = createZevmEngine({
-  // `true` prints with console.log. A function receives each message instead.
-  consoleLog: (message, { calldata, args }) => console.log(`[sol] ${message}`),
+	// `true` prints with console.log. A function receives each message instead.
+	consoleLog: (message, { calldata, args }) => console.log(`[sol] ${message}`),
 })
 engine.events.on('consoleLog', ({ message, signature, calldata, args }) => {
-  // signature: 'log(string,uint256)', args: ['balance: %d', 42n], message: 'balance: 42'
+	// signature: 'log(string,uint256)', args: ['balance: %d', 42n], message: 'balance: 42'
 })
 engine.events.on('error', (error) => console.error('observer failed', error))
 ```
@@ -81,10 +81,10 @@ The engine drains captured calls with `tevm_drainConsoleLogs` after `eth_call`, 
 import { createZevmEngine } from '@tevm/node'
 
 const engine = createZevmEngine({
-  backend: {
-    rpc: (json) => wasmNode.rpc(json), // string | null, sync or async
-    close: () => wasmNode.free(),
-  },
+	backend: {
+		rpc: (json) => wasmNode.rpc(json), // string | null, sync or async
+		close: () => wasmNode.free(),
+	},
 })
 ```
 

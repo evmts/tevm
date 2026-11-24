@@ -17,6 +17,7 @@
 			"!**/docs",
 			"!**/coverage",
 			"!**/artifacts/bench*.json",
+			"!**/__fuzz__",
 			"!**/.nx",
 			"!**/.tmp-*",
 			"!**/.tevm",

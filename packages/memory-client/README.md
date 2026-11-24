@@ -6,11 +6,11 @@ Viem public, wallet, test, and TEVM convenience actions over an isolated native 
 import { createMemoryClient } from '@tevm/memory-client'
 const client = createMemoryClient()
 try {
-  console.log(await client.getBlockNumber())
-  await client.tevmMine({ blocks: 2 })
-  console.log(await client.getBlockNumber())
+	console.log(await client.getBlockNumber())
+	await client.tevmMine({ blocks: 2 })
+	console.log(await client.getBlockNumber())
 } finally {
-  await client.tevmClose()
+	await client.tevmClose()
 }
 ```
 

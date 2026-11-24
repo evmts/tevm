@@ -7,6 +7,7 @@ This document summarizes existing tests and identifies areas for additional test
 The following tests have been implemented to demonstrate core features as described in the Tevm documentation:
 
 ### 1. State Persistence (`tevmStatePersistence.spec.ts`)
+
 - **Implemented:** Saving and loading state between different clients
 - **Demonstrates:**
   - Using `tevmDumpState` and `tevmLoadState` functions
@@ -14,6 +15,7 @@ The following tests have been implemented to demonstrate core features as descri
   - Transferring state between separate clients
 
 ### 2. State Management (`tevmStateCheckpoints.spec.ts`)
+
 - **Implemented:** Multiple state snapshots and restoration
 - **Demonstrates:**
   - Creating snapshots at different points during execution
@@ -21,6 +23,7 @@ The following tests have been implemented to demonstrate core features as descri
   - Verifying contract state changes are properly tracked and restored
 
 ### 3. Forking Integration (`tevmForkIntegration.spec.ts`)
+
 - **Implemented:** Network forking and state override functionality
 - **Demonstrates:**
   - Creating forks from existing networks
@@ -29,6 +32,7 @@ The following tests have been implemented to demonstrate core features as descri
   - Chain configuration handling with forks
 
 ### 4. Contract Interaction (`tevmContractIntegration.spec.ts`)
+
 - **Implemented:** Comprehensive contract testing using tevmContract
 - **Demonstrates:**
   - Deploying contracts with constructor arguments
@@ -39,6 +43,7 @@ The following tests have been implemented to demonstrate core features as descri
   - Sequential state changes
 
 ### 5. Mining Modes (`tevmMiningModes.spec.ts`)
+
 - **Implemented:** Tests for different mining configurations
 - **Demonstrates:**
   - Automatic mining behavior
@@ -47,6 +52,7 @@ The following tests have been implemented to demonstrate core features as descri
   - Mining interval configuration
 
 ### 6. Account Management (`tevmAccountManagement.spec.ts`)
+
 - **Implemented:** Tests for account state operations
 - **Demonstrates:**
   - Setting and retrieving account balances and nonces

@@ -41,6 +41,7 @@
 		"factory:metadata-check": "node scripts/factory/repository-metadata.mjs",
 		"factory:metadata-write": "pnpm exec smthrs target //factory:repositoryMetadataWrite",
 		"factory:preflight": "node scripts/factory/preflight.mjs --mode full",
+		"factory:publish-smoke": "node scripts/factory/verify-publish-smoke.mjs --static",
 		"factory:query": "pnpm exec smthrs query '//...'",
 		"factory:rpc-repair": "pnpm exec smthrs target //workflows/repair-rpc-regression:repairRpcRegression",
 		"factory:runtime-check": "node scripts/factory/graph-smoke.mjs && node scripts/factory/agent-smoke.mjs",
@@ -105,8 +106,7 @@
 		"test:parity:smithers:fast": "PARITY_ARTIFACT_DIR=artifacts/parity pnpm test:parity:fast",
 		"test:parity:smithers:full": "PARITY_ARTIFACT_DIR=artifacts/parity pnpm test:parity:full",
 		"test:run": "nx run-many --target=test:run",
-		"up": "bun x npm-check-updates -ui -ws",
-		"factory:publish-smoke": "node scripts/factory/verify-publish-smoke.mjs --static"
+		"up": "bun x npm-check-updates -ui -ws"
 	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.18.2",
@@ -115,8 +115,6 @@
 		"@changesets/cli": "^2.31.0",
 		"@smthrs/build-cli": "link:vendor/flows/packages/build-cli",
 		"@smthrs/targets": "link:vendor/flows/packages/targets",
-		"@tevm/common": "workspace:*",
-		"@tevm/utils": "workspace:*",
 		"@types/node": "24.12.4",
 		"@vitest/coverage-v8": "^4.1.6",
 		"@vitest/ui": "^4.1.6",

@@ -352,26 +352,20 @@ describe('observers cannot change a request, a result, or crash the process', ()
 })
 
 describe('request validation', () => {
-	it.each([
-		null,
-		undefined,
-		'eth_chainId',
-		42,
-		{},
-		{ method: 1 },
-		{ method: null },
-		{ params: [] },
-	])('rejects the invalid request %j before it reaches the queue, the backend or a listener', async (request) => {
-		const { engine, methods } = harness()
-		const seen: unknown[] = []
-		engine.events.on('request', (emitted) => seen.push(emitted))
-		const error = await engine.request(request as never).catch((caught) => caught)
-		expect(error).toBeInstanceOf(TypeError)
-		expect(error.message).toBe('invalid request: expected an object with a string `method`')
-		expect(seen).toEqual([])
-		expect(methods()).toEqual([])
-		expect(await engine.request({ method: 'eth_chainId' })).toBe('0x7a69')
-	})
+	it.each([null, undefined, 'eth_chainId', 42, {}, { method: 1 }, { method: null }, { params: [] }])(
+		'rejects the invalid request %j before it reaches the queue, the backend or a listener',
+		async (request) => {
+			const { engine, methods } = harness()
+			const seen: unknown[] = []
+			engine.events.on('request', (emitted) => seen.push(emitted))
+			const error = await engine.request(request as never).catch((caught) => caught)
+			expect(error).toBeInstanceOf(TypeError)
+			expect(error.message).toBe('invalid request: expected an object with a string `method`')
+			expect(seen).toEqual([])
+			expect(methods()).toEqual([])
+			expect(await engine.request({ method: 'eth_chainId' })).toBe('0x7a69')
+		},
+	)
 
 	it('writes jsonrpc and id itself, so caller fields cannot replace them', async () => {
 		const { engine, chain } = harness()
@@ -484,31 +478,30 @@ describe('chain ID configuration', () => {
 		expect(close).not.toHaveBeenCalled()
 	})
 
-	it.each([
-		[{ chainId: 31337 }],
-		[{ common: { id: 31337 } }],
-		[{ chainId: 31337, common: { id: 31337 } }],
-	])('accepts %j when the injected backend reports the same chain ID', async (options) => {
-		const { engine, methods } = harness(undefined, options)
-		await engine.ready()
-		expect(methods()).toEqual(['eth_chainId'])
-		expect(await engine.request({ method: 'eth_blockNumber' })).toBe('0x0')
-	})
+	it.each([[{ chainId: 31337 }], [{ common: { id: 31337 } }], [{ chainId: 31337, common: { id: 31337 } }]])(
+		'accepts %j when the injected backend reports the same chain ID',
+		async (options) => {
+			const { engine, methods } = harness(undefined, options)
+			await engine.ready()
+			expect(methods()).toEqual(['eth_chainId'])
+			expect(await engine.request({ method: 'eth_blockNumber' })).toBe('0x0')
+		},
+	)
 
-	it.each([
-		[{ chainId: 1 }],
-		[{ common: { id: 1 } }],
-	])('fails initialization for %j when the injected backend reports another chain ID', async (options) => {
-		const { engine, chain, methods } = harness(undefined, { ...options, mining: { auto: false } })
-		let closeEvents = 0
-		engine.events.on('close', () => closeEvents++)
-		await expect(engine.ready()).rejects.toThrow('backend reports chain ID "0x7a69" but chainId is 1')
-		await expect(engine.request({ method: 'eth_blockNumber' })).rejects.toThrow('but chainId is 1')
-		// The mismatch is found before any state-changing initialization call.
-		expect(methods()).toEqual(['eth_chainId'])
-		expect(chain.closes).toBe(1)
-		expect(closeEvents).toBe(1)
-	})
+	it.each([[{ chainId: 1 }], [{ common: { id: 1 } }]])(
+		'fails initialization for %j when the injected backend reports another chain ID',
+		async (options) => {
+			const { engine, chain, methods } = harness(undefined, { ...options, mining: { auto: false } })
+			let closeEvents = 0
+			engine.events.on('close', () => closeEvents++)
+			await expect(engine.ready()).rejects.toThrow('backend reports chain ID "0x7a69" but chainId is 1')
+			await expect(engine.request({ method: 'eth_blockNumber' })).rejects.toThrow('but chainId is 1')
+			// The mismatch is found before any state-changing initialization call.
+			expect(methods()).toEqual(['eth_chainId'])
+			expect(chain.closes).toBe(1)
+			expect(closeEvents).toBe(1)
+		},
+	)
 
 	it('rejects a backend chain ID that is not a quantity and skips the check without eth_chainId', async () => {
 		const malformed = harness(({ method }) => (method === 'eth_chainId' ? 31337 : undefined), { chainId: 31337 })

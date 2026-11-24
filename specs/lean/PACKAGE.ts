@@ -1,7 +1,12 @@
 /// <reference path="../../smithers.d.ts" />
 const S = Smithers
 
+import { scopedShell } from '../../factory/scoped-shell.js'
 import { Package as pkg_errors } from '../../packages/errors/PACKAGE.js'
+
+// specs/lean has no package.json, so each suite enters the directory with `cd`
+// instead of `pnpm --dir … exec`.
+const Shell = scopedShell('specs/lean')
 
 // The four Lean 4 reference specifications and their differential suites. Each suite
 // builds its oracle with an incremental `lake build`, then compares the compiled Lean
@@ -60,33 +65,29 @@ const hostSources = S.Filegroup({
 
 // EIP-7939 CLZ, EIP-7883/7823 ModExp, EIP-7825 transaction gas cap, EIP-7934 block size,
 // EIP-4844/7918 blob fees and EIP-7892 blob schedules: Voltaire TS and the native engine.
-const protocol = S.Shell.Test({
-	bin: S.Runtime.bin,
-	args: ['--test', 'specs/lean/protocol/diff-fuzz.test.mjs'],
+const protocol = Shell.Test({
+	command: 'node --test protocol/diff-fuzz.test.mjs',
 	data: [protocolSpec, protocolHarness, oracle, engineSources, nativeAddon],
 })
 
 // Fee market, precompile dispatch, P256VERIFY, checked Uint math and Hex: Voltaire TS,
 // @tevm/utils and ZEVM's strict JSON-RPC quantity and data parsing.
-const primitives = S.Shell.Test({
-	bin: S.Runtime.bin,
-	args: ['--test', 'specs/lean/primitives/diff-fuzz.test.mjs'],
+const primitives = Shell.Test({
+	command: 'node --test primitives/diff-fuzz.test.mjs',
 	data: [primitivesSpec, primitivesHarness, oracle, engineSources, nativeAddon],
 })
 
 // JSON-RPC stream framing, remappings.txt, Hardhat console.log formatting, and the semver
 // and workspace-protocol rules of the publish guard. Pure JavaScript: no native addon.
-const host = S.Shell.Test({
-	bin: S.Runtime.bin,
-	args: ['--test', 'specs/lean/host/diff-fuzz.test.mjs'],
+const host = Shell.Test({
+	command: 'node --test host/diff-fuzz.test.mjs',
 	data: [hostSpec, hostHarness, oracle, hostSources],
 })
 
 // The createZevmEngine lifecycle and the dev-node snapshot/revert state machine, on the
 // native addon and on a pluggable backend with injected faults.
-const engine = S.Shell.Test({
-	bin: S.Runtime.bin,
-	args: ['--test', 'specs/lean/engine/diff-fuzz.test.mjs'],
+const engine = Shell.Test({
+	command: 'node --test engine/diff-fuzz.test.mjs',
 	data: [engineSpec, engineHarness, oracle, engineSources, nativeAddon],
 })
 

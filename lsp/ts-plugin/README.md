@@ -17,14 +17,14 @@ npm i @tevm/rollup-plugin @tevm/ts-plugin
 
 ```json
 {
-  "compilerOptions": {
-    "plugins": [
-      {
-        "name": "@tevm/ts-plugin",
-        "project": "../"
-      }
-    ]
-  }
+	"compilerOptions": {
+		"plugins": [
+			{
+				"name": "@tevm/ts-plugin",
+				"project": "../"
+			}
+		]
+	}
 }
 ```
 

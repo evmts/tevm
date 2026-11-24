@@ -214,28 +214,23 @@ describe('createJsonRpcFetcher', () => {
 	})
 })
 
-it.each([
-	null,
-	'',
-	1.5,
-	'1.5',
-	Symbol('code'),
-	false,
-	NaN,
-])('returns a serializable fallback for malformed code %s', async (code) => {
-	const fetcher = createJsonRpcFetcher({
-		request: async () => {
-			throw { code, message: 'bad', data: { amount: 42n } }
-		},
-	})
-	const response = await fetcher.request({ jsonrpc: '2.0', method: 'eth_call', params: [], id: 0 })
-	expect(JSON.parse(JSON.stringify(response))).toEqual({
-		jsonrpc: '2.0',
-		method: 'eth_call',
-		id: 0,
-		error: { code: -32000, message: 'bad', data: { amount: '42' } },
-	})
-})
+it.each([null, '', 1.5, '1.5', Symbol('code'), false, NaN])(
+	'returns a serializable fallback for malformed code %s',
+	async (code) => {
+		const fetcher = createJsonRpcFetcher({
+			request: async () => {
+				throw { code, message: 'bad', data: { amount: 42n } }
+			},
+		})
+		const response = await fetcher.request({ jsonrpc: '2.0', method: 'eth_call', params: [], id: 0 })
+		expect(JSON.parse(JSON.stringify(response))).toEqual({
+			jsonrpc: '2.0',
+			method: 'eth_call',
+			id: 0,
+			error: { code: -32000, message: 'bad', data: { amount: '42' } },
+		})
+	},
+)
 
 it('omits unrepresentable data while preserving the provider error', async () => {
 	const data: unknown[] = []

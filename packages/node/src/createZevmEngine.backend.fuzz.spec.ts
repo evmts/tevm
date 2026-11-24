@@ -1638,25 +1638,19 @@ describe('createZevmEngine pluggable backend regressions found by fuzzing', () =
 		await engine.close()
 	})
 
-	it.each([
-		['42'],
-		['[]'],
-		['"text"'],
-		['true'],
-		['{}'],
-		['{"jsonrpc":"2.0","id":1}'],
-		['null'],
-		[null],
-	])('rejects request() instead of resolving undefined when the backend returns %s', async (output) => {
-		const { backend } = createFuzzBackend()
-		const engine = createZevmEngine({ backend })
-		const error = await rejection(engine.request({ method: 'fuzz_raw', params: [output] }))
-		expect(error).toBeInstanceOf(Error)
-		expect(error).not.toBeInstanceOf(NativeRpcError)
-		expect(error.message).toContain('invalid JSON-RPC response')
-		expect(await engine.request({ method: 'fuzz_echo', params: ['alive'] })).toBe('alive')
-		await engine.close()
-	})
+	it.each([['42'], ['[]'], ['"text"'], ['true'], ['{}'], ['{"jsonrpc":"2.0","id":1}'], ['null'], [null]])(
+		'rejects request() instead of resolving undefined when the backend returns %s',
+		async (output) => {
+			const { backend } = createFuzzBackend()
+			const engine = createZevmEngine({ backend })
+			const error = await rejection(engine.request({ method: 'fuzz_raw', params: [output] }))
+			expect(error).toBeInstanceOf(Error)
+			expect(error).not.toBeInstanceOf(NativeRpcError)
+			expect(error.message).toContain('invalid JSON-RPC response')
+			expect(await engine.request({ method: 'fuzz_echo', params: ['alive'] })).toBe('alive')
+			await engine.close()
+		},
+	)
 
 	it("emits 'close' once and drops listeners when backend.close() rejects", async () => {
 		const { backend, state } = createFuzzBackend({ closeDelay: 1, closeThrows: true })

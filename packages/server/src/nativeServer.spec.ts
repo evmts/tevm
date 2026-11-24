@@ -36,62 +36,55 @@ const request = (method: string, params: unknown[] = [], id: number | string = 1
 })
 
 describe('native server transports', () => {
-	it.each([
-		undefined,
-		0,
-		1,
-		Infinity,
-		Number.MAX_SAFE_INTEGER + 1,
-	])('honors a subscription cap of %s on both transports', async (maxSubscriptions) => {
-		const options = maxSubscriptions === undefined ? {} : { maxSubscriptions }
-		const limit = maxSubscriptions ?? 256
-		const { client, url } = await start(options)
-		const requests = Array.from({ length: 257 }, (_, i) => request('eth_subscribe', ['syncing'], i + 1))
-		const batch = JSON.stringify(requests)
-		const expected = requests.map(({ id }, i) => ({
-			jsonrpc: '2.0',
-			id,
-			...(i < limit
-				? { result: `0x${(i + 1).toString(16)}` }
-				: { error: { code: -32005, message: `Subscription limit exceeded: at most ${limit} per connection` } }),
-		}))
-		const ws = new WebSocket(url.replace('http:', 'ws:'))
-		try {
-			await once(ws, 'open')
-			const response = once(ws, 'message')
-			ws.send(batch)
-			expect(JSON.parse((await response)[0].toString())).toEqual(expected)
-		} finally {
-			ws.terminate()
-		}
+	it.each([undefined, 0, 1, Infinity, Number.MAX_SAFE_INTEGER + 1])(
+		'honors a subscription cap of %s on both transports',
+		async (maxSubscriptions) => {
+			const options = maxSubscriptions === undefined ? {} : { maxSubscriptions }
+			const limit = maxSubscriptions ?? 256
+			const { client, url } = await start(options)
+			const requests = Array.from({ length: 257 }, (_, i) => request('eth_subscribe', ['syncing'], i + 1))
+			const batch = JSON.stringify(requests)
+			const expected = requests.map(({ id }, i) => ({
+				jsonrpc: '2.0',
+				id,
+				...(i < limit
+					? { result: `0x${(i + 1).toString(16)}` }
+					: { error: { code: -32005, message: `Subscription limit exceeded: at most ${limit} per connection` } }),
+			}))
+			const ws = new WebSocket(url.replace('http:', 'ws:'))
+			try {
+				await once(ws, 'open')
+				const response = once(ws, 'message')
+				ws.send(batch)
+				expect(JSON.parse((await response)[0].toString())).toEqual(expected)
+			} finally {
+				ws.terminate()
+			}
 
-		const server = createIpcServer(client, {}, options)
-		server.listen(0, '127.0.0.1')
-		await once(server, 'listening')
-		const socket = createConnection({ host: '127.0.0.1', port: (server.address() as { port: number }).port })
-		try {
-			const response = once(createInterface({ input: socket }), 'line')
-			socket.write(batch)
-			expect(JSON.parse((await response)[0])).toEqual(expected)
-		} finally {
-			socket.destroy()
-			await new Promise<void>((resolve) => server.close(() => resolve()))
-		}
-	})
+			const server = createIpcServer(client, {}, options)
+			server.listen(0, '127.0.0.1')
+			await once(server, 'listening')
+			const socket = createConnection({ host: '127.0.0.1', port: (server.address() as { port: number }).port })
+			try {
+				const response = once(createInterface({ input: socket }), 'line')
+				socket.write(batch)
+				expect(JSON.parse((await response)[0])).toEqual(expected)
+			} finally {
+				socket.destroy()
+				await new Promise<void>((resolve) => server.close(() => resolve()))
+			}
+		},
+	)
 
-	it.each([
-		-1,
-		0.5,
-		NaN,
-		-Infinity,
-		null as never,
-		'2' as never,
-	])('rejects maxSubscriptions %s before accepting connections', (maxSubscriptions) => {
-		const client = createMemoryClient()
-		cleanups.push(() => client.tevmClose())
-		expect(() => createServer(client, {}, { maxSubscriptions })).toThrow(RangeError)
-		expect(() => createIpcServer(client, {}, { maxSubscriptions })).toThrow(RangeError)
-	})
+	it.each([-1, 0.5, NaN, -Infinity, null as never, '2' as never])(
+		'rejects maxSubscriptions %s before accepting connections',
+		(maxSubscriptions) => {
+			const client = createMemoryClient()
+			cleanups.push(() => client.tevmClose())
+			expect(() => createServer(client, {}, { maxSubscriptions })).toThrow(RangeError)
+			expect(() => createIpcServer(client, {}, { maxSubscriptions })).toThrow(RangeError)
+		},
+	)
 
 	it('serves exact HTTP quantities, errors, data, nulls, batches and notifications', async () => {
 		const { url } = await start({ cors: true, maxBodySize: 4096, maxBatchSize: 2 })

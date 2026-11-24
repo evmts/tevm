@@ -16,12 +16,9 @@ pnpm add @tevm/contract viem
 import { createContract } from '@tevm/contract'
 
 const Counter = createContract({
-  name: 'Counter',
-  humanReadableAbi: [
-    'function count() view returns (uint256)',
-    'function increment()',
-  ],
-  address: '0x0000000000000000000000000000000000000123',
+	name: 'Counter',
+	humanReadableAbi: ['function count() view returns (uint256)', 'function increment()'],
+	address: '0x0000000000000000000000000000000000000123',
 })
 
 const readParams = Counter.read.count()

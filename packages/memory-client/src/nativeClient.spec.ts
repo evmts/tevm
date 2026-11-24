@@ -118,22 +118,22 @@ describe('native memory client', () => {
 		}
 	})
 
-	it.each([
-		'backend',
-		'engine',
-	] as const)('uses chain metadata only when configured for an injected %s', async (kind) => {
-		const options = () => {
-			const engine = createZevmEngine({ chainId: 1 })
-			return kind === 'backend' ? { backend: engine } : { engine }
-		}
-		const injected = create(options())
-		expectTypeOf(injected.chain).toEqualTypeOf<Chain | undefined>()
-		expect(injected.chain).toBeUndefined()
-		expect(await injected.getChainId()).toBe(1)
-		const explicit = create({ ...options(), chainId: 1 })
-		expect(explicit.chain?.id).toBe(1)
-		expect(await explicit.getChainId()).toBe(1)
-		const common = { ...foundry, id: 1 }
-		expect(create({ ...options(), common }).chain).toBe(common)
-	})
+	it.each(['backend', 'engine'] as const)(
+		'uses chain metadata only when configured for an injected %s',
+		async (kind) => {
+			const options = () => {
+				const engine = createZevmEngine({ chainId: 1 })
+				return kind === 'backend' ? { backend: engine } : { engine }
+			}
+			const injected = create(options())
+			expectTypeOf(injected.chain).toEqualTypeOf<Chain | undefined>()
+			expect(injected.chain).toBeUndefined()
+			expect(await injected.getChainId()).toBe(1)
+			const explicit = create({ ...options(), chainId: 1 })
+			expect(explicit.chain?.id).toBe(1)
+			expect(await explicit.getChainId()).toBe(1)
+			const common = { ...foundry, id: 1 }
+			expect(create({ ...options(), common }).chain).toBe(common)
+		},
+	)
 })

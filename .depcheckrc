@@ -2,6 +2,7 @@ ignores: [
   "@arethetypeswrong/cli",
   "@changesets/changelog-github",
   "@nrwl/devkit",
+  "@smthrs/targets",
   "@vitest/coverage-v8",
   "@vitest/ui",
   "bun-types",

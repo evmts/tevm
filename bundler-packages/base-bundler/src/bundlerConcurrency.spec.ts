@@ -195,8 +195,9 @@ contract TestContract {}`,
 		// Wait for both to complete
 		const [mjsResult, dtsResult] = await Promise.all([mjsPromise, dtsPromise])
 
-		// Verify distinct output formats
-		expect(mjsResult.code).toContain('export const Contract')
+		// Verify distinct output formats. The generated module imports the `Contract` binding,
+		// so a contract named `Contract` is exported through an alias.
+		expect(mjsResult.code).toContain('export { _tevm_Contract as Contract }')
 		expect(dtsResult.code).toContain('Contract<')
 	})
 

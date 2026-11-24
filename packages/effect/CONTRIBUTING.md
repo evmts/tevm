@@ -63,7 +63,6 @@ bun run test
 
 Note `bun test` will run bun instead of [vitest](https://vitest.dev) resulting in errors
 
-
 ## Fixtures
 
 Fixtures in [src/fixtures](./src/fixtures/) exist both for the vitest tests and also can be loaded in watch mode.
@@ -151,7 +150,7 @@ Most apps rely on type infering return types. Because it's important for library
 
 Typescript is used in Tevm for test code and dev scripts. But any source code is written with JavaScript with 0 build transpilation steps. Sometimes types will also be imported from [src/types.ts](./src/types.ts) which is where types can be placed if they are too tedious to write in jsdoc.
 
-For examples of how to use jsdoc it is recomended to look at other examples.  Ai tools are very good at jsdoc. But here are some basics to get you started
+For examples of how to use jsdoc it is recomended to look at other examples. Ai tools are very good at jsdoc. But here are some basics to get you started
 
 - **Casting a type**
 
@@ -188,7 +187,7 @@ export const isTrue = foo => {
 - **Exporting a type**
 
 ```typescript
-export type Foo = {bar: string}
+export type Foo = { bar: string }
 ```
 
 To export a type use `@typedef` syntax
@@ -202,7 +201,7 @@ To export a type use `@typedef` syntax
 - **Importing a type**
 
 ```typescript
-export type SomeType = import("npmlib").SomeType
+export type SomeType = import('npmlib').SomeType
 ```
 
 To import a type use the same import syntax used here. Generally types are imported inline. Imports can be from npm libraries or relative files
@@ -216,7 +215,6 @@ To import a type use the same import syntax used here. Generally types are impor
 ## Examples and descriptions
 
 Since documentation is generated from jsdoc it is recomended to add jsdoc documentation to all functions. Here is an example of what a function may look like.
-
 
 ```typescript
 /**

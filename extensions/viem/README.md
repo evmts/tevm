@@ -7,7 +7,7 @@ import { tevmViemExtension } from '@tevm/viem'
 import { createPublicClient, http } from 'viem'
 
 const client = createPublicClient({
-  transport: http('http://127.0.0.1:8545'),
+	transport: http('http://127.0.0.1:8545'),
 }).extend(tevmViemExtension())
 await client.tevmMine({ blocks: 1 })
 console.log(await client.getBlockNumber())

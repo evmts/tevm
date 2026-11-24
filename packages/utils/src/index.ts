@@ -93,6 +93,8 @@ export type AsyncEventEmitter<T extends Record<string, any> = {}> = {
 export { hashMessage, recoverAddress, recoverMessageAddress, recoverPublicKey, verifyMessage } from 'viem'
 export { signMessage } from 'viem/accounts'
 export type { EncodeEventTopicsParameters } from 'viem/utils'
+export { decodeHardhatConsoleLog } from './decodeHardhatConsoleLog.js'
+export { HARDHAT_CONSOLE_ADDRESS } from './HARDHAT_CONSOLE_ADDRESS.js'
 export * from './invariant.js'
 export type {
 	BigIntToHex,
@@ -103,5 +105,3 @@ export type {
 	SerializeToJson,
 	SetToHex,
 } from './SerializeToJson.js'
-export { decodeHardhatConsoleLog } from './decodeHardhatConsoleLog.js'
-export { HARDHAT_CONSOLE_ADDRESS } from './HARDHAT_CONSOLE_ADDRESS.js'

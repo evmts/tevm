@@ -232,12 +232,31 @@ const baseDirOf = (configDir: string) => {
 	return `${configDir}${configDir.includes('\\') && !configDir.includes('/') ? '\\' : '/'}`
 }
 
+// A rooted target starts at a filesystem root: a leading `/` or `\\`, optionally after a
+// drive letter (`C:\\`, `d:/`). The parser keeps rooted targets verbatim and resolves every
+// other target, including drive-relative `C:x`, against the config directory.
+const isRooted = (target: string) => {
+	const rest = /^[A-Za-z]:/.test(target) ? target.slice(2) : target
+	return rest.startsWith('/') || rest.startsWith('\\')
+}
+
+const expectedTarget = (configDir: string, target: string) =>
+	isRooted(target) ? target : `${baseDirOf(configDir)}${target}`
+
 const expectedRemappings = (configDir: string, entries: ReadonlyArray<Entry>) => {
 	const expected: Record<string, string> = {}
 	for (const { prefix, target } of entries) {
-		expected[prefix] = `${baseDirOf(configDir)}${target.replace(/^[/\\]+/, '')}`
+		expected[prefix] = expectedTarget(configDir, target)
 	}
 	return expected
+}
+
+// The remappings.txt line that reproduces a parsed target: the relative part when the
+// target is the config directory joined to a relative path, otherwise the rooted target.
+const serializeTarget = (configDir: string, target: string) => {
+	const baseDir = baseDirOf(configDir)
+	const rest = target.slice(baseDir.length)
+	return target.startsWith(baseDir) && !isRooted(rest) ? rest : target
 }
 
 const joinPath = (configDir: string, file: string) => join(configDir, file)
@@ -315,20 +334,26 @@ describe('remappings.txt parser fuzz', () => {
 		)
 	})
 
-	it(`normalizes targets under the config directory with a single separator (${RUNS} runs)`, () => {
+	it(`keeps rooted targets and joins relative targets to the config directory with a single separator (${RUNS} runs)`, () => {
 		forAll(
 			'remappings path normalization',
 			genCase,
 			({ configDir, entries, noise }) => {
 				const { remappings = {} } = parseOk(configDir, render(entries, noise))
 				const baseDir = baseDirOf(configDir)
+				const raw = new Map(entries.map(({ prefix, target }) => [prefix, target]))
 				for (const [prefix, target] of Object.entries(remappings)) {
 					expect(prefix.length).toBeGreaterThan(0)
 					expect(prefix).toBe(prefix.trim())
 					expect(prefix).not.toContain('=')
-					expect(target.startsWith(baseDir)).toBe(true)
-					// leading separators of the target never produce `dir//target`
-					expect(target.slice(baseDir.length)).not.toMatch(/^[/\\]/)
+					const source = raw.get(prefix) as string
+					if (isRooted(source)) {
+						expect(target).toBe(source)
+					} else {
+						expect(target.startsWith(baseDir)).toBe(true)
+						// a relative target never produces `dir//target`
+						expect(target.slice(baseDir.length)).not.toMatch(/^[/\\]/)
+					}
 					expect(target).not.toMatch(/[\r\n]/)
 					expect(target).toBe(target.trimEnd())
 				}
@@ -343,9 +368,8 @@ describe('remappings.txt parser fuzz', () => {
 			(rng) => ({ ...genCase(rng), eol: rng.pick(EOLS) }),
 			({ configDir, entries, noise, eol }) => {
 				const parsed = parseOk(configDir, render(entries, noise))
-				const baseDir = baseDirOf(configDir)
 				const serialized = Object.entries(parsed.remappings ?? {})
-					.map(([prefix, target]) => `${prefix}=${target.slice(baseDir.length)}`)
+					.map(([prefix, target]) => `${prefix}=${serializeTarget(configDir, target)}`)
 					.join(eol)
 				const reparsed = parseOk(configDir, serialized)
 				expect(reparsed).toEqual(parsed)
@@ -463,7 +487,7 @@ describe('remappings.txt parser fuzz', () => {
 				for (const [prefix, target] of Object.entries(remappings)) {
 					expect(prefix.length).toBeGreaterThan(0)
 					expect(typeof target).toBe('string')
-					expect(target.startsWith(baseDirOf(configDir))).toBe(true)
+					expect(isRooted(target) || target.startsWith(baseDirOf(configDir))).toBe(true)
 				}
 			},
 			function* (value) {

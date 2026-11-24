@@ -11,11 +11,13 @@ npm run solc:version <version>
 ```
 
 Example:
+
 ```bash
 npm run solc:version 0.8.29
 ```
 
 The script will:
+
 1. Create a temporary directory in your system's temp folder
 2. Install the specified solc version
 3. Extract the version hash
@@ -27,11 +29,11 @@ The script will:
 
 After running the script, you'll need to update the following files:
 
-1. `src/solcTypes.ts`: 
+1. `src/solcTypes.ts`:
    - Add the new version to the `SolcVersions` type union
    - Add the new version to the `Releases` type if necessary
 
-2. `src/solc.js`: 
+2. `src/solc.js`:
    - Add the new version to the `releases` object
 
 3. `package.json`:
@@ -55,7 +57,7 @@ node -e "const solc = require('solc'); console.log(solc.version());"
 
 3. The output will look similar to: `0.8.29+commit.ab55807c.Emscripten.clang`
 
-4. Format the version hash as: `vx.y.z+commit.ab55807c.js` 
+4. Format the version hash as: `vx.y.z+commit.ab55807c.js`
    (where `x.y.z` is the version number and `ab55807c` is the commit hash)
 
 5. Update the files as described above

@@ -24,12 +24,12 @@ Add this project-level `.mcp.json`:
 
 ```json
 {
-  "mcpServers": {
-    "tevm": {
-      "command": "npx",
-      "args": ["-y", "@tevm/mcp"]
-    }
-  }
+	"mcpServers": {
+		"tevm": {
+			"command": "npx",
+			"args": ["-y", "@tevm/mcp"]
+		}
+	}
 }
 ```
 
@@ -49,10 +49,10 @@ Use this stdio server configuration:
 
 ```json
 {
-  "name": "tevm",
-  "transport": "stdio",
-  "command": "npx",
-  "args": ["-y", "@tevm/mcp"]
+	"name": "tevm",
+	"transport": "stdio",
+	"command": "npx",
+	"args": ["-y", "@tevm/mcp"]
 }
 ```
 
@@ -64,10 +64,10 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 
 const client = new Client({ name: 'agent', version: '1.0.0' })
 await client.connect(
-  new StdioClientTransport({
-    command: 'npx',
-    args: ['-y', '@tevm/mcp'],
-  }),
+	new StdioClientTransport({
+		command: 'npx',
+		args: ['-y', '@tevm/mcp'],
+	}),
 )
 ```
 
@@ -81,22 +81,22 @@ This design prevents unrelated agents and tasks from sharing one implicit mutabl
 
 ## Tools
 
-| Tool | Use it when |
-| --- | --- |
-| `evm_create_session` | A clean local chain is enough |
-| `evm_fork_chain` | Real mainnet, Optimism, or Base state is needed |
-| `evm_close_session` | A session can be discarded |
-| `evm_compile_solidity` | The input is a Solidity snippet |
-| `evm_deploy_contract` | Bytecode or source must become a running contract |
-| `evm_call_contract` | Reading a contract without changing state |
-| `evm_send_transaction` | Running a write and placing it in the txpool |
-| `evm_get_account` | Reading balance, nonce, code, or an exact storage slot |
-| `evm_set_account` | Directly changing balance, nonce, code, or storage |
-| `evm_mine` | Committing pending writes or advancing blocks and time |
-| `evm_get_block` | Inspecting block data |
-| `evm_get_transaction_receipt` | Inspecting a mined transaction result |
-| `evm_get_txpool` | Inspecting pending and queued transactions |
-| `evm_trace_call` | Understanding opcode flow or gas use |
+| Tool                          | Use it when                                            |
+| ----------------------------- | ------------------------------------------------------ |
+| `evm_create_session`          | A clean local chain is enough                          |
+| `evm_fork_chain`              | Real mainnet, Optimism, or Base state is needed        |
+| `evm_close_session`           | A session can be discarded                             |
+| `evm_compile_solidity`        | The input is a Solidity snippet                        |
+| `evm_deploy_contract`         | Bytecode or source must become a running contract      |
+| `evm_call_contract`           | Reading a contract without changing state              |
+| `evm_send_transaction`        | Running a write and placing it in the txpool           |
+| `evm_get_account`             | Reading balance, nonce, code, or an exact storage slot |
+| `evm_set_account`             | Directly changing balance, nonce, code, or storage     |
+| `evm_mine`                    | Committing pending writes or advancing blocks and time |
+| `evm_get_block`               | Inspecting block data                                  |
+| `evm_get_transaction_receipt` | Inspecting a mined transaction result                  |
+| `evm_get_txpool`              | Inspecting pending and queued transactions             |
+| `evm_trace_call`              | Understanding opcode flow or gas use                   |
 
 Integers that may exceed JSON precision use base-10 strings. Byte data uses even-length `0x` hex strings. Contract calls accept either a JSON ABI plus `functionName`, or one human-readable signature such as `balanceOf(address) view returns (uint256)`.
 

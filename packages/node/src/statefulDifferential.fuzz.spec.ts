@@ -1180,15 +1180,17 @@ const CHUNKS = 4
 describe('stateful differential fuzz: native ZEVM vs async WASM-style backend vs reference model', () => {
 	const stats = newStats()
 
-	it.each(
-		Array.from({ length: CHUNKS }, (_, chunk) => chunk),
-	)('native, bridge and model agree at every step (seed chunk %i)', async (chunk) => {
-		for (let run = chunk; run < RUNS; run += CHUNKS) {
-			const sequence = genSequence(BASE_SEED + run)
-			const failure = await attempt(sequence, { stats })
-			if (failure) throw new Error(report(sequence, await shrink(sequence, failure)))
-		}
-	}, 600_000)
+	it.each(Array.from({ length: CHUNKS }, (_, chunk) => chunk))(
+		'native, bridge and model agree at every step (seed chunk %i)',
+		async (chunk) => {
+			for (let run = chunk; run < RUNS; run += CHUNKS) {
+				const sequence = genSequence(BASE_SEED + run)
+				const failure = await attempt(sequence, { stats })
+				if (failure) throw new Error(report(sequence, await shrink(sequence, failure)))
+			}
+		},
+		600_000,
+	)
 
 	it('explores every command kind, nested reverts and both success and failure paths', () => {
 		console.info(`stateful differential fuzz coverage: ${JSON.stringify(stats)}`)
@@ -1259,30 +1261,30 @@ describe('stateful differential fuzz: permanent regressions', () => {
 	// Found by this fuzzer and shrunk to an empty command sequence (seed 1592651789): request() and
 	// rpc() awaited `ready` before joining the queue while close() joined it immediately, so work
 	// issued before close() in the same tick ran after it and rejected with "engine is closed".
-	it.each([
-		'native',
-		'bridge',
-	] as const)('runs requests issued before close() ahead of the close on the %s engine', async (kind) => {
-		const bridge = createWasmBridge(7)
-		if (kind === 'native') await bridge.backend.close()
-		const engine = kind === 'native' ? createZevmEngine() : createZevmEngine({ backend: bridge.backend })
-		const order: string[] = []
-		engine.events.on('request', (request: { method: string }) => order.push(request.method))
-		engine.events.on('close', () => order.push('close'))
-		const mined = engine.request({ method: 'evm_mine' })
-		const number = engine.rpc('{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber"}')
-		const balance = engine.request({ method: 'eth_getBalance', params: [MINER, 'latest'] })
-		const closing = engine.close()
-		const late = engine.request({ method: 'eth_blockNumber' })
-		late.catch(() => {})
-		expect(await mined).toBe(true)
-		expect(await number).toBe('{"jsonrpc":"2.0","id":1,"result":"0x1"}')
-		expect(await balance).toBe(q(INITIAL_BALANCE))
-		await closing
-		await expect(late).rejects.toThrow('engine is closed')
-		expect(order).toEqual(['evm_mine', 'eth_getBalance', 'close'])
-		if (kind === 'bridge') expect(bridge.stats).toMatchObject({ closed: true, usedAfterClose: false, maxInFlight: 1 })
-	})
+	it.each(['native', 'bridge'] as const)(
+		'runs requests issued before close() ahead of the close on the %s engine',
+		async (kind) => {
+			const bridge = createWasmBridge(7)
+			if (kind === 'native') await bridge.backend.close()
+			const engine = kind === 'native' ? createZevmEngine() : createZevmEngine({ backend: bridge.backend })
+			const order: string[] = []
+			engine.events.on('request', (request: { method: string }) => order.push(request.method))
+			engine.events.on('close', () => order.push('close'))
+			const mined = engine.request({ method: 'evm_mine' })
+			const number = engine.rpc('{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber"}')
+			const balance = engine.request({ method: 'eth_getBalance', params: [MINER, 'latest'] })
+			const closing = engine.close()
+			const late = engine.request({ method: 'eth_blockNumber' })
+			late.catch(() => {})
+			expect(await mined).toBe(true)
+			expect(await number).toBe('{"jsonrpc":"2.0","id":1,"result":"0x1"}')
+			expect(await balance).toBe(q(INITIAL_BALANCE))
+			await closing
+			await expect(late).rejects.toThrow('engine is closed')
+			expect(order).toEqual(['evm_mine', 'eth_getBalance', 'close'])
+			if (kind === 'bridge') expect(bridge.stats).toMatchObject({ closed: true, usedAfterClose: false, maxInFlight: 1 })
+		},
+	)
 
 	it('keeps issue order when requests race engine initialization on an async backend', async () => {
 		const bridge = createWasmBridge(11)

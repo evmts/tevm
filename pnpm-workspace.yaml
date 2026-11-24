@@ -61,5 +61,13 @@ overrides:
   # live-server -> chokidar 2 / micromatch 3.
   braces@<3.0.3: ^3.0.3
 
+# @smthrs/ui publishes TypeScript source whose public types import d3-force, but
+# it lists @types/d3-force only as a devDependency, so consumers that type-check
+# it (sites/contributor) fail with TS7016. Remove once @smthrs/ui ships the types.
+packageExtensions:
+  "@smthrs/ui@0.33.0":
+    dependencies:
+      "@types/d3-force": "^3.0.10"
+
 patchedDependencies:
   "@arethetypeswrong/core@0.18.2": patches/@arethetypeswrong__core@0.18.2.patch
