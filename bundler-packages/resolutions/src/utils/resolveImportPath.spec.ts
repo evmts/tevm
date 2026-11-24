@@ -71,4 +71,18 @@ describe('resolveImportPath regressions', () => {
 			'/project/lib/b/B.sol',
 		)
 	})
+
+	it('resolves an import equal to its remapping key to the remapping target', () => {
+		const remappings = { 'forge-std': '/project/lib/forge-std' }
+		expect(runSync(resolveImportPath('/project/src/A.sol', 'forge-std', remappings, [], true))).toBe(
+			'/project/lib/forge-std',
+		)
+	})
+
+	it('allows imports under a remapping to the filesystem root', () => {
+		const remappings = { 'root/': '/' }
+		expect(runSync(resolveImportPath('/project/src/A.sol', 'root/opt/lib/A.sol', remappings, [], true))).toBe(
+			'/opt/lib/A.sol',
+		)
+	})
 })

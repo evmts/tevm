@@ -22,6 +22,10 @@ describe('scanSolidityImports', () => {
 		expect(paths(`import "\\xC3\\${eol}\\xA9.sol";`)).toEqual(['é.sol'])
 	})
 
+	it('decodes newline, carriage return and tab escapes in import paths', () => {
+		expect(paths(String.raw`import "A\nB\rC\tD.sol";`)).toEqual(['A\nB\rC\tD.sol'])
+	})
+
 	it('finds multiple imports on one line', () => {
 		expect(paths('import "./A.sol"; import \'./B.sol\';import {C} from "./C.sol";')).toEqual([
 			'./A.sol',

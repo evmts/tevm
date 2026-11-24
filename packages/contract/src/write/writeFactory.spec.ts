@@ -178,4 +178,18 @@ describe('write', () => {
 		const write = writeFactory({ methods: [], errors: [] })
 		expect(write).toEqual({})
 	})
+
+	it('should only create actions for payable and nonpayable functions', () => {
+		const write = writeFactory({
+			methods: [
+				{ type: 'constructor', inputs: [], stateMutability: 'nonpayable' },
+				{ type: 'event', name: 'Transfer', inputs: [], anonymous: false },
+				{ type: 'fallback', stateMutability: 'payable' },
+				{ type: 'function', name: 'balance', inputs: [], outputs: [], stateMutability: 'view' },
+				{ type: 'function', name: 'deposit', inputs: [], outputs: [], stateMutability: 'payable' },
+			],
+			errors: [],
+		})
+		expect(Object.keys(write)).toEqual(['deposit'])
+	})
 })

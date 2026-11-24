@@ -1,5 +1,6 @@
 import { runSync } from 'effect/Effect'
 import { describe, expect, it } from 'vitest'
+import { scanSolidityImports } from './scanSolidityImports.js'
 import { updateImportPath, updateImportPaths } from './updateImportPath.js'
 
 describe('updateImportPaths', () => {
@@ -180,6 +181,13 @@ describe('updateImportPath lexical scanning', () => {
 		const expected = String.raw`import '/Users/jos\u00e9/foo\'s/"B"/C\\D.sol'; import "/Users/jos\u00e9/foo's/\"B\"/C\\D.sol";`
 		expect(updateImportPath(source, 'A.sol', path)).toBe(expected)
 		expect(runSync(updateImportPaths(source, [{ original: 'A.sol', updated: path, absolute: path }]))).toBe(expected)
+	})
+
+	it('escapes supplementary characters as UTF-8 hex bytes that decode back to the path', () => {
+		const path = '/deps/🚀/A.sol'
+		const updated = updateImportPath('import "A.sol";', 'A.sol', path)
+		expect(updated).toBe(String.raw`import "/deps/\xf0\x9f\x9a\x80/A.sol";`)
+		expect(scanSolidityImports(updated).map((i) => i.path)).toEqual([path])
 	})
 
 	it('rewrites imports after a line comment containing /* and leaves strings alone', () => {
