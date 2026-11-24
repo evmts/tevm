@@ -47,7 +47,8 @@ const frame = fc
 	.tuple(fc.oneof(request, fc.array(request, { minLength: 1, maxLength: 3 })), fc.boolean())
 	.map(([value, pretty]) => JSON.stringify(value, null, pretty ? 1 : undefined))
 
-it('emits the exact object and batch frames under arbitrary UTF-8 byte partitions', () => {
+// 300 seeded runs take ~0.2 s locally but over 5 s on a loaded CI runner with coverage.
+it('emits the exact object and batch frames under arbitrary UTF-8 byte partitions', { timeout: 60_000 }, () => {
 	fc.assert(
 		fc.property(
 			fc.array(fc.tuple(fc.constantFrom('', ' ', '\r\n', '\t'), frame), { maxLength: 5 }),

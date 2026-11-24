@@ -102,7 +102,10 @@ function signatureHash(name: string, types: string[]) {
 type Action = { abi: Abi; functionName: string; address: Address; to: Address; args?: unknown[] }
 type Filter = { abi: Abi; eventName: string; address: Address; args: { owner: Address } }
 
-it('matches viem calldata, return data, error payloads and event topics for generated JSON and human-readable ABIs', () => {
+// 320 seeded runs take ~0.3 s locally but over 5 s on a loaded CI runner with coverage.
+it('matches viem calldata, return data, error payloads and event topics for generated JSON and human-readable ABIs', {
+	timeout: 60_000,
+}, () => {
 	fc.assert(
 		fc.property(parameters, parameters, address, fc.nat(), fc.boolean(), (inputs, outputs, addr, suffix, pure) => {
 			const read = `read${suffix}`

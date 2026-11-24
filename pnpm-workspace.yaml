@@ -60,6 +60,9 @@ overrides:
   serialize-javascript@<7.0.3: ^7.0.3
   # live-server -> chokidar 2 / micromatch 3.
   braces@<3.0.3: ^3.0.3
+  # tevm-run declares a `bun: "*"` peer, which pnpm auto-installs and puts ahead of
+  # the mise toolchain on PATH. Keep it on the Bun that mise.toml pins.
+  bun: 1.4.5
 
 # @smthrs/ui publishes TypeScript source whose public types import d3-force, but
 # it lists @types/d3-force only as a devDependency, so consumers that type-check
