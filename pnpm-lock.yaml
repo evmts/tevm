@@ -97,6 +97,64 @@ importers:
         specifier: ^4.1.6
         version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@24.12.4)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(jsdom@29.1.1(@noble/hashes@2.4.0))(msw@2.8.4(@types/node@24.12.4)(typescript@6.0.3))(vite@8.3.8(@types/node@24.12.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.2)(yaml@2.9.1))
 
+  ../zevm/npm/platforms/darwin-arm64: {}
+
+  ../zevm/npm/platforms/darwin-x64: {}
+
+  ../zevm/npm/platforms/freebsd-arm64: {}
+
+  ../zevm/npm/platforms/freebsd-x64: {}
+
+  ../zevm/npm/platforms/linux-arm64-gnu: {}
+
+  ../zevm/npm/platforms/linux-arm64-musl: {}
+
+  ../zevm/npm/platforms/linux-x64-gnu: {}
+
+  ../zevm/npm/platforms/linux-x64-musl: {}
+
+  ../zevm/npm/platforms/win32-arm64-msvc: {}
+
+  ../zevm/npm/platforms/win32-ia32-msvc: {}
+
+  ../zevm/npm/platforms/win32-x64-msvc: {}
+
+  ../zevm/npm/zevm:
+    optionalDependencies:
+      '@evmts/zevm-darwin-arm64':
+        specifier: 0.1.0
+        version: link:../platforms/darwin-arm64
+      '@evmts/zevm-darwin-x64':
+        specifier: 0.1.0
+        version: link:../platforms/darwin-x64
+      '@evmts/zevm-freebsd-arm64':
+        specifier: 0.1.0
+        version: link:../platforms/freebsd-arm64
+      '@evmts/zevm-freebsd-x64':
+        specifier: 0.1.0
+        version: link:../platforms/freebsd-x64
+      '@evmts/zevm-linux-arm64-gnu':
+        specifier: 0.1.0
+        version: link:../platforms/linux-arm64-gnu
+      '@evmts/zevm-linux-arm64-musl':
+        specifier: 0.1.0
+        version: link:../platforms/linux-arm64-musl
+      '@evmts/zevm-linux-x64-gnu':
+        specifier: 0.1.0
+        version: link:../platforms/linux-x64-gnu
+      '@evmts/zevm-linux-x64-musl':
+        specifier: 0.1.0
+        version: link:../platforms/linux-x64-musl
+      '@evmts/zevm-win32-arm64-msvc':
+        specifier: 0.1.0
+        version: link:../platforms/win32-arm64-msvc
+      '@evmts/zevm-win32-ia32-msvc':
+        specifier: 0.1.0
+        version: link:../platforms/win32-ia32-msvc
+      '@evmts/zevm-win32-x64-msvc':
+        specifier: 0.1.0
+        version: link:../platforms/win32-x64-msvc
+
   cli:
     dependencies:
       '@tanstack/react-query':
