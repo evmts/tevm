@@ -594,6 +594,7 @@ const ci = S.Suite({
 		factory.check,
 		scripts.prepareChangesetPublishTest,
 		scripts.zigFuzzRunnerTest,
+		scripts.context7ConfigTest,
 		changesetCheck,
 	],
 })

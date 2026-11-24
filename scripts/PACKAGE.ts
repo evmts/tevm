@@ -31,6 +31,18 @@ const zigFuzzRunnerTest = S.Shell.Test({
 	args: ['--test', 'scripts/fuzz/run-zig-fuzz-remote.test.mjs'],
 	data: [S.Filegroup({ srcs: S.glob(['fuzz/run-zig-fuzz-*.mjs', 'fuzz/run-zig-fuzz-linux.sh']) })],
 })
+// context7-config.test.mjs validates //context7.json against a vendored copy of the
+// Context7 schema and checks which docs pages Context7 would index (#2058).
+const context7ConfigTest = S.Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['--test', 'scripts/context7-config.test.mjs'],
+	data: [
+		S.file('context7-config.test.mjs'),
+		S.file('context7.schema.json'),
+		S.file('//context7.json'),
+		S.Filegroup({ srcs: S.glob(['//docs/**/*.md', '//docs/**/*.mdx', '//tevm/**/*.md', '//tevm/**/*.mdx']) }),
+	],
+})
 const publishJsrScript = S.file('publish-jsr.js')
 const tevmJsrJson = S.file('//tevm/jsr.json')
 const tevmPackageJson = S.file('//tevm/package.json')
@@ -139,6 +151,7 @@ export const Package = S.Package({
 		addJsdoc,
 		batchAddJsdoc,
 		claudeTriage,
+		context7ConfigTest,
 		createBarrelFiles,
 		findMissingJsdoc,
 		prepareChangesetPublish,

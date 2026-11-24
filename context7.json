@@ -3,10 +3,16 @@
 	"projectTitle": "TEVM",
 	"description": "Thin TypeScript wrapper around ZEVM with a native EVM backend, viem v2 clients, and Solidity bundler plugins.",
 	"folders": ["docs", "tevm"],
-	"excludeFolders": ["node_modules", "vendor", "lib", "artifacts", "dist", "tevm/docs"],
-	"excludeFiles": [
-		"fix-report.md",
-		"review.md",
+	"excludeFolders": [
+		"node_modules",
+		"vendor",
+		"lib",
+		"artifacts",
+		"dist",
+		"tevm/docs",
+		"docs/triage",
+		"docs/triage-reports",
+		"docs/node/bugs.md",
 		"docs/node/pages/reference/vm.mdx",
 		"docs/node/pages/reference/evm.mdx",
 		"docs/node/pages/reference/state.mdx",
@@ -19,6 +25,7 @@
 		"docs/node/pages/reference/trie.mdx",
 		"docs/node/pages/reference/rlp.mdx"
 	],
+	"excludeFiles": ["CHANGELOG.md"],
 	"rules": [
 		"TEVM is a thin wrapper around ZEVM with a pluggable ZevmBackend interface ({ rpc, close }) for custom JSON-RPC backends.",
 		"Use createMemoryClient({ backend }) or createZevmEngine({ backend }) with a custom JSON-RPC backend, or omit backend to use the native @evmts/zevm addon on Node.js 24.",
