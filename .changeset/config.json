@@ -1,10 +1,10 @@
 {
 	"$schema": "https://unpkg.com/@changesets/config@2.3.0/schema.json",
 	"commit": false,
-	"fixed": [["@tevm/*", "tevm", "tevm-run"]],
+	"fixed": [["@tevm/*", "tevm"]],
 	"linked": [],
 	"access": "public",
 	"baseBranch": "main",
 	"updateInternalDependencies": "patch",
-	"ignore": ["@tevm/example*", "@tevm/node-docs", "svelte-ethers", "@tevm/scripts"]
+	"ignore": ["@tevm/node-docs", "@tevm/scripts"]
 }

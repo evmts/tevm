@@ -1,5 +1,4 @@
 ---
-"@tevm/config": minor
 "tevm": minor
 ---
 

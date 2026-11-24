@@ -6,9 +6,7 @@ import { Package as root } from '../../PACKAGE.js'
 const publicSurface = S.Filegroup({
 	srcs: S.glob([
 		'//packages/**/src/**/index.{js,ts}',
-		'//bundler-packages/**/src/**/index.{js,ts}',
 		'//extensions/**/src/**/index.{js,ts}',
-		'//lsp/**/src/**/index.{js,ts}',
 		'//cli/src/**/index.{js,ts}',
 		'//tevm/**/index.ts',
 		'//tevm/jsr.json',
@@ -37,18 +35,13 @@ const syncPublicSurface = S.Agent.Diff({
 	changes: [
 		'packages/**/src/**/index.js',
 		'packages/**/src/**/index.ts',
-		'bundler-packages/**/src/**/index.js',
-		'bundler-packages/**/src/**/index.ts',
 		'extensions/**/src/**/index.js',
 		'extensions/**/src/**/index.ts',
-		'lsp/**/src/**/index.js',
-		'lsp/**/src/**/index.ts',
 		'cli/src/**/index.js',
 		'cli/src/**/index.ts',
 		'tevm/**/index.ts',
 		'tevm/jsr.json',
 		'packages/**/docs/**',
-		'bundler-packages/**/docs/**',
 		'extensions/**/docs/**',
 		'tevm/docs/**',
 		'docs/node/pages/**',

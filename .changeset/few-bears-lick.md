@@ -1,6 +1,5 @@
 ---
 "@tevm/memory-client": patch
-"@tevm/ethers": patch
 "@tevm/viem": patch
 "@tevm/server": patch
 "tevm": patch

@@ -17,7 +17,6 @@ const packages = [
 	'packages/memory-client',
 	'packages/server',
 	'extensions/viem',
-	'extensions/ethers',
 	'packages/http-client',
 	'packages/predeploys',
 	'packages/mcp',

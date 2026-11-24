@@ -25,7 +25,7 @@ or run bun upgrade if already installed
 bun upgrade
 ```
 
-3. Install Rust if working with Rust code
+3. Install Rust. The ZEVM addon build runs `cargo` for Voltaire's Rust crypto
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -163,34 +163,26 @@ bun run nx graph
 
 For more information the [reference docs](https://tevm.sh) are a useful resource. They are generated from the source code and link back to it
 
-#### Build packages
+#### Packages that live in other repositories
 
-- [@tevm/ts-plugin](./ts-plugin) is the LSP (language service protocol) plugin. It is what allows code editors such as VSCode to correctly infer types of solidity imports.
-- [bundlers/\*](./bundlers) Are where all the supported bundlers live. Most are created using [@tevm/unplugin](./bundlers/unplugin) which implements a rollup plugin once to be reused in many packages including [@tevm/webpack](./bundlers/webpack) and [@tevm/vite](./bundlers/vite) and more.
-- [@tevm/config](./config) is the package that loads the Tevm config
+The bundler, language tooling, test, logger, ethers and example code moved to standalone repositories. Contribute there, not here. The [README](./README.md#repository-map) has the full map.
+
+- Bundler plugins, compiler, config, solc, resolutions, runtime, whatsabi, the Rust crates, `@tevm/effect`, `@tevm/lsp`, `@tevm/ts-plugin` and the VS Code extension: [evmts/tevm-bundler](https://github.com/evmts/tevm-bundler)
+- `@tevm/test-utils`, `@tevm/test-matchers` and `@tevm/test-node`: [evmts/tevm-test](https://github.com/evmts/tevm-test)
+- `@tevm/logger`: [evmts/tevm-logger](https://github.com/evmts/tevm-logger)
+- `@tevm/ethers`: [evmts/tevm-ethers](https://github.com/evmts/tevm-ethers)
+- `tevm-run`: [evmts/tevm-cli](https://github.com/evmts/tevm-cli)
+- Example apps: [evmts/tevm-examples](https://github.com/evmts/tevm-examples)
 
 #### Runtime packages
 
-- [@tevm/contract](./core) is the main entry point for all runtime functionality.
-
-#### Rust packages
-
-- [packages/my_rust_node_lib](./packages/my_rust_node_lib) is a sample Rust library using napi-rs for Node.js bindings.
-
-To build Rust packages, use:
-
-```bash
-bun build:rust:lib    # Development build
-bun build:rust:app    # Production build
-```
+- [packages/\*](./packages) holds the native client, JSON-RPC servers, actions and their supporting packages.
+- [@tevm/contract](./packages/contract) is kept here until [evmts/tevm-contract](https://github.com/evmts/tevm-contract) publishes a release the native packages can depend on.
+- [tevm](./tevm) is the facade that re-exports the packages above and the registry-published bundler plugins.
 
 #### Docs
 
 - [@tevm/docs](./docs) is the [vitepress docs site](https://tevm.sh). Its reference docs are generated via `bun generate:docs`
-
-#### Example apps
-
-Example apps are in [/examples/\*](./examples). [@tevm/example-esbuild](./examples/esbuild) has a vitest test and is the simplist app.
 
 ## Code best practices
 
@@ -227,7 +219,7 @@ Note `bun test` will run bun instead of [vitest](https://vitest.dev) resulting i
 
 ## Fixtures
 
-**Note**: Fixtures are located in individual packages such as `bundler-packages/config/src/fixtures/`, `bundler-packages/resolutions/src/fixtures/`, `bundler-packages/compiler/src/fixtures/`, and `lsp/ts-plugin/src/fixtures/`. The instructions below apply when working within those packages.
+**Note**: The bundler and `ts-plugin` fixtures moved to [evmts/tevm-bundler](https://github.com/evmts/tevm-bundler) with their packages. The instructions below apply when working within a package that has a `src/fixtures` directory.
 
 Fixtures in [src/fixtures](./src/fixtures/) exist both for the vitest tests and also can be loaded in watch mode.
 

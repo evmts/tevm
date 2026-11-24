@@ -1,9 +1,7 @@
 ---
-"@tevm/base-bundler": patch
 "@tevm/contract": patch
 "@tevm/errors": patch
 "@tevm/node": patch
-"@tevm/resolutions": patch
 "@tevm/server": patch
 "tevm": patch
 ---

@@ -235,10 +235,10 @@ export function validateChangesetLockstep(repoRoot, packages) {
 		errors.push('.changeset/config.json: "linked" groups allow partial releases and version skew (#2097); use "fixed"')
 	}
 	const hasCoreLockstep = fixed.some(
-		(group) => Array.isArray(group) && ['@tevm/*', 'tevm', 'tevm-run'].every((name) => group.includes(name)),
+		(group) => Array.isArray(group) && ['@tevm/*', 'tevm'].every((name) => group.includes(name)),
 	)
 	if (!hasCoreLockstep) {
-		errors.push('.changeset/config.json: "fixed" must lockstep ["@tevm/*", "tevm", "tevm-run"] together')
+		errors.push('.changeset/config.json: "fixed" must lockstep ["@tevm/*", "tevm"] together')
 	}
 	const publicPackages = (packages ?? discoverWorkspacePackages(repoRoot)).filter(
 		({ pkg, relDir }) => !pkg.private && !relDir.startsWith('..'),
@@ -702,7 +702,7 @@ export async function verifyExternalRegistryAvailability(
 	for (const rw of rewrites) {
 		let versions = versionsCache.get(rw.depName)
 		if (!versions) {
-			const encoded = rw.depName.replace('/', '%2F')
+			const encoded = rw.depName.replaceAll('/', '%2F')
 			const url = `${registryUrl.replace(/\/+$/, '')}/${encoded}`
 			try {
 				const res = await fetchImpl(url, { headers: { accept: 'application/vnd.npm.install-v1+json' } })

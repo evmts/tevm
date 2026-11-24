@@ -1,11 +1,4 @@
 ---
-"@tevm/base-bundler": minor
-"@tevm/esbuild-plugin": minor
-"@tevm/webpack-plugin": minor
-"@tevm/rollup-plugin": minor
-"@tevm/rspack-plugin": minor
-"@tevm/vite-plugin": minor
-"@tevm/bun-plugin": minor
 "tevm": patch
 ---
 

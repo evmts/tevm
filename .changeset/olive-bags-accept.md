@@ -2,7 +2,6 @@
 "@tevm/contract": patch
 "@tevm/actions": patch
 "@tevm/errors": patch
-"@tevm/test-utils": patch
 ---
 
 - **New Features**

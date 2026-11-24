@@ -1,5 +1,4 @@
 import { createContract } from '@tevm/contract'
-import { TevmProvider } from '@tevm/ethers'
 import { createMemoryClient } from '@tevm/memory-client'
 import { definePredeploy } from '@tevm/predeploys'
 import { tevmViemExtension } from '@tevm/viem'
@@ -167,7 +166,7 @@ describe('@tevm/memory-client, @tevm/contract, @tevm/predeploys, and viem/ethers
 		}
 	})
 
-	it('fuzz: @tevm/viem extension and @tevm/ethers TevmProvider agree exactly with @tevm/memory-client', async () => {
+	it('fuzz: @tevm/viem extension agrees exactly with @tevm/memory-client', async () => {
 		const client = createMemoryClient()
 		const extendedViem = createClient({
 			chain: foundry,
@@ -179,7 +178,6 @@ describe('@tevm/memory-client, @tevm/contract, @tevm/predeploys, and viem/ethers
 					}),
 			}),
 		}).extend(tevmViemExtension())
-		const ethersProvider = new TevmProvider(client)
 
 		try {
 			await client.tevmReady()
@@ -198,18 +196,16 @@ describe('@tevm/memory-client, @tevm/contract, @tevm/predeploys, and viem/ethers
 							storage: { [slot]: storageVal },
 						})
 
-						const [mcBalance, ethersBalance, ethersNonce, ethersStorage, tevmAcc] = await Promise.all([
+						const [mcBalance, mcNonce, mcStorage, tevmAcc] = await Promise.all([
 							client.getBalance({ address: addr }),
-							ethersProvider.getBalance(addr),
-							ethersProvider.getTransactionCount(addr),
-							ethersProvider.getStorage(addr, slot),
+							client.getTransactionCount({ address: addr }),
+							client.getStorageAt({ address: addr, slot }),
 							extendedViem.tevmGetAccount({ address: addr }),
 						])
 
 						expect(mcBalance).toBe(balance)
-						expect(ethersBalance).toBe(balance)
-						expect(BigInt(ethersNonce)).toBe(nonce)
-						expect(ethersStorage.toLowerCase()).toBe(storageVal.toLowerCase())
+						expect(BigInt(mcNonce)).toBe(nonce)
+						expect(mcStorage?.toLowerCase()).toBe(storageVal.toLowerCase())
 						expect(tevmAcc.balance).toBe(balance)
 						expect(tevmAcc.nonce).toBe(nonce)
 					},
@@ -217,7 +213,6 @@ describe('@tevm/memory-client, @tevm/contract, @tevm/predeploys, and viem/ethers
 				fcParams('io', { numRuns: 45 }),
 			)
 		} finally {
-			ethersProvider.destroy()
 			await client.tevmClose()
 		}
 	})

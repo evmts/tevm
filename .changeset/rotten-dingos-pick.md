@@ -1,5 +1,4 @@
 ---
-"@tevm/base-bundler": patch
 "@tevm/contract": patch
 "@tevm/actions": patch
 "tevm": patch

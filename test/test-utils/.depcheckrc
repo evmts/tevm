@@ -1,6 +1,0 @@
-ignores: [
-  "@types/node",
-  "@openzeppelin/contracts",
-  "@tevm/contract"
-]
-skip-missing: true

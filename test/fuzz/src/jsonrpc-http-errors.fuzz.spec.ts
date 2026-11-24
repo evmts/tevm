@@ -3,7 +3,6 @@ import * as tevmCommon from '@tevm/common'
 import { BaseError, InternalError, InvalidParamsError, rpcErrorCodeToMessage } from '@tevm/errors'
 import { createHttpClient } from '@tevm/http-client'
 import { createJsonRpcFetcher } from '@tevm/jsonrpc'
-import { createLogger } from '@tevm/logger'
 import { createMemoryClient } from '@tevm/memory-client'
 import { createServer } from '@tevm/server'
 import { bytesToHex, hexToBytes, invariant, numberToHex, PREFUNDED_ACCOUNTS, PREFUNDED_PUBLIC_KEYS } from '@tevm/utils'
@@ -13,7 +12,7 @@ import { describe, expect, it } from 'vitest'
 import { addressArb, jsonRpcIdArb, u256Arb } from './arbitraries.js'
 import { fcParams } from './config.js'
 
-describe('@tevm/jsonrpc, @tevm/http-client, @tevm/errors, @tevm/utils, @tevm/common, and @tevm/logger fuzzing', () => {
+describe('@tevm/jsonrpc, @tevm/http-client, @tevm/errors, @tevm/utils, and @tevm/common fuzzing', () => {
 	it('fuzz: createJsonRpcFetcher never throws and always produces a valid JSON-RPC 2.0 envelope', async () => {
 		const thrownArb = fc.oneof(
 			fc.string().map((m) => new Error(m)),
@@ -140,7 +139,7 @@ describe('@tevm/jsonrpc, @tevm/http-client, @tevm/errors, @tevm/utils, @tevm/com
 		}
 	})
 
-	it('fuzz: @tevm/utils hex/bytes round-trip, invariant, prefundedAccounts, @tevm/common, and @tevm/logger', () => {
+	it('fuzz: @tevm/utils hex/bytes round-trip, invariant, prefundedAccounts, and @tevm/common', () => {
 		fc.assert(
 			fc.property(fc.uint8Array({ minLength: 0, maxLength: 128 }), (bytes) => {
 				const hex = bytesToHex(bytes)
@@ -186,19 +185,5 @@ describe('@tevm/jsonrpc, @tevm/http-client, @tevm/errors, @tevm/utils, @tevm/com
 
 		// Common presets sanity.
 		expect(tevmCommon.tevmDefault.id).toBeGreaterThan(0)
-
-		// Logger accepts all valid levels without throwing.
-		fc.assert(
-			fc.property(
-				fc.constantFrom('silent', 'fatal', 'error', 'warn', 'info', 'debug', 'trace'),
-				fc.string({ maxLength: 32 }),
-				(level, name) => {
-					const logger = createLogger({ level: level as never, name })
-					expect(typeof logger.info).toBe('function')
-					expect(typeof logger.error).toBe('function')
-				},
-			),
-			fcParams('pure', { numRuns: 50 }),
-		)
 	})
 })

@@ -1,26 +1,7 @@
 {
-	"defaultProject": "@tevm/example-vite",
+	"defaultProject": "tevm",
 	"cacheDirectory": ".nx",
 	"targetDefaults": {
-		"build:rust": {
-			"inputs": ["default", "rustBuildInputs"],
-			"outputs": [
-				"{projectRoot}/target/debug/**/*",
-				"{projectRoot}/target/release/**/*",
-				"{projectRoot}/index.node",
-				"{projectRoot}/*.node",
-				"{workspaceRoot}/target/debug/**/*",
-				"{workspaceRoot}/target/release/**/*"
-			],
-			"dependsOn": [],
-			"cache": true
-		},
-		"test:rust": {
-			"inputs": ["default", "rustBuildInputs"],
-			"outputs": ["{projectRoot}/target/test/**/*"],
-			"dependsOn": ["^build:rust"],
-			"cache": true
-		},
 		"lint:check": {
 			"inputs": ["default"],
 			"cache": true
@@ -105,20 +86,7 @@
 	"defaultBase": "main",
 	"$schema": "./node_modules/nx/schemas/nx-schema.json",
 	"namedInputs": {
-		"buildConfigs": [
-			"{projectRoot}/tsconfig.*?.json",
-			"{projectRoot}/tsup.config.ts"
-		],
-		"rustBuildInputs": [
-			"{projectRoot}/Cargo.toml",
-			"{projectRoot}/Cargo.lock",
-			"{projectRoot}/build.rs",
-			"{projectRoot}/cbindgen.toml",
-			"{projectRoot}/**/*.rs",
-			"{projectRoot}/**/*.h",
-			"{workspaceRoot}/Cargo.toml",
-			"{workspaceRoot}/Cargo.lock"
-		],
+		"buildConfigs": ["{projectRoot}/tsconfig.*?.json", "{projectRoot}/tsup.config.ts"],
 		"default": [
 			"{projectRoot}/*.json",
 			"{projectRoot}/*.js",

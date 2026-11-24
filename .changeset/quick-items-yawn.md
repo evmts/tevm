@@ -1,7 +1,6 @@
 ---
 "@tevm/memory-client": minor
 "@tevm/predeploys": minor
-"@tevm/ethers": minor
 "@tevm/actions": minor
 "@tevm/viem": minor
 "@tevm/common": minor

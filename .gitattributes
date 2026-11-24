@@ -1,4 +1,3 @@
-bundler-packages/*/docs/**/* linguist-generated=true
 packages/*/docs/**/* linguist-generated=true
 extensions/*/docs/**/* linguist-generated=true
 tevm/docs/**/* linguist-generated=true

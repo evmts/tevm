@@ -56,8 +56,6 @@ const engineSources = S.Filegroup({
 const hostSources = S.Filegroup({
 	srcs: S.glob([
 		'//packages/server/src/internal/extractJsonRpcFrames.js',
-		'//bundler-packages/config/src/**',
-		'//bundler-packages/config/package.json',
 		'//packages/utils/src/decodeHardhatConsoleLog.js',
 		'//scripts/prepare-changeset-publish.mjs',
 	]),
@@ -77,7 +75,7 @@ const primitives = Shell.Test({
 	data: [primitivesSpec, primitivesHarness, oracle, engineSources, nativeAddon],
 })
 
-// JSON-RPC stream framing, remappings.txt, Hardhat console.log formatting, and the semver
+// JSON-RPC stream framing, Hardhat console.log formatting, and the semver
 // and workspace-protocol rules of the publish guard. Pure JavaScript: no native addon.
 const host = Shell.Test({
 	command: 'node --test host/diff-fuzz.test.mjs',

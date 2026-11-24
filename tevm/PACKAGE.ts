@@ -1,23 +1,11 @@
 /// <reference path="../smithers.d.ts" />
 const S = Smithers
 
-import { Package as pkg_base_bundler } from '../bundler-packages/base-bundler/PACKAGE.js'
-import { Package as pkg_bun } from '../bundler-packages/bun/PACKAGE.js'
-import { Package as pkg_bundler_cache } from '../bundler-packages/bundler-cache/PACKAGE.js'
-import { Package as pkg_compiler } from '../bundler-packages/compiler/PACKAGE.js'
-import { Package as pkg_config } from '../bundler-packages/config/PACKAGE.js'
-import { Package as pkg_esbuild } from '../bundler-packages/esbuild/PACKAGE.js'
-import { Package as pkg_rollup } from '../bundler-packages/rollup/PACKAGE.js'
-import { Package as pkg_rspack } from '../bundler-packages/rspack/PACKAGE.js'
-import { Package as pkg_solc } from '../bundler-packages/solc/PACKAGE.js'
-import { Package as pkg_vite } from '../bundler-packages/vite/PACKAGE.js'
-import { Package as pkg_webpack } from '../bundler-packages/webpack/PACKAGE.js'
 import { Package as pkg_cli } from '../cli/PACKAGE.js'
 import { Package as tsupconfigPkg } from '../configs/tsupconfig/PACKAGE.js'
 import { Package as pkg_viem } from '../extensions/viem/PACKAGE.js'
 import { vitestBench } from '../factory/bench.js'
 import { scopedShell } from '../factory/scoped-shell.js'
-import { Package as pkg_ts_plugin } from '../lsp/ts-plugin/PACKAGE.js'
 import { Package as pkg_actions } from '../packages/actions/PACKAGE.js'
 import { Package as pkg_common } from '../packages/common/PACKAGE.js'
 import { Package as pkg_contract } from '../packages/contract/PACKAGE.js'
@@ -34,7 +22,10 @@ const Shell = scopedShell('tevm')
 
 // The tevm meta package: re-exports every packages/* entry point and the
 // bundler plugins from one manifest and, unlike them, commits its emit so npm
-// and JSR publish straight from the tree.
+// and JSR publish straight from the tree. The bundler plugins, compiler,
+// config, solc and ts-plugin live in evmts/tevm-bundler and resolve from the
+// registry (a semver range in package.json), so the installed node_modules
+// layer carries them instead of a workspace build edge.
 const packageJson = S.file('package.json')
 const tsconfig = S.file('tsconfig.json')
 const tsupConfig = S.file('tsup.config.js')
@@ -58,59 +49,35 @@ const deps = S.Filegroup({
 	srcs: [
 		packageJson,
 		pkg_actions.build,
-		pkg_base_bundler.build,
-		pkg_bun.build,
-		pkg_bundler_cache.build,
 		pkg_cli.build,
 		pkg_common.build,
-		pkg_compiler.build,
-		pkg_config.build,
 		pkg_contract.build,
 		pkg_errors.build,
-		pkg_esbuild.build,
 		pkg_http_client.build,
 		pkg_jsonrpc.build,
 		pkg_memory_client.build,
 		pkg_node.build,
 		pkg_predeploys.build,
-		pkg_rollup.build,
-		pkg_rspack.build,
 		pkg_server.build,
-		pkg_solc.build,
-		pkg_ts_plugin.build,
 		pkg_utils.build,
 		pkg_viem.build,
-		pkg_vite.build,
-		pkg_webpack.build,
 	],
 })
 
 const typeDeps = S.Filegroup({
 	srcs: [
 		pkg_actions.types,
-		pkg_base_bundler.types,
-		pkg_bun.types,
-		pkg_bundler_cache.types,
 		pkg_common.types,
-		pkg_compiler.types,
-		pkg_config.types,
 		pkg_contract.types,
 		pkg_errors.types,
-		pkg_esbuild.types,
 		pkg_http_client.types,
 		pkg_jsonrpc.types,
 		pkg_memory_client.types,
 		pkg_node.types,
 		pkg_predeploys.types,
-		pkg_rollup.types,
-		pkg_rspack.types,
 		pkg_server.types,
-		pkg_solc.types,
-		pkg_ts_plugin.types,
 		pkg_utils.types,
 		pkg_viem.types,
-		pkg_vite.types,
-		pkg_webpack.types,
 	],
 })
 

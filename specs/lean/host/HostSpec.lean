@@ -4,7 +4,8 @@
 Executable Lean 4 models of four host-side parsers, each paired with the JavaScript it specifies:
 
 1. `Framing`    : `packages/server/src/internal/extractJsonRpcFrames.js`
-2. `Remappings` : `bundler-packages/config/src/json/loadRemappingstxt.js`
+2. `Remappings` : `packages/config/src/json/loadRemappingstxt.js` in evmts/tevm-bundler (moved out of
+   this repository with `@tevm/config`; the model is kept as the reference, without a local suite)
 3. `ConsoleFmt` : `packages/utils/src/decodeHardhatConsoleLog.js` (`formatArgs`, `formatNumeric`)
 4. `Semver`     : `scripts/prepare-changeset-publish.mjs` (semver ranges, #2097 protocol leaks)
 

@@ -30,12 +30,7 @@ const biomeConfig = {
 			'.vscode',
 			'.changeset',
 			'.devcontainer',
-			'examples/svelte-ethers/.svelte-kit',
-			'examples/next',
-			'bundler-packages/cli',
 			'experimental/viem-effect',
-			'bundler-packages/config/src/fixtures',
-			'bundler-packages/cli/fixtures',
 		],
 	},
 	formatter: {

@@ -1,6 +1,5 @@
 ---
 "@tevm/contract": patch
-"@tevm/logger": patch
 "@tevm/node": patch
 ---
 

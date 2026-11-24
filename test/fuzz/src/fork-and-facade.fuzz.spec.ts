@@ -1,32 +1,11 @@
 import { spawn } from 'node:child_process'
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 import { createMemoryClient } from '@tevm/memory-client'
-import { moduleFactory } from '@tevm/resolutions'
 import fc from 'fast-check'
 import * as tevmRoot from 'tevm'
 import { getAddress, toHex } from 'viem'
 import { describe, expect, it } from 'vitest'
-import { loadRemappings } from '../../../bundler-packages/config/src/json/loadRemappingstxt.js'
-import { tolerantSignatureLookup } from '../../../bundler-packages/whatsabi/src/tolerantSignatureLookup.js'
 import { addressArb, buildConstantReturnRuntime, bytes32Arb, hexBytesArb, u256Arb } from './arbitraries.js'
 import { fcParams } from './config.js'
-
-/**
- * Helper to execute an Effect 3.x Effect returned by TEVM's Effect-based packages.
- */
-async function runTevmEffect<A>(
-	effect3: unknown,
-): Promise<{ _tag: 'Right'; right: A } | { _tag: 'Left'; left: unknown }> {
-	// @ts-expect-error internal Effect 3.x ESM runtime from @tevm/effect
-	const effMod = await import('../../../packages/effect/node_modules/effect/dist/esm/Effect.js')
-	const exit = await effMod.runPromiseExit(effect3 as never)
-	if (exit._tag === 'Success') {
-		return { _tag: 'Right', right: exit.value as A }
-	}
-	return { _tag: 'Left', left: exit.cause }
-}
 
 /**
  * Spawns an isolated TEVM HTTP JSON-RPC server in a separate Node process so
@@ -213,99 +192,5 @@ describe('Cross-process fork, tevm facade parity, moduleFactory, remappings.txt,
 		} finally {
 			await client.tevmClose()
 		}
-	})
-
-	it('fuzz: @tevm/config loadRemappingsTxt handles arbitrary remappings.txt content without crashing', async () => {
-		const dir = await mkdtemp(join(tmpdir(), 'tevm-remappings-fuzz-'))
-		try {
-			await fc.assert(
-				fc.asyncProperty(
-					fc.oneof(
-						fc
-							.array(
-								fc.tuple(fc.stringMatching(/^[a-zA-Z0-9_@/-]{1,12}\/$/), fc.stringMatching(/^[a-zA-Z0-9_/-]{1,16}\/$/)),
-								{ maxLength: 8 },
-							)
-							.map((pairs) => pairs.map(([k, v]) => `${k}=${v}`).join('\n')),
-						fc.string({ maxLength: 256 }),
-					),
-					async (content) => {
-						await writeFile(join(dir, 'remappings.txt'), content, 'utf8')
-						const res = await runTevmEffect(loadRemappings(dir))
-						expect(['Right', 'Left']).toContain(res._tag)
-					},
-				),
-				fcParams('io', { numRuns: 80 }),
-			)
-		} finally {
-			await rm(dir, { recursive: true, force: true })
-		}
-	})
-
-	it('fuzz: @tevm/resolutions moduleFactory resolves arbitrary DAGs and cyclic imports safely', async () => {
-		const dir = await mkdtemp(join(tmpdir(), 'tevm-modfactory-fuzz-'))
-		try {
-			const fileA = join(dir, 'A.sol')
-			const fileB = join(dir, 'B.sol')
-			const fileC = join(dir, 'C.sol')
-			const fsSync = await import('node:fs')
-			const fsPromises = await import('node:fs/promises')
-			const fao = {
-				readFile: fsPromises.readFile,
-				readFileSync: fsSync.readFileSync,
-				existsSync: fsSync.existsSync,
-				exists: async (p: string) => fsSync.existsSync(p),
-			}
-
-			await fc.assert(
-				fc.asyncProperty(fc.boolean(), fc.boolean(), fc.boolean(), async (aImportsB, bImportsC, cImportsA) => {
-					const srcA = `// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n${aImportsB ? 'import "./B.sol";\n' : ''}contract A {}\n`
-					const srcB = `// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n${bImportsC ? 'import "./C.sol";\n' : ''}contract B {}\n`
-					const srcC = `// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n${cImportsA ? 'import "./A.sol";\n' : ''}contract C {}\n`
-					await Promise.all([writeFile(fileA, srcA), writeFile(fileB, srcB), writeFile(fileC, srcC)])
-
-					const res = await runTevmEffect<Map<string, { id: string; importedIds: string[] }>>(
-						moduleFactory(fileA, srcA, {}, [], fao as never, false),
-					)
-					expect(res._tag).toBe('Right')
-					if (res._tag === 'Right') {
-						expect(res.right.has(fileA)).toBe(true)
-						if (aImportsB) expect(res.right.has(fileB)).toBe(true)
-						if (aImportsB && bImportsC) expect(res.right.has(fileC)).toBe(true)
-					}
-				}),
-				fcParams('io', { numRuns: 24 }),
-			)
-		} finally {
-			await rm(dir, { recursive: true, force: true })
-		}
-	})
-
-	it('fuzz: @tevm/whatsabi tolerantSignatureLookup safely wraps failing or quirky lookup backends', async () => {
-		await fc.assert(
-			fc.asyncProperty(
-				hexBytesArb(4, 4),
-				bytes32Arb,
-				fc.boolean(),
-				fc.array(fc.string({ minLength: 1, maxLength: 48 }), { maxLength: 4 }),
-				async (selector, topicHash, shouldThrow, results) => {
-					const wrapped = tolerantSignatureLookup({
-						loadFunctions: async () => {
-							if (shouldThrow) throw new Error('network down')
-							return results
-						},
-						loadEvents: async () => {
-							if (shouldThrow) throw new Error('network down')
-							return results
-						},
-					} as never)
-					const fns = await wrapped.loadFunctions(selector)
-					const evs = await wrapped.loadEvents(topicHash)
-					expect(fns).toEqual(shouldThrow ? [] : results)
-					expect(evs).toEqual(shouldThrow ? [] : results)
-				},
-			),
-			fcParams('pure', { numRuns: 150 }),
-		)
 	})
 })
