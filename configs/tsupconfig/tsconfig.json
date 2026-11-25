@@ -3,6 +3,7 @@
 	"compilerOptions": {
 		"rootDir": "src",
 		"outDir": "types",
+		"types": ["node"],
 		"skipLibCheck": true,
 		"allowSyntheticDefaultImports": true,
 		"resolveJsonModule": true,
