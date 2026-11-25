@@ -1,3 +1,4 @@
+import viemManifest from 'viem/package.json' with { type: 'json' }
 import { describe, expect, it, vi } from 'vitest'
 import {
 	AccountLockedError,
@@ -88,6 +89,10 @@ describe('RPC Error Classes', () => {
 
 		// Test each error instance with a snapshot
 		rpcErrors.forEach((error) => {
+			// Keep the diagnostic snapshot stable while checking the installed viem version.
+			const lines = error.message.split('\n')
+			expect(lines.pop()).toBe(`Version: viem@${viemManifest.version}`)
+			error.message = [...lines, 'Version: viem@<package version>'].join('\n')
 			expect(error).toMatchSnapshot(error.constructor.name)
 		})
 	})

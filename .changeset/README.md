@@ -6,3 +6,10 @@ find the full documentation for it [in our repository](https://github.com/change
 
 We have a quick list of common questions to get you started engaging with this project in
 [our documentation](https://github.com/changesets/changesets/blob/main/docs/common-questions.md)
+
+## Promote the current RC to 1.0.0
+
+1. Confirm that npm serves `@evmts/zevm@0.1.0` and the platform packages listed in its optional dependencies. The native release is tracked in [evmts/tevm#2103](https://github.com/evmts/tevm/issues/2103).
+2. Open [prerelease-exit](https://github.com/evmts/tevm/actions/workflows/prerelease-exit.yml), choose **Run workflow**, and select `main` for both the workflow ref and the release branch. The workflow checks the native registry dependency and opens a PR that changes the pre-mode marker to `exit`.
+3. Review and merge the exit PR. The next `prerelease` run on `main` opens or refreshes the Changesets version PR. Confirm that it removes `.changeset/pre.json`, sets `tevm` and its fixed group to `1.0.0`, and synchronizes `tevm/jsr.json` and the lockfile. Merge after the checks pass.
+4. Open [release](https://github.com/evmts/tevm/actions/workflows/release.yml), choose **Run workflow** on the versioned `main`, and approve the `npm-release` environment when prompted. Verify `npm view tevm@latest version` returns `1.0.0`. JSR publication has its own workflow.

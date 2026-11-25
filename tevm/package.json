@@ -320,8 +320,8 @@
 		"@tevm/vite-plugin": "^1.0.0-rc.151",
 		"@tevm/webpack-plugin": "^1.0.0-rc.151",
 		"commander": "^14.0.3",
-		"effect": "3.21.2",
-		"glob": "^13.0.6",
+		"effect": "3.22.5",
+		"glob": "^13.0.7",
 		"solc": "^0.8.39"
 	},
 	"devDependencies": {
@@ -329,7 +329,7 @@
 		"@tevm/tsupconfig": "workspace:^"
 	},
 	"peerDependencies": {
-		"viem": "^2.58.4"
+		"viem": "^2.58.6"
 	},
 	"publishConfig": {
 		"access": "public"

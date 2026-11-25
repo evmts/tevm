@@ -498,7 +498,7 @@ describe('release:publish transaction', () => {
 		mkdirSync(bin)
 		const tools = {
 			pnpm: 'exit 0',
-			nx: 'exit 0',
+			nx: 'echo "$@" >> nx-build.log',
 			node: 'if [ "$2" = --restore ] && [ -f fail-restore ]; then exit 73; fi\nshift\nexec "$NODE_BIN" "$PREP" "$@" --repo-root "$PWD"',
 			changeset,
 		}
@@ -525,6 +525,15 @@ describe('release:publish transaction', () => {
 		const entry = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'))).scripts['release:publish']
 		return { ...fx, entry, options, manifest, original, backup }
 	}
+
+	it('builds the npm distribution and types without building private apps', (t) => {
+		const fx = setup(t, 'exit 0')
+		execFileSync('sh', ['-c', fx.entry], fx.options)
+		const invocation = readFileSync(join(fx.repoRoot, 'nx-build.log'), 'utf8').trim().split(/\s+/)
+		assert.ok(invocation.includes('run-many'))
+		const targets = invocation.find((arg) => arg.startsWith('--target='))
+		assert.deepEqual(targets?.slice('--target='.length).split(',').sort(), ['build:dist', 'build:types'])
+	})
 
 	it('checks dist and registry before a local publish and only skips the registry on request', (t) => {
 		const fx = setup(t, 'exit 99')

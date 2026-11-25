@@ -44,7 +44,7 @@
     "**/coverage"
   ],
   "imports": {
-    "viem": "npm:viem@^2.58.4",
+    "viem": "npm:viem@^2.58.6",
     "@tevm/actions": "npm:@tevm/actions@^1.0.0-rc.154",
     "@tevm/base-bundler": "npm:@tevm/base-bundler@^1.0.0-rc.151",
     "@tevm/bun-plugin": "npm:@tevm/bun-plugin@^1.0.0-rc.151",

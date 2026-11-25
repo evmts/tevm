@@ -12,7 +12,7 @@ if [[ -e .changeset/.publish-prep-backup.json ]]; then
 fi
 
 pnpm install
-nx run-many --target=build:app,build:dist,build:types --skip-nx-cache
+nx run-many --target=build:dist,build:types --skip-nx-cache
 
 publisher=
 cleanup() {

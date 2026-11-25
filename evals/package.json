@@ -11,12 +11,12 @@
 	},
 	"dependencies": {
 		"@tevm/vite-plugin": "1.0.0-rc.151",
-		"solc": "0.8.35",
+		"solc": "0.8.39",
 		"tevm": "1.0.0-rc.154",
-		"tsx": "4.20.6",
+		"tsx": "4.23.15",
 		"typescript": "5.9.3",
-		"viem": "2.49.3",
+		"viem": "2.58.6",
 		"vite": "^8.3.8",
-		"vitest": "4.1.6"
+		"vitest": "4.1.12"
 	}
 }

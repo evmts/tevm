@@ -45,7 +45,7 @@
 		"test:run": "tsup --dts-only"
 	},
 	"dependencies": {
-		"@types/node": "^25.9.0"
+		"@types/node": "^25.9.12"
 	},
 	"devDependencies": {
 		"@tevm/tsconfig": "workspace:^"

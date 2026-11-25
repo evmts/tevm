@@ -1,9 +1,8 @@
 ---
-layout: landing
+layout: minimal
 ---
 
-import { Button, HomePage } from 'vocs/components'
-import { ArchitectureDiagram, Card } from '../components'
+import { ArchitectureDiagram, Card, HomePage } from '../components'
 import '../styles/index.css'
 
 <HomePage.Root>
@@ -66,32 +65,32 @@ import '../styles/index.css'
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-[920px] mx-auto my-12 text-left">
     <Card title="In-Process Native Engine">
       <p className="mb-3">Runs ZEVM, Voltaire, and Guillotine Mini over Node-API. Each client owns isolated chain state with no external daemon.</p>
-      <Button href="/introduction/architecture-overview" variant="text" size="small">Architecture →</Button>
+      <a href="/introduction/architecture-overview">Architecture →</a>
     </Card>
 
     <Card title="Viem &amp; Ethers Native">
       <p className="mb-3">Full viem public, wallet, and Anvil test actions out of the box, plus <code>TevmProvider</code> for ethers v6.</p>
-      <Button href="/getting-started/viem" variant="text" size="small">Viem tutorial →</Button>
+      <a href="/getting-started/viem">Viem tutorial →</a>
     </Card>
 
     <Card title="Lazy Mainnet Forking">
       <p className="mb-3">Fork any EVM RPC at a pinned block. State loads lazily on cache miss; local writes never leave your process.</p>
-      <Button href="/core/forking" variant="text" size="small">Forking guide →</Button>
+      <a href="/core/forking">Forking guide →</a>
     </Card>
 
     <Card title="HTTP, WebSocket &amp; IPC">
       <p className="mb-3">Expose any local client over HTTP, WebSocket subscriptions, or Unix IPC for browser apps and external tools.</p>
-      <Button href="/api/server" variant="text" size="small">Server guide →</Button>
+      <a href="/api/server">Server guide →</a>
     </Card>
 
     <Card title="Direct Solidity Imports">
       <p className="mb-3">Import <code>.sol</code> files as typed TypeScript modules in Vite, Rollup, esbuild, Webpack, Rspack, and Bun.</p>
-      <Button href="/getting-started/bundler" variant="text" size="small">Bundler tutorial →</Button>
+      <a href="/getting-started/bundler">Bundler tutorial →</a>
     </Card>
 
     <Card title="Native Tracing &amp; MCP">
       <p className="mb-3">Record opcode traces with <code>debug_traceCall</code> or give AI coding agents isolated EVM sessions via <code>@tevm/mcp</code>.</p>
-      <Button href="/api/evm-events" variant="text" size="small">Tracing &amp; events →</Button>
+      <a href="/api/evm-events">Tracing &amp; events →</a>
     </Card>
   </div>
 

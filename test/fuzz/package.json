@@ -40,13 +40,13 @@
 		"@tevm/tsconfig": "workspace:*",
 		"@tevm/utils": "workspace:*",
 		"@tevm/viem": "workspace:*",
-		"@types/node": "^24.12.4",
+		"@types/node": "^24.19.4",
 		"effect": "4.1.1",
 		"fast-check": "^4.11.0",
 		"tevm": "workspace:*",
 		"typescript": "^6.0.3",
-		"viem": "^2.58.4",
-		"vitest": "^4.1.6",
-		"ws": "^8.20.1"
+		"viem": "^2.58.6",
+		"vitest": "^4.1.12",
+		"ws": "^8.23.0"
 	}
 }
