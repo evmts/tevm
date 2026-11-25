@@ -24,3 +24,5 @@ jobs:
         run: node scripts/factory/checkout-native.mjs
       - uses: "./.github/actions/setup"
       - run: pnpm exec smthrs target //:ci
+      - name: Build Node documentation
+        run: pnpm --filter @tevm/node-docs build:app

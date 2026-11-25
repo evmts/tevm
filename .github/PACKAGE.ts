@@ -16,10 +16,12 @@ const nativeSetup = (ref?: string): Steps => [
 	{ uses: './.github/actions/setup' },
 ]
 const nativeSteps = (command: string): Steps => [...nativeSetup(), { run: command }]
-const releaseSteps: NonNullable<Parameters<typeof S.Github.Workflow>[0]['steps']> = [
+const releaseSteps = (prerelease: boolean): Steps => [
 	...nativeSetup(),
+	...(prerelease ? [] : [{ name: 'Require stable mode', run: 'test ! -f .changeset/pre.json' }]),
 	{
 		name: 'Create version PR or publish approved packages',
+		...(prerelease ? { if: "hashFiles('.changeset/pre.json') != ''" } : {}),
 		uses: 'changesets/action@v1',
 		with: { version: 'pnpm release:version', publish: 'pnpm release:publish' },
 		env: {
@@ -67,7 +69,10 @@ const ci = S.Github.Workflow({
 	setup,
 	fullHistory: true,
 	env: rpcEnvironment,
-	steps: nativeSteps('pnpm exec smthrs target //:ci'),
+	steps: [
+		...nativeSteps('pnpm exec smthrs target //:ci'),
+		{ name: 'Build Node documentation', run: 'pnpm --filter @tevm/node-docs build:app' },
+	],
 })
 
 // release.yml: the changesets release train on the v1 branch. changesets/action
@@ -86,7 +91,7 @@ const release = S.Github.Workflow({
 	permissions: { contents: 'write', pullRequests: 'write', idToken: 'write' },
 	setup,
 	env: rpcEnvironment,
-	steps: releaseSteps,
+	steps: releaseSteps(false),
 })
 
 // Main uses the same approval environment as the stable release train.
@@ -98,7 +103,7 @@ const prerelease = S.Github.Workflow({
 	permissions: { contents: 'write', pullRequests: 'write', idToken: 'write' },
 	setup,
 	env: rpcEnvironment,
-	steps: releaseSteps,
+	steps: releaseSteps(true),
 })
 
 // Request a reviewed prerelease exit against the selected release branch.
@@ -120,6 +125,8 @@ const prereleaseExit = S.Github.Workflow({
 	setup,
 	steps: [
 		...nativeSetup('${{ inputs.branch }}'),
+		{ name: 'Verify native dependency on npm', run: 'pnpm release:verify --skip-dist-check --check-registry' },
+		{ name: 'Test the published native RPC interface', run: 'node scripts/verify-published-zevm.mjs' },
 		{ run: 'pnpm exec smthrs target //:prereleaseExit --write' },
 		{
 			name: 'Open prerelease exit for review',

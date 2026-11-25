@@ -27,6 +27,8 @@ jobs:
       - name: Checkout pinned native sources
         run: node scripts/factory/checkout-native.mjs
       - uses: "./.github/actions/setup"
+      - name: Require stable mode
+        run: "test ! -f .changeset/pre.json"
       - name: Create version PR or publish approved packages
         uses: changesets/action@v1
         with:

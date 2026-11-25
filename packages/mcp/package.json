@@ -65,17 +65,17 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.30.0",
+		"@modelcontextprotocol/sdk": "^1.32.2",
 		"@tevm/common": "workspace:^",
 		"@tevm/memory-client": "workspace:^",
-		"solc": "0.8.35",
-		"viem": "^2.58.4",
-		"zod": "^4.4.3"
+		"solc": "0.8.39",
+		"viem": "^2.58.6",
+		"zod": "^4.6.7"
 	},
 	"devDependencies": {
 		"@tevm/tsconfig": "workspace:^",
 		"@tevm/tsupconfig": "workspace:^",
-		"vitest": "^4.1.6"
+		"vitest": "^4.1.12"
 	},
 	"publishConfig": {
 		"access": "public"

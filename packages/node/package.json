@@ -68,7 +68,7 @@
 	"devDependencies": {
 		"@tevm/tsconfig": "workspace:^",
 		"@tevm/tsupconfig": "workspace:^",
-		"viem": "^2.58.4"
+		"viem": "^2.58.6"
 	},
 	"optionalDependencies": {
 		"@evmts/zevm": "workspace:*"

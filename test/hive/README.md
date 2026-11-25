@@ -20,7 +20,7 @@ This harness lets Tevm run in a Hive-style execution client flow and saves artif
 - `HIVE_SUITE=smoke|rpc-compat` (default `smoke`)
 - `TEVM_RPC_URL=http://127.0.0.1:8545`
 - `START_LOCAL_TEVM=true|false` (default `true`)
-- `TEVM_HIVE_PREFLIGHT=true|false` (default `true`, builds `@tevm/server` before local start)
+- `TEVM_HIVE_PREFLIGHT=true|false` (default `true`, builds the public `@tevm/cli` and its dependencies before local start)
 - `HIVE_SIM=ethereum/rpc-compat`
 - `HIVE_BIN=hive`
 - `HIVE_ARTIFACT_DIR=test/hive/artifacts`
@@ -41,7 +41,10 @@ When a run fails, the harness still writes `tevm-hive-<suite>.json` with `ok=fal
 - Process wrapper: `test/hive/scripts/tevm-hive-node.sh`
 - Container adapter: `test/hive/client/Dockerfile` + `test/hive/client/entrypoint.sh`
 
-Both run Tevm JSON-RPC and expose Engine API methods currently available on Tevm's RPC surface.
+From a checkout with `vendor/flows` initialized, build the client image with
+`docker build -f test/hive/client/Dockerfile -t tevm-hive .`. The image builds the
+CLI and the platform addon from the pinned native sources. Run it with
+`docker run --rm -p 8545:8545 tevm-hive`.
 
 To target an already-running local Tevm node:
 

@@ -12,7 +12,9 @@ if [[ -e .changeset/.publish-prep-backup.json ]]; then
 fi
 
 pnpm install
-nx run-many --target=build:app,build:dist,build:types --skip-nx-cache
+nx run-many --target=build:dist,build:types --skip-nx-cache
+# The public CLI compiles against the library declarations.
+pnpm --filter @tevm/cli build
 
 publisher=
 cleanup() {
@@ -35,6 +37,9 @@ if [[ "${NODE_ENV:-}" == test && "${TEVM_SKIP_REGISTRY_CHECK:-}" == 1 ]]; then
 	checks=(--check-dist --skip-registry)
 fi
 node scripts/prepare-changeset-publish.mjs --apply "${checks[@]}"
+if [[ ${checks[1]} == --check-registry ]]; then
+	node scripts/verify-published-zevm.mjs
+fi
 export TEVM_REAL_PNPM="$(command -v pnpm)"
 export PATH="$PWD/scripts/pnpm-publish-wrapper:$PATH"
 # A separate process group lets a signal to this shell stop publish and its children.

@@ -75,7 +75,7 @@
 		"fast-check": "^4.11.0"
 	},
 	"peerDependencies": {
-		"viem": "^2.58.4"
+		"viem": "^2.58.6"
 	},
 	"publishConfig": {
 		"access": "public"

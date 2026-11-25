@@ -27,6 +27,7 @@ jobs:
         run: node scripts/factory/checkout-native.mjs
       - uses: "./.github/actions/setup"
       - name: Create version PR or publish approved packages
+        if: "hashFiles('.changeset/pre.json') != ''"
         uses: changesets/action@v1
         with:
           version: pnpm release:version

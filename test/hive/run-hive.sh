@@ -24,6 +24,7 @@ cleanup() {
   fi
   if [[ -n "$TEVM_PID" ]] && kill -0 "$TEVM_PID" 2>/dev/null; then
     kill "$TEVM_PID" || true
+    wait "$TEVM_PID" 2>/dev/null || true
   fi
 }
 trap cleanup EXIT
@@ -55,10 +56,7 @@ preflight() {
   if [[ "$START_LOCAL_TEVM" == "true" ]]; then
     (
       cd "$ROOT_DIR"
-      pnpm --filter @tevm/actions build:dist
-      pnpm --filter @tevm/decorators build:dist
-      pnpm --filter @tevm/memory-client build:dist
-      pnpm --filter @tevm/server build:dist
+      pnpm exec nx run @tevm/cli:build:app
     ) >>"$LOG_FILE" 2>&1
   fi
 }
@@ -78,12 +76,16 @@ start_tevm_if_needed() {
     return 0
   fi
 
-  (cd "$ROOT_DIR" && bash "$TEVM_CLIENT_CMD") >>"$LOG_FILE" 2>&1 &
+  (cd "$ROOT_DIR" && exec bash "$TEVM_CLIENT_CMD") >>"$LOG_FILE" 2>&1 &
   TEVM_PID="$!"
 
   for _ in $(seq 1 60); do
     if rpc_up; then
       return 0
+    fi
+    if ! kill -0 "$TEVM_PID" 2>/dev/null; then
+      echo "Tevm exited before serving JSON-RPC. See $LOG_FILE" >&2
+      return 1
     fi
     sleep 1
   done
@@ -95,16 +97,18 @@ start_tevm_if_needed() {
 run_smoke_suite() {
   start_tevm_if_needed
 
-  local failed=0
+  local failed=0 params
   {
     echo "{"; echo "  \"suite\": \"smoke\","; echo "  \"rpc\": \"$TEVM_RPC_URL\","; echo "  \"checks\": ["
     local methods=("web3_clientVersion" "eth_chainId" "eth_blockNumber" "engine_exchangeCapabilities")
     local first=1
     for method in "${methods[@]}"; do
-      payload="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"$method\",\"params\":[]}"
+      params='[]'
+      if [[ "$method" == engine_exchangeCapabilities ]]; then params='[[]]'; fi
+      payload="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"$method\",\"params\":$params}"
       response="$(curl -sS -H 'content-type: application/json' -d "$payload" "$TEVM_RPC_URL" || true)"
       ok="false"
-      if [[ "$response" == *'"result"'* ]]; then
+      if jq -se 'length == 1 and (.[0] | type == "object" and .jsonrpc == "2.0" and .id == 1 and has("result") and (has("error") | not))' <<<"$response" >/dev/null; then
         ok="true"
       else
         failed=1
@@ -114,7 +118,8 @@ run_smoke_suite() {
       printf '    {"method":"%s","ok":%s,"response":%s}' "$method" "$ok" "$(jq -Rs . <<<"$response")"
     done
     echo; echo "  ]"; echo "}"
-  } | tee "$RESULT_FILE"
+  } >"$RESULT_FILE"
+  tee -a "$LOG_FILE" <"$RESULT_FILE"
 
   if [[ "$failed" -ne 0 ]]; then
     echo "Smoke suite checks failed" | tee -a "$LOG_FILE"
@@ -144,7 +149,7 @@ echo "[hive-harness] suite=$SUITE rpc=$TEVM_RPC_URL artifacts=$ARTIFACT_DIR" | t
 preflight
 
 if [[ "$SUITE" == "smoke" ]]; then
-  run_smoke_suite | tee -a "$LOG_FILE"
+  run_smoke_suite
 else
   run_hive_suite
 fi

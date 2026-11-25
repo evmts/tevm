@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+const buildOnly = process.argv.includes('--build-only')
 const root = fileURLToPath(new URL('../..', import.meta.url))
 const pins = JSON.parse(readFileSync(resolve(root, 'factory/native-dependencies.json'), 'utf8'))
 for (const name of ['voltaire', 'guillotine-mini', 'zevm']) {
@@ -23,11 +24,14 @@ for (const name of ['voltaire', 'guillotine-mini', 'zevm']) {
 				'update',
 				'--init',
 				'--recursive',
+				'--depth',
+				'1',
 				'--',
 				'packages/voltaire-zig/lib/libwally-core',
 				'vendor/execution-apis',
 			)
-		else git('submodule', 'update', '--init', '--recursive')
+		// The npm addon needs Voltaire's C libraries; these other submodules are test fixtures and references.
+		else if (!buildOnly) git('submodule', 'update', '--init', '--recursive', '--depth', '1')
 	}
 	if (git('rev-parse', 'HEAD') !== revision)
 		throw new Error(`${name} does not match its release pin; checkout preserved`)

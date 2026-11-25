@@ -1,5 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "npx --yes pnpm@10.33.4 install --frozen-lockfile --ignore-scripts",
-  "buildCommand": "npx --yes pnpm@10.33.4 build:app"
+  "buildCommand": "npx --yes pnpm@10.33.4 build:app",
+  "redirects": [
+    {
+      "source": "/api/mcp",
+      "destination": "/api/mcp-server",
+      "permanent": true
+    }
+  ]
 }

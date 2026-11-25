@@ -12,16 +12,16 @@
 	},
 	"dependencies": {
 		"@tevm/docs-shared": "workspace:*",
-		"react": "^19.3.0",
-		"react-dom": "^19.3.0",
+		"react": "^19.3.1",
+		"react-dom": "^19.3.1",
 		"tevm": "workspace:*",
-		"viem": "^2.49.3",
+		"viem": "^2.58.6",
 		"vocs": "^2.14.1",
 		"waku": "^1.0.0-rc.5"
 	},
 	"devDependencies": {
-		"@types/react": "^19.2.14",
-		"@types/react-dom": "^19.2.3",
+		"@types/react": "^19.3.3",
+		"@types/react-dom": "^19.3.0",
 		"typescript": "^6.0.3"
 	}
 }

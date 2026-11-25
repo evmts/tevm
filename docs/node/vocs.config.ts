@@ -1,10 +1,13 @@
-import { defineConfig } from 'vocs'
+import { defineConfig } from 'vocs/config'
+
+const previewUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined
 
 export default defineConfig({
 	title: 'Tevm',
 	titleTemplate: '%s · Tevm',
-	baseUrl: process.env.VERCEL_ENV === 'production' ? 'https://node.tevm.sh' : process.env.VERCEL_URL,
-	rootDir: '.',
+	baseUrl: process.env.VERCEL_ENV === 'production' ? 'https://node.tevm.sh' : previewUrl,
+	srcDir: '.',
+	renderStrategy: 'full-static',
 	description:
 		'Native Ethereum execution embedded in Node.js — viem-compatible memory client, HTTP/WS/IPC JSON-RPC server, and Solidity bundler plugins.',
 	logoUrl: {
@@ -13,13 +16,8 @@ export default defineConfig({
 	},
 	iconUrl: '/tevm-logo.webp',
 	ogImageUrl: 'https://vocs.dev/api/og?logo=%logo&title=%title&description=%description',
-	font: {
-		google: 'Inter',
-	},
-	theme: {
-		accentColor: '#0085FF',
-		colorScheme: 'system',
-	},
+	accentColor: '#0085FF',
+	colorScheme: 'light dark',
 	topNav: [
 		{
 			text: 'Start',
@@ -94,7 +92,7 @@ export default defineConfig({
 				{ text: 'Tracing & engine events', link: '/api/evm-events' },
 				{ text: 'JSON-RPC reference', link: '/api/json-rpc' },
 				{ text: 'Client methods map', link: '/api/methods' },
-				{ text: 'MCP server for AI agents', link: '/api/mcp' },
+				{ text: 'MCP server for AI agents', link: '/api/mcp-server' },
 				{ text: 'Package overview', link: '/api/packages' },
 			],
 		},
@@ -177,7 +175,7 @@ export default defineConfig({
 		},
 	],
 	editLink: {
-		pattern: 'https://github.com/evmts/tevm/edit/main/docs/node/pages/:path',
+		link: 'https://github.com/evmts/tevm/edit/main/docs/node/pages/:path',
 		text: 'Edit this page on GitHub',
 	},
 	search: {
@@ -192,25 +190,20 @@ export default defineConfig({
 		{
 			icon: 'github',
 			link: 'https://github.com/evmts/tevm',
-			label: 'GitHub',
 		},
 		{
 			icon: 'telegram',
 			link: 'https://t.me/+ANThR9bHDLAwMjUx',
-			label: 'Telegram',
 		},
 		{
 			icon: 'x',
 			link: 'https://x.com/tevmtools',
-			label: 'X',
 		},
 	],
-	markdown: {
-		code: {
-			themes: {
-				light: 'github-light',
-				dark: 'github-dark',
-			},
+	codeHighlight: {
+		themes: {
+			light: 'github-light',
+			dark: 'github-dark',
 		},
 	},
 })
