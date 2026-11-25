@@ -41,7 +41,10 @@ When a run fails, the harness still writes `tevm-hive-<suite>.json` with `ok=fal
 - Process wrapper: `test/hive/scripts/tevm-hive-node.sh`
 - Container adapter: `test/hive/client/Dockerfile` + `test/hive/client/entrypoint.sh`
 
-Both run Tevm JSON-RPC and expose Engine API methods currently available on Tevm's RPC surface.
+From a checkout with `vendor/flows` initialized, build the client image with
+`docker build -f test/hive/client/Dockerfile -t tevm-hive .`. The image builds the
+CLI and the platform addon from the pinned native sources. Run it with
+`docker run --rm -p 8545:8545 tevm-hive`.
 
 To target an already-running local Tevm node:
 
