@@ -122,6 +122,13 @@ const traceCompareTool = S.Shell.Run({
 const conformanceFast = nativeConformance(['specs-cancun-tstore-basic', 'specs-berlin-intrinsic-gas-cost'], true)
 const conformanceAll = nativeConformance(['specs', 'specs-blockchain'])
 
+const hiveSmokeRegression = S.Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['--test', 'test/hive/run-hive.test.mjs'],
+	data: [hive],
+	sandbox: 'none',
+})
+
 // hive drives the tevm node over docker as a black-box execution client
 // (test/hive/run-hive.sh clones the simulator and builds the client image
 // from test/hive/client). sandbox.docker admits the host docker daemon into
@@ -130,7 +137,7 @@ const conformanceAll = nativeConformance(['specs', 'specs-blockchain'])
 const hiveSmoke = S.Shell.Test({
 	script: S.file('hive/run-hive.sh'),
 	env: { HIVE_SUITE: 'smoke', HIVE_ARTIFACT_DIR: 'artifacts/hive' },
-	data: [hive, built, workspaceBuild],
+	data: [hive, built, workspaceBuild, hiveSmokeRegression],
 	sandbox: 'none',
 })
 
@@ -210,6 +217,7 @@ export const Package = S.Package({
 		gstIsolate,
 		hiveRpcCompat,
 		hiveSmoke,
+		hiveSmokeRegression,
 		nightlyConformance,
 		parityFast,
 		parityFull,

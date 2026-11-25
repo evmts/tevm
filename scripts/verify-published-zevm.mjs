@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 // TEVM's server needs block filters, and deployments look up pending transactions
@@ -31,7 +31,7 @@ export function verifyNativeRpc(native) {
 	)
 }
 
-if (import.meta.main) {
+if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
 	const { version } = JSON.parse(readFileSync(new URL('../../zevm/npm/zevm/package.json', import.meta.url), 'utf8'))
 	const scratch = mkdtempSync(join(tmpdir(), 'tevm-published-zevm-'))
 	try {
@@ -50,6 +50,8 @@ if (import.meta.main) {
 			{ stdio: 'inherit' },
 		)
 		const entry = createRequire(join(scratch, 'package.json')).resolve('@evmts/zevm')
+		// The package supports a local development override. Publication must load the installed binary.
+		delete process.env.ZEVM_NATIVE_PATH
 		const { NativeNode } = await import(pathToFileURL(entry).href)
 		const native = new NativeNode()
 		try {

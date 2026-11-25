@@ -108,7 +108,7 @@ run_smoke_suite() {
       payload="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"$method\",\"params\":$params}"
       response="$(curl -sS -H 'content-type: application/json' -d "$payload" "$TEVM_RPC_URL" || true)"
       ok="false"
-      if jq -e 'type == "object" and .jsonrpc == "2.0" and .id == 1 and has("result") and (has("error") | not)' <<<"$response" >/dev/null; then
+      if jq -se 'length == 1 and (.[0] | type == "object" and .jsonrpc == "2.0" and .id == 1 and has("result") and (has("error") | not))' <<<"$response" >/dev/null; then
         ok="true"
       else
         failed=1
@@ -118,7 +118,8 @@ run_smoke_suite() {
       printf '    {"method":"%s","ok":%s,"response":%s}' "$method" "$ok" "$(jq -Rs . <<<"$response")"
     done
     echo; echo "  ]"; echo "}"
-  } | tee "$RESULT_FILE" | tee -a "$LOG_FILE"
+  } >"$RESULT_FILE"
+  tee -a "$LOG_FILE" <"$RESULT_FILE"
 
   if [[ "$failed" -ne 0 ]]; then
     echo "Smoke suite checks failed" | tee -a "$LOG_FILE"
