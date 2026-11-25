@@ -13,6 +13,8 @@ fi
 
 pnpm install
 nx run-many --target=build:dist,build:types --skip-nx-cache
+# The public CLI compiles against the library declarations.
+pnpm --filter @tevm/cli build
 
 publisher=
 cleanup() {
