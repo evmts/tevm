@@ -77,18 +77,23 @@ const conformanceTargets = S.Shell.Build({
 
 // Native conformance is owned by Guillotine Mini. These targets retain the
 // repository's suite labels while executing its real Zig specification tests.
-const nativeConformance = (target: string) =>
+const nativeInputs = [
+	S.file('//scripts/native-conformance.mjs'),
+	S.file('//factory/native-dependencies.json'),
+	S.file('//mise.toml'),
+]
+const nativeConformance = (target: string | string[], filled = false) =>
 	S.Shell.Test({
 		bin: S.Runtime.bin,
-		args: ['scripts/native-conformance.mjs', target],
-		data: [S.file('//scripts/native-conformance.mjs'), S.file('//mise.toml')],
+		args: ['scripts/native-conformance.mjs', ...[target].flat()],
+		data: filled ? [...nativeInputs, conformanceCorpus] : nativeInputs,
 	})
-const gstFast = nativeConformance('specs-cancun-tstore-basic')
+const gstFast = nativeConformance('specs-cancun-tstore-basic', true)
 const gstAll = nativeConformance('specs')
 const gstIsolate = nativeConformance('specs-frontier-create')
-const execSpecFast = nativeConformance('specs-berlin-intrinsic-gas-cost')
+const execSpecFast = nativeConformance('specs-berlin-intrinsic-gas-cost', true)
 const execSpecAll = nativeConformance('specs-blockchain')
-const execSpecIsolate = nativeConformance('specs-berlin-intrinsic-gas-cost')
+const execSpecIsolate = nativeConformance('specs-berlin-intrinsic-gas-cost', true)
 const traceCompare = nativeConformance('test-trace')
 
 // test:eip3155: the trace tools' own unit tests (node --test).
@@ -112,14 +117,10 @@ const traceCompareTool = S.Shell.Run({
 	data: [traceTools],
 })
 
-// test:conformance:fast and test:conformance:all.
-const conformanceFast = S.Suite({
-	tests: [gstFast, execSpecFast],
-})
-
-const conformanceAll = S.Suite({
-	tests: [gstAll, execSpecAll],
-})
+// The state and blockchain generators write the same Zig import root.
+// Run them in order so each test executable uses its own fixture list.
+const conformanceFast = nativeConformance(['specs-cancun-tstore-basic', 'specs-berlin-intrinsic-gas-cost'], true)
+const conformanceAll = nativeConformance(['specs', 'specs-blockchain'])
 
 // hive drives the tevm node over docker as a black-box execution client
 // (test/hive/run-hive.sh clones the simulator and builds the client image
@@ -151,6 +152,7 @@ const parityFast = S.Shell.Test({
 	env: { PARITY_ARTIFACT_DIR: 'artifacts/parity' },
 	data: [
 		S.file('//scripts/parity/run-suite.sh'),
+		...nativeInputs,
 		runners,
 		built,
 		workspaceBuild,
@@ -168,6 +170,7 @@ const parityFull = S.Shell.Test({
 	env: { PARITY_ARTIFACT_DIR: 'artifacts/parity' },
 	data: [
 		S.file('//scripts/parity/run-suite.sh'),
+		...nativeInputs,
 		runners,
 		hive,
 		built,

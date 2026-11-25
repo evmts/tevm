@@ -24,6 +24,7 @@ cleanup() {
   fi
   if [[ -n "$TEVM_PID" ]] && kill -0 "$TEVM_PID" 2>/dev/null; then
     kill "$TEVM_PID" || true
+    wait "$TEVM_PID" 2>/dev/null || true
   fi
 }
 trap cleanup EXIT
@@ -75,7 +76,7 @@ start_tevm_if_needed() {
     return 0
   fi
 
-  (cd "$ROOT_DIR" && bash "$TEVM_CLIENT_CMD") >>"$LOG_FILE" 2>&1 &
+  (cd "$ROOT_DIR" && exec bash "$TEVM_CLIENT_CMD") >>"$LOG_FILE" 2>&1 &
   TEVM_PID="$!"
 
   for _ in $(seq 1 60); do
