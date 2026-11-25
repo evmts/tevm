@@ -1,0 +1,12 @@
+{
+  "blocks": [
+    {
+      "type": "view",
+      "flow": "playground/exec"
+    },
+    {
+      "type": "flows",
+      "title": "Tevm flows"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+---
+description: Deploy or call a contract and inspect Tevm opcodes and gas
+flows: [playground/native]
+disable-model-invocation: true
+placement: sandbox
+capabilities:
+  - "fs:read:**"
+  - "proc:spawn:node .smithers/playground/run.mjs *"
+effects:
+  reads: [".smithers/playground/**", "packages/**", "node_modules/**"]
+  writes: []
+budget:
+  milliseconds: 10000
+---
+Run one bounded request against a fresh in-memory devnet and return its JSON result.
+Use the native playground delegate with the request JSON in the args field.
+
+Provision the built Tevm memory client and its pinned ZEVM addon inside the sandbox before dispatch.

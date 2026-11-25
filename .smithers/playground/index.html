@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-VO3dUnFjP0gW51llHD3z+Tn35s6zPJIxfSiV1UPay4Y='; style-src 'sha256-o/BBGy3rdfW6DopsHwdDtGow3wndRGFJcv9sS01WYJI='; base-uri 'none'; form-action 'none'; connect-src 'none'">
+<title>Tevm playground</title>
+<style>
+:root { color-scheme: light dark; font: 15px/1.5 system-ui, sans-serif }
+body { margin: 0; padding: clamp(16px, 4vw, 40px); background: Canvas; color: CanvasText }
+main { max-width: 760px; margin: auto }
+h1 { margin: 0 0 24px; font-size: clamp(24px, 5vw, 38px); line-height: 1.1 }
+form, label { display: grid; gap: 8px }
+form { gap: 16px; border: 1px solid GrayText; padding: clamp(14px, 3vw, 24px); border-radius: 12px }
+label { font-weight: 600 }
+select, textarea, input, button { font: inherit; color: inherit; padding: 8px; border: 1px solid GrayText; border-radius: 6px }
+select, textarea, input { background: Canvas; width: 100%; box-sizing: border-box }
+textarea, input[type=text], output, td { font-family: ui-monospace, monospace }
+textarea { min-height: 74px; resize: vertical }
+.controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px }
+button { justify-self: start; padding: 8px 18px; font-weight: 650; background: ButtonFace; cursor: pointer }
+button:disabled { opacity: 0.6; cursor: default }
+:focus-visible { outline: 2px solid Highlight; outline-offset: 2px }
+#status { min-height: 1.5em; margin-bottom: 0 }
+output { display: block; white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 1rem }
+table { width: 100%; border-collapse: collapse; text-align: left }
+th, td { padding: 6px; border-bottom: 1px solid GrayText }
+[hidden] { display: none !important }
+</style>
+</head>
+<body>
+<main>
+<h1>Tevm playground</h1>
+<form>
+  <div class="controls">
+    <label>Operation
+      <select id="method" name="method"><option value="deploy">Deploy and trace</option><option value="call">Trace runtime bytecode</option></select>
+    </label>
+    <label>Gas limit
+      <input id="gas" name="gas" type="number" value="100000" min="21000" max="250000" required>
+    </label>
+  </div>
+  <label><span id="bytecode-label">Contract initcode</span>
+    <textarea name="bytecode" maxlength="4098" spellcheck="false" autocomplete="off">0x600a600c600039600a6000f3602a60005260206000f3</textarea>
+  </label>
+  <label>Calldata
+    <input name="calldata" type="text" value="0x" maxlength="2050" spellcheck="false" autocomplete="off">
+  </label>
+  <button type="button" disabled>Run</button>
+</form>
+<p id="status" role="status">Connecting to Smithers…</p>
+<section id="result" aria-label="Execution result" hidden>
+  <output aria-label="Result"></output>
+  <table hidden>
+    <caption>Opcode trace</caption>
+    <thead><tr><th scope="col">PC</th><th scope="col">Opcode</th><th scope="col">Gas</th><th scope="col">Cost</th><th scope="col">Depth</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</section>
+</main>
+<script>
+const host = "https://smithers.sh"
+const form = document.querySelector("form")
+const button = form.querySelector("button")
+const status = document.querySelector("#status")
+const result = document.querySelector("#result")
+const output = result.querySelector("output")
+const table = result.querySelector("table")
+const rows = table.querySelector("tbody")
+const method = form.elements.method
+const nonce = document.documentElement.dataset.smithersNonce
+const initId = "playground"
+let port
+let pending
+let nextId = 0
+
+function paint(value) {
+  const { steps, ...summary } = value
+  output.textContent = JSON.stringify(summary, null, 2)
+  rows.replaceChildren()
+  for (const step of Array.isArray(steps) ? steps.slice(0, 256) : []) {
+    const row = rows.insertRow()
+    for (const key of ["pc", "op", "gas", "gasCost", "depth"]) {
+      const cell = row.insertCell()
+      const value = step?.[key]
+      cell.textContent = typeof value === "number" || typeof value === "string" ? value : ""
+    }
+  }
+  table.hidden = rows.rows.length === 0
+  result.hidden = false
+}
+
+function receive(event) {
+  const reply = event.data
+  if (!pending || reply?.jsonrpc !== "2.0" || reply.id !== pending.id) return
+  clearTimeout(pending.timer)
+  pending = undefined
+  button.disabled = false
+  if (reply.result && typeof reply.result === "object" && !Array.isArray(reply.result)) {
+    if (typeof reply.result.error === "string") {
+      status.textContent = reply.result.error.slice(0, 256)
+    } else {
+      paint(reply.result)
+      status.textContent = reply.result.failed ? "Execution reverted" : "Execution complete"
+    }
+  } else {
+    status.textContent = "Execution unavailable"
+  }
+}
+
+if (parent !== window && /^[A-Za-z0-9_-]{22,128}$/.test(nonce ?? "")) {
+  const connectionDeadline = setTimeout(() => {
+    status.textContent = "Smithers connection unavailable"
+  }, 4000)
+  window.addEventListener("message", function initialize(event) {
+    const reply = event.data
+    if (event.source !== parent || event.origin !== host || reply?.jsonrpc !== "2.0" ||
+        reply.id !== initId || reply.result?.flow !== "playground/exec" || event.ports.length !== 1) return
+    window.removeEventListener("message", initialize)
+    clearTimeout(connectionDeadline)
+    port = event.ports[0]
+    port.onmessage = receive
+    button.disabled = false
+    status.textContent = "Ready"
+  })
+  parent.postMessage({ jsonrpc: "2.0", id: initId, method: "ui/initialize", params: { nonce } }, host)
+} else {
+  status.textContent = "Open from Smithers to run a request"
+}
+
+button.addEventListener("click", (event) => {
+  event.preventDefault()
+  if (!event.isTrusted || !port || pending) return
+  const data = new FormData(form)
+  const params = {
+    method: data.get("method"),
+    bytecode: data.get("bytecode").trim(),
+    calldata: data.get("calldata").trim(),
+    gas: Number(data.get("gas"))
+  }
+  for (const hex of [params.bytecode, params.calldata]) {
+    if (!/^0x(?:[0-9a-f]{2})*$/i.test(hex)) {
+      status.textContent = "Enter even-length hex starting with 0x"
+      return
+    }
+  }
+  const id = ++nextId
+  result.hidden = true
+  status.textContent = "Running…"
+  button.disabled = true
+  const timer = setTimeout(() => {
+    pending = undefined
+    button.disabled = false
+    status.textContent = "Request timed out"
+  }, 15000)
+  pending = { id, timer }
+  port.postMessage({ jsonrpc: "2.0", id, method: "playground/exec", params })
+})
+
+method.addEventListener("change", () => {
+  const runtime = method.value === "call"
+  document.querySelector("#bytecode-label").textContent = runtime ? "Runtime bytecode" : "Contract initcode"
+})
+
+</script>
+</body>
+</html>

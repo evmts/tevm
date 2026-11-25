@@ -1,0 +1,62 @@
+{
+  "summary": "Tevm's in-memory Ethereum execution playground.",
+  "flows": [
+    {
+      "id": "playground/exec",
+      "description": "Deploy or call a contract and inspect Tevm opcodes and gas",
+      "summary": "Deploy or call a contract and inspect opcodes and gas.",
+      "featured": true,
+      "kind": "mdx",
+      "path": ".smithers/flows/playground/exec/flow.mdx",
+      "capabilities": [
+        "fs:read:**",
+        "proc:spawn:node .smithers/playground/run.mjs *"
+      ],
+      "model": null,
+      "modelInvocable": false,
+      "inputSchema": {
+        "dialect": "draft-2020-12",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "args": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "args"
+          ],
+          "additionalProperties": true
+        },
+        "definitions": {}
+      },
+      "flows": [
+        "playground/native"
+      ],
+      "budget": {
+        "milliseconds": 10000
+      }
+    },
+    {
+      "id": "playground/native",
+      "description": "Execute bounded local EVM requests and return their opcode trace",
+      "summary": null,
+      "featured": false,
+      "kind": "ts",
+      "path": ".smithers/flows/playground/native/flow.ts",
+      "capabilities": [
+        "fs:read:**",
+        "proc:spawn:node .smithers/playground/run.mjs *"
+      ],
+      "model": null,
+      "modelInvocable": false,
+      "flows": []
+    }
+  ],
+  "on": [],
+  "github": {
+    "mirror": "pull",
+    "issues": "read",
+    "changes": "send-upstream"
+  }
+}
