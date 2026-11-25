@@ -126,6 +126,7 @@ const prereleaseExit = S.Github.Workflow({
 	steps: [
 		...nativeSetup('${{ inputs.branch }}'),
 		{ name: 'Verify native dependency on npm', run: 'pnpm release:verify --skip-dist-check --check-registry' },
+		{ name: 'Test the published native RPC interface', run: 'node scripts/verify-published-zevm.mjs' },
 		{ run: 'pnpm exec smthrs target //:prereleaseExit --write' },
 		{
 			name: 'Open prerelease exit for review',
