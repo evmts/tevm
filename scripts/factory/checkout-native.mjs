@@ -23,11 +23,13 @@ for (const name of ['voltaire', 'guillotine-mini', 'zevm']) {
 				'update',
 				'--init',
 				'--recursive',
+				'--depth',
+				'1',
 				'--',
 				'packages/voltaire-zig/lib/libwally-core',
 				'vendor/execution-apis',
 			)
-		else git('submodule', 'update', '--init', '--recursive')
+		else git('submodule', 'update', '--init', '--recursive', '--depth', '1')
 	}
 	if (git('rev-parse', 'HEAD') !== revision)
 		throw new Error(`${name} does not match its release pin; checkout preserved`)

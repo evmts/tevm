@@ -20,7 +20,7 @@ This harness lets Tevm run in a Hive-style execution client flow and saves artif
 - `HIVE_SUITE=smoke|rpc-compat` (default `smoke`)
 - `TEVM_RPC_URL=http://127.0.0.1:8545`
 - `START_LOCAL_TEVM=true|false` (default `true`)
-- `TEVM_HIVE_PREFLIGHT=true|false` (default `true`, builds `@tevm/server` before local start)
+- `TEVM_HIVE_PREFLIGHT=true|false` (default `true`, builds the public `@tevm/cli` and its dependencies before local start)
 - `HIVE_SIM=ethereum/rpc-compat`
 - `HIVE_BIN=hive`
 - `HIVE_ARTIFACT_DIR=test/hive/artifacts`
