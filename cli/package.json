@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/cli",
-	"version": "1.0.0-rc.153",
+	"version": "1.0.0-rc.154",
 	"description": "Command-line interface for native Tevm nodes, sessions, and JSON-RPC servers",
 	"repository": {
 		"type": "git",

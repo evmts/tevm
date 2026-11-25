@@ -1,5 +1,44 @@
 # @tevm/contract
 
+## 1.0.0-rc.154
+
+### Minor Changes
+
+- 30e5e79: - ZEVM validates RPC responses, isolates observer failures, and uses the submitted request for response events and Solidity console logs. The native backend loads in CommonJS, and the `tevm` facade exports the engine event types. With an injected backend or engine and no configured chain, `client.chain` is undefined. Use `client.getChainId()` to read the ID.
+  - HTTP enforces byte limits on request bodies. IPC and WebSocket servers throw `RangeError` at construction for invalid subscription limits, accept `Infinity` for unlimited subscriptions, and clean up expired filters. MCP tools distinguish pending transactions from mined receipts. Error serialization and cause traversal handle circular references.
+  - Solidity tooling preserves rooted remappings, resolves imports from Solidity syntax, and retains anonymous events in generated bindings and declarations. Matching bundled solc versions load locally. Declaration sidecars allow Solidity compilation, and proxy ABI resolution keeps the requested account’s address and bytecode together.
+  - `tevm-run` forwards script arguments and logs only the script path.
+
+### Patch Changes
+
+- 266283a: Use the selected function overload to decode contract call results. Encode short storage slots and values as 32-byte words for account updates. Restrict read and write selectors to overloads with the corresponding state mutability. Expose the declared function name on read and write action creators before invocation.
+- 48b37fa: Harden package manifests, exports, documentation, and runtime hygiene for publishing:
+  - Fix blank-line and Windows path handling in `@tevm/config` `remappings.txt` loading
+  - Remove stray debug `console.log` from `@tevm/unplugin` and stale debug scripts from `@tevm/viem` and `@tevm/ts-plugin`
+  - Add CommonJS `require` export mapping to `@tevm/mcp` so `publint --strict` and `attw --pack` pass across ESM and CJS
+  - Remove unused runtime and development dependencies across `@tevm/server`, `@tevm/http-client`, `@tevm/actions`, `@tevm/viem`, and `@tevm/cli`
+  - Sync `tevm/jsr.json` exports with the native ZEVM facade surface and update package READMEs and descriptions
+
+- 1d0e6ae: Optimize hot paths discovered by the new incremental package benchmark suite:
+  - `@tevm/contract`: remove per-call JSON-RPC metadata cloning and `Object.defineProperty` overhead in contract read/write/event action creators and `withAddress` (up to 14.8x faster write action creation and 3.1x faster read/event creation).
+  - `@tevm/server`: avoid repeated `Buffer.concat` allocations while buffering HTTP request bodies (6.9x faster on multi-chunk 64 KB payloads) and replace quadratic string slicing in IPC JSON-RPC frame extraction with an indexed scanner.
+  - `@tevm/node`: cache the native ZEVM constructor and fast-path idle `ready()`, `request()`, `rpc`, and `close()` calls without unnecessary listener allocations.
+  - `@tevm/base-bundler`: avoid redundant cache reads and fix concurrent cache-write races in `resolveModuleAsync` / `resolveModuleSync` (up to 2.6x faster warm cache resolution).
+  - `@tevm/errors` & `@tevm/resolutions`: trim repeated formatting and path-resolution overhead on hot paths.
+
+- 42a8f85: Graduate the tested release candidate to the stable tevm 1.0.0 release. Every published package in the linked group is versioned together so that `tevm` and the `@tevm/*` entry points documented in the migration guide all resolve to `1.0.0`.
+- Updated dependencies [30e5e79]
+- Updated dependencies [266283a]
+- Updated dependencies [f3fee97]
+- Updated dependencies [6401089]
+- Updated dependencies [138aae1]
+- Updated dependencies [48b37fa]
+- Updated dependencies [1d0e6ae]
+- Updated dependencies [266283a]
+- Updated dependencies [42a8f85]
+  - @tevm/errors@1.0.0-rc.154
+  - @tevm/utils@1.0.0-rc.154
+
 ## 1.0.0-rc.151
 
 ### Patch Changes

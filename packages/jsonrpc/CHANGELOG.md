@@ -1,5 +1,19 @@
 # @tevm/jsonrpc
 
+## 1.0.0-rc.154
+
+### Patch Changes
+
+- 48b37fa: Harden package manifests, exports, documentation, and runtime hygiene for publishing:
+  - Fix blank-line and Windows path handling in `@tevm/config` `remappings.txt` loading
+  - Remove stray debug `console.log` from `@tevm/unplugin` and stale debug scripts from `@tevm/viem` and `@tevm/ts-plugin`
+  - Add CommonJS `require` export mapping to `@tevm/mcp` so `publint --strict` and `attw --pack` pass across ESM and CJS
+  - Remove unused runtime and development dependencies across `@tevm/server`, `@tevm/http-client`, `@tevm/actions`, `@tevm/viem`, and `@tevm/cli`
+  - Sync `tevm/jsr.json` exports with the native ZEVM facade surface and update package READMEs and descriptions
+
+- 266283a: Count HTTP request bytes before UTF-8 decoding and preserve provider error messages and data through the viem adapter. Error diagnostics can now be serialized with bigint and circular values.
+- 42a8f85: Graduate the tested release candidate to the stable tevm 1.0.0 release. Every published package in the linked group is versioned together so that `tevm` and the `@tevm/*` entry points documented in the migration guide all resolve to `1.0.0`.
+
 ## 1.0.0-rc.151
 
 ### Patch Changes

@@ -1,5 +1,72 @@
 # @tevm/client
 
+## 1.0.0-rc.154
+
+### Major Changes
+
+- 138aae1: Replace the JavaScript execution stack with ZEVM's native node, built from sibling ZEVM, Voltaire and Guillotine Mini sources. Expose serialized JSON-RPC and lifecycle/block events, viem memory clients, ethers integration, and HTTP/WebSocket/IPC servers. Remove EthereumJS dependencies and the old internal VM/state/transaction packages and facade exports.
+
+  This is a breaking engine and public API migration. Native addons are required for in-process execution; browsers connect through JSON-RPC. State dumps, CLI sessions and direct mutable engine APIs change. See `docs/native-engine-migration.md` for supported replacements and removed surfaces.
+
+### Minor Changes
+
+- 30e5e79: - ZEVM validates RPC responses, isolates observer failures, and uses the submitted request for response events and Solidity console logs. The native backend loads in CommonJS, and the `tevm` facade exports the engine event types. With an injected backend or engine and no configured chain, `client.chain` is undefined. Use `client.getChainId()` to read the ID.
+  - HTTP enforces byte limits on request bodies. IPC and WebSocket servers throw `RangeError` at construction for invalid subscription limits, accept `Infinity` for unlimited subscriptions, and clean up expired filters. MCP tools distinguish pending transactions from mined receipts. Error serialization and cause traversal handle circular references.
+  - Solidity tooling preserves rooted remappings, resolves imports from Solidity syntax, and retains anonymous events in generated bindings and declarations. Matching bundled solc versions load locally. Declaration sidecars allow Solidity compilation, and proxy ABI resolution keeps the requested account’s address and bytecode together.
+  - `tevm-run` forwards script arguments and logs only the script path.
+- f3fee97: Add Hardhat `console.log` support. `@tevm/utils` exports `HARDHAT_CONSOLE_ADDRESS` and `decodeHardhatConsoleLog`, which decodes every `console.sol`/`console2.sol` selector and applies `%s`/`%d`/`%i`/`%o` formatting. `createZevmEngine` and `createMemoryClient` accept `consoleLog: true | (message, raw) => void`; after `eth_call`, `eth_estimateGas`, `eth_sendTransaction` and `eth_sendRawTransaction` the engine drains native `tevm_drainConsoleLogs`, emits `consoleLog` events and prints or forwards each message. Native builds without `tevm_drainConsoleLogs` produce no messages.
+
+### Patch Changes
+
+- 266283a: Preserve leading NUL and U+FEFF characters in Solidity console strings. Raw JSON-RPC requests and batches now drain console logs based on their top-level method names, including JSON-escaped names.
+- ca5650e: Deliver each Solidity `console.log` once when `eth_sendTransaction` omits `gas`. The pinned ZEVM revision no longer records console calls during the gas estimate that runs first, and `eth_signTransaction` and `eth_createAccessList` no longer leak calls into the next drained request.
+- 12f49fd: Fix three edge-case bugs uncovered by the new multi-engine fuzz suite:
+  - `@tevm/node`: return canonical JSON-RPC `-32700` Parse error when raw `engine.rpc` input contains unescaped NUL bytes instead of throwing a C-string FFI `TypeError`.
+  - `@tevm/server`: enforce `maxBodySize` on trailing incomplete UTF-8 byte sequences flushed by `StringDecoder.end()` in `getRequestBody`.
+  - `@tevm/mcp`: guard `toolSchemas` lookup with `Object.hasOwn` in `executeTool` so prototype property names (`__proto__`, `constructor`, `toString`) cleanly reject as unknown tools, and guard zero-length tail slicing in `evm_trace_call`.
+
+- 6401089: Prevent issue #2097 package version skew permanently by moving the TEVM release group to lockstep (`fixed`) versioning, aligning `tevm` facade declarations with the thin ZEVM architecture, fixing standalone package runtime dependencies and `viem@^2.58.4` portability, and adding a minimal pluggable `backend` option (`ZevmBackend`) on `createZevmEngine` / `createMemoryClient` for WASM-based EVMs and custom JSON-RPC backends.
+- 1785ae3: Pin ZEVM's block response fix so native JSON-RPC always includes canonical `difficulty` and `totalDifficulty` quantities, including `"0x0"` for dev blocks.
+- 72054ad: Execute EIP-7939 CLZ through the native engine when the selected block context
+  activates Osaka, preserving rejection before activation. Native builds require
+  the accompanying Guillotine Mini and Voltaire source updates.
+- 72054ad: Document and verify native ModExp activation at the mainnet Osaka timestamp.
+  With the companion native changes, EIP-7823 rejects operands above 1,024 bytes
+  and EIP-7883 raises the minimum gas to 500. Pending calls before activation
+  retain Prague behavior. Regression coverage checks exact JSON-RPC results.
+- 72054ad: Enforce Osaka's EIP-7825 transaction gas cap through the updated native ZEVM
+  runtime. Declared gas above 16,777,216 is rejected with JSON-RPC code -32000
+  before submission or signing; historical forks retain their prior limits.
+  Requires the accompanying ZEVM source update and a rebuilt native addon.
+- 48b37fa: Harden package manifests, exports, documentation, and runtime hygiene for publishing:
+  - Fix blank-line and Windows path handling in `@tevm/config` `remappings.txt` loading
+  - Remove stray debug `console.log` from `@tevm/unplugin` and stale debug scripts from `@tevm/viem` and `@tevm/ts-plugin`
+  - Add CommonJS `require` export mapping to `@tevm/mcp` so `publint --strict` and `attw --pack` pass across ESM and CJS
+  - Remove unused runtime and development dependencies across `@tevm/server`, `@tevm/http-client`, `@tevm/actions`, `@tevm/viem`, and `@tevm/cli`
+  - Sync `tevm/jsr.json` exports with the native ZEVM facade surface and update package READMEs and descriptions
+
+- 1d0e6ae: Optimize hot paths discovered by the new incremental package benchmark suite:
+  - `@tevm/contract`: remove per-call JSON-RPC metadata cloning and `Object.defineProperty` overhead in contract read/write/event action creators and `withAddress` (up to 14.8x faster write action creation and 3.1x faster read/event creation).
+  - `@tevm/server`: avoid repeated `Buffer.concat` allocations while buffering HTTP request bodies (6.9x faster on multi-chunk 64 KB payloads) and replace quadratic string slicing in IPC JSON-RPC frame extraction with an indexed scanner.
+  - `@tevm/node`: cache the native ZEVM constructor and fast-path idle `ready()`, `request()`, `rpc`, and `close()` calls without unnecessary listener allocations.
+  - `@tevm/base-bundler`: avoid redundant cache reads and fix concurrent cache-write races in `resolveModuleAsync` / `resolveModuleSync` (up to 2.6x faster warm cache resolution).
+  - `@tevm/errors` & `@tevm/resolutions`: trim repeated formatting and path-resolution overhead on hot paths.
+
+- 42a8f85: Graduate the tested release candidate to the stable tevm 1.0.0 release. Every published package in the linked group is versioned together so that `tevm` and the `@tevm/*` entry points documented in the migration guide all resolve to `1.0.0`.
+- 266283a: Fix `createZevmEngine` queue ordering: `request()` and `rpc()` calls issued before `close()` in the same tick now complete before the engine closes instead of rejecting with `engine is closed`. Found by the new stateful differential fuzz suite that compares native ZEVM, an async pluggable backend and a reference model.
+- 266283a: Harden `createZevmEngine` teardown and block events for pluggable backends. A failed fork or mining initialization now rejects `ready()` with the initialization error even when `backend.close()` also throws, closes the backend once, and no longer leaks a poll timer when a `block` listener is added during that cleanup. A `block` subscription made while a request is in flight no longer replays blocks mined before it, and a failed `eth_getBlockByNumber` is retried instead of skipping blocks. `request()` rejects with `backend returned an invalid JSON-RPC response` instead of resolving `undefined` when a backend returns a non-object or result-less response. `close()` emits `close` and removes listeners even when `backend.close()` rejects.
+- Updated dependencies [30e5e79]
+- Updated dependencies [266283a]
+- Updated dependencies [f3fee97]
+- Updated dependencies [6401089]
+- Updated dependencies [138aae1]
+- Updated dependencies [48b37fa]
+- Updated dependencies [1d0e6ae]
+- Updated dependencies [266283a]
+- Updated dependencies [42a8f85]
+  - @tevm/errors@1.0.0-rc.154
+  - @tevm/utils@1.0.0-rc.154
+
 ## 1.0.0-rc.153
 
 ### Minor Changes
