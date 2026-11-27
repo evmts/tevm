@@ -16,15 +16,18 @@ import { extractDocTitle, listDocFiles, pageMarkdownRoute, renderLlmsTxt } from 
 import { readJson, repositoryRoot } from './lib.mjs'
 
 /**
- * Strips YAML frontmatter and top-level MDX-only import statements (never inside
- * fenced code blocks) while keeping readable Markdown with a guaranteed top-level heading.
+ * Strips YAML frontmatter, Vocs `:::code-group` wrappers, and top-level MDX-only import
+ * statements (never inside fenced code blocks) while keeping readable Markdown with a
+ * guaranteed top-level heading. Optionally converts Obsidian `[[slug]]` wikilinks to
+ * clickable `/wiki/<slug>.md` links for web Markdown readers.
  * @param {string} raw
  * @param {string} fallbackTitle
+ * @param {{ wikiIds?: Set<string> }} [options]
  */
-export function mdxToCleanMarkdown(raw, fallbackTitle) {
+export function mdxToCleanMarkdown(raw, fallbackTitle, { wikiIds } = {}) {
 	const title = extractDocTitle(raw, fallbackTitle)
 	let body = raw.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '')
-	// Drop top-level ESM import lines used by Vocs JSX components without touching code fences
+	// Drop top-level ESM imports and Vocs :::code-group wrappers without touching code fences
 	let inFence = false
 	const kept = []
 	for (const line of body.split(/\r?\n/)) {
@@ -33,10 +36,21 @@ export function mdxToCleanMarkdown(raw, fallbackTitle) {
 			kept.push(line)
 			continue
 		}
-		if (!inFence && /^import\s+/.test(line)) {
+		if (!inFence && (/^import\s+/.test(line) || /^:::(?:code-group)?\s*$/.test(line))) {
 			continue
 		}
-		kept.push(line)
+		let next = line
+		if (!inFence && wikiIds) {
+			next = next.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_match, rawTarget, label) => {
+				const target = String(rawTarget).trim()
+				const text = (label ? String(label) : target).trim()
+				if (wikiIds.has(target)) {
+					return `[${text}](/wiki/${target}.md)`
+				}
+				return `\`${text}\``
+			})
+		}
+		kept.push(next)
 	}
 	body = kept.join('\n').trimStart()
 	if (!/^#\s+/m.test(body)) {
@@ -83,11 +97,12 @@ export async function emitDocsMarkdown({ root = repositoryRoot, distDir = resolv
 
 	// Mirror Obsidian Engineering Wiki pages and Mythical History into /wiki/*.md
 	const wikiCatalog = await readJson(resolve(root, '.smithers/coding-project.json'))
+	const wikiIds = new Set((wikiCatalog.pages ?? []).map((page) => page.id))
 	for (const page of wikiCatalog.pages ?? []) {
 		const src = resolve(root, page.document)
 		const route = `/wiki/${page.id}.md`
 		const raw = await readFile(src, 'utf8')
-		await writeToTargets(route, mdxToCleanMarkdown(raw, page.title))
+		await writeToTargets(route, mdxToCleanMarkdown(raw, page.title, { wikiIds }))
 	}
 
 	const mythicalSrc = resolve(root, '.smithers/history/MYTHICAL.md')

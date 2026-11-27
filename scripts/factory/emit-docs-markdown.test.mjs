@@ -7,7 +7,7 @@ import test from 'node:test'
 import { emitDocsMarkdown, mdxToCleanMarkdown } from './emit-docs-markdown.mjs'
 import { DOCS_ORIGIN } from './generate-llms-txt.mjs'
 
-test('mdxToCleanMarkdown strips top-level MDX imports while preserving imports inside code fences', () => {
+test('mdxToCleanMarkdown strips top-level MDX imports and :::code-group wrappers while preserving fenced imports and linkifying wikilinks', () => {
 	const raw = [
 		'---',
 		'title: Quickstart',
@@ -15,17 +15,21 @@ test('mdxToCleanMarkdown strips top-level MDX imports while preserving imports i
 		'---',
 		"import { Callout } from 'vocs/components'",
 		'',
-		'Install tevm:',
+		'See [[architecture]] and [[mcp-and-byoa|MCP guide]].',
 		'',
+		':::code-group',
 		'```ts',
 		"import { createMemoryClient } from 'tevm'",
 		'const client = createMemoryClient()',
 		'```',
+		':::',
 		'',
 	].join('\n')
-	const cleaned = mdxToCleanMarkdown(raw, 'Fallback')
-	assert.equal(cleaned.startsWith('# Quickstart\n\nInstall tevm:'), true)
+	const cleaned = mdxToCleanMarkdown(raw, 'Fallback', { wikiIds: new Set(['architecture', 'mcp-and-byoa']) })
+	assert.equal(cleaned.startsWith('# Quickstart\n\nSee [architecture](/wiki/architecture.md)'), true)
+	assert.equal(cleaned.includes('[MCP guide](/wiki/mcp-and-byoa.md)'), true)
 	assert.equal(cleaned.includes('import { Callout }'), false)
+	assert.equal(cleaned.includes(':::'), false)
 	assert.equal(cleaned.includes("import { createMemoryClient } from 'tevm'"), true)
 	assert.equal(cleaned.includes('---'), false)
 })
