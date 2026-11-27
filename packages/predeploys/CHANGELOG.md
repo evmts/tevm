@@ -1,5 +1,13 @@
 # @tevm/contract
 
+## 1.0.0-rc.155
+
+### Patch Changes
+
+- Updated dependencies [4fe6241]
+  - @tevm/utils@1.0.0-rc.155
+  - @tevm/contract@1.0.0-rc.155
+
 ## 1.0.0-rc.154
 
 ### Major Changes

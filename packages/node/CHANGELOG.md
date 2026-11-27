@@ -1,5 +1,13 @@
 # @tevm/client
 
+## 1.0.0-rc.155
+
+### Patch Changes
+
+- Updated dependencies [4fe6241]
+  - @tevm/errors@1.0.0-rc.155
+  - @tevm/utils@1.0.0-rc.155
+
 ## 1.0.0-rc.154
 
 ### Major Changes

@@ -1,5 +1,13 @@
 # @tevm/core-docs
 
+## 1.0.0-rc.155
+
+### Patch Changes
+
+- Updated dependencies [acb859f]
+  - tevm@1.0.0-rc.155
+  - @tevm/docs-shared@1.0.0-rc.155
+
 ## 1.0.0-rc.154
 
 ### Patch Changes

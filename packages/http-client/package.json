@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/http-client",
-	"version": "1.0.0-rc.154",
+	"version": "1.0.0-rc.155",
 	"private": false,
 	"description": "Remote HTTP JSON-RPC client for native Tevm servers",
 	"keywords": [

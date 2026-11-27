@@ -338,7 +338,7 @@ importers:
         specifier: 0.8.39
         version: 0.8.39
       tevm:
-        specifier: 1.0.0-rc.154
+        specifier: 1.0.0-rc.155
         version: link:../tevm
       tsx:
         specifier: 4.23.15
