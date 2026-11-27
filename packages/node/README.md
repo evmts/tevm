@@ -28,14 +28,15 @@ const wasmEngine = createZevmEngine({
 
 ## Options
 
-| Option       | Type                                    | Behavior                                                                                          |
-| ------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `chainId`    | `number`                                | Chain ID of the native node. Defaults to `common.id`, then 31337.                                 |
-| `common`     | `{ id: number }`                        | Chain definition. `chainId` and `common.id` must be equal when both are given; a conflict throws. |
-| `mining`     | `{ auto?: boolean; interval?: number }` | Automine defaults to `true`. `interval` is whole seconds; `0` disables the timer.                 |
-| `fork`       | `{ url: string; blockNumber?: number }` | Fork upstream state. Pin `blockNumber` for stable reads.                                          |
-| `backend`    | `{ rpc(json), close() }`                | JSON-RPC backend that replaces the native addon. Required in browsers.                            |
-| `consoleLog` | `boolean \| (message, raw) => void`     | Print Solidity `console.log` output. Disabled by default.                                         |
+| Option       | Type                                                              | Behavior                                                                                                                  |
+| ------------ | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `chainId`    | `number`                                                          | Chain ID of the node. Defaults to `common.id`, then 31337.                                                                |
+| `common`     | `{ id: number }`                                                  | Chain definition. `chainId` and `common.id` must be equal when both are given; a conflict throws.                         |
+| `mining`     | `{ auto?: boolean; interval?: number }`                           | Automine defaults to `true`. `interval` is whole seconds; `0` disables the timer.                                         |
+| `fork`       | `{ url: string; blockNumber?: number }`                           | Fork upstream state. Pin `blockNumber` for stable reads.                                                                  |
+| `backend`    | `{ rpc(json), close() }`                                          | Custom JSON-RPC backend that replaces `@evmts/zevm`. Mutually exclusive with `wasm`.                                      |
+| `wasm`       | `boolean \| ArrayBuffer \| ArrayBufferView \| WebAssembly.Module` | Force `@evmts/zevm/browser`'s compiled WASM backend (`true` or bytes/module), or disable auto-WASM in browsers (`false`). |
+| `consoleLog` | `boolean \| (message, raw) => void`                               | Print Solidity `console.log` output. Disabled by default.                                                                 |
 
 With an injected `backend`, the backend owns its chain ID. When `chainId` or `common` is also given, the engine calls `eth_chainId` during initialization and `ready()` rejects on a mismatch. A backend without `eth_chainId` (`-32601`) is not checked.
 
@@ -75,7 +76,36 @@ The engine drains captured calls with `tevm_drainConsoleLogs` after `eth_call`, 
 
 ## Browsers and WASM
 
-`@tevm/node` has no static Node built-in import. It bundles with `platform: 'browser'` and runs wherever you inject a `backend`:
+`@tevm/node` has no static Node built-in import and bundles cleanly with `platform: 'browser'`.
+
+- **Zero-config in browsers and workers**: when `@evmts/zevm` is installed, calling `createZevmEngine()` outside Node.js automatically loads `@evmts/zevm/browser`'s compiled `zevm.wasm` reactor during initialization:
+
+```js
+import { createZevmEngine } from '@tevm/node'
+
+// Works with zero configuration in browsers (WASM) and Node.js (native Node-API)
+const engine = createZevmEngine({ chainId: 31337 })
+try {
+	console.log(await engine.request({ method: 'eth_chainId' }))
+} finally {
+	await engine.close()
+}
+```
+
+- **Explicit WASM anywhere (Node.js, Bun, Deno, Cloudflare Workers, custom asset URLs)**: pass `wasm` bytes or a compiled `WebAssembly.Module`, or build a backend directly with `createWasmBackend`:
+
+```js
+import { createWasmBackend, createZevmEngine } from '@tevm/node'
+
+// Option 1: pass pre-loaded WASM bytes or a WebAssembly.Module directly
+const engine = createZevmEngine({ wasm: wasmBytes })
+
+// Option 2: construct the reusable ZevmBackend explicitly
+const backend = await createWasmBackend({ chainId: 31337, wasm: wasmBytes })
+const customEngine = createZevmEngine({ backend, chainId: 31337 })
+```
+
+- **Custom JSON-RPC backend**: pass any `{ rpc(json), close() }` object without loading `@evmts/zevm` at all:
 
 ```js
 import { createZevmEngine } from '@tevm/node'
@@ -88,7 +118,7 @@ const engine = createZevmEngine({
 })
 ```
 
-`rpc` receives one raw JSON-RPC 2.0 string (single request, batch or notification) and returns the JSON response, or `null` for a notification. The native addon `@evmts/zevm` is an optional dependency, loaded through `process.getBuiltinModule('node:module')` only when `backend` is omitted. That path requires Node.js 22.12 or later. Without a `backend` in a browser or WASM host, `createZevmEngine()` throws an error that says to pass one.
+`rpc` receives one raw JSON-RPC 2.0 string (single request, batch or notification) and returns the JSON response, or `null` for a notification. The native addon `@evmts/zevm` is an optional dependency, loaded through `process.getBuiltinModule('node:module')` in Node.js (>= 22.12) when neither `backend` nor `wasm` is given. Pass `wasm: false` outside Node.js to opt out of automatic WASM loading.
 
 ## Mainnet hardfork rules
 

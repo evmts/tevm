@@ -186,10 +186,6 @@ const snapshot = S.Github.Workflow({
 	steps: [
 		...nativeSetup(),
 		{
-			uses: 'actions/setup-node@v4',
-			with: { 'node-version-file': '.nvmrc', 'registry-url': 'https://registry.npmjs.org' },
-		},
-		{
 			run: 'pnpm exec smthrs target //:snapshot',
 			env: {
 				NPM_TOKEN: '${{ secrets.NPM_TOKEN }}',

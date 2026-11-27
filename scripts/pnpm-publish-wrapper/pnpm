@@ -91,4 +91,21 @@ if [ "${provenance}" = false ] && [ "${NPM_CONFIG_PROVENANCE:-}" = "true" ]; the
 	npm_args+=("--provenance")
 fi
 
-npm "${npm_args[@]}"
+# Prefer GitHub Actions OIDC Trusted Publishing over any stale NPM_TOKEN when an
+# OIDC token endpoint is available. Clearing NPM_CONFIG_USERCONFIG and auth env
+# vars prevents a blank or expired _authToken in .npmrc from shadowing OIDC.
+auth_token="${NODE_AUTH_TOKEN:-${NPM_TOKEN:-}}"
+if [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+	if NPM_CONFIG_USERCONFIG=/dev/null env -u NODE_AUTH_TOKEN -u NPM_TOKEN npm "${npm_args[@]}"; then
+		exit 0
+	fi
+	if [ -n "${auth_token}" ]; then
+		echo "OIDC publish failed; falling back to explicit npm auth token" >&2
+		exec npm "${npm_args[@]}"
+	fi
+	exit 1
+elif [ -z "${auth_token}" ]; then
+	NPM_CONFIG_USERCONFIG=/dev/null env -u NODE_AUTH_TOKEN -u NPM_TOKEN npm "${npm_args[@]}"
+else
+	npm "${npm_args[@]}"
+fi

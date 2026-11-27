@@ -604,17 +604,31 @@ describe('native addon loading', () => {
 			'node:module is unavailable',
 			() => void vi.spyOn(process, 'getBuiltinModule').mockReturnValue(undefined as never),
 		],
-	])('throws an actionable error without a backend when %s', (_name, arrange) => {
+	])('throws an actionable error when WASM fallback is disabled and %s', (_name, arrange) => {
 		arrange()
 		let thrown: unknown
 		try {
-			createZevmEngine()
+			createZevmEngine({ wasm: false })
 		} catch (error) {
 			thrown = error
 		}
 		vi.unstubAllGlobals()
 		expect((thrown as Error).message).toMatch(/cannot load the native ZEVM addon/)
 		expect((thrown as Error).message).toMatch(/pass a `backend` that implements `\{ rpc\(json\), close\(\) \}`/)
+	})
+
+	it('falls back to async WASM initialization instead of throwing synchronously outside Node.js', async () => {
+		vi.stubGlobal('process', undefined)
+		let engine: ZevmEngine | undefined
+		try {
+			engine = createZevmEngine()
+		} finally {
+			vi.unstubAllGlobals()
+		}
+		expect(engine).toBeDefined()
+		// Close cleans up even if default browser fetch(wasmURL) fails in this Node test realm.
+		await engine!.ready().catch(() => {})
+		await engine!.close()
 	})
 
 	it('explains a missing optional @evmts/zevm install and keeps other load errors intact', () => {

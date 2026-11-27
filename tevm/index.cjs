@@ -1,8 +1,8 @@
 'use strict';
 
+var contract = require('@tevm/contract');
 var memoryClient = require('@tevm/memory-client');
 var node = require('@tevm/node');
-var contract = require('@tevm/contract');
 var utils = require('@tevm/utils');
 var viem = require('viem');
 
@@ -16,6 +16,10 @@ Object.defineProperty(exports, "createTevmNode", {
   enumerable: true,
   get: function () { return node.createTevmNode; }
 });
+Object.defineProperty(exports, "createWasmBackend", {
+  enumerable: true,
+  get: function () { return node.createWasmBackend; }
+});
 Object.defineProperty(exports, "createZevmEngine", {
   enumerable: true,
   get: function () { return node.createZevmEngine; }
@@ -28,16 +32,16 @@ Object.defineProperty(exports, "webSocket", {
   enumerable: true,
   get: function () { return viem.webSocket; }
 });
-Object.keys(memoryClient).forEach(function (k) {
-  if (k !== 'default' && !Object.prototype.hasOwnProperty.call(exports, k)) Object.defineProperty(exports, k, {
-    enumerable: true,
-    get: function () { return memoryClient[k]; }
-  });
-});
 Object.keys(contract).forEach(function (k) {
   if (k !== 'default' && !Object.prototype.hasOwnProperty.call(exports, k)) Object.defineProperty(exports, k, {
     enumerable: true,
     get: function () { return contract[k]; }
+  });
+});
+Object.keys(memoryClient).forEach(function (k) {
+  if (k !== 'default' && !Object.prototype.hasOwnProperty.call(exports, k)) Object.defineProperty(exports, k, {
+    enumerable: true,
+    get: function () { return memoryClient[k]; }
   });
 });
 Object.keys(utils).forEach(function (k) {

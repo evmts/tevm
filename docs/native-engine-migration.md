@@ -35,7 +35,7 @@ See [local validation results and unresolved gates](native-engine-validation.md)
 
 The JavaScript VM, EVM, state manager, trie, blockchain, transaction classes, txpool, receipt manager, consensus, procedure dispatch, and decorator packages have been removed, along with their facade exports. There are no `getVm`, `getStateManager`, `getTxPool`, mutable internal objects, or JavaScript opcode/precompile callbacks.
 
-The former in-browser memory engine is removed. Browser examples use viem against a local native JSON-RPC server. A native WASM execution adapter is not implemented by this migration. Solidity compilation and ABI tooling remain.
+The former JavaScript in-browser memory engine is removed. Browsers can now either connect to a local native JSON-RPC server via viem OR run in-process with zero configuration using `@evmts/zevm`'s compiled WebAssembly reactor (`createMemoryClient()` / `createZevmEngine()` automatically load `@evmts/zevm/browser` outside Node.js, or pass `{ wasm }` / `createWasmBackend()` anywhere). Solidity compilation and ABI tooling remain.
 
 The MUD adapter, matchers, and old benchmark/reproduction projects built around removed internal objects were retired. Native contract calls, deployment, transactions, receipts, mining, account/state editing, snapshots, filters and server subscriptions remain available. Debug/tracing and other RPC methods are implemented by ZEVM; a viem action's presence is not a claim that ZEVM supports every possible method or parameter extension.
 

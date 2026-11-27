@@ -1,5 +1,6 @@
 import { decodeHardhatConsoleLog } from '@tevm/utils'
 import { createEventEmitter } from './createEventEmitter.js'
+import { createWasmBackend, isWasmSource } from './createWasmBackend.js'
 import { NativeRpcError } from './NativeRpcError.js'
 
 /** Requests that execute EVM code and may capture Hardhat `console.log` calls. */
@@ -53,19 +54,27 @@ const requireBase = () => {
 }
 
 /**
+ * Return `node:module` when running on Node.js >= 22.12 without importing any `node:` specifier statically.
+ * @returns {{ createRequire?: (filename: string) => NodeRequire } | undefined}
+ */
+const getNodeModule = () => {
+	const getBuiltinModule = /** @type {{getBuiltinModule?: (id: string) => any} | undefined} */ (
+		/** @type {any} */ (globalThis).process
+	)?.getBuiltinModule
+	return typeof getBuiltinModule === 'function' ? getBuiltinModule('node:module') : undefined
+}
+
+/**
  * Load `NativeNode` from the optional `@evmts/zevm` dependency without a static `node:` import,
  * so browser and WASM bundles of this module contain no Node built-ins.
  * @returns {new (config: {chain_id?: number}) => import('./ZevmEngine.js').ZevmBackend}
  * @throws {Error} Outside Node.js, or when `@evmts/zevm` is not installed.
  */
 const loadNativeNode = () => {
-	const getBuiltinModule = /** @type {{getBuiltinModule?: (id: string) => any} | undefined} */ (
-		/** @type {any} */ (globalThis).process
-	)?.getBuiltinModule
-	const nodeModule = typeof getBuiltinModule === 'function' ? getBuiltinModule('node:module') : undefined
+	const nodeModule = getNodeModule()
 	if (typeof nodeModule?.createRequire !== 'function')
 		throw new Error(
-			'@tevm/node cannot load the native ZEVM addon in this environment. The default backend requires Node.js >= 22.12. In a browser or WASM host, pass a `backend` that implements `{ rpc(json), close() }`: createZevmEngine({ backend }).',
+			'@tevm/node cannot load the native ZEVM addon in this environment. The default native backend requires Node.js >= 22.12. In a browser or WASM host, omit `wasm: false` for automatic `@evmts/zevm/browser` WASM loading, or pass a `backend` that implements `{ rpc(json), close() }`: createZevmEngine({ backend }).',
 		)
 	try {
 		return nodeModule.createRequire(requireBase())('@evmts/zevm').NativeNode
@@ -129,14 +138,27 @@ export function createZevmEngine(options = {}) {
 		typeof options.consoleLog !== 'function'
 	)
 		throw new TypeError('consoleLog must be a boolean or a function')
-	/** @type {import('./ZevmEngine.js').ZevmBackend} */
+	if (options.backend !== undefined && options.wasm !== undefined)
+		throw new TypeError('pass either `backend` or `wasm`, not both')
+	if (options.wasm !== undefined && typeof options.wasm !== 'boolean' && !isWasmSource(options.wasm))
+		throw new TypeError('wasm must be a boolean, ArrayBuffer, ArrayBufferView, or WebAssembly.Module')
+	/** @type {import('./ZevmEngine.js').ZevmBackend | undefined} */
 	let backend
+	/** @type {(() => Promise<import('./ZevmEngine.js').ZevmBackend>) | undefined} */
+	let initBackend
 	if (options.backend !== undefined) {
 		if (typeof options.backend?.rpc !== 'function' || typeof options.backend?.close !== 'function') {
 			throw new TypeError('backend must implement rpc(json) and close()')
 		}
 		backend = options.backend
-	} else {
+	} else if (options.wasm === true || isWasmSource(options.wasm)) {
+		const wasmSource = options.wasm === true ? undefined : options.wasm
+		initBackend = () =>
+			createWasmBackend({
+				...(chainId === undefined ? {} : { chainId }),
+				...(wasmSource === undefined ? {} : { wasm: wasmSource }),
+			})
+	} else if (options.wasm === false || typeof getNodeModule()?.createRequire === 'function') {
 		const NativeNode = loadNativeNode()
 		const native = new NativeNode(chainId === undefined ? {} : { chain_id: chainId })
 		backend = {
@@ -147,6 +169,9 @@ export function createZevmEngine(options = {}) {
 					: native.rpc(json),
 			close: () => native.close(),
 		}
+	} else {
+		// Browser / edge host with no explicit backend: auto-load @evmts/zevm's WASM reactor.
+		initBackend = () => createWasmBackend(chainId === undefined ? {} : { chainId })
 	}
 	let closed = false
 	let id = 0
@@ -261,13 +286,21 @@ export function createZevmEngine(options = {}) {
 			)
 		throw new NativeRpcError(error)
 	}
+	/** @returns {import('./ZevmEngine.js').ZevmBackend} */
+	const activeBackend = () => {
+		if (!backend) throw new Error('ZEVM backend is not initialized')
+		return backend
+	}
 	/**
 	 * Send one request to the backend. `jsonrpc` and `id` are written last so caller fields cannot replace them.
 	 * @param {import('./ZevmEngine.js').EngineRequest} request
 	 */
 	const execute = async (request) => {
 		const requestId = ++id
-		return parseResponse(await backend.rpc(JSON.stringify({ ...request, jsonrpc: '2.0', id: requestId })), requestId)
+		return parseResponse(
+			await activeBackend().rpc(JSON.stringify({ ...request, jsonrpc: '2.0', id: requestId })),
+			requestId,
+		)
 	}
 	const consoleLog = options.consoleLog
 	// Cleared when the native engine predates console capture (-32601), so later requests skip the drain.
@@ -349,7 +382,7 @@ export function createZevmEngine(options = {}) {
 		clearInterval(blockTimer)
 		blockTimer = undefined
 		try {
-			await backend.close()
+			if (backend) await backend.close()
 		} finally {
 			// The engine is closed even when the backend fails to release its resources.
 			events.emit('close')
@@ -358,6 +391,14 @@ export function createZevmEngine(options = {}) {
 	}
 	const ready = enqueue(async () => {
 		try {
+			if (!backend && initBackend) {
+				const resolved = await initBackend()
+				if (closed) {
+					await resolved.close()
+					return
+				}
+				backend = resolved
+			}
 			if (options.backend !== undefined && chainId !== undefined) {
 				// An injected backend owns its chain ID. Reject a mismatch instead of ignoring `chainId`.
 				/** @type {import('./ZevmEngine.js').JsonValue | undefined} */
@@ -424,7 +465,7 @@ export function createZevmEngine(options = {}) {
 				// Drain even when execution fails: Hardhat prints logs emitted before a revert.
 				// Observer work in `finally` never throws, so it cannot replace the result or mask the error.
 				try {
-					const response = await backend.rpc(json)
+					const response = await activeBackend().rpc(json)
 					await pollBlocks()
 					const result = parseResponse(response, requestId)
 					// Listeners receive copies, so they cannot change the result returned to the caller.
@@ -441,7 +482,7 @@ export function createZevmEngine(options = {}) {
 				await ready
 				if (closed) throw new Error('engine is closed')
 				try {
-					const response = await backend.rpc(json)
+					const response = await activeBackend().rpc(json)
 					await pollBlocks()
 					return response
 				} finally {

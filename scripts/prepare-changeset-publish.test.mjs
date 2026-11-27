@@ -488,6 +488,80 @@ describe('pnpm-publish-wrapper tarball guard', () => {
 			rmSync(sandbox, { recursive: true, force: true })
 		}
 	})
+
+	it('prefers OIDC Trusted Publishing over stale NPM_TOKEN in GitHub Actions and falls back on OIDC failure', () => {
+		const sandbox = mkdtempSync(join(tmpdir(), 'tevm-wrapper-oidc-'))
+		try {
+			const pkgDir = join(sandbox, 'pkg')
+			const fakeBin = join(sandbox, 'bin')
+			mkdirSync(pkgDir, { recursive: true })
+			mkdirSync(fakeBin, { recursive: true })
+
+			writeJson(join(pkgDir, 'package.json'), {
+				name: '@tevm/node',
+				version: '1.0.0-rc.154',
+				dependencies: { '@evmts/zevm': '^0.1.0' },
+			})
+
+			const fakePnpm = join(fakeBin, 'pnpm')
+			writeFileSync(
+				fakePnpm,
+				`#!/usr/bin/env bash
+set -euo pipefail
+if [ "$1" = "pack" ]; then
+	dest="$3"
+	mkdir -p "$dest/stage/package"
+	cp "${pkgDir}/package.json" "$dest/stage/package/package.json"
+	tar -czf "$dest/pkg.tgz" -C "$dest/stage" package
+	exit 0
+fi
+exit 0
+`,
+			)
+			chmodSync(fakePnpm, 0o755)
+
+			const npmLog = join(sandbox, 'npm.log')
+			const fakeNpm = join(fakeBin, 'npm')
+			writeFileSync(
+				fakeNpm,
+				`#!/usr/bin/env bash
+echo "userconfig=\${NPM_CONFIG_USERCONFIG:-unset} token=\${NPM_TOKEN:-unset} node_auth=\${NODE_AUTH_TOKEN:-unset}" >> "${npmLog}"
+if [ -f "${sandbox}/fail-oidc" ] && [ -z "\${NPM_TOKEN:-}" ]; then
+	exit 1
+fi
+exit 0
+`,
+			)
+			chmodSync(fakeNpm, 0o755)
+
+			const wrapper = resolve(REPO_ROOT, 'scripts', 'pnpm-publish-wrapper', 'pnpm')
+			const baseEnv = {
+				...process.env,
+				TEVM_REAL_PNPM: fakePnpm,
+				PATH: `${fakeBin}:${process.env.PATH}`,
+				ACTIONS_ID_TOKEN_REQUEST_URL: 'https://token.actions.githubusercontent.com/test',
+				NPM_TOKEN: 'stale-token',
+				NODE_AUTH_TOKEN: 'stale-token',
+			}
+
+			// 1. OIDC succeeds on first try even when stale NPM_TOKEN is set
+			execFileSync(wrapper, ['publish', '--tag', 'rc', '--access', 'public'], { env: baseEnv, stdio: 'pipe' })
+			const lines1 = readFileSync(npmLog, 'utf8').trim().split('\n')
+			assert.equal(lines1.length, 1)
+			assert.equal(lines1[0], 'userconfig=/dev/null token=unset node_auth=unset')
+
+			// 2. When OIDC fails and explicit token exists, wrapper falls back to token auth
+			writeFileSync(join(sandbox, 'fail-oidc'), '1')
+			writeFileSync(npmLog, '')
+			execFileSync(wrapper, ['publish', '--tag', 'rc', '--access', 'public'], { env: baseEnv, stdio: 'pipe' })
+			const lines2 = readFileSync(npmLog, 'utf8').trim().split('\n')
+			assert.equal(lines2.length, 2)
+			assert.equal(lines2[0], 'userconfig=/dev/null token=unset node_auth=unset')
+			assert.match(lines2[1], /token=stale-token node_auth=stale-token/)
+		} finally {
+			rmSync(sandbox, { recursive: true, force: true })
+		}
+	})
 })
 
 describe('release:publish transaction', () => {

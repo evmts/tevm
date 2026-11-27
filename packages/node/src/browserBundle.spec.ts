@@ -107,9 +107,9 @@ describe('browser bundle', () => {
 		expect(timers.size).toBe(0)
 	}, 60_000)
 
-	it('tells browser and WASM users to pass a backend when the native addon cannot load', async () => {
+	it('tells browser and WASM users to pass a backend when WASM fallback is disabled', async () => {
 		const { api } = browserRealm((await bundle()).code)
-		expect(() => api.createZevmEngine()).toThrow(/browser or WASM host, pass a `backend`/)
+		expect(() => api.createZevmEngine({ wasm: false })).toThrow(/browser or WASM host/)
 		expect(new api.NativeRpcError({ code: 3, message: 'execution reverted', data: '0x' })).toMatchObject({
 			code: 3,
 			data: '0x',

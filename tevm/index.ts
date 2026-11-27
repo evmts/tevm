@@ -12,7 +12,9 @@ export type {
 	ZevmEngine,
 	ZevmEngineEvents,
 	ZevmEngineOptions,
+	ZevmWasmOptions,
+	ZevmWasmSource,
 } from '@tevm/node'
-export { createTevmNode, createZevmEngine, NativeRpcError } from '@tevm/node'
+export { createTevmNode, createWasmBackend, createZevmEngine, NativeRpcError } from '@tevm/node'
 export * from '@tevm/utils'
 export { http, webSocket } from 'viem'

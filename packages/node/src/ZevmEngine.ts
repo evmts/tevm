@@ -1,6 +1,7 @@
 import type { ConsoleLogHandler } from './ConsoleLogHandler.js'
 import type { EngineEventEmitter } from './EngineEventEmitter.js'
 import type { ZevmEngineEvents } from './ZevmEngineEvents.js'
+import type { ZevmWasmSource } from './ZevmWasmOptions.js'
 
 /** JSON values accepted by the native wire protocol. BigInts must be quantities. */
 export type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue }
@@ -34,11 +35,21 @@ export type ZevmEngineOptions = {
 	/** Fork upstream state into a local chain at height zero. Pin blockNumber for stable reads. */
 	fork?: { url: string; blockNumber?: number }
 	/**
-	 * Optional pluggable JSON-RPC backend (such as a WASM EVM or ZEVM WASM adapter).
-	 * Defaults to `@evmts/zevm`'s `NativeNode` when omitted. Required in browsers and WASM hosts,
-	 * where the native addon and Node built-ins are unavailable.
+	 * Optional pluggable JSON-RPC backend (such as a custom WASM EVM or worker bridge).
+	 * Mutually exclusive with `wasm`. When both `backend` and `wasm` are omitted, Node.js (>= 22.12)
+	 * loads `@evmts/zevm`'s native Node-API addon and browsers/edge hosts automatically load
+	 * `@evmts/zevm/browser`'s compiled WebAssembly reactor.
 	 */
 	backend?: ZevmBackend
+	/**
+	 * Control `@evmts/zevm`'s built-in WebAssembly backend.
+	 * - `true`: force the `@evmts/zevm/browser` WASM reactor (auto-fetching `./zevm.wasm` in browsers/workers).
+	 * - `ArrayBuffer | ArrayBufferView | WebAssembly.Module`: force the WASM reactor using the provided bytes or module
+	 *   (works in browsers, workers, Deno, Bun, and Node.js).
+	 * - `false`: disable automatic WASM fallback outside Node.js (requires native addon or explicit `backend`).
+	 * Mutually exclusive with `backend`.
+	 */
+	wasm?: boolean | ZevmWasmSource
 	/**
 	 * Print Hardhat `console.log` output from Solidity. `true` writes each message with
 	 * `console.log`; a function receives each message instead. Messages are drained after
