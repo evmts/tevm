@@ -338,7 +338,7 @@ importers:
         specifier: 0.8.39
         version: 0.8.39
       tevm:
-        specifier: 1.0.0-rc.155
+        specifier: 1.0.0-rc.156
         version: link:../tevm
       tsx:
         specifier: 4.23.15
@@ -1827,17 +1827,38 @@ packages:
     cpu: [x64]
     os: [darwin]
 
+  '@evmts/zevm-freebsd-arm64@0.0.0':
+    resolution: {integrity: sha512-M42ZIYrc+9Y+9ZN+u54lwEfI7PfuDEiWktA53NuXg3Epvlzt2YqsikTPi8wB3hXxTHNKu8CmHyN5VJiL615LsA==}
+
+  '@evmts/zevm-freebsd-x64@0.0.0':
+    resolution: {integrity: sha512-3oXAng+HExlypz7dsJqHtVHCFFI0EQ5Zr8ZB39CRBfFy4kEF2Rew7f1Di3Hl2GiiLs+lwH8uDnpwz9Fa34m3Mg==}
+
   '@evmts/zevm-linux-arm64-gnu@0.0.0':
     resolution: {integrity: sha512-cXOB4bDR0sesJzoiPaNIXJ7vF9DsaDnBqqW4Hn7sszCY/pV4uL+CAkoZpMS6q/LEw43LJFuA65kLVABtz+e46g==}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
+  '@evmts/zevm-linux-arm64-musl@0.0.0':
+    resolution: {integrity: sha512-mrRWogN/Hzt2iw1zqZPxn4Sz8yzYLEb9dt51AFdOOOvsOQmQ69LlNh3MeiLbz82Phhw81ivCAA7A6hezb+LY8g==}
+
   '@evmts/zevm-linux-x64-gnu@0.0.0':
     resolution: {integrity: sha512-a6tpXNchDZzI5mElMZ9XFgt6QRZMlBK2sntxe4cABfNTW7h4/Nwn8rJarfXxi7/jF6QqUuOj5wtWUtwiwThGYQ==}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
+
+  '@evmts/zevm-linux-x64-musl@0.0.0':
+    resolution: {integrity: sha512-wFC0nALuZ5UQXYJxFYTfPtWMU38TqNdTodOlJp10hU80bNvVoiGxLTLXGjx141x3gUt8uAY4uR2O6e/0dv65HQ==}
+
+  '@evmts/zevm-win32-arm64-msvc@0.0.0':
+    resolution: {integrity: sha512-VrvYmvs6PvRmkRdYX5DSpj1bsLGnITek8MJAcdSBCzLliMfup577Qh2wxbkwBpLO6L8Ig6M8zVf7yUzuxY4dZw==}
+
+  '@evmts/zevm-win32-ia32-msvc@0.0.0':
+    resolution: {integrity: sha512-kjr51Xlsx9DvCKfGLbj/cfRQoxZpc+TY9jWKS9mN7wDb7/w176851HnkYhPcohH9FPf0FQ4sJlnrBeMSLiPYNg==}
+
+  '@evmts/zevm-win32-x64-msvc@0.0.0':
+    resolution: {integrity: sha512-Nkgu997PXW30b9oKM5ndvKS4wznBq5AXUy06ZB7gGUxKhzX/VGcbm/b4UDMubVOgnbws/2fJ80Opg0e2KcdTKA==}
 
   '@evmts/zevm@0.0.0':
     resolution: {integrity: sha512-YQgEGcHaVSHn1zYk6i3sPbO00UR/2XiBP4IKn2Qj0QWBEkjQZlPCOvxXtxqVF/HolPRKu5OxntcbTwfmivwc5Q==}
@@ -11899,10 +11920,31 @@ snapshots:
   '@evmts/zevm-darwin-x64@0.0.0':
     optional: true
 
+  '@evmts/zevm-freebsd-arm64@0.0.0':
+    optional: true
+
+  '@evmts/zevm-freebsd-x64@0.0.0':
+    optional: true
+
   '@evmts/zevm-linux-arm64-gnu@0.0.0':
     optional: true
 
+  '@evmts/zevm-linux-arm64-musl@0.0.0':
+    optional: true
+
   '@evmts/zevm-linux-x64-gnu@0.0.0':
+    optional: true
+
+  '@evmts/zevm-linux-x64-musl@0.0.0':
+    optional: true
+
+  '@evmts/zevm-win32-arm64-msvc@0.0.0':
+    optional: true
+
+  '@evmts/zevm-win32-ia32-msvc@0.0.0':
+    optional: true
+
+  '@evmts/zevm-win32-x64-msvc@0.0.0':
     optional: true
 
   '@evmts/zevm@0.0.0':
@@ -11916,8 +11958,15 @@ snapshots:
     optionalDependencies:
       '@evmts/zevm-darwin-arm64': 0.0.0
       '@evmts/zevm-darwin-x64': 0.0.0
+      '@evmts/zevm-freebsd-arm64': 0.0.0
+      '@evmts/zevm-freebsd-x64': 0.0.0
       '@evmts/zevm-linux-arm64-gnu': 0.0.0
+      '@evmts/zevm-linux-arm64-musl': 0.0.0
       '@evmts/zevm-linux-x64-gnu': 0.0.0
+      '@evmts/zevm-linux-x64-musl': 0.0.0
+      '@evmts/zevm-win32-arm64-msvc': 0.0.0
+      '@evmts/zevm-win32-ia32-msvc': 0.0.0
+      '@evmts/zevm-win32-x64-msvc': 0.0.0
     transitivePeerDependencies:
       - supports-color
 

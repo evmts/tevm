@@ -1,5 +1,15 @@
 # @tevm/server
 
+## 1.0.0-rc.156
+
+### Patch Changes
+
+- Updated dependencies
+  - @tevm/node@1.0.0-rc.156
+  - @tevm/memory-client@1.0.0-rc.156
+  - @tevm/errors@1.0.0-rc.156
+  - @tevm/jsonrpc@1.0.0-rc.156
+
 ## 1.0.0-rc.155
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @tevm/client
 
+## 1.0.0-rc.156
+
+### Patch Changes
+
+- Updated dependencies
+  - @tevm/memory-client@1.0.0-rc.156
+  - @tevm/viem@1.0.0-rc.156
+
 ## 1.0.0-rc.155
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @tevm/state
 
+## 1.0.0-rc.156
+
+### Patch Changes
+
+- @tevm/errors@1.0.0-rc.156
+
 ## 1.0.0-rc.155
 
 ### Patch Changes

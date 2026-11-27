@@ -1,5 +1,13 @@
 # @tevm/mcp
 
+## 1.0.0-rc.156
+
+### Patch Changes
+
+- Updated dependencies
+  - @tevm/memory-client@1.0.0-rc.156
+  - @tevm/common@1.0.0-rc.156
+
 ## 1.0.0-rc.155
 
 ### Patch Changes

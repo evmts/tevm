@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/viem",
-	"version": "1.0.0-rc.155",
+	"version": "1.0.0-rc.156",
 	"private": false,
 	"description": "Viem client extension adding native Tevm JSON-RPC actions",
 	"keywords": [

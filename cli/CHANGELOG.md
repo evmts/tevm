@@ -1,5 +1,17 @@
 # @tevm/cli
 
+## 1.0.0-rc.156
+
+### Patch Changes
+
+- Updated dependencies
+  - @tevm/memory-client@1.0.0-rc.156
+  - @tevm/actions@1.0.0-rc.156
+  - @tevm/common@1.0.0-rc.156
+  - @tevm/contract@1.0.0-rc.156
+  - @tevm/server@1.0.0-rc.156
+  - @tevm/utils@1.0.0-rc.156
+
 ## 1.0.0-rc.155
 
 ### Patch Changes

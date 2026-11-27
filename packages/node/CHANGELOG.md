@@ -1,5 +1,16 @@
 # @tevm/client
 
+## 1.0.0-rc.156
+
+### Minor Changes
+
+- Add zero-config browser WebAssembly execution via `@evmts/zevm/browser`: `createZevmEngine()` and `createMemoryClient()` now automatically load ZEVM's compiled `zevm.wasm` reactor outside Node.js, accept a `wasm` option (`boolean | ArrayBuffer | ArrayBufferView | WebAssembly.Module`) to run WASM in any runtime, and export `createWasmBackend()`.
+
+### Patch Changes
+
+- @tevm/errors@1.0.0-rc.156
+- @tevm/utils@1.0.0-rc.156
+
 ## 1.0.0-rc.155
 
 ### Patch Changes

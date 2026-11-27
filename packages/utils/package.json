@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/utils",
-	"version": "1.0.0-rc.155",
+	"version": "1.0.0-rc.156",
 	"private": false,
 	"description": "Shared Tevm utility primitives backed by zevm",
 	"keywords": [

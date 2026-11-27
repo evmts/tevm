@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/docs-shared",
-	"version": "1.0.0-rc.155",
+	"version": "1.0.0-rc.156",
 	"private": true,
 	"type": "module",
 	"exports": {

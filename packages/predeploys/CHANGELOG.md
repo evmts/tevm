@@ -1,5 +1,12 @@
 # @tevm/contract
 
+## 1.0.0-rc.156
+
+### Patch Changes
+
+- @tevm/contract@1.0.0-rc.156
+- @tevm/utils@1.0.0-rc.156
+
 ## 1.0.0-rc.155
 
 ### Patch Changes
