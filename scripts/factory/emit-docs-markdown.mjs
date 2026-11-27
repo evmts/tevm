@@ -16,16 +16,29 @@ import { extractDocTitle, listDocFiles, pageMarkdownRoute, renderLlmsTxt } from 
 import { readJson, repositoryRoot } from './lib.mjs'
 
 /**
- * Strips YAML frontmatter and MDX-only import/export statements while keeping
- * readable Markdown with a guaranteed top-level heading.
+ * Strips YAML frontmatter and top-level MDX-only import statements (never inside
+ * fenced code blocks) while keeping readable Markdown with a guaranteed top-level heading.
  * @param {string} raw
  * @param {string} fallbackTitle
  */
 export function mdxToCleanMarkdown(raw, fallbackTitle) {
 	const title = extractDocTitle(raw, fallbackTitle)
 	let body = raw.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '')
-	// Drop top-level ESM import lines used by Vocs JSX components
-	body = body.replace(/^import\s+[^\n]+\r?\n/gm, '').trimStart()
+	// Drop top-level ESM import lines used by Vocs JSX components without touching code fences
+	let inFence = false
+	const kept = []
+	for (const line of body.split(/\r?\n/)) {
+		if (/^\s*```/.test(line)) {
+			inFence = !inFence
+			kept.push(line)
+			continue
+		}
+		if (!inFence && /^import\s+/.test(line)) {
+			continue
+		}
+		kept.push(line)
+	}
+	body = kept.join('\n').trimStart()
 	if (!/^#\s+/m.test(body)) {
 		body = `# ${title}\n\n${body}`
 	}

@@ -7,11 +7,26 @@ import test from 'node:test'
 import { emitDocsMarkdown, mdxToCleanMarkdown } from './emit-docs-markdown.mjs'
 import { DOCS_ORIGIN } from './generate-llms-txt.mjs'
 
-test('mdxToCleanMarkdown strips frontmatter and MDX imports while preserving heading', () => {
-	const raw = `---\ntitle: Quickstart\ndescription: Run TEVM\n---\nimport { Callout } from 'vocs/components'\n\nInstall tevm.\n`
+test('mdxToCleanMarkdown strips top-level MDX imports while preserving imports inside code fences', () => {
+	const raw = [
+		'---',
+		'title: Quickstart',
+		'description: Run TEVM',
+		'---',
+		"import { Callout } from 'vocs/components'",
+		'',
+		'Install tevm:',
+		'',
+		'```ts',
+		"import { createMemoryClient } from 'tevm'",
+		'const client = createMemoryClient()',
+		'```',
+		'',
+	].join('\n')
 	const cleaned = mdxToCleanMarkdown(raw, 'Fallback')
-	assert.equal(cleaned.startsWith('# Quickstart\n\nInstall tevm.'), true)
+	assert.equal(cleaned.startsWith('# Quickstart\n\nInstall tevm:'), true)
 	assert.equal(cleaned.includes('import { Callout }'), false)
+	assert.equal(cleaned.includes("import { createMemoryClient } from 'tevm'"), true)
 	assert.equal(cleaned.includes('---'), false)
 })
 
