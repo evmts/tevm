@@ -192,7 +192,7 @@ The bundler, language tooling, test, logger, ethers and example code moved to st
 
 This means all tevm packages run without being built by default and the same src code is shipped to most users
 
-- [src/index.js](./src/index.js) - the entrypoint to the package
+- [packages/node/src/index.js](./packages/node/src/index.js) - example entrypoint to a TEVM package
 
 **Note** there is still 100% typesafety. TypeScript is able to typecheck via setting `checkJs: true` in the tsconfig and using jsdoc.
 
@@ -204,8 +204,8 @@ The types are built to cache their result for end users.
 bun build:types
 ```
 
-- [tsconfig](./tsconfig.json) - @tevm/config tsconfig
-- [@tevm/tsconfig](../tsconfig/base.json) - base tsconfig inherited from
+- [tsconfig.factory.json](./tsconfig.factory.json) - repository factory tsconfig
+- [@tevm/tsconfig](./configs/tsconfig/base.json) - base tsconfig inherited across packages
 
 ## Running tests
 
@@ -221,11 +221,11 @@ Note `bun test` will run bun instead of [vitest](https://vitest.dev) resulting i
 
 **Note**: The bundler and `ts-plugin` fixtures moved to [evmts/tevm-bundler](https://github.com/evmts/tevm-bundler) with their packages. The instructions below apply when working within a package that has a `src/fixtures` directory.
 
-Fixtures in [src/fixtures](./src/fixtures/) exist both for the vitest tests and also can be loaded in watch mode.
+Fixtures in `src/fixtures/` (inside packages that ship fixtures) exist both for the vitest tests and also can be loaded in watch mode.
 
 The best way to debug a bug or implement a new feature is to first add a new fixture to use in test or dev server
 
-Some fixtures are expected to error and the dev server will succeed if they do error. Which fixtures should error is configured in [scripts/runFixture.ts](./scripts/runFixture.ts)
+Some fixtures are expected to error and the dev server will succeed if they do error. Which fixtures should error is configured in `scripts/runFixture.ts` within the fixture-owning package.
 
 Fixtures run with debug logging turned on. Debug logging is added to every function along with strong error handling so most debugging tasks won't need to involve adding console.logs if you are using a fixture.
 
@@ -241,7 +241,7 @@ bun dev
 bun fixture basic
 ```
 
-Valid names include any of the folder names in [src/fixtures](./fixtures). The default is basic
+Valid names include any of the folder names in `src/fixtures/`. The default is basic
 
 #### Adding a fixture
 
@@ -278,7 +278,7 @@ Whenever a new API is added, you will need to update a lot of barrel files. Thou
 - All the `index.js` in your package
 - Possibly the top level `src/index.ts` to update the types too if
 - Update the [tevm](./tevm) package (unless it's a build tool change)
-- Update the [@tevm/bundler](./bundler/) package if it's a build tool api
+- Update `@tevm/bundler` in [evmts/tevm-bundler](https://github.com/evmts/tevm-bundler) if it's a build tool api
 
 If you add a lot of files, there is a tool to automatically generate a barrel file in your folder in [`scripts`](./scripts/createBarrelFiles.ts)
 

@@ -7,6 +7,7 @@ import { createMemoryClient } from '@tevm/memory-client'
 import JSONBig from 'json-bigint'
 import React from 'react'
 
+import type { CliActionOptions, CliClient } from '../utils/action-types.js'
 import { isViemAction, loadViemClient } from '../utils/clients.js'
 import { cleanupProject, createEditorProject, executeTsFile, openEditor, waitForDependencies } from '../utils/editor.js'
 import { shouldRunDirectly } from '../utils/global-options.js'
@@ -41,19 +42,19 @@ export interface UseActionOptions<TParams, TResult> {
 	actionName: string
 
 	/** Options passed from the command line */
-	options: Record<string, any>
+	options: CliActionOptions
 
 	/** Default values for unspecified options */
-	defaultValues: Record<string, any>
+	defaultValues: CliActionOptions
 
 	/** Descriptions for each option (used for help text) */
 	optionDescriptions: Record<string, string>
 
 	/** Function to create action parameters from options */
-	createParams: (options: Record<string, any>) => TParams | Promise<TParams>
+	createParams: (options: CliActionOptions) => TParams | Promise<TParams>
 
 	/** Function to execute the action using the client */
-	executeAction: (client: any, params: TParams) => Promise<TResult>
+	executeAction: (client: CliClient, params: TParams) => Promise<TResult>
 }
 
 /**
@@ -166,7 +167,9 @@ export function useAction<TParams, TResult>({
 					throw new Error(`Session "${sessionName}" does not exist; create it with tevm session ${sessionName} --local`)
 				}
 				const local = baseOptions['local'] === true || (sessionName !== undefined && session?.forkUrl === undefined)
-				const rpcUrl = session?.forkUrl || (local ? undefined : baseOptions['rpc'] || 'http://localhost:8545')
+				const optionRpc =
+					typeof baseOptions['rpc'] === 'string' && baseOptions['rpc'].length > 0 ? baseOptions['rpc'] : undefined
+				const rpcUrl = session?.forkUrl || (local ? undefined : optionRpc || 'http://localhost:8545')
 				let forkBlock = session?.forkBlock
 
 				// Create the appropriate client based on action type
@@ -202,11 +205,11 @@ export function useAction<TParams, TResult>({
 
 				// Create the parameters and execute the action
 				const params = await createParams(baseOptions)
-				const actionResult = await executeAction(client, params)
+				const actionClient = client as unknown as CliClient
+				const actionResult = await executeAction(actionClient, params)
 				if (sessionName) {
-					const sessionClient = client as any
-					const state = await sessionClient.tevmDumpState()
-					const blockNumber = (await sessionClient.getBlockNumber()).toString()
+					const state = await actionClient.tevmDumpState()
+					const blockNumber = (await actionClient.getBlockNumber()).toString()
 					writeSession({
 						version: 2,
 						name: sessionName,
@@ -214,7 +217,7 @@ export function useAction<TParams, TResult>({
 						...(forkBlock ? { forkBlock } : {}),
 						blockNumber,
 						updatedAt: new Date().toISOString(),
-						state,
+						state: state as Parameters<typeof writeSession>[0]['state'],
 					})
 				}
 				return { result: (actionResult === undefined ? {} : actionResult) as TResult }

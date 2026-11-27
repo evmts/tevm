@@ -100,7 +100,7 @@ export default function Mine({ options }: Props) {
 		},
 
 		// Inlined executeAction function
-		executeAction: async (client: any, params: MineParams): Promise<unknown> => {
+		executeAction: async (client, params: MineParams): Promise<unknown> => {
 			return await client.tevmMine(params)
 		},
 	})

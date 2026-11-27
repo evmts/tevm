@@ -44,11 +44,9 @@ const buildContract = ({
 		name,
 		abi,
 		humanReadableAbi,
-		// TODO make this more internally typesafe
+		// Narrowing happens at the public Contract boundary; keep until checkJs preserves const ABI tuples.
 		events: eventsFactory({ events, ...optionalArgs }),
-		// TODO make this more internally typesafe
 		write: writeFactory({ methods, errors, ...optionalArgs }),
-		// TODO make this more internally typesafe
 		read: readFactory({ methods, errors, address: normalizedAddress, ...optionalArgs }),
 	}
 	/**

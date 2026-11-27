@@ -8,8 +8,18 @@ describe('contributor data contract', () => {
 				.filter(([key]) => key.endsWith('Url'))
 				.map(([, value]) => value),
 			...factoryData.issueTypes.map((issue) => issue.templateUrl),
+			...factoryData.wiki.map((page) => page.url),
 		]
 		for (const link of links) expect(safeExternalUrl(link)).toBe(link)
+	})
+
+	it('carries Lighthouse audit categories, wiki pages, mythical history, and strict trust invariants', () => {
+		expect(factoryData.lighthouse.categories.length).toBe(4)
+		expect(factoryData.wiki.length).toBeGreaterThanOrEqual(8)
+		expect(factoryData.mythicalHistory.length).toBeGreaterThanOrEqual(6)
+		expect(factoryData.trust.allowUntrustedExecution).toBe(true)
+		expect(factoryData.trust.untrustedCacheWrite).toBe(false)
+		expect(factoryData.trust.untrustedSkipGates).toBe(false)
 	})
 
 	it.each([

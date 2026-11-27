@@ -36,7 +36,9 @@ runs:
         CACHE_URL: ${{ inputs.cache-url }}
         CACHE_TOKEN: ${{ inputs.cache-token }}
       run: |
-        if [[ -n "$CACHE_URL" ]]; then
-          [[ "$CACHE_URL$CACHE_TOKEN" != *$'\n'* && "$CACHE_URL$CACHE_TOKEN" != *$'\r'* ]] || exit 1
-          printf 'SMITHERS_CACHE_URL=%s\nSMITHERS_CACHE_TOKEN=%s\n' "$CACHE_URL" "$CACHE_TOKEN" >> "$GITHUB_ENV"
+        CACHE_URL="${CACHE_URL:-https://build.smithers.sh}"
+        [[ "$CACHE_URL$CACHE_TOKEN" != *$'\n'* && "$CACHE_URL$CACHE_TOKEN" != *$'\r'* ]] || exit 1
+        printf 'SMITHERS_CACHE_URL=%s\n' "$CACHE_URL" >> "$GITHUB_ENV"
+        if [[ -n "$CACHE_TOKEN" ]]; then
+          printf 'SMITHERS_CACHE_TOKEN=%s\n' "$CACHE_TOKEN" >> "$GITHUB_ENV"
         fi

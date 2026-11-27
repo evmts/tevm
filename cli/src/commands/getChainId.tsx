@@ -73,7 +73,7 @@ export default function GetChainId({ options }: Props) {
 		},
 
 		// Execute the action
-		executeAction: async (client: any, _params: any): Promise<any> => {
+		executeAction: async (client, _params): Promise<unknown> => {
 			return await client.getChainId()
 		},
 	})

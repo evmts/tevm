@@ -16,8 +16,8 @@ export const FancyCreateTitle: React.FC<Props> = ({ loading }) => {
 		i + 1,
 	)
 
-	const G = Gradient as any
-	const BT = BigText as any
+	const G = Gradient as unknown as React.ComponentType<{ name: string; children?: React.ReactNode }>
+	const BT = BigText as unknown as React.ComponentType<{ font: string; text: string }>
 
 	return (
 		<G name="pastel">

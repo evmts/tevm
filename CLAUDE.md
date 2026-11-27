@@ -29,3 +29,13 @@ Use Node from `.nvmrc`, pnpm from `packageManager`, and the versions in `mise.to
 Rebuild native edits with `mise exec -- node scripts/factory/build-native.mjs`. The script verifies Zig's pin and compiles the current sibling source, including local changes. `zig build npm-smoke -Doptimize=ReleaseSafe` in ZEVM tests the real addon. TEVM's nearest regressions are in `packages/node`, `packages/memory-client`, `packages/server`, `extensions/viem`, `extensions/ethers`, and `packages/http-client`.
 
 Runtime JavaScript uses complete JSDoc and checkJs. Public declarations live in TypeScript and must be exported through package barrels and the `tevm` facade. Keep one exported concept per file, use real fixtures, preserve existing coverage thresholds, and add a changeset for published behavior.
+
+## Smithers Cloud Factory and MCP
+
+TEVM runs publicly on Smithers Cloud at `https://smithers.sh/evmts/tevm` with two-way GitHub mirroring (`https://github.com/evmts/tevm`).
+
+- **MCP-first agent workflow**: Connect to `https://smithers.sh/evmts/tevm/mcp` (OAuth 2.1 + PKCE) to read repo state, create artifacts, TODOs, issues, Changes/PRs, and stacks of changesets. Print connection config for Claude Code, Codex, Antigravity, or Cursor via `node scripts/factory/sandbox-auth.mjs mcp-guide`.
+- **One-time sandbox credentials**: Mint single-use, TTL-bounded tokens for sandboxed agents via `node scripts/factory/sandbox-auth.mjs mint`. Never pass credentials on argv.
+- **Shared object store and trust boundary**: Builds share `https://build.smithers.sh` with split read/write secrets (`SMITHERS_CACHE_READ_TOKEN` vs `SMITHERS_CACHE_WRITE_TOKEN`). Untrusted runs are welcomed and receive read-only cache hits, but can never write cache artifacts or skip gates.
+- **Knowledge surfaces**: Read [`.smithers/wiki/README.md`](.smithers/wiki/README.md) for subsystem architecture and ADRs, [`.smithers/history/MYTHICAL.md`](.smithers/history/MYTHICAL.md) for the repository chronicle, and `.agents/uphill/rules.md` for Lighthouse backpressure rules.
+

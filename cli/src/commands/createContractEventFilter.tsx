@@ -154,10 +154,10 @@ const defaultValues: Record<string, any> = {
 }
 
 // Helper function to parse ABI
-const parseAbi = (abiString?: string): any[] => {
+const parseAbi = (abiString?: string): unknown[] => {
 	if (!abiString) return DEFAULT_EVENT_ABI
 	try {
-		return JSON.parse(abiString.trim().startsWith('[') ? abiString : readFileSync(abiString, 'utf8'))
+		return JSON.parse(abiString.trim().startsWith('[') ? abiString : readFileSync(abiString, 'utf8')) as unknown[]
 	} catch (_e) {
 		console.warn('Warning: ABI is not valid JSON, using default ERC20 Transfer Event ABI')
 		return DEFAULT_EVENT_ABI
@@ -165,10 +165,10 @@ const parseAbi = (abiString?: string): any[] => {
 }
 
 // Helper function to parse args
-const parseArgs = (argsString?: string): any[] => {
+const parseArgs = (argsString?: string): unknown[] => {
 	if (!argsString) return []
 	try {
-		return JSON.parse(argsString)
+		return JSON.parse(argsString) as unknown[]
 	} catch (_e) {
 		console.warn('Warning: Args is not valid JSON, using empty array')
 		return []
@@ -204,9 +204,9 @@ export default function CreateContractEventFilter({ options }: Props) {
 		optionDescriptions,
 
 		// Create params
-		createParams: (enhancedOptions: Record<string, any>) => {
-			const params: Record<string, any> = {
-				abi: parseAbi(enhancedOptions['abi']),
+		createParams: (enhancedOptions: Record<string, unknown>) => {
+			const params: Record<string, unknown> = {
+				abi: parseAbi(typeof enhancedOptions['abi'] === 'string' ? enhancedOptions['abi'] : undefined),
 			}
 
 			// Add optional parameters
@@ -218,16 +218,16 @@ export default function CreateContractEventFilter({ options }: Props) {
 				params['eventName'] = enhancedOptions['eventName']
 			}
 
-			if (enhancedOptions['args']) {
+			if (typeof enhancedOptions['args'] === 'string') {
 				params['args'] = parseArgs(enhancedOptions['args'])
 			}
 
 			// Add block range if specified
-			if (enhancedOptions['fromBlock']) {
+			if (typeof enhancedOptions['fromBlock'] === 'string') {
 				params['fromBlock'] = parseBlockIdentifier(enhancedOptions['fromBlock'])
 			}
 
-			if (enhancedOptions['toBlock']) {
+			if (typeof enhancedOptions['toBlock'] === 'string') {
 				params['toBlock'] = parseBlockIdentifier(enhancedOptions['toBlock'])
 			}
 
@@ -235,8 +235,8 @@ export default function CreateContractEventFilter({ options }: Props) {
 		},
 
 		// Execute the action
-		executeAction: async (client: any, params: any): Promise<any> => {
-			return await client.createContractEventFilter(params)
+		executeAction: async (client, params): Promise<unknown> => {
+			return await client['createContractEventFilter']?.(params)
 		},
 	})
 

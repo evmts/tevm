@@ -52,6 +52,16 @@ This file is the short, enforceable repository contract. `CONTRIBUTING.md` expla
 - Fork-dependent tests declare network/secrets explicitly and must retain a deterministic local subset.
 - Repetition is acceptable in tests when it keeps each case legible. Never weaken a threshold or delete a failing assertion merely to make a gate green.
 
+## Smithers Cloud factory and MCP
+
+- TEVM runs publicly on Smithers Cloud (`https://smithers.sh/evmts/tevm`), mirroring two-way to `https://github.com/evmts/tevm`.
+- All agents working on TEVM interact through the authenticated Smithers Cloud MCP server (`https://smithers.sh/evmts/tevm/mcp`, OAuth 2.1 + PKCE) to create artifacts, TODOs, issues, Changes/PRs, and stacks of changesets. Run `node scripts/factory/sandbox-auth.mjs mcp-guide` for client setup.
+- Sandboxes and agents use single-use, TTL-bounded credentials printed via `node scripts/factory/sandbox-auth.mjs mint`. Never pass secrets via command-line arguments.
+- Builds share the Smithers Cloud object store (`https://build.smithers.sh`) with split read/write tokens. Trusted execution is accepted only from Smithers-controlled sandboxes or maintainers (`roninjin10`). Untrusted contributors are encouraged to run tests and audits with read-only shared cache hits, and may never write cache artifacts or skip gates.
+- `.smithers/FACTORY.ts` is the source of truth for `.smithers/factory.json` and `.smithers/home.json` (`pnpm exec smthrs target //factory:projectionWrite --write`).
+- Knowledge surfaces live in the Obsidian engineering wiki (`.smithers/wiki/README.md`) and Mythical History (`.smithers/history/MYTHICAL.md`). Backpressure runs through Uphill (`uphill --compact` and `.agents/uphill/lighthouse-snapshot.json`).
+- Merging from Smithers Cloud onto GitHub `main` automatically triggers CI, Uphill backpressure, Changesets releases (`prerelease.yml` / `release.yml`), and docs + Factory Portal publishing (`docs-publish.yml`, `docs/node/public/llms.txt`).
+
 ## Issue factory
 
 - Issue forms add one `type:<name>` label. Deterministic intake validates required sections and never sends malformed or high-risk issue text to a coding seat.

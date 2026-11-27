@@ -83,37 +83,57 @@ function findFirstLine(content: string, regex: RegExp): { line: number; match: s
   return null;
 }
 
+function stripStrings(source: string): string {
+  let out = "";
+  let i = 0;
+  let inStr: string | null = null;
+  while (i < source.length) {
+    const ch = source[i]!;
+    const next = source[i + 1];
+    if (inStr) {
+      if (ch === "\\" && next !== undefined) {
+        out += next === "\n" ? " \n" : "  ";
+        i += 2;
+        continue;
+      }
+      if (ch === inStr) {
+        inStr = null;
+        out += ch;
+      } else {
+        out += ch === "\n" ? "\n" : " ";
+      }
+      i++;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === "`") inStr = ch;
+    out += ch;
+    i++;
+  }
+  return out;
+}
+
 function checkLongFunctions(codeNoComments: string): { name: string; line: number; length: number } | null {
   // Custom brace-depth measurement for JS/TS functions (TigerStyle 70-line limit).
-  const fnRe = /(?:export\s+)?(?:async\s+)?function\s+([A-Za-z0-9_]+)/g;
+  const scanned = stripStrings(codeNoComments);
+  const fnRe = /\b(?:export\s+)?(?:async\s+)?function\s+([A-Za-z0-9_]+)\s*\(/g;
   let worst: { name: string; line: number; length: number } | null = null;
   let m: RegExpExecArray | null;
-  while ((m = fnRe.exec(codeNoComments)) !== null) {
+  while ((m = fnRe.exec(scanned)) !== null) {
     const startIdx = m.index;
-    const startLine = codeNoComments.slice(0, startIdx).split("\n").length;
-    const braceIdx = codeNoComments.indexOf("{", startIdx);
+    const startLine = scanned.slice(0, startIdx).split("\n").length;
+    const braceIdx = scanned.indexOf("{", startIdx);
     if (braceIdx === -1) continue;
     let depth = 0;
     let i = braceIdx;
-    let inStr: string | null = null;
-    for (; i < codeNoComments.length; i++) {
-      const ch = codeNoComments[i]!;
-      const prev = i > 0 ? codeNoComments[i - 1] : "";
-      if (inStr) {
-        if (ch === inStr && prev !== "\\") inStr = null;
-        continue;
-      }
-      if (ch === '"' || ch === "'" || ch === "`") {
-        inStr = ch;
-        continue;
-      }
+    for (; i < scanned.length; i++) {
+      const ch = scanned[i]!;
       if (ch === "{") depth++;
       else if (ch === "}") {
         depth--;
         if (depth === 0) break;
       }
     }
-    const len = codeNoComments.slice(startIdx, i + 1).split("\n").length;
+    const len = scanned.slice(startIdx, i + 1).split("\n").length;
     if (len > 70 && (!worst || len > worst.length)) {
       worst = { name: m[1]!, line: startLine, length: len };
     }

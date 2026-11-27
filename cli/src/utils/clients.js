@@ -51,18 +51,16 @@ export function isViemAction(actionName) {
  */
 export const loadViemClient = async (rpcUrl) => {
 	try {
-		const [module, chains] = await Promise.all([
-			Function('return import("viem")')(),
-			Function('return import("viem/chains")')(),
-		])
+		const [module, chains] = await Promise.all([import('viem'), import('viem/chains')])
 		const transport = module.http(rpcUrl)
 		const unconfiguredClient = module.createPublicClient({ transport })
 		const chainId = await unconfiguredClient.getChainId()
 		const chain = Object.values(chains).find((candidate) => candidate && candidate.id === chainId)
-		return module.createPublicClient({
+		const client = module.createPublicClient({
 			...(chain ? { chain } : {}),
 			transport,
 		})
+		return /** @type {import('viem').PublicClient} */ (/** @type {unknown} */ (client))
 	} catch (_e) {
 		return null
 	}

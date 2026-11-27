@@ -137,4 +137,16 @@ Three paths duplicate a standalone repository on purpose. Each has a removal con
 | `cli/` (`@tevm/cli`) | It is the only CLI written against the native engine (`@tevm/server`, `tevmMine({ blocks })`, `tevmSetAccount({ storage })`). The `tevm` binary imports it. evmts/tevm-cli still targets the published JavaScript-engine API and did not port this code. | The native `@tevm/actions`, `@tevm/memory-client` and `@tevm/server` are published and evmts/tevm-cli ports this directory against them. |
 | `test/vitest-matchers/utils.ts` | `packages/contract/vitest.config.ts` loads it as a setup file. It is one file, not the `@tevm/test-matchers` package. | `packages/contract` is removed. |
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for repository gates and [AGENTS.md](AGENTS.md) for the contributor contract.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for repository gates, [AGENTS.md](AGENTS.md) for the contributor contract, and [MAINTAINERS.md](MAINTAINERS.md) for the Smithers Cloud maintainer runbook.
+
+## Public Smithers Cloud Coding Factory
+
+TEVM is built publicly on **Smithers Cloud** with two-way GitHub mirroring:
+
+- **Public Factory & Personalized UI**: [smithers.sh/evmts/tevm](https://smithers.sh/evmts/tevm) (tailored views for Maintainers, Contributors, and Viewers, plus an interactive native ZEVM bytecode playground)
+- **Public Authenticated MCP Server**: `https://smithers.sh/evmts/tevm/mcp` (OAuth 2.1 + PKCE so agents can create artifacts, TODOs, issues, Changes/PRs, and changeset stacks directly against Smithers Cloud)
+- **Shared Build Object Store**: `https://build.smithers.sh` (split read/write credentials: untrusted contributors get fast read-only cache hits and cannot poison the cache or skip gates)
+- **Lighthouse Backpressure Audit**: Uphill metrics in `.agents/uphill/` scoring Footprint, Quality, Architecture, and Factory & Trust
+- **Engineering Wiki & Mythical History**: [`.smithers/wiki/README.md`](.smithers/wiki/README.md) (Obsidian-compatible) and [`.smithers/history/MYTHICAL.md`](.smithers/history/MYTHICAL.md)
+- **LLM Documentation Index**: `docs/node/public/llms.txt` (`https://node.tevm.sh/llms.txt`)
+

@@ -143,7 +143,7 @@ export default function GetEnsName({ options }: Props) {
 		},
 
 		// Execute the action
-		executeAction: async (client: any, params: any): Promise<any> => {
+		executeAction: async (client, params): Promise<unknown> => {
 			return await client.getEnsName(params)
 		},
 	})
@@ -153,8 +153,10 @@ export default function GetEnsName({ options }: Props) {
 		return null
 	}
 
-	const shortAddress = actionResult.options['address']
-		? `${actionResult.options['address'].substring(0, 6)}...${actionResult.options['address'].substring(38)}`
+	const addressOption =
+		typeof actionResult.options['address'] === 'string' ? actionResult.options['address'] : undefined
+	const shortAddress = addressOption
+		? `${addressOption.substring(0, 6)}...${addressOption.substring(38)}`
 		: '0xd8dA...6045'
 
 	return (

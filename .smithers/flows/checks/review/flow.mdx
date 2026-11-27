@@ -1,0 +1,22 @@
+---
+description: Multi-lens TEVM review covering JSON-RPC wire contracts, ZEVM native ABI, state isolation, regression proof, Uphill Lighthouse metrics, and trust boundaries.
+capabilities:
+  - "fs:read:**"
+  - "proc:spawn:rg *"
+  - "proc:spawn:jj --no-pager *"
+model: gpt-6.2-astra
+modelInvocable: true
+budget:
+  tokens: 64000
+  milliseconds: 600000
+---
+Review the supplied TEVM change or commit through six strict lenses:
+
+1. **JSON-RPC Wire Contract**: Exact JSON-serializable wire values, canonical hex quantity/data/null encoding, negative error codes (`BaseError`), and public client dispatch (`tevm` facade + `@tevm/memory-client` + `@tevm/actions`).
+2. **ZEVM Native Engine & ABI Safety**: Native addon loading, pin hygiene (`factory/native-dependencies.json`), clean resource disposal (`tevmClose()`), and zero silent fallbacks.
+3. **Regression Proof & State Isolation**: Every bug fix includes a failing-first test with isolated clients/nodes, negative branches, and equivalent input representations.
+4. **Uphill Lighthouse Backpressure**: No regressions in Footprint, Quality (`: any`, `@ts-expect-error`, stray `console.log`, `TODO`s, >70-line functions), Architecture & Testing (>=80% test ratio, synchronized `tevm` facade exports, valid Markdown links), or Factory Health.
+5. **Trust Boundary & Shared Object Store**: Untrusted PR/contributor paths never receive `SMITHERS_CACHE_WRITE_TOKEN`, publish tokens, or bypass maintainer/sandbox gates.
+6. **Public Surface & Docs**: Recursive barrels, `tevm/package.json` subpaths, `.smithers/wiki/` links, and Changesets stay synchronized.
+
+Report concrete findings bound to exact file paths and lines. Agents never approve or merge pull requests; only a maintainer merges.

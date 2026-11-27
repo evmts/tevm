@@ -105,7 +105,7 @@ export default function DumpState({ options }: Props) {
 		},
 
 		// Inlined executeAction function
-		executeAction: async (client: any): Promise<DumpStateResult> => {
+		executeAction: async (client): Promise<DumpStateResult> => {
 			const result = await client.tevmDumpState()
 
 			const outputFile = options.outputFile

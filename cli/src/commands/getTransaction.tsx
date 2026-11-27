@@ -88,7 +88,7 @@ export default function GetTransaction({ options }: Props) {
 		},
 
 		// Execute the action
-		executeAction: async (client: any, params: any): Promise<any> => {
+		executeAction: async (client, params): Promise<unknown> => {
 			return await client.getTransaction(params)
 		},
 	})
@@ -101,7 +101,7 @@ export default function GetTransaction({ options }: Props) {
 	return (
 		<CliAction
 			{...actionResult}
-			targetName={`transaction ${actionResult.options['hash'] ? `${actionResult.options['hash'].substring(0, 10)}...` : '0x0000...0000'}`}
+			targetName={`transaction ${typeof actionResult.options['hash'] === 'string' ? `${actionResult.options['hash'].substring(0, 10)}...` : '0x0000...0000'}`}
 			successMessage="Transaction details retrieved successfully!"
 		/>
 	)

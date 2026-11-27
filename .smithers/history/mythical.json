@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "repository": "evmts/tevm",
+  "purpose": "The mythical history of TEVM: the clean, from-scratch epic story of today's tree, preserving architectural provenance and abandoned experiments as retained notes.",
+  "epics": [
+    {
+      "id": "epic-01-foundations",
+      "title": "01. Foundations, Primitives, and BaseError Discipline",
+      "summary": "Establish the monorepo package structure, strict BaseError hierarchy, JSON-RPC envelope types, and canonical Ethereum utilities.",
+      "chapters": [
+        {
+          "id": "ch-01-errors-and-utils",
+          "title": "Define @tevm/errors, @tevm/utils, and @tevm/common",
+          "paths": ["packages/errors", "packages/utils", "packages/common"],
+          "provenanceCommits": ["a02ceb108adf"],
+          "notes": "Every public error extends BaseError with standard JSON-RPC negative codes and structured diagnostic context."
+        },
+        {
+          "id": "ch-02-jsonrpc-and-http",
+          "title": "Specify @tevm/jsonrpc and @tevm/http-client transport contracts",
+          "paths": ["packages/jsonrpc", "packages/http-client", "packages/predeploys"],
+          "provenanceCommits": ["a02ceb108adf"],
+          "notes": "Canonical hex quantities, even-length data hex, and explicit JSON-serializable wire contracts."
+        }
+      ],
+      "abandonedExperiments": [
+        "Legacy JS-only EthereumJS state/vm wrappers were superseded by native ZEVM execution for performance and Ethereum Execution Spec parity."
+      ]
+    },
+    {
+      "id": "epic-02-zevm-engine",
+      "title": "02. Native ZEVM, Guillotine Mini, and Voltaire Execution Core",
+      "summary": "Power @tevm/node with the native Zig ZEVM engine, pinned sibling revisions, content-addressed addon stamps, and isolated node lifecycles.",
+      "chapters": [
+        {
+          "id": "ch-03-zevm-node",
+          "title": "Wire @tevm/node to native @evmts/zevm with deterministic addon stamping",
+          "paths": ["packages/node", "factory/native-dependencies.json", "scripts/factory/build-native.mjs"],
+          "provenanceCommits": ["96ac87a7300a", "b696b586f33c"],
+          "notes": "Native addon bytes are hashed into factory/native-addon.sha256 so every downstream Smithers target re-keys cleanly."
+        }
+      ],
+      "abandonedExperiments": [
+        "Bundler Rust crates originally lived inside this monorepo before moving cleanly to evmts/tevm-bundler, keeping Cargo only for Voltaire crypto compilation."
+      ]
+    },
+    {
+      "id": "epic-03-viem-client-and-actions",
+      "title": "03. Viem-Native Memory Client, Actions, and Unified tevm Facade",
+      "summary": "Expose eth_*, tevm_*, anvil_*, and debug_* JSON-RPC actions through a drop-in Viem memory client and synchronized tevm facade.",
+      "chapters": [
+        {
+          "id": "ch-04-actions-and-contracts",
+          "title": "Implement typed JSON-RPC actions and contract wrappers",
+          "paths": ["packages/actions", "packages/contract", "packages/memory-client", "extensions/viem"],
+          "provenanceCommits": ["98750cf09d43"],
+          "notes": "Includes full mainnet/optimism forking, instant mining, account/storage mutation, and Solidity console.log draining."
+        },
+        {
+          "id": "ch-05-tevm-facade",
+          "title": "Synchronize recursive barrels and tevm/package.json subpath exports",
+          "paths": ["tevm"],
+          "provenanceCommits": ["83706436d75e"],
+          "notes": "Continuously verified by Uphill's tevm-facade-exports metric."
+        }
+      ],
+      "abandonedExperiments": []
+    },
+    {
+      "id": "epic-04-developer-surfaces",
+      "title": "04. Developer Tooling: CLI, Server, MCP, and Embedded Playground",
+      "summary": "Deliver local JSON-RPC servers, interactive CLI workflows, an AI-ready @tevm/mcp server, and a sandboxed live EVM playground.",
+      "chapters": [
+        {
+          "id": "ch-06-cli-server-mcp",
+          "title": "Ship @tevm/cli, @tevm/server, and @tevm/mcp",
+          "paths": ["cli", "packages/server", "packages/mcp"],
+          "provenanceCommits": ["83706436d75e"],
+          "notes": "Gives both human developers and AI agents isolated local Ethereum nodes."
+        },
+        {
+          "id": "ch-07-embedded-playground",
+          "title": "Embed the sandboxed native ZEVM playground directly in Smithers Cloud",
+          "paths": [".smithers/playground", ".smithers/flows/playground"],
+          "provenanceCommits": ["705d53a0d160"],
+          "notes": "Runs bounded deploy/call requests with CSP SHA-256 hash verification and opcode trace inspection."
+        }
+      ],
+      "abandonedExperiments": []
+    },
+    {
+      "id": "epic-05-conformance-fuzz-bench",
+      "title": "05. Conformance, Multi-Engine Fuzzing, Formal Specs, and Benchmarks",
+      "summary": "Back every claim with Ethereum Execution Spec tests, multi-engine differential fuzzing, Lean specs, and cached incremental benchmarks.",
+      "chapters": [
+        {
+          "id": "ch-08-benchmarks-and-fuzz",
+          "title": "Add incremental Smithers benchmarks and multi-engine fuzzing suites",
+          "paths": ["test/fuzz", "specs/lean", "benchmarks", "factory/bench.ts"],
+          "provenanceCommits": ["793f834eff0b", "056061ec959a"],
+          "notes": "Unchanged packages hit the shared Smithers Cloud object store in milliseconds while touched packages re-benchmark automatically."
+        }
+      ],
+      "abandonedExperiments": []
+    },
+    {
+      "id": "epic-06-smithers-cloud-factory",
+      "title": "06. Public Smithers Cloud Coding Factory and Lighthouse Backpressure",
+      "summary": "Complete the switchover to public development on smithers.sh/evmts/tevm with split-privilege object store caching, BYOA MCP, personalized UI, and Uphill Lighthouse audits.",
+      "chapters": [
+        {
+          "id": "ch-09-cloud-switchover",
+          "title": "Declare .smithers/FACTORY.ts, QuickJS Realm workflows, trust boundary, and one-time sandbox auth",
+          "paths": [
+            "WORKSPACE.ts",
+            ".smithers/FACTORY.ts",
+            ".smithers/workflows",
+            "scripts/factory/trust-boundary.mjs",
+            "scripts/factory/sandbox-auth.mjs"
+          ],
+          "provenanceCommits": ["705d53a0d160", "423ca10dd8da"],
+          "notes": "Splits read-only untrusted contributor cache hits from maintainer/sandbox cache writes and merge gates."
+        },
+        {
+          "id": "ch-10-lighthouse-and-wiki",
+          "title": "Ship Lighthouse Uphill backpressure, Obsidian wiki, mythical history, and automated GitHub release/docs mirror",
+          "paths": [
+            ".agents/uphill",
+            ".smithers/wiki",
+            ".smithers/history",
+            "sites/contributor",
+            "docs/node"
+          ],
+          "provenanceCommits": ["423ca10dd8da"],
+          "notes": "Merges on Smithers Cloud mirror to GitHub main and automatically drive Changesets releases, Vocs docs + llms.txt, and wiki refreshes."
+        }
+      ],
+      "abandonedExperiments": [
+        "Nx Cloud remote cache (nxCloudAccessToken) was retired in favor of the shared Smithers Cloud object store (https://build.smithers.sh) with split read/write secrets."
+      ]
+    }
+  ]
+}

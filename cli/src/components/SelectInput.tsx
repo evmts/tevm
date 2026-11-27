@@ -35,9 +35,7 @@ export const SelectInput = ({ items, onSelect }: Props) => {
 
 	return (
 		<InkSelectInput
-			// @ts-expect-error - Types are incompatible but the component works as expected
 			itemComponent={ItemComponent}
-			// @ts-expect-error - Types are incompatible but the component works as expected
 			indicatorComponent={IndicatorComponent}
 			initialIndex={initialIndex > -1 ? initialIndex : 0}
 			items={items}

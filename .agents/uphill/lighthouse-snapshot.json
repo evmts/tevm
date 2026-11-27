@@ -1,0 +1,265 @@
+{
+	"schemaVersion": 1,
+	"tool": "uphill",
+	"overallScore": 94,
+	"categories": [
+		{
+			"id": "footprint",
+			"title": "Footprint",
+			"description": "Keep every @tevm/* package lean, modular, and minimal in runtime dependencies.",
+			"score": 84,
+			"metrics": [
+				{
+					"id": "package-source-bytes",
+					"title": "Package source bytes",
+					"description": "Keep each @tevm/* package's source footprint lean; split heavy adapters and avoid bundling dead code.",
+					"kind": "size",
+					"score": 85,
+					"weight": 1,
+					"passed": 13,
+					"total": 14
+				},
+				{
+					"id": "module-lines",
+					"title": "Module lines",
+					"description": "Keep every production source module under 250 lines with one exported concept per file (AGENTS.md).",
+					"kind": "count",
+					"score": 97,
+					"weight": 1,
+					"passed": 255,
+					"total": 266
+				},
+				{
+					"id": "runtime-deps",
+					"title": "Runtime deps",
+					"description": "Keep direct runtime dependencies minimal (<= 3 per core package); avoid pulling heavy libraries into core packages.",
+					"kind": "count",
+					"score": 70,
+					"weight": 1,
+					"passed": 11,
+					"total": 14
+				}
+			]
+		},
+		{
+			"id": "quality",
+			"title": "Quality",
+			"description": "Enforce strict typing, JSDoc discipline, zero stray console calls, and TigerStyle function limits across packages.",
+			"score": 100,
+			"metrics": [
+				{
+					"id": "explicit-any",
+					"title": "Explicit any",
+					"description": "Never use `: any` or `as any` in production source; use explicit types or `unknown` with narrowing.",
+					"kind": "check",
+					"score": 100,
+					"weight": 2,
+					"passed": 266,
+					"total": 266
+				},
+				{
+					"id": "ts-suppressions",
+					"title": "Ts suppressions",
+					"description": "Eliminate `@ts-ignore`, `@ts-expect-error`, and `@ts-nocheck` directives from production source.",
+					"kind": "check",
+					"score": 100,
+					"weight": 2,
+					"passed": 265,
+					"total": 266
+				},
+				{
+					"id": "console-calls",
+					"title": "Console calls",
+					"description": "Never leave `console.log` or `console.debug` in library packages under `packages/`; route diagnostics through the logger.",
+					"kind": "check",
+					"score": 99,
+					"weight": 1,
+					"passed": 185,
+					"total": 186
+				},
+				{
+					"id": "todo-fixme",
+					"title": "Todo fixme",
+					"description": "Resolve or convert `TODO`/`FIXME`/`HACK` comments into tracked issues or explained workarounds with removal conditions (AGENTS.md).",
+					"kind": "check",
+					"score": 100,
+					"weight": 1,
+					"passed": 266,
+					"total": 266
+				},
+				{
+					"id": "function-length",
+					"title": "Function length",
+					"description": "Keep functions at or under 70 lines (TigerStyle); decompose long handlers and parsers into focused helpers.",
+					"kind": "check",
+					"score": 100,
+					"weight": 1,
+					"passed": 266,
+					"total": 266
+				},
+				{
+					"id": "jsdoc-exports",
+					"title": "Jsdoc exports",
+					"description": "Document every exported runtime symbol in `packages/*/src/` with complete JSDoc (AGENTS.md).",
+					"kind": "check",
+					"score": 100,
+					"weight": 1,
+					"passed": 118,
+					"total": 118
+				}
+			]
+		},
+		{
+			"id": "architecture",
+			"title": "Architecture & Testing",
+			"description": "Maintain high test depth per package, synchronized `tevm` facade exports, and valid documentation links.",
+			"score": 90,
+			"metrics": [
+				{
+					"id": "test-ratio",
+					"title": "Test ratio",
+					"description": "Maintain at least an 80% test-to-source line ratio in every workspace package, especially `@tevm/cli` and `@tevm/errors`.",
+					"kind": "count",
+					"score": 79,
+					"weight": 2,
+					"passed": 8,
+					"total": 14
+				},
+				{
+					"id": "tevm-facade-exports",
+					"title": "Tevm facade exports",
+					"description": "Keep every subpath in `tevm/package.json` synchronized with its facade directory and barrel exports (AGENTS.md).",
+					"kind": "check",
+					"score": 100,
+					"weight": 1,
+					"passed": 22,
+					"total": 22
+				},
+				{
+					"id": "docs-links",
+					"title": "Docs links",
+					"description": "Keep all relative Markdown links in `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, and `CLAUDE.md` valid.",
+					"kind": "check",
+					"score": 100,
+					"weight": 1,
+					"passed": 4,
+					"total": 4
+				}
+			]
+		},
+		{
+			"id": "factory",
+			"title": "Factory & Trust",
+			"description": "Enforce Smithers Cloud trust boundaries, shared object store isolation, QuickJS Realm workflows, personalized home UI, Obsidian wiki, mythical history, and playground CSP integrity.",
+			"score": 100,
+			"metrics": [
+				{
+					"id": "trust-boundary",
+					"title": "Trust boundary",
+					"description": "Split read and write secrets on build.smithers.sh and prevent untrusted PRs from accessing write or publish tokens.",
+					"kind": "check",
+					"score": 100,
+					"weight": 3,
+					"passed": 1,
+					"total": 1
+				},
+				{
+					"id": "cloud-workflows",
+					"title": "Cloud workflows",
+					"description": "Keep every .smithers/workflows/*.ts workflow valid under Smithers Cloud's QuickJS Realm planner and aligned with factory.json triggers.",
+					"kind": "check",
+					"score": 100,
+					"weight": 2,
+					"passed": 7,
+					"total": 7
+				},
+				{
+					"id": "home-personalization",
+					"title": "Home personalization",
+					"description": "Keep .smithers/home.json valid under @smthrs/views with tailored maintainer, contributor, and viewer sections.",
+					"kind": "check",
+					"score": 100,
+					"weight": 2,
+					"passed": 3,
+					"total": 3
+				},
+				{
+					"id": "wiki-and-history",
+					"title": "Wiki and history",
+					"description": "Keep .smithers/coding-project.json, Obsidian [[wikilinks]], and .smithers/history/MYTHICAL.md synchronized and link-checked.",
+					"kind": "check",
+					"score": 100,
+					"weight": 1,
+					"passed": 2,
+					"total": 2
+				},
+				{
+					"id": "playground-csp",
+					"title": "Playground csp",
+					"description": "Keep .smithers/playground/index.html CSP SHA-256 hashes synchronized with inline script and style blocks.",
+					"kind": "check",
+					"score": 100,
+					"weight": 1,
+					"passed": 1,
+					"total": 1
+				}
+			]
+		}
+	],
+	"opportunities": [
+		{
+			"category": "footprint",
+			"metric": "runtime-deps",
+			"item": "@tevm/cli",
+			"items": 1,
+			"value": 28,
+			"target": 10,
+			"gain": 2
+		},
+		{
+			"category": "footprint",
+			"metric": "runtime-deps",
+			"item": "@tevm/mcp",
+			"items": 1,
+			"value": 6,
+			"target": 3,
+			"gain": 2
+		},
+		{
+			"category": "footprint",
+			"metric": "package-source-bytes",
+			"item": "@tevm/contract",
+			"items": 1,
+			"value": 24124,
+			"target": 12000,
+			"gain": 2
+		},
+		{
+			"category": "footprint",
+			"metric": "package-source-bytes",
+			"item": "@tevm/cli",
+			"items": 1,
+			"value": 43687,
+			"target": 35000,
+			"gain": 2
+		},
+		{
+			"category": "architecture",
+			"metric": "test-ratio",
+			"item": "@tevm/cli",
+			"items": 1,
+			"value": 15,
+			"target": 80,
+			"gain": 1
+		},
+		{
+			"category": "architecture",
+			"metric": "test-ratio",
+			"item": "@tevm/errors",
+			"items": 1,
+			"value": 52,
+			"target": 80,
+			"gain": 1
+		}
+	]
+}

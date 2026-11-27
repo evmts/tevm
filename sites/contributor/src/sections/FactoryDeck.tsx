@@ -72,7 +72,8 @@ export const FactoryDeck = () => (
 	<section className="tevm-section" id="factory">
 		<SectionHeader eyebrow="Executable repository map" title={sectionTitle(<h2>Run the factory deliberately</h2>)}>
 			<p>
-				Deterministic targets are cheap; agentic lanes read only the relevant diff and stay inside declared write sets.
+				Deterministic targets are cheap, while agentic lanes read only the relevant diff and stay inside declared write
+				sets.
 			</p>
 		</SectionHeader>
 

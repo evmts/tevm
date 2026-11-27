@@ -1,12 +1,349 @@
 {
-  "blocks": [
+  "docs": "https://node.tevm.sh/llms.txt",
+  "contributors": "role",
+  "sections": [
     {
-      "type": "view",
-      "flow": "playground/exec"
+      "title": "Maintainer Control Plane",
+      "audience": "maintainer",
+      "blocks": [
+        {
+          "type": "action",
+          "flow": "branch.new",
+          "title": "New branch",
+          "key": "b"
+        },
+        {
+          "type": "issues",
+          "title": "Triage and incoming issues"
+        },
+        {
+          "type": "stack",
+          "title": "Active TODO and Change stack"
+        },
+        {
+          "type": "runs",
+          "title": "CI, Lighthouse audit, release, and docs runs"
+        },
+        {
+          "type": "links",
+          "title": "Maintainer operations",
+          "links": [
+            {
+              "label": "Factory policy",
+              "url": "https://smithers.sh/evmts/tevm/blob/main/factory/policy.json"
+            },
+            {
+              "label": "Trust boundary & cache",
+              "url": "https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/coding-factory.md"
+            },
+            {
+              "label": "Release & docs pipeline",
+              "url": "https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/release-and-docs-pipeline.md"
+            },
+            {
+              "label": "Uphill Lighthouse config",
+              "url": "https://smithers.sh/evmts/tevm/blob/main/.agents/uphill/uphill.yaml"
+            },
+            {
+              "label": "GitHub Actions mirror",
+              "url": "https://github.com/evmts/tevm/actions"
+            }
+          ]
+        }
+      ]
     },
     {
-      "type": "flows",
-      "title": "Tevm flows"
+      "title": "Contributor Workbench",
+      "audience": "contributor",
+      "blocks": [
+        {
+          "type": "code",
+          "title": "Fast local setup with shared read-only Smithers Cloud cache",
+          "language": "sh",
+          "code": "pnpm install\npnpm exec smthrs target //:zevm\npnpm exec smthrs target //factory:check\npnpm exec smthrs target //:mechanicalPrePush\nuphill --compare HEAD --compact"
+        },
+        {
+          "type": "code",
+          "title": "Connect your own agent via Smithers Cloud MCP (OAuth 2.1 + PKCE)",
+          "language": "sh",
+          "code": "# Claude Code\nclaude mcp add tevm --transport http https://smithers.sh/evmts/tevm/mcp\n\n# Codex CLI\ncodex mcp add tevm --url https://smithers.sh/evmts/tevm/mcp\n\n# Antigravity CLI\nagy mcp add tevm --transport http https://smithers.sh/evmts/tevm/mcp"
+        },
+        {
+          "type": "cards",
+          "title": "How a change lands on TEVM",
+          "cards": [
+            {
+              "title": "1. File a repro or pick a public TODO",
+              "text": "Create issues, TODOs, and artifacts through the Smithers Cloud MCP server with minimal failing reproduction steps."
+            },
+            {
+              "title": "2. Run untrusted checks freely",
+              "text": "Non-maintainers are encouraged to run tests locally or in untrusted sandboxes with read-only shared cache access. Untrusted runs never write the cache or skip gates."
+            },
+            {
+              "title": "3. Pass Lighthouse backpressure",
+              "text": "Every PR is audited by Uphill across Footprint, Quality, Architecture, and Factory Health plus regression proof and RPC wire contract checks."
+            },
+            {
+              "title": "4. Maintainer merge ships automatically",
+              "text": "Only a maintainer approves and merges. Merging to main on Smithers Cloud mirrors to GitHub and triggers releases, docs publishing, and wiki refresh."
+            }
+          ]
+        },
+        {
+          "type": "flows",
+          "title": "Contributor, review, and audit flows"
+        },
+        {
+          "type": "links",
+          "title": "Public engineering surfaces",
+          "links": [
+            {
+              "label": "Public issues",
+              "url": "https://smithers.sh/evmts/tevm/issues"
+            },
+            {
+              "label": "Pull requests",
+              "url": "https://smithers.sh/evmts/tevm/pulls"
+            },
+            {
+              "label": "Engineering wiki",
+              "url": "https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/README.md"
+            },
+            {
+              "label": "Mythical history",
+              "url": "https://smithers.sh/evmts/tevm/blob/main/.smithers/history/MYTHICAL.md"
+            },
+            {
+              "label": "Uphill rules",
+              "url": "https://smithers.sh/evmts/tevm/blob/main/.agents/uphill/rules.md"
+            }
+          ]
+        },
+        {
+          "type": "prompt",
+          "title": "Ask the TEVM codebase",
+          "placeholder": "Ask about TEVM packages, ZEVM native engine, JSON-RPC methods, or Uphill metrics..."
+        }
+      ]
+    },
+    {
+      "audience": "everyone",
+      "blocks": [
+        {
+          "type": "hero",
+          "title": "TEVM",
+          "tagline": "In-memory Ethereum Virtual Machine and full node for TypeScript, powered by Zig (ZEVM) and native Viem.",
+          "text": "Deploy contracts, fork mainnet, inspect opcodes, and run Ethereum specs at native speed in Node, Bun, and browsers. Built publicly on Smithers Cloud.",
+          "install": "npm install tevm",
+          "actions": [
+            {
+              "label": "Get started",
+              "url": "https://node.tevm.sh/getting-started/overview"
+            },
+            {
+              "label": "Docs",
+              "url": "https://node.tevm.sh"
+            },
+            {
+              "label": "Browse code",
+              "url": "https://smithers.sh/evmts/tevm/tree/main"
+            }
+          ],
+          "announcement": {
+            "label": "Public Smithers Cloud coding factory with live MCP, open TODOs, and Lighthouse backpressure",
+            "url": "https://smithers.sh/evmts/tevm"
+          }
+        },
+        {
+          "type": "view",
+          "flow": "playground/exec"
+        },
+        {
+          "type": "code",
+          "file": "in-memory-evm.ts",
+          "language": "ts",
+          "code": "import { createMemoryClient } from \"tevm\"\nimport { parseEther } from \"viem\"\n\nconst client = createMemoryClient()\n\nawait client.tevmSetAccount({\n  address: \"0x0000000000000000000000000000000000000123\",\n  balance: parseEther(\"10\"),\n  deployedBytecode: \"0x602a60005260206000f3\",\n})\n\nconst { rawData } = await client.tevmCall({\n  to: \"0x0000000000000000000000000000000000000123\",\n  data: \"0x\",\n})\n\nconsole.log(BigInt(rawData)) // 42n\nawait client.tevmClose()"
+        },
+        {
+          "type": "stats",
+          "stats": [
+            {
+              "value": "MIT",
+              "label": "Open source license"
+            },
+            {
+              "value": "ZEVM + Voltaire",
+              "label": "Native Zig EVM core"
+            },
+            {
+              "value": "Viem-native",
+              "label": "EIP-1193 and JSON-RPC"
+            },
+            {
+              "value": "Public Factory",
+              "label": "Open MCP, TODOs, Lighthouse audits"
+            }
+          ]
+        },
+        {
+          "type": "cards",
+          "title": "Core packages",
+          "cards": [
+            {
+              "label": "tevm",
+              "title": "Unified Facade",
+              "text": "Single entrypoint exporting the memory client, node, actions, contracts, errors, and utils.",
+              "url": "https://www.npmjs.com/package/tevm"
+            },
+            {
+              "label": "@tevm/memory-client",
+              "title": "Viem Memory Client",
+              "text": "Drop-in Viem client backed by an in-memory Ethereum node with forking and instant mining.",
+              "url": "https://www.npmjs.com/package/@tevm/memory-client"
+            },
+            {
+              "label": "@tevm/node",
+              "title": "Native ZEVM Node",
+              "text": "Full Ethereum execution node powered by ZEVM, Guillotine Mini, and Voltaire cryptography.",
+              "url": "https://www.npmjs.com/package/@tevm/node"
+            },
+            {
+              "label": "@tevm/actions",
+              "title": "JSON-RPC Actions",
+              "text": "Typed handlers for eth_*, tevm_*, anvil_*, and debug_* JSON-RPC methods.",
+              "url": "https://www.npmjs.com/package/@tevm/actions"
+            },
+            {
+              "label": "@tevm/contract",
+              "title": "Typed Contracts",
+              "text": "Create type-safe contract scripts and bytecode wrappers directly from Solidity ABIs.",
+              "url": "https://www.npmjs.com/package/@tevm/contract"
+            },
+            {
+              "label": "@tevm/mcp",
+              "title": "TEVM MCP Server",
+              "text": "Give AI coding agents an isolated in-memory Ethereum node for testing and simulation.",
+              "url": "https://www.npmjs.com/package/@tevm/mcp"
+            },
+            {
+              "label": "@tevm/cli",
+              "title": "TEVM CLI",
+              "text": "Interactive terminal workflow for local nodes, contract calls, and JSON-RPC inspection.",
+              "url": "https://www.npmjs.com/package/@tevm/cli"
+            },
+            {
+              "label": "@tevm/server",
+              "title": "HTTP & JSON-RPC Server",
+              "text": "Expose any Tevm node over standard HTTP and WebSocket JSON-RPC endpoints.",
+              "url": "https://www.npmjs.com/package/@tevm/server"
+            }
+          ],
+          "more": {
+            "label": "Browse all packages",
+            "url": "https://smithers.sh/evmts/tevm/tree/main/packages"
+          }
+        },
+        {
+          "type": "cards",
+          "title": "TEVM universe and public factory",
+          "cards": [
+            {
+              "label": "evmts/zevm",
+              "title": "ZEVM Native Engine",
+              "text": "Embeddable Zig Ethereum node with C and Node-API bindings dogfooded via Smithers.",
+              "url": "https://smithers.sh/evmts/zevm"
+            },
+            {
+              "label": "evmts/voltaire",
+              "title": "Voltaire Primitives",
+              "text": "High-performance Ethereum cryptography and primitives in Zig and TypeScript.",
+              "url": "https://smithers.sh/evmts/voltaire"
+            },
+            {
+              "label": "evmts/guillotine",
+              "title": "Guillotine EVM",
+              "text": "Next-generation high-speed Ethereum Virtual Machine execution engine.",
+              "url": "https://github.com/evmts/guillotine"
+            },
+            {
+              "label": "Wiki + History",
+              "title": "Engineering Wiki & Mythical History",
+              "text": "Obsidian-compatible architecture wiki and clean from-scratch epic timeline.",
+              "url": "https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/README.md"
+            },
+            {
+              "label": "Backpressure",
+              "title": "Lighthouse Audit Report",
+              "text": "Continuous Uphill scoring across Footprint, Quality, Architecture, and Factory Health.",
+              "url": "https://smithers.sh/evmts/tevm/blob/main/.agents/uphill/rules.md"
+            },
+            {
+              "label": "BYOA MCP",
+              "title": "Public Authenticated MCP Server",
+              "text": "Attach Claude Code, Codex, or Antigravity via OAuth 2.1 to create issues, TODOs, and PRs.",
+              "url": "https://smithers.sh/evmts/tevm/mcp"
+            }
+          ]
+        },
+        {
+          "type": "releases",
+          "title": "Releases",
+          "releases": [
+            {
+              "name": "tevm@2.0.0-next.107",
+              "url": "https://github.com/evmts/tevm/releases",
+              "date": "2026-11-26",
+              "summary": "Native ZEVM engine, incremental Smithers benchmarks, fuzzing suite, and Uphill backpressure."
+            },
+            {
+              "name": "tevm@1.0.0-rc.151",
+              "url": "https://github.com/evmts/tevm/releases/tag/v1.0.0-rc.151",
+              "date": "2026-08-29",
+              "summary": "Full Viem-native memory client, bundler plugins, and Ethereum spec conformance updates."
+            }
+          ],
+          "more": {
+            "label": "All releases",
+            "url": "https://github.com/evmts/tevm/releases"
+          }
+        },
+        {
+          "type": "links",
+          "title": "Community and infrastructure",
+          "links": [
+            {
+              "label": "Smithers Cloud",
+              "url": "https://smithers.sh/evmts/tevm"
+            },
+            {
+              "label": "GitHub mirror",
+              "url": "https://github.com/evmts/tevm"
+            },
+            {
+              "label": "Node documentation",
+              "url": "https://node.tevm.sh"
+            },
+            {
+              "label": "MCP endpoint",
+              "url": "https://smithers.sh/evmts/tevm/mcp"
+            },
+            {
+              "label": "Telegram",
+              "url": "https://t.me/+ANThR9bHDLAwMjUx"
+            },
+            {
+              "label": "X / Twitter",
+              "url": "https://x.com/tevmtools"
+            }
+          ]
+        },
+        {
+          "type": "prompt",
+          "title": "Questions about TEVM?",
+          "placeholder": "Ask how to fork mainnet, trace bytecode in ZEVM, or contribute through MCP..."
+        }
+      ]
     }
   ]
 }

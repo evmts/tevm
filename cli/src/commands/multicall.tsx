@@ -134,15 +134,15 @@ const defaultValues: Record<string, any> = {
 }
 
 // Helper function to parse contracts array
-const parseContracts = (contractsStr?: string): any[] => {
+const parseContracts = (contractsStr?: string): Record<string, unknown>[] => {
 	if (!contractsStr) return []
 	try {
 		const source = contractsStr.trim().startsWith('[') ? contractsStr : readFileSync(contractsStr, 'utf8')
-		const contracts = JSON.parse(source)
+		const contracts: unknown = JSON.parse(source)
 		if (!Array.isArray(contracts)) {
 			throw new Error('Contracts must be a JSON array')
 		}
-		return contracts
+		return contracts as Record<string, unknown>[]
 	} catch (e) {
 		if (e instanceof SyntaxError) {
 			throw new Error('Contracts must be inline JSON or a readable JSON file')
@@ -151,9 +151,9 @@ const parseContracts = (contractsStr?: string): any[] => {
 	}
 }
 
-const getContractCount = (contractsStr?: string): number => {
+const getContractCount = (contractsStr?: unknown): number => {
 	try {
-		return parseContracts(contractsStr).length
+		return parseContracts(typeof contractsStr === 'string' ? contractsStr : undefined).length
 	} catch (_e) {
 		return 0
 	}
@@ -178,7 +178,7 @@ export default function Multicall({ options }: Props) {
 		optionDescriptions,
 
 		// Create params
-		createParams: async (enhancedOptions: Record<string, any>) => {
+		createParams: async (enhancedOptions: Record<string, unknown>) => {
 			// Get ERC20 ABI (from module or fallback) for any contracts that need it
 			let abi
 			try {
@@ -191,15 +191,17 @@ export default function Multicall({ options }: Props) {
 			}
 
 			// Process contracts array to ensure each has an ABI
-			const contracts = parseContracts(enhancedOptions['contracts'] || defaultValues['contracts'])
-			const processedContracts = contracts.map((contract: Record<string, any>) => {
+			const contractsInput =
+				typeof enhancedOptions['contracts'] === 'string' ? enhancedOptions['contracts'] : defaultValues['contracts']
+			const contracts = parseContracts(contractsInput)
+			const processedContracts = contracts.map((contract) => {
 				if (!contract['abi']) {
 					return { ...contract, abi }
 				}
 				return contract
 			})
 
-			const params: Record<string, any> = {
+			const params: Record<string, unknown> = {
 				contracts: processedContracts,
 			}
 
@@ -213,7 +215,7 @@ export default function Multicall({ options }: Props) {
 			}
 
 			// Add block identifier - only one should be used
-			if (enhancedOptions['blockNumber']) {
+			if (typeof enhancedOptions['blockNumber'] === 'string') {
 				params['blockNumber'] = parseBlockNumber(enhancedOptions['blockNumber'])
 			} else if (enhancedOptions['blockTag']) {
 				params['blockTag'] = enhancedOptions['blockTag']
@@ -223,8 +225,8 @@ export default function Multicall({ options }: Props) {
 		},
 
 		// Execute the action
-		executeAction: async (client: any, params: any): Promise<any> => {
-			return await client.multicall({ ...params, deployless: !params.multicallAddress })
+		executeAction: async (client, params): Promise<unknown> => {
+			return await client['multicall']?.({ ...params, deployless: !params['multicallAddress'] })
 		},
 	})
 

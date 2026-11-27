@@ -131,7 +131,7 @@ export default function LoadState({ options }: Props) {
 		},
 
 		// Inlined executeAction function
-		executeAction: async (client: any, params: LoadStateParams): Promise<LoadStateResult> => {
+		executeAction: async (client, params: LoadStateParams): Promise<LoadStateResult> => {
 			return await client.tevmLoadState(params.state)
 		},
 	})

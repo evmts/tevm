@@ -30,7 +30,7 @@ const HomeTab: React.FC<HomeTabProps> = ({ host, port, chainId, fork, verbose })
 				{'\n'}
 				{'=================='}
 			</Text>
-			{PREFUNDED_ACCOUNTS.map((acc: any, index: number) => (
+			{PREFUNDED_ACCOUNTS.map((acc, index: number) => (
 				<Text key={index}>
 					({index}) {acc.address} (1000 ETH)
 				</Text>

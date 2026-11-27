@@ -115,8 +115,8 @@ export default function GetAccount({ options }: Props) {
 		},
 
 		// Inlined executeAction function
-		executeAction: async (client: any, params: GetAccountParams): Promise<GetAccountResult> => {
-			return await client.tevmGetAccount(params)
+		executeAction: async (client, params: GetAccountParams): Promise<GetAccountResult> => {
+			return (await client.tevmGetAccount(params)) as unknown as GetAccountResult
 		},
 	})
 

@@ -13,10 +13,10 @@ const queryClient = new QueryClient({
 })
 
 export default function App({ Component, commandProps }: AppProps) {
-	const C = Component as any
+	const C = Component as unknown as React.ComponentType<Record<string, unknown>>
 	return (
 		<QueryClientProvider client={queryClient}>
-			<C {...commandProps} />
+			<C {...(commandProps as Record<string, unknown>)} />
 		</QueryClientProvider>
 	)
 }

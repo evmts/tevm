@@ -23,9 +23,9 @@ export default function Contract({ options }: Props) {
 		optionDescriptions: {},
 		createParams: (input) => ({
 			...nativeCallParams(input),
-			abi: parseCliAbi(input['abi']),
+			abi: parseCliAbi(typeof input['abi'] === 'string' ? input['abi'] : undefined),
 			functionName: input['functionName'],
-			args: JSON.parse(input['args'] ?? '[]'),
+			args: JSON.parse(typeof input['args'] === 'string' ? input['args'] : '[]'),
 		}),
 		executeAction: (client, params) => client.tevmContract(params),
 	})

@@ -120,7 +120,7 @@ const fallbackERC20Abi = [
 
 export default function ReadContract({ options }: Props) {
 	// Use the action hook for readContract
-	const actionResult = useAction<ReadContractParams, any>({
+	const actionResult = useAction<ReadContractParams, unknown>({
 		actionName: 'readContract',
 		options,
 		defaultValues: {
@@ -129,30 +129,28 @@ export default function ReadContract({ options }: Props) {
 		optionDescriptions,
 
 		// Create params for readContract
-		createParams: (enhancedOptions: Record<string, any>): ReadContractParams => {
-			let abi
+		createParams: (enhancedOptions: Record<string, unknown>): ReadContractParams => {
+			let abi: ReadContractParams['abi']
 			try {
-				const abiOption = (enhancedOptions as any).abi
+				const abiOption = enhancedOptions['abi']
 				abi =
 					typeof abiOption === 'string'
-						? JSON.parse(abiOption.trim().startsWith('[') ? abiOption : readFileSync(abiOption, 'utf8'))
-						: abiOption || fallbackERC20Abi
+						? (JSON.parse(
+								abiOption.trim().startsWith('[') ? abiOption : readFileSync(abiOption, 'utf8'),
+							) as ReadContractParams['abi'])
+						: ((abiOption as ReadContractParams['abi'] | undefined) ?? (fallbackERC20Abi as ReadContractParams['abi']))
 			} catch (e) {
 				throw new Error(`Invalid ABI JSON: ${(e as Error).message}`)
 			}
 
-			let args = []
-			if ((enhancedOptions as any).args) {
+			let args: unknown[] = []
+			if (enhancedOptions['args']) {
 				try {
-					args =
-						typeof (enhancedOptions as any).args === 'string'
-							? JSON.parse((enhancedOptions as any).args)
-							: (enhancedOptions as any).args
+					const parsedArgs: unknown =
+						typeof enhancedOptions['args'] === 'string' ? JSON.parse(enhancedOptions['args']) : enhancedOptions['args']
 
 					// Ensure args is an array
-					if (!Array.isArray(args)) {
-						args = [args]
-					}
+					args = Array.isArray(parsedArgs) ? parsedArgs : [parsedArgs]
 				} catch (e) {
 					throw new Error(`Invalid arguments JSON: ${(e as Error).message}`)
 				}
@@ -160,17 +158,17 @@ export default function ReadContract({ options }: Props) {
 
 			// Return the params object
 			return {
-				address: (enhancedOptions as any).address,
+				address: String(enhancedOptions['address'] ?? ''),
 				abi,
-				functionName: (enhancedOptions as any).functionName,
+				functionName: String(enhancedOptions['functionName'] ?? ''),
 				args,
-				blockTag: (enhancedOptions as any).blockTag,
+				...(typeof enhancedOptions['blockTag'] === 'string' ? { blockTag: enhancedOptions['blockTag'] } : {}),
 			}
 		},
 
 		// Execute readContract action
-		executeAction: async (client: any, params: ReadContractParams): Promise<any> => {
-			return await client.readContract(params)
+		executeAction: async (client, params: ReadContractParams): Promise<unknown> => {
+			return await client['readContract']?.(params)
 		},
 	})
 
@@ -178,7 +176,7 @@ export default function ReadContract({ options }: Props) {
 	return (
 		<CliAction
 			{...actionResult}
-			targetName={`${(actionResult.options as any).functionName} at ${(actionResult.options as any).address}`}
+			targetName={`${String(actionResult.options['functionName'] ?? '')} at ${String(actionResult.options['address'] ?? '')}`}
 			successMessage="Contract read successfully!"
 		/>
 	)

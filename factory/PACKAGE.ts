@@ -40,9 +40,32 @@ const repositoryMetadataInputs = S.Filegroup({
 const contributorDataInputs = S.Filegroup({
 	srcs: S.glob([
 		'//.smithers/UI.json',
+		'//.smithers/factory.json',
+		'//.smithers/home.json',
+		'//.smithers/coding-project.json',
+		'//.smithers/history/mythical.json',
+		'//.agents/uphill/lighthouse-snapshot.json',
 		'//.github/ISSUE_TEMPLATE/*.yml',
 		'//sites/contributor/src/generated/factory-data.json',
 	]),
+})
+
+const smithersCloudInputs = S.Filegroup({
+	srcs: S.glob([
+		'//.smithers/FACTORY.ts',
+		'//.smithers/factory.json',
+		'//.smithers/home.json',
+		'//.smithers/coding-project.json',
+		'//.smithers/workflows/**',
+		'//.smithers/flows/**',
+		'//.smithers/wiki/**',
+		'//.smithers/history/**',
+		'//.smithers/playground/**',
+	]),
+})
+
+const docsLlmsInputs = S.Filegroup({
+	srcs: S.glob(['//docs/node/pages/**', '//docs/node/public/llms.txt']),
 })
 
 const policyLint = S.Shell.Test({
@@ -147,6 +170,55 @@ const preflight = S.Shell.Run({
 	data: [policy, scripts, S.file('//package.json'), S.file('//.nvmrc')],
 })
 
+const projectionLint = S.Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['scripts/factory/project-factory.mjs'],
+	data: [smithersCloudInputs, policy, scripts],
+})
+
+const projectionWrite = S.Shell.Diff({
+	bin: S.Runtime.bin,
+	args: ['scripts/factory/project-factory.mjs', '--write'],
+	data: [smithersCloudInputs, policy, scripts],
+	changes: ['.smithers/factory.json', '.smithers/home.json'],
+})
+
+const trustBoundaryTest = S.Shell.Test({
+	command: 'node --test scripts/factory/trust-boundary.test.mjs && node scripts/factory/trust-boundary.mjs',
+	data: [policy, smithersCloudInputs, repositoryMetadataInputs, S.file('//WORKSPACE.ts'), scripts],
+})
+
+const sandboxAuthTest = S.Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['--test', 'scripts/factory/sandbox-auth.test.mjs'],
+	data: [policy, scripts],
+})
+
+const cloudWorkflowsTest = S.Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['--test', 'scripts/factory/verify-cloud-workflows.test.mjs'],
+	data: [smithersCloudInputs, scripts],
+})
+
+const wikiAndHistoryTest = S.Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['--test', 'scripts/factory/wiki-and-history.test.mjs'],
+	data: [smithersCloudInputs, scripts],
+})
+
+const llmsTxtLint = S.Shell.Test({
+	bin: S.Runtime.bin,
+	args: ['scripts/factory/generate-llms-txt.mjs'],
+	data: [docsLlmsInputs, scripts],
+})
+
+const llmsTxtWrite = S.Shell.Diff({
+	bin: S.Runtime.bin,
+	args: ['scripts/factory/generate-llms-txt.mjs', '--write'],
+	data: [docsLlmsInputs, scripts],
+	changes: ['docs/node/public/llms.txt'],
+})
+
 const check = S.Suite({
 	tests: [
 		policyLint,
@@ -161,33 +233,49 @@ const check = S.Suite({
 		repositoryMetadataLint,
 		sourceIntegrity,
 		contributorDataLint,
+		projectionLint,
+		trustBoundaryTest,
+		sandboxAuthTest,
+		cloudWorkflowsTest,
+		wikiAndHistoryTest,
+		llmsTxtLint,
 	],
 })
 
 export const Package = S.Package({
 	targets: {
 		check,
+		cloudWorkflowsTest,
 		conventions,
 		contributorDataInputs,
 		contributorDataLint,
 		contributorDataWrite,
 		declarations,
 		declarationsTypecheck,
+		docsLlmsInputs,
 		issueForms,
 		issueIntakeTest,
 		changesetCandidateTest,
 		conformanceCorpusTest,
 		nativeAddonStampTest,
 		labelsTest,
+		llmsTxtLint,
+		llmsTxtWrite,
 		policy,
 		policyLint,
 		preflight,
+		projectionLint,
+		projectionWrite,
 		queue,
 		queueLint,
 		repositoryMetadataLint,
 		repositoryMetadataWrite,
+		sandboxAuthTest,
 		shellScopeLint,
+		smithersCloudInputs,
 		sourceIntegrity,
 		scripts,
+		trustBoundaryTest,
+		wikiAndHistoryTest,
 	},
 })

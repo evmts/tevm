@@ -28,3 +28,13 @@ Maintain high test depth per package, synchronized `tevm` facade exports, and va
 - Maintain at least an 80% test-to-source line ratio in every workspace package, especially `@tevm/cli` and `@tevm/errors`. At least 80.
 - Keep every subpath in `tevm/package.json` synchronized with its facade directory and barrel exports (AGENTS.md).
 - Keep all relative Markdown links in `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, and `CLAUDE.md` valid.
+
+## Factory & Trust
+
+Enforce Smithers Cloud trust boundaries, shared object store isolation, QuickJS Realm workflows, personalized home UI, Obsidian wiki, mythical history, and playground CSP integrity.
+
+- Split read and write secrets on build.smithers.sh and prevent untrusted PRs from accessing write or publish tokens.
+- Keep every .smithers/workflows/*.ts workflow valid under Smithers Cloud's QuickJS Realm planner and aligned with factory.json triggers.
+- Keep .smithers/home.json valid under @smthrs/views with tailored maintainer, contributor, and viewer sections.
+- Keep .smithers/coding-project.json, Obsidian [[wikilinks]], and .smithers/history/MYTHICAL.md synchronized and link-checked.
+- Keep .smithers/playground/index.html CSP SHA-256 hashes synchronized with inline script and style blocks.

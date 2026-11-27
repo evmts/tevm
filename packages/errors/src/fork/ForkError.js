@@ -55,7 +55,7 @@ export class ForkError extends BaseError {
 		const cause =
 			args.cause instanceof Error
 				? args.cause
-				: new BaseError(args.cause.message, {}, 'unknown', Number(args.cause.code))
+				: Object.assign(new Error(args.cause.message), { code: Number(args.cause.code) })
 
 		super(
 			[message, cause.message].filter(Boolean).join('\n'),

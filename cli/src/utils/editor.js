@@ -98,7 +98,7 @@ export async function openEditor(projectDir) {
 /**
  * Executes a TypeScript file using Bun and returns the result
  * @param {string} projectDir - The project directory
- * @returns {Promise<any>} - The result of the execution
+ * @returns {Promise<unknown>} - The result of the execution
  */
 export async function executeTsFile(projectDir) {
 	const scriptPath = path.join(projectDir, 'script.ts')
@@ -111,12 +111,12 @@ export async function executeTsFile(projectDir) {
 			cwd: projectDir,
 			stdio: ['ignore', 'pipe', 'pipe'],
 		})
-		const handleStdoutData = /** @type {(data: any) => void} */ (
+		const handleStdoutData = /** @type {(data: Buffer | string) => void} */ (
 			(data) => {
 				stdout += data.toString()
 			}
 		)
-		const handleStderrData = /** @type {(data: any) => void} */ (
+		const handleStderrData = /** @type {(data: Buffer | string) => void} */ (
 			(data) => {
 				stderr += data.toString()
 			}

@@ -9,7 +9,13 @@ assert(process.argv.length === (write ? 3 : 2), 'Usage: contributor-data.mjs [--
 
 const policy = await readPolicy()
 const plugin = await readJson(resolve(repositoryRoot, '.smithers/UI.json'))
+const cloudFactory = await readJson(resolve(repositoryRoot, '.smithers/factory.json'))
+const wikiCatalog = await readJson(resolve(repositoryRoot, '.smithers/coding-project.json'))
+const mythical = await readJson(resolve(repositoryRoot, '.smithers/history/mythical.json'))
+const lighthouse = await readJson(resolve(repositoryRoot, '.agents/uphill/lighthouse-snapshot.json'))
 const repositoryUrl = `https://github.com/${policy.repository.owner}/${policy.repository.name}`
+const smithersRepoUrl =
+	policy.cloud?.repoUrl ?? `https://smithers.sh/${policy.repository.owner}/${policy.repository.name}`
 
 const exactKeys = (record, expected, context) => {
 	const actual = Object.keys(record).sort()
@@ -155,12 +161,61 @@ const data = {
 		name: policy.repository.name,
 		defaultBranch: policy.repository.defaultBranch,
 		webUrl: repositoryUrl,
+		smithersUrl: smithersRepoUrl,
+		mcpUrl: policy.cloud?.mcpUrl ?? `${smithersRepoUrl}/mcp`,
+		objectStoreUrl: policy.cloud?.objectStore ?? 'https://build.smithers.sh',
 		forkUrl: `${repositoryUrl}/fork`,
 		newIssueUrl: `${repositoryUrl}/issues/new/choose`,
 		discussionsUrl: `${repositoryUrl}/discussions`,
 		securityAdvisoryUrl: `${repositoryUrl}/security/advisories/new`,
-		docsUrl: 'https://node.tevm.sh',
+		docsUrl: policy.cloud?.docsUrl ?? 'https://node.tevm.sh',
 	},
+	cloud: {
+		publicTodos: policy.cloud?.publicTodos === true,
+		publicFactory: policy.cloud?.publicFactory === true,
+		githubMirror: policy.cloud?.githubMirror ?? 'two-way',
+		flowCount: Array.isArray(cloudFactory.flows) ? cloudFactory.flows.length : 0,
+		triggerCount: Array.isArray(cloudFactory.contributes?.triggers) ? cloudFactory.contributes.triggers.length : 0,
+		triggers: (cloudFactory.contributes?.triggers ?? []).map((t) => ({
+			on: t.on,
+			flow: t.flow,
+			title: t.title ?? t.flow,
+			branches: t.branches ?? null,
+			cron: t.cron ?? null,
+		})),
+	},
+	trust: {
+		maintainers: policy.trust?.maintainers ?? ['roninjin10'],
+		acceptExecutionFrom: policy.trust?.acceptExecutionFrom ?? ['smithers-sandbox', 'maintainer'],
+		allowUntrustedExecution: policy.trust?.allowUntrustedExecution === true,
+		untrustedCacheRead: policy.trust?.untrustedCacheRead === true,
+		untrustedCacheWrite: policy.trust?.untrustedCacheWrite === true,
+		untrustedSkipGates: policy.trust?.untrustedSkipGates === true,
+		oneTimeAuthRequiredForSandboxes: policy.trust?.oneTimeAuthRequiredForSandboxes === true,
+		protectedPaths: policy.trust?.protectedPaths ?? [],
+	},
+	lighthouse,
+	wiki: (wikiCatalog.pages ?? []).map((page) => ({
+		id: page.id,
+		title: page.title,
+		purpose: page.purpose,
+		document: page.document,
+		related: page.related ?? [],
+		url: `${smithersRepoUrl}/blob/main/${page.document}`,
+	})),
+	mythicalHistory: (mythical.epics ?? []).map((epic) => ({
+		id: epic.id,
+		title: epic.title,
+		summary: epic.summary,
+		chapters: (epic.chapters ?? []).map((ch) => ({
+			id: ch.id,
+			title: ch.title,
+			paths: ch.paths,
+			provenanceCommits: ch.provenanceCommits,
+			notes: ch.notes,
+		})),
+		abandonedExperiments: epic.abandonedExperiments ?? [],
+	})),
 	toolchain: {
 		node: policy.toolchain.node,
 		pnpm: policy.toolchain.pnpm,
@@ -175,6 +230,11 @@ const data = {
 		factoryCheck: 'pnpm factory:check',
 		runtimeCheck: 'pnpm factory:runtime-check',
 		portal: 'pnpm factory:ui',
+		uphill: 'uphill check && uphill --compact',
+		sandboxAuthMint: 'node scripts/factory/sandbox-auth.mjs mint --role smithers-sandbox --run ci:local',
+		mcpClaude: `claude mcp add tevm --transport http ${policy.cloud?.mcpUrl ?? `${smithersRepoUrl}/mcp`}`,
+		mcpCodex: `codex mcp add tevm --url ${policy.cloud?.mcpUrl ?? `${smithersRepoUrl}/mcp`}`,
+		mcpAntigravity: `agy mcp add tevm --transport http ${policy.cloud?.mcpUrl ?? `${smithersRepoUrl}/mcp`}`,
 		clone: `git clone https://github.com/<your-handle>/${policy.repository.name}.git\ncd ${policy.repository.name}\ncorepack enable\npnpm factory:bootstrap`,
 	},
 }
@@ -187,8 +247,12 @@ try {
 
 if (write) {
 	if (current !== rendered) await writeFile(outputPath, rendered)
-	console.log(`contributor data synchronized: ${issueTypes.length} issue types, ${plugin.entries.length} targets`)
+	console.log(
+		`contributor data synchronized: ${issueTypes.length} issue types, ${plugin.entries.length} targets, ${data.wiki.length} wiki pages, ${data.mythicalHistory.length} mythical epics, lighthouse ${lighthouse.overallScore}`,
+	)
 } else {
 	assert(current === rendered, 'contributor data is stale; run pnpm factory:contributor-data-write')
-	console.log(`contributor data ok: ${issueTypes.length} issue types, ${plugin.entries.length} targets`)
+	console.log(
+		`contributor data ok: ${issueTypes.length} issue types, ${plugin.entries.length} targets, lighthouse ${lighthouse.overallScore}`,
+	)
 }

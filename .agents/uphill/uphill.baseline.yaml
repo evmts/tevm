@@ -5,10 +5,10 @@ footprint:
   package-source-bytes:
     "*": { target: 12kB }
     "@tevm/actions": { baseline: 3428B }
-    "@tevm/cli": { baseline: 42725B, target: 35kB }
+    "@tevm/cli": { baseline: 43687B, target: 35kB }
     "@tevm/common": { baseline: 103B }
-    "@tevm/contract": { baseline: 24086B }
-    "@tevm/errors": { baseline: 17673B, target: 25kB }
+    "@tevm/contract": { baseline: 24124B }
+    "@tevm/errors": { baseline: 17679B, target: 25kB }
     "@tevm/http-client": { baseline: 426B }
     "@tevm/jsonrpc": { baseline: 1660B }
     "@tevm/mcp": { baseline: 9398B }
@@ -16,14 +16,14 @@ footprint:
     "@tevm/node": { baseline: 9482B }
     "@tevm/predeploys": { baseline: 4072B }
     "@tevm/server": { baseline: 8134B }
-    "@tevm/utils": { baseline: 4982B }
+    "@tevm/utils": { baseline: 4990B }
     "@tevm/viem": { baseline: 569B }
   module-lines:
     "*": { target: 250 }
     cli/src/cli.tsx: { baseline: 17 }
     cli/src/commands/_app.tsx: { baseline: 23 }
     cli/src/commands/action/createAccessList.tsx: { baseline: 252 }
-    cli/src/commands/action/getBalance.tsx: { baseline: 153 }
+    cli/src/commands/action/getBalance.tsx: { baseline: 155 }
     cli/src/commands/action/index.tsx: { baseline: 23 }
     cli/src/commands/action/sendRawTransaction.tsx: { baseline: 106 }
     cli/src/commands/action/simulateCalls.tsx: { baseline: 295 }
@@ -38,14 +38,14 @@ footprint:
     cli/src/commands/dumpState.tsx: { baseline: 128 }
     cli/src/commands/estimateFeesPerGas.tsx: { baseline: 113 }
     cli/src/commands/estimateGas.tsx: { baseline: 248 }
-    cli/src/commands/generate.tsx: { baseline: 348 }
+    cli/src/commands/generate.tsx: { baseline: 352 }
     cli/src/commands/getAccount.tsx: { baseline: 132 }
-    cli/src/commands/getBlock.tsx: { baseline: 170 }
+    cli/src/commands/getBlock.tsx: { baseline: 172 }
     cli/src/commands/getBlockNumber.tsx: { baseline: 113 }
     cli/src/commands/getBytecode.tsx: { baseline: 156 }
     cli/src/commands/getChainId.tsx: { baseline: 88 }
     cli/src/commands/getEnsAddress.tsx: { baseline: 164 }
-    cli/src/commands/getEnsName.tsx: { baseline: 168 }
+    cli/src/commands/getEnsName.tsx: { baseline: 170 }
     cli/src/commands/getEnsText.tsx: { baseline: 176 }
     cli/src/commands/getGasPrice.tsx: { baseline: 91 }
     cli/src/commands/getStorageAt.tsx: { baseline: 172 }
@@ -53,8 +53,8 @@ footprint:
     cli/src/commands/index.tsx: { baseline: 23 }
     cli/src/commands/loadState.tsx: { baseline: 142 }
     cli/src/commands/mine.tsx: { baseline: 117 }
-    cli/src/commands/multicall.tsx: { baseline: 244 }
-    cli/src/commands/readContract.tsx: { baseline: 186 }
+    cli/src/commands/multicall.tsx: { baseline: 246 }
+    cli/src/commands/readContract.tsx: { baseline: 184 }
     cli/src/commands/serve.tsx: { baseline: 271 }
     cli/src/commands/session.tsx: { baseline: 143 }
     cli/src/commands/setAccount.tsx: { baseline: 179 }
@@ -62,8 +62,8 @@ footprint:
     cli/src/commands/setNonce.tsx: { baseline: 127 }
     cli/src/commands/setStorageAt.tsx: { baseline: 157 }
     cli/src/commands/sol.tsx: { baseline: 178 }
-    cli/src/commands/tsc.tsx: { baseline: 141 }
-    cli/src/components/ActionTab.tsx: { baseline: 34 }
+    cli/src/commands/tsc.tsx: { baseline: 142 }
+    cli/src/components/ActionTab.tsx: { baseline: 39 }
     cli/src/components/CliAction.tsx: { baseline: 110 }
     cli/src/components/Creating.tsx: { baseline: 32 }
     cli/src/components/FancyCreateTitle.tsx: { baseline: 28 }
@@ -72,17 +72,17 @@ footprint:
     cli/src/components/LogViewer.tsx: { baseline: 50 }
     cli/src/components/MultipleChoiceStep.tsx: { baseline: 45 }
     cli/src/components/RawOutput.tsx: { baseline: 38 }
-    cli/src/components/SelectInput.tsx: { baseline: 48 }
+    cli/src/components/SelectInput.tsx: { baseline: 46 }
     cli/src/components/Step.tsx: { baseline: 46 }
     cli/src/components/Table.tsx: { baseline: 55 }
     cli/src/components/TextInputStep.tsx: { baseline: 34 }
-    cli/src/hooks/useAction.tsx: { baseline: 302 }
+    cli/src/hooks/useAction.tsx: { baseline: 305 }
     cli/src/hooks/useCounter.ts: { baseline: 16 }
     cli/src/state/State.ts: { baseline: 16 }
     cli/src/state/Store.ts: { baseline: 40 }
-    cli/src/stores/logStore.ts: { baseline: 81 }
-    cli/src/utils/action-types.ts: { baseline: 67 }
-    cli/src/utils/clients.js: { baseline: 70 }
+    cli/src/stores/logStore.ts: { baseline: 86 }
+    cli/src/utils/action-types.ts: { baseline: 133 }
+    cli/src/utils/clients.js: { baseline: 68 }
     cli/src/utils/create-args.ts: { baseline: 26 }
     cli/src/utils/create-options.ts: { baseline: 30 }
     cli/src/utils/editor.js: { baseline: 237 }
@@ -123,7 +123,7 @@ footprint:
     packages/contract/src/contract-lib/ErrorContract.s.sol.ts: { baseline: 182 }
     packages/contract/src/contract-lib/SimpleContract.s.sol.ts: { baseline: 52 }
     packages/contract/src/contract-lib/index.ts: { baseline: 6 }
-    packages/contract/src/createContract.js: { baseline: 214 }
+    packages/contract/src/createContract.js: { baseline: 212 }
     packages/contract/src/event/EventActionCreator.ts: { baseline: 109 }
     packages/contract/src/event/eventFactory.js: { baseline: 79 }
     packages/contract/src/index.ts: { baseline: 22 }
@@ -306,62 +306,16 @@ footprint:
 quality:
   explicit-any:
     "*": { baseline: pass }
-    cli/src/commands/_app.tsx: { baseline: fail }
-    cli/src/commands/action/createAccessList.tsx: { baseline: fail }
-    cli/src/commands/action/getBalance.tsx: { baseline: fail }
-    cli/src/commands/action/sendRawTransaction.tsx: { baseline: fail }
-    cli/src/commands/action/simulateCalls.tsx: { baseline: fail }
-    cli/src/commands/createBlockFilter.tsx: { baseline: fail }
-    cli/src/commands/createContractEventFilter.tsx: { baseline: fail }
-    cli/src/commands/createEventFilter.tsx: { baseline: fail }
-    cli/src/commands/dumpState.tsx: { baseline: fail }
-    cli/src/commands/estimateFeesPerGas.tsx: { baseline: fail }
-    cli/src/commands/estimateGas.tsx: { baseline: fail }
-    cli/src/commands/generate.tsx: { baseline: fail }
-    cli/src/commands/getAccount.tsx: { baseline: fail }
-    cli/src/commands/getBlock.tsx: { baseline: fail }
-    cli/src/commands/getBlockNumber.tsx: { baseline: fail }
-    cli/src/commands/getBytecode.tsx: { baseline: fail }
-    cli/src/commands/getChainId.tsx: { baseline: fail }
-    cli/src/commands/getEnsAddress.tsx: { baseline: fail }
-    cli/src/commands/getEnsName.tsx: { baseline: fail }
-    cli/src/commands/getEnsText.tsx: { baseline: fail }
-    cli/src/commands/getGasPrice.tsx: { baseline: fail }
-    cli/src/commands/getStorageAt.tsx: { baseline: fail }
-    cli/src/commands/getTransaction.tsx: { baseline: fail }
-    cli/src/commands/loadState.tsx: { baseline: fail }
-    cli/src/commands/mine.tsx: { baseline: fail }
-    cli/src/commands/multicall.tsx: { baseline: fail }
-    cli/src/commands/readContract.tsx: { baseline: fail }
-    cli/src/commands/setAccount.tsx: { baseline: fail }
-    cli/src/commands/setCode.tsx: { baseline: fail }
-    cli/src/commands/setNonce.tsx: { baseline: fail }
-    cli/src/commands/setStorageAt.tsx: { baseline: fail }
-    cli/src/commands/sol.tsx: { baseline: fail }
-    cli/src/commands/tsc.tsx: { baseline: fail }
-    cli/src/components/FancyCreateTitle.tsx: { baseline: fail }
-    cli/src/components/HomeTab.tsx: { baseline: fail }
-    cli/src/hooks/useAction.tsx: { baseline: fail }
-    cli/src/stores/logStore.ts: { baseline: fail }
-    cli/src/utils/action-types.ts: { baseline: fail }
-    cli/src/utils/output.ts: { baseline: fail }
-    packages/utils/src/invariant.ts: { baseline: fail }
   ts-suppressions:
     "*": { baseline: pass }
-    cli/src/components/SelectInput.tsx: { baseline: fail }
     packages/memory-client/src/nativeClient.typecheck.ts: { baseline: fail }
   console-calls:
     "*": { baseline: pass }
     packages/node/src/createZevmEngine.js: { baseline: fail }
   todo-fixme:
     "*": { baseline: pass }
-    packages/contract/src/createContract.js: { baseline: fail }
-    packages/utils/src/SerializeToJson.ts: { baseline: fail }
   function-length:
     "*": { baseline: pass }
-    cli/src/commands/action/createAccessList.tsx: { baseline: fail }
-    packages/contract/src/contract-lib/AdvancedContract.s.sol.ts: { baseline: fail }
-    packages/contract/src/contract-lib/ErrorContract.s.sol.ts: { baseline: fail }
   jsdoc-exports:
     "*": { baseline: pass }
 
@@ -369,10 +323,10 @@ architecture:
   test-ratio:
     "*": { target: 80 }
     "@tevm/actions": { baseline: 63 }
-    "@tevm/cli": { baseline: 9 }
+    "@tevm/cli": { baseline: 15 }
     "@tevm/common": { baseline: 725 }
     "@tevm/contract": { baseline: 55 }
-    "@tevm/errors": { baseline: 25 }
+    "@tevm/errors": { baseline: 52 }
     "@tevm/http-client": { baseline: 185 }
     "@tevm/jsonrpc": { baseline: 362 }
     "@tevm/mcp": { baseline: 76 }
@@ -386,4 +340,15 @@ architecture:
     "*": { baseline: pass }
   docs-links:
     "*": { baseline: pass }
-    CONTRIBUTING.md: { baseline: fail }
+
+factory:
+  trust-boundary:
+    "*": { baseline: pass }
+  cloud-workflows:
+    "*": { baseline: pass }
+  home-personalization:
+    "*": { baseline: pass }
+  wiki-and-history:
+    "*": { baseline: pass }
+  playground-csp:
+    "*": { baseline: pass }

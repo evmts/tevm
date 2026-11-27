@@ -1,0 +1,19 @@
+---
+description: Triage an external or internal TEVM pull request from its metadata and diff alone without executing untrusted PR code.
+capabilities:
+  - "fs:read:**"
+  - "proc:spawn:rg *"
+model: gpt-6.2-astra
+modelInvocable: true
+budget:
+  tokens: 48000
+  milliseconds: 600000
+---
+Perform strictly read-only triage on one TEVM pull request using Smithers Cloud MCP (`pull_get`, `pull_files`):
+
+- NEVER execute untrusted code from the PR head.
+- Verify scope coherence against a linked issue or TODO.
+- Check whether protected paths (`WORKSPACE.ts`, `PACKAGE.ts`, `factory/policy.json`, `.smithers/`, `.github/`) are modified; flag any protected-path edit for explicit maintainer review.
+- Verify presence of regression tests, JSDoc, recursive barrel updates, and a changeset for published packages.
+- Confirm untrusted PR execution cannot access `SMITHERS_CACHE_WRITE_TOKEN` or publish secrets.
+- Summarize readiness clearly for the maintainer (`roninjin10`). Never approve or merge.

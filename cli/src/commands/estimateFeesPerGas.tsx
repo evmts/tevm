@@ -92,7 +92,7 @@ export default function EstimateFeesPerGas({ options }: Props) {
 		},
 
 		// Execute the action
-		executeAction: async (client: any, params: any): Promise<any> => {
+		executeAction: async (client, params): Promise<unknown> => {
 			return await client.estimateFeesPerGas(params)
 		},
 	})

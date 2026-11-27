@@ -36,7 +36,7 @@ export function generateTemplates(actionName, options, params) {
 	const method = names[actionName] ?? actionName
 	const setup = viem
 		? `import { createPublicClient, http } from 'viem'\nconst client = createPublicClient({ transport: http(${JSON.stringify(options['rpc'] || 'http://127.0.0.1:8545')}) })`
-		: `import { createMemoryClient } from '@tevm/memory-client'\nconst client = createMemoryClient(${options['local'] ? '{}' : `{ fork: { url: ${JSON.stringify(options['rpc'] || 'http://127.0.0.1:8545')} }`})`
+		: `import { createMemoryClient } from '@tevm/memory-client'\nconst client = createMemoryClient(${options['local'] ? '{}' : `{ fork: { url: ${JSON.stringify(options['rpc'] || 'http://127.0.0.1:8545')} } }`})`
 	const argument = method === 'tevmDumpState' ? '' : method === 'tevmLoadState' ? 'params.state' : 'params'
 	return {
 		scriptTemplate: `${setup}\nconst params = ${literal(params)}\ntry {\n  const result = await client[${JSON.stringify(method)}](${argument})\n  console.log(JSON.stringify(result, (_, value) => typeof value === 'bigint' ? value.toString() : value, 2))\n} finally {\n${viem ? '' : '  await client.tevmClose()\n'}}\n`,

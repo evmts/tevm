@@ -1,53 +1,56 @@
 // smithers-source: authored
 // smithers-display-name: Reseat Kimi Lanes
 /** @jsxImportSource smithers-orchestrator */
-import { ClaudeCodeAgent as SmithersClaudeCodeAgent, createSmithers } from "smithers-orchestrator";
-import { z } from "zod/v4";
+import { createSmithers, ClaudeCodeAgent as SmithersClaudeCodeAgent } from 'smithers-orchestrator'
+import { z } from 'zod/v4'
 
-const STAGE = "/Users/williamcory/quality-work";
-const ORG = "evmts";
+const STAGE = '/Users/williamcory/quality-work'
+const ORG = 'evmts'
 
-const opus = (cwd: string) => new SmithersClaudeCodeAgent({ model: "opus", cwd });
+const opus = (cwd: string) => new SmithersClaudeCodeAgent({ model: 'opus', cwd })
 
 const outSchema = z.looseObject({
 	lane: z.string(),
 	summary: z.string(),
-	prUrl: z.string().default(""),
+	prUrl: z.string().default(''),
 	verified: z.boolean().default(false),
 	findings: z.array(z.string()).default([]),
 	blockers: z.array(z.string()).default([]),
-});
+})
 
-const inputSchema = z.object({ noop: z.boolean().default(false) });
-const { Workflow, Task, Parallel, smithers } = createSmithers({ input: inputSchema, out: outSchema });
+const inputSchema = z.object({ noop: z.boolean().default(false) })
+const { Workflow, Task, Parallel, smithers } = createSmithers({ input: inputSchema, out: outSchema })
 
 const SHARED = `SHARED RULES:
 - Several other runs are live. Do NOT work in /Users/williamcory/tevm-monorepo. Clone fresh into ${STAGE}/<lane>.
 - Open a PR from branch quality/<lane>. Never merge anything.
 - Run what you claim and paste REAL output. A precise blocker beats a false success.
-- These docs sites are ALREADY LIVE and serving (verified HTTP 200), so do not break a working site. Verify the site still builds before you push.`;
+- These docs sites are ALREADY LIVE and serving (verified HTTP 200), so do not break a working site. Verify the site still builds before you push.`
 
 /** The three UI lanes plus the viem review that were stranded when kimi hit its billing-cycle quota. */
 const LANES = [
 	{
-		key: "ui-voltaire",
-		repo: "voltaire",
-		sub: "voltaire",
-		extra: "Voltaire is Ethereum primitives and cryptography (Zig + Rust), published on npm as @tevm/voltaire@0.4.0 with real ESM+CJS JS bindings, 71 subpath exports. A good interactive component here is a live encode/decode or hashing playground built on those published bindings.",
+		key: 'ui-voltaire',
+		repo: 'voltaire',
+		sub: 'voltaire',
+		extra:
+			'Voltaire is Ethereum primitives and cryptography (Zig + Rust), published on npm as @tevm/voltaire@0.4.0 with real ESM+CJS JS bindings, 71 subpath exports. A good interactive component here is a live encode/decode or hashing playground built on those published bindings.',
 	},
 	{
-		key: "ui-guillotine-mini",
-		repo: "guillotine-mini",
-		sub: "mini",
-		extra: "guillotine-mini is a tiny, simple EVM written in Zig. A natural interactive component is a compact bytecode/opcode stepper that makes the EVM's simplicity legible.",
+		key: 'ui-guillotine-mini',
+		repo: 'guillotine-mini',
+		sub: 'mini',
+		extra:
+			"guillotine-mini is a tiny, simple EVM written in Zig. A natural interactive component is a compact bytecode/opcode stepper that makes the EVM's simplicity legible.",
 	},
 	{
-		key: "ui-zevm",
-		repo: "zevm",
-		sub: "zevm",
-		extra: "zevm is the EVM implementation tevm consumes as a pnpm workspace member, published as @evmts/zevm. It ships native platform packages under npm/platforms/*. Documenting platform support clearly matters here.",
+		key: 'ui-zevm',
+		repo: 'zevm',
+		sub: 'zevm',
+		extra:
+			'zevm is the EVM implementation tevm consumes as a pnpm workspace member, published as @evmts/zevm. It ships native platform packages under npm/platforms/*. Documenting platform support clearly matters here.',
 	},
-] as const;
+] as const
 
 export default smithers(() => (
 	<Workflow name="reseat-kimi">
@@ -92,4 +95,4 @@ DO THIS:
 			</Task>
 		</Parallel>
 	</Workflow>
-));
+))

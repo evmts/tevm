@@ -24,8 +24,8 @@ export default function Deploy({ options }: Props) {
 		createParams: (input) => ({
 			...nativeCallParams(input),
 			bytecode: input['bytecode'],
-			abi: parseCliAbi(input['abi']),
-			args: JSON.parse(input['args'] ?? '[]'),
+			abi: parseCliAbi(typeof input['abi'] === 'string' ? input['abi'] : undefined),
+			args: JSON.parse(typeof input['args'] === 'string' ? input['args'] : '[]'),
 		}),
 		executeAction: (client, params) => client.tevmDeploy(params),
 	})

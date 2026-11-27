@@ -1,30 +1,30 @@
 // smithers-source: authored
 // smithers-display-name: Parallel Quality Work
 /** @jsxImportSource smithers-orchestrator */
-import { CodexAgent as SmithersCodexAgent, OpenCodeAgent, createSmithers } from "smithers-orchestrator";
-import { z } from "zod/v4";
+import { createSmithers, OpenCodeAgent, CodexAgent as SmithersCodexAgent } from 'smithers-orchestrator'
+import { z } from 'zod/v4'
 
-const STAGE = "/Users/williamcory/quality-work";
-const MONO = "/Users/williamcory/tevm-monorepo";
-const ORG = "evmts";
+const STAGE = '/Users/williamcory/quality-work'
+const MONO = '/Users/williamcory/tevm-monorepo'
+const ORG = 'evmts'
 
-const sol = (cwd: string) => new SmithersCodexAgent({ model: "gpt-5.6-sol", cwd, skipGitRepoCheck: true });
-const kimi = (cwd: string) => new OpenCodeAgent({ model: "kimi-for-coding/k3", cwd });
+const sol = (cwd: string) => new SmithersCodexAgent({ model: 'gpt-5.6-sol', cwd, skipGitRepoCheck: true })
+const kimi = (cwd: string) => new OpenCodeAgent({ model: 'kimi-for-coding/k3', cwd })
 
 const outSchema = z.looseObject({
 	lane: z.string(),
 	whatChanged: z.string(),
-	prUrl: z.string().default(""),
+	prUrl: z.string().default(''),
 	verified: z.boolean().default(false),
-	evidence: z.string().default(""),
+	evidence: z.string().default(''),
 	findings: z.array(z.string()).default([]),
 	blockers: z.array(z.string()).default([]),
 	summary: z.string(),
-});
+})
 
-const inputSchema = z.object({ noop: z.boolean().default(false) });
+const inputSchema = z.object({ noop: z.boolean().default(false) })
 
-const { Workflow, Task, Parallel, smithers } = createSmithers({ input: inputSchema, out: outSchema });
+const { Workflow, Task, Parallel, smithers } = createSmithers({ input: inputSchema, out: outSchema })
 
 /**
  * IMPORTANT constraint shared by every lane: three other runs are ALREADY working this stack.
@@ -41,13 +41,13 @@ const SHARED = `SHARED RULES — read carefully, several concurrent runs are in 
     gh pr list --repo ${ORG}/tevm --json number,files --jq '.[].files[].path' | sort -u
   Those currently include packages/actions, packages/errors, packages/node, packages/server, packages/memory-client and docs/node/pages/api/methods.mdx. If your lane must touch one, keep the change minimal and say so in your report.
 - Run everything you claim. Paste REAL output. Never report a passing suite you did not execute — a precise blocker is worth more than a false success.
-- Repo conventions (${MONO}/CLAUDE.md): source is JavaScript with JSDoc, not TypeScript; one item per file; complete JSDoc with @throws and working @example blocks; explicit return types; new public API must be added to every barrel file recursively including the top-level tevm package. NEVER mock if it can be avoided — use real clients and real RPC (mainnet or https://mainnet.optimism.io). Run tests with vitest, never bare 'bun test', and never the interactive 'test' script.`;
+- Repo conventions (${MONO}/CLAUDE.md): source is JavaScript with JSDoc, not TypeScript; one item per file; complete JSDoc with @throws and working @example blocks; explicit return types; new public API must be added to every barrel file recursively including the top-level tevm package. NEVER mock if it can be avoided — use real clients and real RPC (mainnet or https://mainnet.optimism.io). Run tests with vitest, never bare 'bun test', and never the interactive 'test' script.`
 
 const LANES = [
 	{
-		key: "review-prs",
-		engine: "sol",
-		title: "Adversarially review the nine in-flight PRs",
+		key: 'review-prs',
+		engine: 'sol',
+		title: 'Adversarially review the nine in-flight PRs',
 		prompt: `You are performing a REAL code review of the nine open PRs in ${ORG}/tevm (#2076, #2077, #2078, #2079, #2080, #2081, #2082, #2083, #2084). They are about to be merged and are the only review these EVM-correctness changes will get, so this is high-stakes.
 
 They were produced by automated agents fixing bugs that viem's test-migration PR documented. Titles: send-unsigned-tx, fork-state-reads (test-only), timestamp-interval, impersonation (adds opt-in strictImpersonation), ipc-server, storage-padding, mining-modes, the CI unbreaking PR, and the WebSocket server.
@@ -63,9 +63,9 @@ This lane is READ-ONLY on code: do not open a PR of your own and do not push com
 Report every finding you posted, ranked most severe first, in the findings array.`,
 	},
 	{
-		key: "docs-vocs-core",
-		engine: "sol",
-		title: "Upgrade tevm core docs from vocs 1.4.1 to latest 2.x",
+		key: 'docs-vocs-core',
+		engine: 'sol',
+		title: 'Upgrade tevm core docs from vocs 1.4.1 to latest 2.x',
 		prompt: `The tevm core docs site at docs/node is pinned to vocs 1.4.1. Latest is 2.7.2. Upgrade it.
 
 ${SHARED}
@@ -78,9 +78,9 @@ ${SHARED}
 6. Open the PR with a body describing the breaking changes you had to handle, so a reviewer can follow the migration.`,
 	},
 	{
-		key: "coverage-core",
-		engine: "kimi",
-		title: "Raise test coverage on under-tested core packages",
+		key: 'coverage-core',
+		engine: 'kimi',
+		title: 'Raise test coverage on under-tested core packages',
 		prompt: `Improve real test coverage in ${ORG}/tevm core packages.
 
 ${SHARED}
@@ -93,9 +93,9 @@ ${SHARED}
 6. Open the PR listing per-package before/after coverage.`,
 	},
 	{
-		key: "jsdoc-core",
-		engine: "kimi",
-		title: "Fix missing and wrong JSDoc across the core public API",
+		key: 'jsdoc-core',
+		engine: 'kimi',
+		title: 'Fix missing and wrong JSDoc across the core public API',
 		prompt: `Audit and improve JSDoc across ${ORG}/tevm's public API. The repo convention is explicit: when JSDoc is missing you add it, and existing JSDoc may be WRONG so fix it.
 
 ${SHARED}
@@ -109,9 +109,9 @@ ${SHARED}
 7. Open the PR summarising which packages you covered and any places where the existing JSDoc was actively wrong — those are worth calling out as findings.`,
 	},
 	{
-		key: "utils-phase0",
-		engine: "sol",
-		title: "Execute Phase 0 of the @tevm/utils retirement",
+		key: 'utils-phase0',
+		engine: 'sol',
+		title: 'Execute Phase 0 of the @tevm/utils retirement',
 		prompt: `Execute the cheapest, fully independent phase of retiring @tevm/utils.
 
 ${SHARED}
@@ -127,9 +127,9 @@ Phase 0 from that report is pure deletion and needs no voltaire work and no appr
 6. Run typecheck and the affected packages' tests. Paste real output. Open the PR referencing the assessment.`,
 	},
 	{
-		key: "viem-review",
-		engine: "kimi",
-		title: "Review the two viem fork PRs and scope what WS/IPC unblocks",
+		key: 'viem-review',
+		engine: 'kimi',
+		title: 'Review the two viem fork PRs and scope what WS/IPC unblocks',
 		prompt: `Review the two open PRs in the ${ORG}/viem fork and produce a concrete follow-up scope.
 
 ${SHARED}
@@ -146,16 +146,16 @@ THAT LAST CONSTRAINT IS NOW BEING LIFTED: tevm PRs #2084 (WebSocket JSON-RPC tra
 3. Write a precise follow-up scope for finishing the job once WS/IPC land: exactly which four suites are still on anvil, what each needs, and what would then remain before anvil can be removed from the build and CI entirely (note that \`pnpm install\` still runs contracts:build with forge, which is a separate Foundry dependency from anvil).
 4. Post your review as comments on PR #2 with \`gh pr comment 2 --repo ${ORG}/viem --body "..."\`, and put the follow-up scope in your report findings.`,
 	},
-] as const;
+] as const
 
 export default smithers(() => (
 	<Workflow name="parallel-quality">
 		<Parallel>
 			{LANES.map((l) => (
-				<Task id={l.key} output={outSchema} agent={l.engine === "sol" ? sol(STAGE) : kimi(STAGE)}>
+				<Task id={l.key} output={outSchema} agent={l.engine === 'sol' ? sol(STAGE) : kimi(STAGE)}>
 					{`LANE: ${l.title}\n\n${l.prompt}`}
 				</Task>
 			))}
 		</Parallel>
 	</Workflow>
-));
+))

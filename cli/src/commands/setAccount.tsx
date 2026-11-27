@@ -162,7 +162,7 @@ export default function SetAccount({ options }: Props) {
 		},
 
 		// Inlined executeAction function
-		executeAction: async (client: any, params: SetAccountParams): Promise<unknown> => {
+		executeAction: async (client, params: SetAccountParams): Promise<unknown> => {
 			return await client.tevmSetAccount(params)
 		},
 	})

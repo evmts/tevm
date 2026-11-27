@@ -83,11 +83,12 @@ export default function Tsc({ options }: Props) {
 
 		child.stdout.on('data', appendOutput)
 		child.stderr.on('data', appendOutput)
-		;(child as any).on('error', (error: Error) => {
+		const childEvents = child as unknown as NodeJS.EventEmitter
+		childEvents.on('error', (error: Error) => {
 			process.exitCode = 1
 			setState((current) => ({ status: 'error', lines: [...current.lines, error.message], exitCode: 1 }))
 		})
-		;(child as any).on('exit', (code: number | null) => {
+		childEvents.on('exit', (code: number | null) => {
 			const exitCode = code ?? 1
 			if (exitCode !== 0) {
 				process.exitCode = exitCode

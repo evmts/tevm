@@ -18,10 +18,9 @@ const nativeSetup = (ref?: string): Steps => [
 const nativeSteps = (command: string): Steps => [...nativeSetup(), { run: command }]
 const releaseSteps = (prerelease: boolean): Steps => [
 	...nativeSetup(),
-	...(prerelease ? [] : [{ name: 'Require stable mode', run: 'test ! -f .changeset/pre.json' }]),
 	{
 		name: 'Create version PR or publish approved packages',
-		...(prerelease ? { if: "hashFiles('.changeset/pre.json') != ''" } : {}),
+		if: prerelease ? "hashFiles('.changeset/pre.json') != ''" : "hashFiles('.changeset/pre.json') == ''",
 		uses: 'changesets/action@v1',
 		with: { version: 'pnpm release:version', publish: 'pnpm release:publish' },
 		env: {
@@ -75,15 +74,15 @@ const ci = S.Github.Workflow({
 	],
 })
 
-// release.yml: the changesets release train on the v1 branch. changesets/action
+// release.yml: the changesets release train on main and v1. changesets/action
 // opens the Version Packages PR when changesets are pending and publishes when
-// the PR has merged; //:version and //:publish are those two halves. The
-// `.changeset/pre.json` existence guard is the same condition //:prerelease
-// keys on.
+// the PR has merged; //:version and //:publish are those two halves. While
+// `.changeset/pre.json` exists, prerelease.yml handles main and release.yml
+// cleanly no-ops until prerelease mode exits.
 const release = S.Github.Workflow({
 	name: 'release',
 	on: {
-		push: { branches: ['v1'] },
+		push: { branches: ['main', 'v1'] },
 		workflowDispatch: true,
 	},
 	concurrency: { group: 'release-${{ github.ref }}', cancelInProgress: false },
@@ -92,6 +91,39 @@ const release = S.Github.Workflow({
 	setup,
 	env: rpcEnvironment,
 	steps: releaseSteps(false),
+})
+
+// docs-publish.yml: automatically builds and publishes docs, llms.txt, the
+// personalized Factory Portal, and the Uphill Lighthouse report whenever a
+// trusted merge lands on main (from Smithers Cloud or direct push).
+const docsPublish = S.Github.Workflow({
+	name: 'docs-publish',
+	on: {
+		push: { branches: ['main'] },
+		workflowDispatch: true,
+	},
+	concurrency: { group: 'docs-publish-${{ github.ref }}', cancelInProgress: false },
+	environment: 'docs-deploy',
+	permissions: { contents: 'read', idToken: 'write' },
+	setup,
+	steps: [
+		...nativeSetup(),
+		{ name: 'Verify llms.txt index', run: 'node scripts/factory/generate-llms-txt.mjs' },
+		{ name: 'Build Node documentation', run: 'pnpm --filter @tevm/node-docs build:app' },
+		{ name: 'Build and check Factory Portal', run: 'pnpm exec smthrs target //sites/contributor:check' },
+		{
+			name: 'Publish verified documentation bundles',
+			run: 'node scripts/factory/publish-docs.mjs',
+			env: {
+				VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}',
+				VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}',
+				VERCEL_PROJECT_ID: '${{ secrets.VERCEL_PROJECT_ID }}',
+				CLOUDFLARE_API_TOKEN: '${{ secrets.CLOUDFLARE_API_TOKEN }}',
+				CLOUDFLARE_ACCOUNT_ID: '${{ secrets.CLOUDFLARE_ACCOUNT_ID }}',
+				CF_PAGES_FACTORY_PROJECT: '${{ vars.CF_PAGES_FACTORY_PROJECT }}',
+			},
+		},
+	],
 })
 
 // Main uses the same approval environment as the stable release train.
@@ -288,6 +320,7 @@ export const Package = S.Package({
 	targets: {
 		benchmarks,
 		ci,
+		docsPublish,
 		github,
 		jsrPublish,
 		paritySuites,

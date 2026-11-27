@@ -100,7 +100,7 @@ export default function SetNonce({ options }: Props) {
 		},
 
 		// Execute the action
-		executeAction: async (client: any, params: any): Promise<any> => {
+		executeAction: async (client, params): Promise<unknown> => {
 			// Check if client has test actions
 			if (!client.setNonce) {
 				throw new Error(

@@ -1,0 +1,160 @@
+{
+  "wiki": true,
+  "reviewer": "tevm-public-engineering-v1",
+  "implementation": "issue/poc",
+  "seats": {
+    "coding/implement": "auto",
+    "coding/dispatch": "auto",
+    "coding/plan": "auto",
+    "coding/poc": "auto",
+    "coding/review": "auto",
+    "wiki/reviewer": "auto",
+    "repository/research": "auto",
+    "repository/evaluator": "auto",
+    "repository/author": "auto",
+    "flow/author": "auto"
+  },
+  "pages": [
+    {
+      "id": "start-here",
+      "title": "Start here",
+      "purpose": "Navigate TEVM's packages, native ZEVM core, and public Smithers Cloud coding factory.",
+      "kind": "current",
+      "document": ".smithers/wiki/pages/start-here.md",
+      "inputs": [
+        "README.md",
+        "AGENTS.md",
+        "WORKSPACE.ts",
+        "factory/policy.json"
+      ],
+      "related": [
+        "architecture",
+        "zevm-native-engine",
+        "coding-factory",
+        "mcp-and-byoa",
+        "backpressure-and-uphill"
+      ]
+    },
+    {
+      "id": "architecture",
+      "title": "TEVM layered architecture",
+      "purpose": "Trace requests from the tevm facade through memory-client, actions, node, and native ZEVM.",
+      "kind": "current",
+      "document": ".smithers/wiki/pages/architecture.md",
+      "inputs": [
+        "tevm/package.json",
+        "packages/memory-client/package.json",
+        "packages/node/package.json",
+        "packages/actions/package.json"
+      ],
+      "related": [
+        "start-here",
+        "zevm-native-engine",
+        "json-rpc-contract"
+      ]
+    },
+    {
+      "id": "zevm-native-engine",
+      "title": "Native ZEVM engine and Smithers dogfooding",
+      "purpose": "Explain how Smithers builds, pins, stamps, and caches native ZEVM, Voltaire, and Guillotine Mini.",
+      "kind": "current",
+      "document": ".smithers/wiki/pages/zevm-native-engine.md",
+      "inputs": [
+        "factory/native-dependencies.json",
+        "scripts/factory/build-native.mjs",
+        "scripts/factory/checkout-native.mjs",
+        "scripts/factory/native-addon-stamp.mjs",
+        "mise.toml"
+      ],
+      "related": [
+        "architecture",
+        "coding-factory",
+        "release-and-docs-pipeline"
+      ]
+    },
+    {
+      "id": "json-rpc-contract",
+      "title": "JSON-RPC wire contract and error model",
+      "purpose": "Specify canonical hex encoding, negative error codes, BaseError hierarchy, and regression proof.",
+      "kind": "current",
+      "document": ".smithers/wiki/pages/json-rpc-contract.md",
+      "inputs": [
+        "packages/errors/package.json",
+        "packages/jsonrpc/package.json",
+        "packages/server/package.json",
+        "factory/pr-history.md"
+      ],
+      "related": [
+        "architecture",
+        "backpressure-and-uphill"
+      ]
+    },
+    {
+      "id": "coding-factory",
+      "title": "Smithers Cloud coding factory and trust boundary",
+      "purpose": "Document QuickJS-planned flows, shared Smithers Cloud object store cache, and trusted vs untrusted execution.",
+      "kind": "current",
+      "document": ".smithers/wiki/pages/coding-factory.md",
+      "inputs": [
+        "WORKSPACE.ts",
+        ".smithers/FACTORY.ts",
+        "scripts/factory/trust-boundary.mjs",
+        "scripts/factory/verify-cloud-workflows.mjs"
+      ],
+      "related": [
+        "start-here",
+        "mcp-and-byoa",
+        "backpressure-and-uphill",
+        "release-and-docs-pipeline"
+      ]
+    },
+    {
+      "id": "mcp-and-byoa",
+      "title": "Public authenticated MCP and one-time sandbox auth",
+      "purpose": "Show how agents connect via OAuth 2.1 to smithers.sh/evmts/tevm/mcp and mint single-use sandbox tokens.",
+      "kind": "current",
+      "document": ".smithers/wiki/pages/mcp-and-byoa.md",
+      "inputs": [
+        "scripts/factory/sandbox-auth.mjs",
+        "packages/mcp/package.json",
+        "factory/policy.json"
+      ],
+      "related": [
+        "coding-factory",
+        "start-here"
+      ]
+    },
+    {
+      "id": "backpressure-and-uphill",
+      "title": "Lighthouse-style backpressure and Uphill audit",
+      "purpose": "Detail TEVM's continuous Uphill metrics across Footprint, Quality, Architecture, and Factory Health.",
+      "kind": "current",
+      "document": ".smithers/wiki/pages/backpressure-and-uphill.md",
+      "inputs": [
+        ".agents/uphill/uphill.yaml",
+        ".agents/uphill/rules.md",
+        ".smithers/workflows/uphill.ts"
+      ],
+      "related": [
+        "coding-factory",
+        "json-rpc-contract"
+      ]
+    },
+    {
+      "id": "release-and-docs-pipeline",
+      "title": "Automated release, GitHub mirror, and docs publishing",
+      "purpose": "Trace how merges from Smithers Cloud to GitHub main trigger Changesets releases, docs, and llms.txt.",
+      "kind": "current",
+      "document": ".smithers/wiki/pages/release-and-docs-pipeline.md",
+      "inputs": [
+        ".github/PACKAGE.ts",
+        ".smithers/workflows/release.ts",
+        ".smithers/workflows/docs-publish.ts"
+      ],
+      "related": [
+        "coding-factory",
+        "zevm-native-engine"
+      ]
+    }
+  ]
+}

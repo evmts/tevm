@@ -151,7 +151,7 @@ export default function GetStorageAt({ options }: Props) {
 		},
 
 		// Execute the action
-		executeAction: async (client: any, params: any): Promise<any> => {
+		executeAction: async (client, params): Promise<unknown> => {
 			return client.getStorageAt(params)
 		},
 	})

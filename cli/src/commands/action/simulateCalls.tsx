@@ -166,16 +166,16 @@ const defaultValues: Record<string, any> = {
 }
 
 // Helper function to parse call values
-const parseCallValues = (calls: any[]): any[] => {
+const parseCallValues = (calls: Record<string, unknown>[]): Record<string, unknown>[] => {
 	return calls.map((call) => {
 		const parsedCall = { ...call }
 
 		// Convert value to bigint if present
-		if (parsedCall.value !== undefined && typeof parsedCall.value === 'string') {
+		if (parsedCall['value'] !== undefined && typeof parsedCall['value'] === 'string') {
 			try {
-				parsedCall.value = BigInt(parsedCall.value)
+				parsedCall['value'] = BigInt(parsedCall['value'])
 			} catch (_e) {
-				console.warn(`Could not convert call value "${parsedCall.value}" to BigInt`)
+				console.warn(`Could not convert call value "${parsedCall['value']}" to BigInt`)
 			}
 		}
 
@@ -183,19 +183,19 @@ const parseCallValues = (calls: any[]): any[] => {
 	})
 }
 
-const parseCalls = (calls: unknown): any[] => {
+const parseCalls = (calls: unknown): Record<string, unknown>[] => {
 	if (Array.isArray(calls)) {
-		return calls
+		return calls as Record<string, unknown>[]
 	}
 	if (typeof calls !== 'string') {
-		return defaultValues['calls']
+		return defaultValues['calls'] as Record<string, unknown>[]
 	}
 	const source = calls.trim().startsWith('[') ? calls : readFileSync(calls, 'utf8')
-	const parsed = JSON.parse(source)
+	const parsed: unknown = JSON.parse(source)
 	if (!Array.isArray(parsed)) {
 		throw new Error('Calls must be a JSON array')
 	}
-	return parsed
+	return parsed as Record<string, unknown>[]
 }
 
 export default function SimulateCalls({ options }: Props) {
@@ -207,8 +207,8 @@ export default function SimulateCalls({ options }: Props) {
 		optionDescriptions,
 
 		// Create params
-		createParams: async (enhancedOptions: Record<string, any>) => {
-			const params: Record<string, any> = {}
+		createParams: async (enhancedOptions: Record<string, unknown>) => {
+			const params: Record<string, unknown> = {}
 
 			// Account
 			if (enhancedOptions['account']) {
@@ -218,9 +218,9 @@ export default function SimulateCalls({ options }: Props) {
 			// Block identifier - only one should be used
 			if (enhancedOptions['blockNumber']) {
 				try {
-					params['blockNumber'] = BigInt(enhancedOptions['blockNumber'])
+					params['blockNumber'] = BigInt(String(enhancedOptions['blockNumber']))
 				} catch (_e) {
-					throw new Error(`Invalid block number "${enhancedOptions['blockNumber']}"`)
+					throw new Error(`Invalid block number "${String(enhancedOptions['blockNumber'])}"`)
 				}
 			} else if (enhancedOptions['blockTag']) {
 				params['blockTag'] = enhancedOptions['blockTag']
@@ -240,7 +240,7 @@ export default function SimulateCalls({ options }: Props) {
 			// Process calls array to ensure each contract call has an ABI if needed
 			const calls = parseCalls(enhancedOptions['calls'])
 
-			const processedCalls = calls.map((call: Record<string, any>) => {
+			const processedCalls = calls.map((call) => {
 				// If it has functionName but no ABI, add the default ABI
 				if (call['functionName'] && !call['abi']) {
 					return { ...call, abi }
@@ -268,14 +268,14 @@ export default function SimulateCalls({ options }: Props) {
 		},
 
 		// Execute the action
-		executeAction: async (client: any, params: any): Promise<any> => {
+		executeAction: async (client, params): Promise<unknown> => {
 			// Check if client supports this method
-			if (!client.simulateCalls) {
+			if (!client['simulateCalls']) {
 				throw new Error(
 					'simulateCalls action is not available on this client. Make sure you are using a compatible client.',
 				)
 			}
-			return await client.simulateCalls(params)
+			return await client['simulateCalls'](params)
 		},
 	})
 
@@ -287,7 +287,7 @@ export default function SimulateCalls({ options }: Props) {
 	return (
 		<CliAction
 			{...actionResult}
-			targetName={`${(actionResult.options['calls'] || []).length} calls`}
+			targetName={`${Array.isArray(actionResult.options['calls']) ? actionResult.options['calls'].length : 0} calls`}
 			successMessage="Calls simulated successfully!"
 		/>
 	)

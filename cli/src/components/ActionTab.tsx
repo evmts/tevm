@@ -1,13 +1,18 @@
 import { Box, Text } from 'ink'
 
-type ActionTabProps = {
+type ActionTabProps<TProps extends { options: Record<string, unknown>; args: unknown[] }> = {
 	actionName: string
 	interactive: boolean
 	rpcUrl: string
-	ActionComponent: React.ComponentType<any>
+	ActionComponent: React.ComponentType<TProps>
 }
 
-const ActionTab: React.FC<ActionTabProps> = ({ actionName, interactive, rpcUrl, ActionComponent }) => {
+function ActionTab<TProps extends { options: Record<string, unknown>; args: unknown[] }>({
+	actionName,
+	interactive,
+	rpcUrl,
+	ActionComponent,
+}: ActionTabProps<TProps>) {
 	if (!interactive) {
 		return (
 			<Box flexDirection="column">
@@ -17,17 +22,17 @@ const ActionTab: React.FC<ActionTabProps> = ({ actionName, interactive, rpcUrl, 
 		)
 	}
 
+	const interactiveProps = {
+		options: {
+			interactive: true,
+			rpc: rpcUrl,
+			json: true,
+		},
+		args: [],
+	} as unknown as TProps
+
 	// Only render the actual action component when in interactive mode
-	return (
-		<ActionComponent
-			options={{
-				interactive: true,
-				rpc: rpcUrl,
-				json: true,
-			}}
-			args={[]}
-		/>
-	)
+	return <ActionComponent {...interactiveProps} />
 }
 
 export default ActionTab

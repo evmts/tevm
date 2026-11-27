@@ -51,6 +51,57 @@
 				}
 			}
 		},
+		"cloud": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["origin", "repoUrl", "mcpUrl", "objectStore", "docsUrl", "docsIndexUrl", "publicTodos", "publicFactory", "githubMirror"],
+			"properties": {
+				"origin": { "type": "string", "format": "uri" },
+				"repoUrl": { "type": "string", "format": "uri" },
+				"mcpUrl": { "type": "string", "format": "uri" },
+				"objectStore": { "type": "string", "format": "uri" },
+				"docsUrl": { "type": "string", "format": "uri" },
+				"docsIndexUrl": { "type": "string", "format": "uri" },
+				"publicTodos": { "type": "boolean" },
+				"publicFactory": { "type": "boolean" },
+				"githubMirror": { "type": "string", "enum": ["pull", "push", "two-way"] }
+			}
+		},
+		"cache": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["provider", "endpoint", "readSecret", "writeSecret"],
+			"properties": {
+				"provider": { "type": "string", "minLength": 1 },
+				"endpoint": { "type": "string", "format": "uri" },
+				"readSecret": { "type": "string", "minLength": 1 },
+				"writeSecret": { "type": "string", "minLength": 1 }
+			}
+		},
+		"trust": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"maintainers",
+				"acceptExecutionFrom",
+				"allowUntrustedExecution",
+				"untrustedCacheRead",
+				"untrustedCacheWrite",
+				"untrustedSkipGates",
+				"oneTimeAuthRequiredForSandboxes",
+				"protectedPaths"
+			],
+			"properties": {
+				"maintainers": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "uniqueItems": true },
+				"acceptExecutionFrom": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "uniqueItems": true },
+				"allowUntrustedExecution": { "type": "boolean" },
+				"untrustedCacheRead": { "type": "boolean" },
+				"untrustedCacheWrite": { "const": false },
+				"untrustedSkipGates": { "const": false },
+				"oneTimeAuthRequiredForSandboxes": { "type": "boolean" },
+				"protectedPaths": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+			}
+		},
 		"toolchain": {
 			"type": "object",
 			"additionalProperties": false,

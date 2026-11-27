@@ -5,12 +5,766 @@
 		"name": "tevm",
 		"defaultBranch": "main",
 		"webUrl": "https://github.com/evmts/tevm",
+		"smithersUrl": "https://smithers.sh/evmts/tevm",
+		"mcpUrl": "https://smithers.sh/evmts/tevm/mcp",
+		"objectStoreUrl": "https://build.smithers.sh",
 		"forkUrl": "https://github.com/evmts/tevm/fork",
 		"newIssueUrl": "https://github.com/evmts/tevm/issues/new/choose",
 		"discussionsUrl": "https://github.com/evmts/tevm/discussions",
 		"securityAdvisoryUrl": "https://github.com/evmts/tevm/security/advisories/new",
 		"docsUrl": "https://node.tevm.sh"
 	},
+	"cloud": {
+		"publicTodos": true,
+		"publicFactory": true,
+		"githubMirror": "two-way",
+		"flowCount": 14,
+		"triggerCount": 20,
+		"triggers": [
+			{
+				"on": "github.push",
+				"flow": "ci",
+				"title": "TEVM + ZEVM CI",
+				"branches": [
+					"main"
+				],
+				"cron": null
+			},
+			{
+				"on": "github.pull_request",
+				"flow": "ci",
+				"title": "PR CI",
+				"branches": [
+					"main"
+				],
+				"cron": null
+			},
+			{
+				"on": "github.push",
+				"flow": "uphill",
+				"title": "Lighthouse Uphill Audit",
+				"branches": [
+					"main"
+				],
+				"cron": null
+			},
+			{
+				"on": "github.pull_request",
+				"flow": "uphill",
+				"title": "PR Lighthouse Uphill Audit",
+				"branches": [
+					"main"
+				],
+				"cron": null
+			},
+			{
+				"on": "github.push",
+				"flow": "release",
+				"title": "Automated Release Train",
+				"branches": [
+					"main",
+					"v1"
+				],
+				"cron": null
+			},
+			{
+				"on": "github.push",
+				"flow": "docs-publish",
+				"title": "Automated Docs & Factory Portal Publish",
+				"branches": [
+					"main"
+				],
+				"cron": null
+			},
+			{
+				"on": "github.push",
+				"flow": "wiki-refresh",
+				"title": "Wiki & Mythical History Refresh",
+				"branches": [
+					"main"
+				],
+				"cron": null
+			},
+			{
+				"on": "github.pull_request",
+				"flow": "parity",
+				"title": "Ethereum Spec Parity",
+				"branches": [
+					"main"
+				],
+				"cron": null
+			},
+			{
+				"on": "github.push",
+				"flow": "benchmarks",
+				"title": "Incremental Benchmarks",
+				"branches": [
+					"main"
+				],
+				"cron": null
+			},
+			{
+				"on": "github.pull_request",
+				"flow": "benchmarks",
+				"title": "PR Benchmarks",
+				"branches": [
+					"main"
+				],
+				"cron": null
+			},
+			{
+				"on": "cron",
+				"flow": "parity",
+				"title": "Nightly Ethereum Conformance",
+				"branches": null,
+				"cron": "0 3 * * *"
+			},
+			{
+				"on": "cron",
+				"flow": "uphill",
+				"title": "Daily Lighthouse Audit",
+				"branches": null,
+				"cron": "0 6 * * *"
+			},
+			{
+				"on": "cron",
+				"flow": "wiki-refresh",
+				"title": "Weekly Wiki & Mythical Refresh",
+				"branches": null,
+				"cron": "17 9 * * 1"
+			},
+			{
+				"on": "manual",
+				"flow": "ci",
+				"title": "Run TEVM + ZEVM CI",
+				"branches": null,
+				"cron": null
+			},
+			{
+				"on": "manual",
+				"flow": "uphill",
+				"title": "Run Lighthouse Uphill Audit",
+				"branches": null,
+				"cron": null
+			},
+			{
+				"on": "manual",
+				"flow": "release",
+				"title": "Run Release Rehearsal or Publish",
+				"branches": null,
+				"cron": null
+			},
+			{
+				"on": "manual",
+				"flow": "docs-publish",
+				"title": "Build & Publish Docs + Portal",
+				"branches": null,
+				"cron": null
+			},
+			{
+				"on": "manual",
+				"flow": "parity",
+				"title": "Run Ethereum Spec Parity",
+				"branches": null,
+				"cron": null
+			},
+			{
+				"on": "manual",
+				"flow": "benchmarks",
+				"title": "Run Incremental Benchmarks",
+				"branches": null,
+				"cron": null
+			},
+			{
+				"on": "manual",
+				"flow": "wiki-refresh",
+				"title": "Refresh Wiki & Mythical History",
+				"branches": null,
+				"cron": null
+			}
+		]
+	},
+	"trust": {
+		"maintainers": [
+			"roninjin10"
+		],
+		"acceptExecutionFrom": [
+			"smithers-sandbox",
+			"maintainer"
+		],
+		"allowUntrustedExecution": true,
+		"untrustedCacheRead": true,
+		"untrustedCacheWrite": false,
+		"untrustedSkipGates": false,
+		"oneTimeAuthRequiredForSandboxes": true,
+		"protectedPaths": [
+			"WORKSPACE.ts",
+			"PACKAGE.ts",
+			"mise.toml",
+			".nvmrc",
+			"factory/policy.json",
+			"factory/native-dependencies.json",
+			".smithers/FACTORY.ts",
+			".smithers/factory.json",
+			".smithers/workflows",
+			".github/PACKAGE.ts",
+			".github/workflows"
+		]
+	},
+	"lighthouse": {
+		"schemaVersion": 1,
+		"tool": "uphill",
+		"overallScore": 94,
+		"categories": [
+			{
+				"id": "footprint",
+				"title": "Footprint",
+				"description": "Keep every @tevm/* package lean, modular, and minimal in runtime dependencies.",
+				"score": 84,
+				"metrics": [
+					{
+						"id": "package-source-bytes",
+						"title": "Package source bytes",
+						"description": "Keep each @tevm/* package's source footprint lean; split heavy adapters and avoid bundling dead code.",
+						"kind": "size",
+						"score": 85,
+						"weight": 1,
+						"passed": 13,
+						"total": 14
+					},
+					{
+						"id": "module-lines",
+						"title": "Module lines",
+						"description": "Keep every production source module under 250 lines with one exported concept per file (AGENTS.md).",
+						"kind": "count",
+						"score": 97,
+						"weight": 1,
+						"passed": 255,
+						"total": 266
+					},
+					{
+						"id": "runtime-deps",
+						"title": "Runtime deps",
+						"description": "Keep direct runtime dependencies minimal (<= 3 per core package); avoid pulling heavy libraries into core packages.",
+						"kind": "count",
+						"score": 70,
+						"weight": 1,
+						"passed": 11,
+						"total": 14
+					}
+				]
+			},
+			{
+				"id": "quality",
+				"title": "Quality",
+				"description": "Enforce strict typing, JSDoc discipline, zero stray console calls, and TigerStyle function limits across packages.",
+				"score": 100,
+				"metrics": [
+					{
+						"id": "explicit-any",
+						"title": "Explicit any",
+						"description": "Never use `: any` or `as any` in production source; use explicit types or `unknown` with narrowing.",
+						"kind": "check",
+						"score": 100,
+						"weight": 2,
+						"passed": 266,
+						"total": 266
+					},
+					{
+						"id": "ts-suppressions",
+						"title": "Ts suppressions",
+						"description": "Eliminate `@ts-ignore`, `@ts-expect-error`, and `@ts-nocheck` directives from production source.",
+						"kind": "check",
+						"score": 100,
+						"weight": 2,
+						"passed": 265,
+						"total": 266
+					},
+					{
+						"id": "console-calls",
+						"title": "Console calls",
+						"description": "Never leave `console.log` or `console.debug` in library packages under `packages/`; route diagnostics through the logger.",
+						"kind": "check",
+						"score": 99,
+						"weight": 1,
+						"passed": 185,
+						"total": 186
+					},
+					{
+						"id": "todo-fixme",
+						"title": "Todo fixme",
+						"description": "Resolve or convert `TODO`/`FIXME`/`HACK` comments into tracked issues or explained workarounds with removal conditions (AGENTS.md).",
+						"kind": "check",
+						"score": 100,
+						"weight": 1,
+						"passed": 266,
+						"total": 266
+					},
+					{
+						"id": "function-length",
+						"title": "Function length",
+						"description": "Keep functions at or under 70 lines (TigerStyle); decompose long handlers and parsers into focused helpers.",
+						"kind": "check",
+						"score": 100,
+						"weight": 1,
+						"passed": 266,
+						"total": 266
+					},
+					{
+						"id": "jsdoc-exports",
+						"title": "Jsdoc exports",
+						"description": "Document every exported runtime symbol in `packages/*/src/` with complete JSDoc (AGENTS.md).",
+						"kind": "check",
+						"score": 100,
+						"weight": 1,
+						"passed": 118,
+						"total": 118
+					}
+				]
+			},
+			{
+				"id": "architecture",
+				"title": "Architecture & Testing",
+				"description": "Maintain high test depth per package, synchronized `tevm` facade exports, and valid documentation links.",
+				"score": 90,
+				"metrics": [
+					{
+						"id": "test-ratio",
+						"title": "Test ratio",
+						"description": "Maintain at least an 80% test-to-source line ratio in every workspace package, especially `@tevm/cli` and `@tevm/errors`.",
+						"kind": "count",
+						"score": 79,
+						"weight": 2,
+						"passed": 8,
+						"total": 14
+					},
+					{
+						"id": "tevm-facade-exports",
+						"title": "Tevm facade exports",
+						"description": "Keep every subpath in `tevm/package.json` synchronized with its facade directory and barrel exports (AGENTS.md).",
+						"kind": "check",
+						"score": 100,
+						"weight": 1,
+						"passed": 22,
+						"total": 22
+					},
+					{
+						"id": "docs-links",
+						"title": "Docs links",
+						"description": "Keep all relative Markdown links in `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, and `CLAUDE.md` valid.",
+						"kind": "check",
+						"score": 100,
+						"weight": 1,
+						"passed": 4,
+						"total": 4
+					}
+				]
+			},
+			{
+				"id": "factory",
+				"title": "Factory & Trust",
+				"description": "Enforce Smithers Cloud trust boundaries, shared object store isolation, QuickJS Realm workflows, personalized home UI, Obsidian wiki, mythical history, and playground CSP integrity.",
+				"score": 100,
+				"metrics": [
+					{
+						"id": "trust-boundary",
+						"title": "Trust boundary",
+						"description": "Split read and write secrets on build.smithers.sh and prevent untrusted PRs from accessing write or publish tokens.",
+						"kind": "check",
+						"score": 100,
+						"weight": 3,
+						"passed": 1,
+						"total": 1
+					},
+					{
+						"id": "cloud-workflows",
+						"title": "Cloud workflows",
+						"description": "Keep every .smithers/workflows/*.ts workflow valid under Smithers Cloud's QuickJS Realm planner and aligned with factory.json triggers.",
+						"kind": "check",
+						"score": 100,
+						"weight": 2,
+						"passed": 7,
+						"total": 7
+					},
+					{
+						"id": "home-personalization",
+						"title": "Home personalization",
+						"description": "Keep .smithers/home.json valid under @smthrs/views with tailored maintainer, contributor, and viewer sections.",
+						"kind": "check",
+						"score": 100,
+						"weight": 2,
+						"passed": 3,
+						"total": 3
+					},
+					{
+						"id": "wiki-and-history",
+						"title": "Wiki and history",
+						"description": "Keep .smithers/coding-project.json, Obsidian [[wikilinks]], and .smithers/history/MYTHICAL.md synchronized and link-checked.",
+						"kind": "check",
+						"score": 100,
+						"weight": 1,
+						"passed": 2,
+						"total": 2
+					},
+					{
+						"id": "playground-csp",
+						"title": "Playground csp",
+						"description": "Keep .smithers/playground/index.html CSP SHA-256 hashes synchronized with inline script and style blocks.",
+						"kind": "check",
+						"score": 100,
+						"weight": 1,
+						"passed": 1,
+						"total": 1
+					}
+				]
+			}
+		],
+		"opportunities": [
+			{
+				"category": "footprint",
+				"metric": "runtime-deps",
+				"item": "@tevm/cli",
+				"items": 1,
+				"value": 28,
+				"target": 10,
+				"gain": 2
+			},
+			{
+				"category": "footprint",
+				"metric": "runtime-deps",
+				"item": "@tevm/mcp",
+				"items": 1,
+				"value": 6,
+				"target": 3,
+				"gain": 2
+			},
+			{
+				"category": "footprint",
+				"metric": "package-source-bytes",
+				"item": "@tevm/contract",
+				"items": 1,
+				"value": 24124,
+				"target": 12000,
+				"gain": 2
+			},
+			{
+				"category": "footprint",
+				"metric": "package-source-bytes",
+				"item": "@tevm/cli",
+				"items": 1,
+				"value": 43687,
+				"target": 35000,
+				"gain": 2
+			},
+			{
+				"category": "architecture",
+				"metric": "test-ratio",
+				"item": "@tevm/cli",
+				"items": 1,
+				"value": 15,
+				"target": 80,
+				"gain": 1
+			},
+			{
+				"category": "architecture",
+				"metric": "test-ratio",
+				"item": "@tevm/errors",
+				"items": 1,
+				"value": 52,
+				"target": 80,
+				"gain": 1
+			}
+		]
+	},
+	"wiki": [
+		{
+			"id": "start-here",
+			"title": "Start here",
+			"purpose": "Navigate TEVM's packages, native ZEVM core, and public Smithers Cloud coding factory.",
+			"document": ".smithers/wiki/pages/start-here.md",
+			"related": [
+				"architecture",
+				"zevm-native-engine",
+				"coding-factory",
+				"mcp-and-byoa",
+				"backpressure-and-uphill"
+			],
+			"url": "https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/start-here.md"
+		},
+		{
+			"id": "architecture",
+			"title": "TEVM layered architecture",
+			"purpose": "Trace requests from the tevm facade through memory-client, actions, node, and native ZEVM.",
+			"document": ".smithers/wiki/pages/architecture.md",
+			"related": [
+				"start-here",
+				"zevm-native-engine",
+				"json-rpc-contract"
+			],
+			"url": "https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/architecture.md"
+		},
+		{
+			"id": "zevm-native-engine",
+			"title": "Native ZEVM engine and Smithers dogfooding",
+			"purpose": "Explain how Smithers builds, pins, stamps, and caches native ZEVM, Voltaire, and Guillotine Mini.",
+			"document": ".smithers/wiki/pages/zevm-native-engine.md",
+			"related": [
+				"architecture",
+				"coding-factory",
+				"release-and-docs-pipeline"
+			],
+			"url": "https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/zevm-native-engine.md"
+		},
+		{
+			"id": "json-rpc-contract",
+			"title": "JSON-RPC wire contract and error model",
+			"purpose": "Specify canonical hex encoding, negative error codes, BaseError hierarchy, and regression proof.",
+			"document": ".smithers/wiki/pages/json-rpc-contract.md",
+			"related": [
+				"architecture",
+				"backpressure-and-uphill"
+			],
+			"url": "https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/json-rpc-contract.md"
+		},
+		{
+			"id": "coding-factory",
+			"title": "Smithers Cloud coding factory and trust boundary",
+			"purpose": "Document QuickJS-planned flows, shared Smithers Cloud object store cache, and trusted vs untrusted execution.",
+			"document": ".smithers/wiki/pages/coding-factory.md",
+			"related": [
+				"start-here",
+				"mcp-and-byoa",
+				"backpressure-and-uphill",
+				"release-and-docs-pipeline"
+			],
+			"url": "https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/coding-factory.md"
+		},
+		{
+			"id": "mcp-and-byoa",
+			"title": "Public authenticated MCP and one-time sandbox auth",
+			"purpose": "Show how agents connect via OAuth 2.1 to smithers.sh/evmts/tevm/mcp and mint single-use sandbox tokens.",
+			"document": ".smithers/wiki/pages/mcp-and-byoa.md",
+			"related": [
+				"coding-factory",
+				"start-here"
+			],
+			"url": "https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/mcp-and-byoa.md"
+		},
+		{
+			"id": "backpressure-and-uphill",
+			"title": "Lighthouse-style backpressure and Uphill audit",
+			"purpose": "Detail TEVM's continuous Uphill metrics across Footprint, Quality, Architecture, and Factory Health.",
+			"document": ".smithers/wiki/pages/backpressure-and-uphill.md",
+			"related": [
+				"coding-factory",
+				"json-rpc-contract"
+			],
+			"url": "https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/backpressure-and-uphill.md"
+		},
+		{
+			"id": "release-and-docs-pipeline",
+			"title": "Automated release, GitHub mirror, and docs publishing",
+			"purpose": "Trace how merges from Smithers Cloud to GitHub main trigger Changesets releases, docs, and llms.txt.",
+			"document": ".smithers/wiki/pages/release-and-docs-pipeline.md",
+			"related": [
+				"coding-factory",
+				"zevm-native-engine"
+			],
+			"url": "https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/release-and-docs-pipeline.md"
+		}
+	],
+	"mythicalHistory": [
+		{
+			"id": "epic-01-foundations",
+			"title": "01. Foundations, Primitives, and BaseError Discipline",
+			"summary": "Establish the monorepo package structure, strict BaseError hierarchy, JSON-RPC envelope types, and canonical Ethereum utilities.",
+			"chapters": [
+				{
+					"id": "ch-01-errors-and-utils",
+					"title": "Define @tevm/errors, @tevm/utils, and @tevm/common",
+					"paths": [
+						"packages/errors",
+						"packages/utils",
+						"packages/common"
+					],
+					"provenanceCommits": [
+						"a02ceb108adf"
+					],
+					"notes": "Every public error extends BaseError with standard JSON-RPC negative codes and structured diagnostic context."
+				},
+				{
+					"id": "ch-02-jsonrpc-and-http",
+					"title": "Specify @tevm/jsonrpc and @tevm/http-client transport contracts",
+					"paths": [
+						"packages/jsonrpc",
+						"packages/http-client",
+						"packages/predeploys"
+					],
+					"provenanceCommits": [
+						"a02ceb108adf"
+					],
+					"notes": "Canonical hex quantities, even-length data hex, and explicit JSON-serializable wire contracts."
+				}
+			],
+			"abandonedExperiments": [
+				"Legacy JS-only EthereumJS state/vm wrappers were superseded by native ZEVM execution for performance and Ethereum Execution Spec parity."
+			]
+		},
+		{
+			"id": "epic-02-zevm-engine",
+			"title": "02. Native ZEVM, Guillotine Mini, and Voltaire Execution Core",
+			"summary": "Power @tevm/node with the native Zig ZEVM engine, pinned sibling revisions, content-addressed addon stamps, and isolated node lifecycles.",
+			"chapters": [
+				{
+					"id": "ch-03-zevm-node",
+					"title": "Wire @tevm/node to native @evmts/zevm with deterministic addon stamping",
+					"paths": [
+						"packages/node",
+						"factory/native-dependencies.json",
+						"scripts/factory/build-native.mjs"
+					],
+					"provenanceCommits": [
+						"96ac87a7300a",
+						"b696b586f33c"
+					],
+					"notes": "Native addon bytes are hashed into factory/native-addon.sha256 so every downstream Smithers target re-keys cleanly."
+				}
+			],
+			"abandonedExperiments": [
+				"Bundler Rust crates originally lived inside this monorepo before moving cleanly to evmts/tevm-bundler, keeping Cargo only for Voltaire crypto compilation."
+			]
+		},
+		{
+			"id": "epic-03-viem-client-and-actions",
+			"title": "03. Viem-Native Memory Client, Actions, and Unified tevm Facade",
+			"summary": "Expose eth_*, tevm_*, anvil_*, and debug_* JSON-RPC actions through a drop-in Viem memory client and synchronized tevm facade.",
+			"chapters": [
+				{
+					"id": "ch-04-actions-and-contracts",
+					"title": "Implement typed JSON-RPC actions and contract wrappers",
+					"paths": [
+						"packages/actions",
+						"packages/contract",
+						"packages/memory-client",
+						"extensions/viem"
+					],
+					"provenanceCommits": [
+						"98750cf09d43"
+					],
+					"notes": "Includes full mainnet/optimism forking, instant mining, account/storage mutation, and Solidity console.log draining."
+				},
+				{
+					"id": "ch-05-tevm-facade",
+					"title": "Synchronize recursive barrels and tevm/package.json subpath exports",
+					"paths": [
+						"tevm"
+					],
+					"provenanceCommits": [
+						"83706436d75e"
+					],
+					"notes": "Continuously verified by Uphill's tevm-facade-exports metric."
+				}
+			],
+			"abandonedExperiments": []
+		},
+		{
+			"id": "epic-04-developer-surfaces",
+			"title": "04. Developer Tooling: CLI, Server, MCP, and Embedded Playground",
+			"summary": "Deliver local JSON-RPC servers, interactive CLI workflows, an AI-ready @tevm/mcp server, and a sandboxed live EVM playground.",
+			"chapters": [
+				{
+					"id": "ch-06-cli-server-mcp",
+					"title": "Ship @tevm/cli, @tevm/server, and @tevm/mcp",
+					"paths": [
+						"cli",
+						"packages/server",
+						"packages/mcp"
+					],
+					"provenanceCommits": [
+						"83706436d75e"
+					],
+					"notes": "Gives both human developers and AI agents isolated local Ethereum nodes."
+				},
+				{
+					"id": "ch-07-embedded-playground",
+					"title": "Embed the sandboxed native ZEVM playground directly in Smithers Cloud",
+					"paths": [
+						".smithers/playground",
+						".smithers/flows/playground"
+					],
+					"provenanceCommits": [
+						"705d53a0d160"
+					],
+					"notes": "Runs bounded deploy/call requests with CSP SHA-256 hash verification and opcode trace inspection."
+				}
+			],
+			"abandonedExperiments": []
+		},
+		{
+			"id": "epic-05-conformance-fuzz-bench",
+			"title": "05. Conformance, Multi-Engine Fuzzing, Formal Specs, and Benchmarks",
+			"summary": "Back every claim with Ethereum Execution Spec tests, multi-engine differential fuzzing, Lean specs, and cached incremental benchmarks.",
+			"chapters": [
+				{
+					"id": "ch-08-benchmarks-and-fuzz",
+					"title": "Add incremental Smithers benchmarks and multi-engine fuzzing suites",
+					"paths": [
+						"test/fuzz",
+						"specs/lean",
+						"benchmarks",
+						"factory/bench.ts"
+					],
+					"provenanceCommits": [
+						"793f834eff0b",
+						"056061ec959a"
+					],
+					"notes": "Unchanged packages hit the shared Smithers Cloud object store in milliseconds while touched packages re-benchmark automatically."
+				}
+			],
+			"abandonedExperiments": []
+		},
+		{
+			"id": "epic-06-smithers-cloud-factory",
+			"title": "06. Public Smithers Cloud Coding Factory and Lighthouse Backpressure",
+			"summary": "Complete the switchover to public development on smithers.sh/evmts/tevm with split-privilege object store caching, BYOA MCP, personalized UI, and Uphill Lighthouse audits.",
+			"chapters": [
+				{
+					"id": "ch-09-cloud-switchover",
+					"title": "Declare .smithers/FACTORY.ts, QuickJS Realm workflows, trust boundary, and one-time sandbox auth",
+					"paths": [
+						"WORKSPACE.ts",
+						".smithers/FACTORY.ts",
+						".smithers/workflows",
+						"scripts/factory/trust-boundary.mjs",
+						"scripts/factory/sandbox-auth.mjs"
+					],
+					"provenanceCommits": [
+						"705d53a0d160",
+						"423ca10dd8da"
+					],
+					"notes": "Splits read-only untrusted contributor cache hits from maintainer/sandbox cache writes and merge gates."
+				},
+				{
+					"id": "ch-10-lighthouse-and-wiki",
+					"title": "Ship Lighthouse Uphill backpressure, Obsidian wiki, mythical history, and automated GitHub release/docs mirror",
+					"paths": [
+						".agents/uphill",
+						".smithers/wiki",
+						".smithers/history",
+						"sites/contributor",
+						"docs/node"
+					],
+					"provenanceCommits": [
+						"423ca10dd8da"
+					],
+					"notes": "Merges on Smithers Cloud mirror to GitHub main and automatically drive Changesets releases, Vocs docs + llms.txt, and wiki refreshes."
+				}
+			],
+			"abandonedExperiments": [
+				"Nx Cloud remote cache (nxCloudAccessToken) was retired in favor of the shared Smithers Cloud object store (https://build.smithers.sh) with split read/write secrets."
+			]
+		}
+	],
 	"toolchain": {
 		"node": "24.22.3",
 		"pnpm": "10.33.4",
@@ -283,6 +1037,11 @@
 		"factoryCheck": "pnpm factory:check",
 		"runtimeCheck": "pnpm factory:runtime-check",
 		"portal": "pnpm factory:ui",
+		"uphill": "uphill check && uphill --compact",
+		"sandboxAuthMint": "node scripts/factory/sandbox-auth.mjs mint --role smithers-sandbox --run ci:local",
+		"mcpClaude": "claude mcp add tevm --transport http https://smithers.sh/evmts/tevm/mcp",
+		"mcpCodex": "codex mcp add tevm --url https://smithers.sh/evmts/tevm/mcp",
+		"mcpAntigravity": "agy mcp add tevm --transport http https://smithers.sh/evmts/tevm/mcp",
 		"clone": "git clone https://github.com/<your-handle>/tevm.git\ncd tevm\ncorepack enable\npnpm factory:bootstrap"
 	}
 }

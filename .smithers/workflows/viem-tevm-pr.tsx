@@ -2,66 +2,73 @@
 // smithers-display-name: Viem Tevm Test PR
 /** @jsxImportSource smithers-orchestrator */
 import {
+	createSmithers,
+	OpenCodeAgent,
 	ClaudeCodeAgent as SmithersClaudeCodeAgent,
 	CodexAgent as SmithersCodexAgent,
-	OpenCodeAgent,
-	createSmithers,
-} from "smithers-orchestrator";
-import { z } from "zod/v4";
+} from 'smithers-orchestrator'
+import { z } from 'zod/v4'
 
-const TEVM_REPO = "/Users/williamcory/tevm-monorepo";
-const VIEM_REPO = "/Users/williamcory/evmts-viem";
+const TEVM_REPO = '/Users/williamcory/tevm-monorepo'
+const VIEM_REPO = '/Users/williamcory/evmts-viem'
 const WT = {
-	kimi: "/Users/williamcory/evmts-viem-wt-kimi",
-	"codex-sol": "/Users/williamcory/evmts-viem-wt-codex-sol",
-	opus: "/Users/williamcory/evmts-viem-wt-opus",
-} as const;
+	kimi: '/Users/williamcory/evmts-viem-wt-kimi',
+	'codex-sol': '/Users/williamcory/evmts-viem-wt-codex-sol',
+	opus: '/Users/williamcory/evmts-viem-wt-opus',
+} as const
 
-const researchAgent = new SmithersCodexAgent({ model: "gpt-5.6-sol", cwd: TEVM_REPO, skipGitRepoCheck: true });
+const researchAgent = new SmithersCodexAgent({ model: 'gpt-5.6-sol', cwd: TEVM_REPO, skipGitRepoCheck: true })
 const laneAgents = {
-	kimi: new OpenCodeAgent({ model: "kimi-for-coding/k3", cwd: WT.kimi }),
-	"codex-sol": new SmithersCodexAgent({ model: "gpt-5.6-sol", cwd: WT["codex-sol"], skipGitRepoCheck: true }),
-	opus: new SmithersClaudeCodeAgent({ model: "opus", cwd: WT.opus }),
-} as const;
-const judgeAgent = new SmithersCodexAgent({ model: "gpt-5.6-sol", cwd: VIEM_REPO, skipGitRepoCheck: true });
-const finalizeAgent = new SmithersClaudeCodeAgent({ model: "opus", cwd: VIEM_REPO });
+	kimi: new OpenCodeAgent({ model: 'kimi-for-coding/k3', cwd: WT.kimi }),
+	'codex-sol': new SmithersCodexAgent({ model: 'gpt-5.6-sol', cwd: WT['codex-sol'], skipGitRepoCheck: true }),
+	opus: new SmithersClaudeCodeAgent({ model: 'opus', cwd: WT.opus }),
+} as const
+const judgeAgent = new SmithersCodexAgent({ model: 'gpt-5.6-sol', cwd: VIEM_REPO, skipGitRepoCheck: true })
+const finalizeAgent = new SmithersClaudeCodeAgent({ model: 'opus', cwd: VIEM_REPO })
 
 const researchSchema = z.looseObject({
 	summary: z.string(),
 	tevmTestFeatures: z.array(z.object({ name: z.string(), description: z.string() })).default([]),
 	opportunities: z
-		.array(z.object({ id: z.string(), title: z.string(), description: z.string(), targetFiles: z.array(z.string()).default([]) }))
+		.array(
+			z.object({
+				id: z.string(),
+				title: z.string(),
+				description: z.string(),
+				targetFiles: z.array(z.string()).default([]),
+			}),
+		)
 		.default([]),
 	brief: z.string(),
-});
+})
 
 const laneSchema = z.looseObject({
 	branch: z.string(),
 	summary: z.string(),
 	featuresShown: z.array(z.string()).default([]),
-	testResults: z.string().default(""),
-	notes: z.string().default(""),
-});
+	testResults: z.string().default(''),
+	notes: z.string().default(''),
+})
 
 const judgeSchema = z.looseObject({
-	winner: z.enum(["kimi", "codex-sol", "opus"]),
+	winner: z.enum(['kimi', 'codex-sol', 'opus']),
 	rationale: z.string(),
-	graft: z.string().default(""),
-});
+	graft: z.string().default(''),
+})
 
 const finalizeSchema = z.looseObject({
 	prUrl: z.string(),
 	branch: z.string(),
 	summary: z.string(),
-});
+})
 
 const inputSchema = z.object({
 	goal: z
 		.string()
 		.default(
-			"Make the evmts/viem fork show off the full tevm test library by replacing anvil-based test infrastructure with tevm, in a high quality PR.",
+			'Make the evmts/viem fork show off the full tevm test library by replacing anvil-based test infrastructure with tevm, in a high quality PR.',
 		),
-});
+})
 
 const { Workflow, Task, Sequence, Parallel, smithers } = createSmithers({
 	input: inputSchema,
@@ -69,20 +76,20 @@ const { Workflow, Task, Sequence, Parallel, smithers } = createSmithers({
 	lane: laneSchema,
 	judge: judgeSchema,
 	finalize: finalizeSchema,
-});
+})
 
-const LANES = ["kimi", "codex-sol", "opus"] as const;
+const LANES = ['kimi', 'codex-sol', 'opus'] as const
 
 export default smithers((ctx) => {
-	const research = ctx.outputMaybe("research", { nodeId: "research" });
+	const research = ctx.outputMaybe('research', { nodeId: 'research' })
 
 	const lanePrompt = (lane: (typeof LANES)[number]) =>
 		[
 			ctx.input.goal,
 			`You are working in the git worktree ${WT[lane]} on branch tevm-test/${lane} of the evmts/viem fork (a fork of wevm/viem). Two other agents are attempting the same task on sibling branches; the best result wins, so aim for the highest-quality, most complete implementation.`,
 			research
-				? `RESEARCH BRIEF (produced by a prior agent that studied the tevm test library and viem's test infra):\n${research.brief}\n\nTEVM TEST FEATURES TO SHOW OFF:\n${research.tevmTestFeatures.map((f) => `- ${f.name}: ${f.description}`).join("\n")}\n\nOPPORTUNITIES:\n${research.opportunities.map((o) => `- [${o.id}] ${o.title}: ${o.description}${o.targetFiles.length ? ` (files: ${o.targetFiles.join(", ")})` : ""}`).join("\n")}`
-				: "",
+				? `RESEARCH BRIEF (produced by a prior agent that studied the tevm test library and viem's test infra):\n${research.brief}\n\nTEVM TEST FEATURES TO SHOW OFF:\n${research.tevmTestFeatures.map((f) => `- ${f.name}: ${f.description}`).join('\n')}\n\nOPPORTUNITIES:\n${research.opportunities.map((o) => `- [${o.id}] ${o.title}: ${o.description}${o.targetFiles.length ? ` (files: ${o.targetFiles.join(', ')})` : ''}`).join('\n')}`
+				: '',
 			`GROUND RULES:
 - The tevm monorepo lives at ${TEVM_REPO} for reference (read-only). Use published tevm npm packages in viem, not file: links.
 - Run "pnpm install" in your worktree first if node_modules is missing.
@@ -92,16 +99,16 @@ export default smithers((ctx) => {
 - Report honestly: branch name, what you changed, which tevm test features are demonstrated, actual test output summary, and known gaps.`,
 		]
 			.filter(Boolean)
-			.join("\n\n---\n\n");
+			.join('\n\n---\n\n')
 
 	const laneReports = LANES.map((lane) => {
-		const out = ctx.outputMaybe("lane", { nodeId: `lane-${lane}` });
+		const out = ctx.outputMaybe('lane', { nodeId: `lane-${lane}` })
 		return out
-			? `LANE ${lane} (branch ${out.branch}):\n${out.summary}\nFeatures shown: ${out.featuresShown.join(", ")}\nTests: ${out.testResults}\nNotes: ${out.notes}`
-			: `LANE ${lane}: no report`;
-	}).join("\n\n");
+			? `LANE ${lane} (branch ${out.branch}):\n${out.summary}\nFeatures shown: ${out.featuresShown.join(', ')}\nTests: ${out.testResults}\nNotes: ${out.notes}`
+			: `LANE ${lane}: no report`
+	}).join('\n\n')
 
-	const judge = ctx.outputMaybe("judge", { nodeId: "judge" });
+	const judge = ctx.outputMaybe('judge', { nodeId: 'judge' })
 
 	return (
 		<Workflow name="viem-tevm-pr">
@@ -136,19 +143,19 @@ ${ctx.input.goal}
 LANE REPORTS:
 ${laneReports}
 
-Inspect each branch yourself (git log main..tevm-test/<lane>, git diff main...tevm-test/<lane> --stat, read the key files; worktrees live at ${Object.values(WT).join(", ")}). Verify claims: spot-run a test file per branch if feasible. Score on: correctness (tests actually pass), breadth of tevm test features demonstrated, code quality matching viem conventions, and PR reviewability. Pick the winner and list concrete elements worth grafting from the losing branches into the final PR (field "graft").`}
+Inspect each branch yourself (git log main..tevm-test/<lane>, git diff main...tevm-test/<lane> --stat, read the key files; worktrees live at ${Object.values(WT).join(', ')}). Verify claims: spot-run a test file per branch if feasible. Score on: correctness (tests actually pass), breadth of tevm test features demonstrated, code quality matching viem conventions, and PR reviewability. Pick the winner and list concrete elements worth grafting from the losing branches into the final PR (field "graft").`}
 				</Task>
 				<Task id="finalize" output={finalizeSchema} agent={finalizeAgent}>
 					{`You are the FINALIZER working in ${VIEM_REPO}.
 
 ${ctx.input.goal}
 
-The judge picked winner lane: ${judge?.winner ?? "(pending)"}.
-Rationale: ${judge?.rationale ?? ""}
-Graft from other lanes: ${judge?.graft ?? "none"}
+The judge picked winner lane: ${judge?.winner ?? '(pending)'}.
+Rationale: ${judge?.rationale ?? ''}
+Graft from other lanes: ${judge?.graft ?? 'none'}
 
 Steps:
-1. Create branch tevm-test/final from tevm-test/${judge?.winner ?? "codex-sol"}.
+1. Create branch tevm-test/final from tevm-test/${judge?.winner ?? 'codex-sol'}.
 2. Apply the graft items from the other lane branches where they genuinely improve the PR.
 3. Polish to a high-quality PR: viem code conventions, changeset if the repo uses changesets, docs/README notes on the tevm-backed test setup, clean commit history (squash fixups).
 4. Run the affected vitest suites; everything you touched must pass. Report real output.
@@ -158,5 +165,5 @@ Steps:
 				</Task>
 			</Sequence>
 		</Workflow>
-	);
-});
+	)
+})

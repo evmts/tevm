@@ -101,7 +101,7 @@ export default function SetCode({ options }: Props) {
 		},
 
 		// Execute the action
-		executeAction: async (client: any, params: any): Promise<any> => {
+		executeAction: async (client, params): Promise<unknown> => {
 			// Check if client has test actions
 			if (!client.setCode) {
 				throw new Error(

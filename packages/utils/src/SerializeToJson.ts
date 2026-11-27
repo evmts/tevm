@@ -1,4 +1,4 @@
-// TODO there is a duplicate implementation in tevm/actions
+// Canonical shared type for @tevm/utils; keep until @tevm/actions removes its copy.
 import type { Hex } from './abitype.js'
 
 /**

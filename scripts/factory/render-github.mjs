@@ -30,7 +30,7 @@ const rendered = github.render({
 // Refuse an unfamiliar layout so a renderer upgrade cannot silently drop later steps.
 const action = rendered.files.find(({ path }) => path === 'actions/setup/action.yml')
 const cacheStep =
-	/    - run: \|\n        if \[ -n "\$\{\{ inputs\.cache-url \}\}" \]; then\n(?:          echo [^\n]+\n)+        fi\n      shell: bash\n$/
+	/ {4}- run: \|\n {8}if \[ -n "\$\{\{ inputs\.cache-url \}\}" \]; then\n(?: {10}echo [^\n]+\n)+ {8}fi\n {6}shell: bash\n$/
 if (!cacheStep.test(action.content)) throw new Error('Unexpected Github.Setup cache step')
 action.content = action.content.replace(
 	cacheStep,
@@ -39,9 +39,11 @@ action.content = action.content.replace(
         CACHE_URL: \${{ inputs.cache-url }}
         CACHE_TOKEN: \${{ inputs.cache-token }}
       run: |
-        if [[ -n "$CACHE_URL" ]]; then
-          [[ "$CACHE_URL$CACHE_TOKEN" != *$'\\n'* && "$CACHE_URL$CACHE_TOKEN" != *$'\\r'* ]] || exit 1
-          printf 'SMITHERS_CACHE_URL=%s\\nSMITHERS_CACHE_TOKEN=%s\\n' "$CACHE_URL" "$CACHE_TOKEN" >> "$GITHUB_ENV"
+        CACHE_URL="\${CACHE_URL:-https://build.smithers.sh}"
+        [[ "$CACHE_URL$CACHE_TOKEN" != *$'\\n'* && "$CACHE_URL$CACHE_TOKEN" != *$'\\r'* ]] || exit 1
+        printf 'SMITHERS_CACHE_URL=%s\\n' "$CACHE_URL" >> "$GITHUB_ENV"
+        if [[ -n "$CACHE_TOKEN" ]]; then
+          printf 'SMITHERS_CACHE_TOKEN=%s\\n' "$CACHE_TOKEN" >> "$GITHUB_ENV"
         fi
 `,
 )

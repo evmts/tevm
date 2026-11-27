@@ -12,7 +12,7 @@ export type LogEntry = {
 export interface LogStore {
 	logs: LogEntry[]
 	nextId: number
-	addLog: (type: 'request' | 'response' | 'error', content: any) => void
+	addLog: (type: 'request' | 'response' | 'error', content: unknown) => void
 	clearLogs: () => void
 }
 
@@ -53,17 +53,20 @@ export const useLogStore = create<LogStore>((set) => ({
 /**
  * Create a proxy around the request function that logs to Zustand store
  */
-export function createLoggingRequestProxy(originalRequest: any, verbose: boolean) {
+export function createLoggingRequestProxy<T extends (...args: never[]) => Promise<unknown>>(
+	originalRequest: T,
+	verbose: boolean,
+): T {
 	const { addLog } = useLogStore.getState()
 
-	return async function proxiedRequest(...args: any[]) {
+	const proxiedRequest = async (...args: unknown[]) => {
 		if (verbose) {
 			addLog('request', args)
 		}
 
 		try {
 			// Call original function and await result
-			const result = await originalRequest(...args)
+			const result = await (originalRequest as unknown as (...params: unknown[]) => Promise<unknown>)(...args)
 
 			if (verbose) {
 				addLog('response', result)
@@ -77,4 +80,6 @@ export function createLoggingRequestProxy(originalRequest: any, verbose: boolean
 			throw error
 		}
 	}
+
+	return proxiedRequest as unknown as T
 }

@@ -111,7 +111,7 @@ export default function Sol({ args: [source], options }: Props) {
 			constructorArgs: parseArray(options.constructorArgs, 'constructorArgs'),
 			from: options.from as `0x${string}`,
 		}),
-		executeAction: async (client: any, params: SolParams): Promise<SolResult> => {
+		executeAction: async (client, params: SolParams): Promise<SolResult> => {
 			const solc = (await import('solc')).default
 			const absoluteSource = path.resolve(params.source)
 			const sourceName = path.basename(absoluteSource)
@@ -165,7 +165,7 @@ export default function Sol({ args: [source], options }: Props) {
 				contract: contractName,
 				address: deployment.createdAddress,
 				data: call.data,
-				executionGasUsed: call.executionGasUsed,
+				executionGasUsed: call.executionGasUsed ?? 0n,
 			}
 		},
 	})

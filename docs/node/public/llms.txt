@@ -1,0 +1,140 @@
+# TEVM
+
+> In-memory Ethereum Virtual Machine and full node for TypeScript, powered by native Zig (ZEVM) and Viem. Built publicly on Smithers Cloud.
+
+- Public Coding Factory: https://smithers.sh/evmts/tevm
+- Authenticated MCP Endpoint: https://smithers.sh/evmts/tevm/mcp
+- Shared Build Object Store: https://build.smithers.sh
+- GitHub Mirror: https://github.com/evmts/tevm
+
+## Introduction
+
+- [TEVM Node](https://node.tevm.sh/)
+- [Architecture](https://node.tevm.sh/introduction/architecture-overview)
+- [What is Tevm?](https://node.tevm.sh/introduction/what-is-tevm-node)
+- [Why embed an EVM?](https://node.tevm.sh/introduction/why-run-ethereum-in-js)
+
+## Getting Started
+
+- [Tutorial: Solidity Bundler](https://node.tevm.sh/getting-started/bundler)
+- [Tutorial: Ethers v6](https://node.tevm.sh/getting-started/ethers)
+- [Quickstart](https://node.tevm.sh/getting-started/overview)
+- [Community](https://node.tevm.sh/getting-started/testimonials)
+- [Tutorial: Viem](https://node.tevm.sh/getting-started/viem)
+
+## Core Architecture
+
+- [Client & Engine Options](https://node.tevm.sh/core/create-tevm-node)
+- [Forking Upstream Chains](https://node.tevm.sh/core/forking)
+- [Accounts, Storage & Snapshots](https://node.tevm.sh/core/managing-state)
+- [Migrating from the JS Engine](https://node.tevm.sh/core/migration-from-js-engine)
+- [Mining & Block Production](https://node.tevm.sh/core/mining-modes)
+- [Runtime Model & ZEVM](https://node.tevm.sh/core/runtime-model)
+- [Engine API (ZevmEngine)](https://node.tevm.sh/core/tevm-node-interface)
+
+## API Reference
+
+- [Account Management](https://node.tevm.sh/api/account-management)
+- [Decorators (Removed in Native Engine)](https://node.tevm.sh/api/decorators)
+- [Tracing & Engine Events](https://node.tevm.sh/api/evm-events)
+- [JSON-RPC Reference](https://node.tevm.sh/api/json-rpc)
+- [MCP Server for AI Agents](https://node.tevm.sh/api/mcp-server)
+- [Client Methods Map](https://node.tevm.sh/api/methods)
+- [Package Overview](https://node.tevm.sh/api/packages)
+- [HTTP, WebSocket & IPC Server](https://node.tevm.sh/api/server)
+- [Call, Contract & Deploy](https://node.tevm.sh/api/tevm-call)
+- [VM & Submodules](https://node.tevm.sh/api/vm-and-submodules)
+
+## Examples
+
+- [Browser Trace Viewer](https://node.tevm.sh/examples/debugger-ui)
+- [Ethers v6 Cookbook](https://node.tevm.sh/examples/ethers)
+- [Forking Mainnet](https://node.tevm.sh/examples/forking-mainnet)
+- [Testing with Vitest](https://node.tevm.sh/examples/local-testing)
+- [Viem Cookbook](https://node.tevm.sh/examples/viem)
+
+## Advanced Guides
+
+- [Custom Precompiles (Removed in Native Engine)](https://node.tevm.sh/advanced/custom-precompiles)
+- [Performance Profiling](https://node.tevm.sh/advanced/performance-profiler)
+- [Receipts & Logs](https://node.tevm.sh/advanced/receipts-and-logs)
+- [Transaction Pool](https://node.tevm.sh/advanced/txpool)
+
+## Package & CLI Reference
+
+- [@tevm/actions](https://node.tevm.sh/reference/actions)
+- [@tevm/address](https://node.tevm.sh/reference/address)
+- [Block](https://node.tevm.sh/reference/block)
+- [@tevm/blockchain](https://node.tevm.sh/reference/blockchain)
+- [Bundler Plugins](https://node.tevm.sh/reference/bundler-plugins)
+- [Bundler Reference](https://node.tevm.sh/reference/bundler)
+- [Bundler Internals](https://node.tevm.sh/reference/bundler/internals)
+- [Bundler Methods and Exports](https://node.tevm.sh/reference/bundler/methods)
+- [Bundler Overview](https://node.tevm.sh/reference/bundler/overview)
+- [Bundler Troubleshooting](https://node.tevm.sh/reference/bundler/troubleshooting)
+- [Built-in chain presets](https://node.tevm.sh/reference/chain-presets)
+- [tevm call](https://node.tevm.sh/reference/cli/call)
+- [tevm compile](https://node.tevm.sh/reference/cli/compile)
+- [tevm contract](https://node.tevm.sh/reference/cli/contract)
+- [tevm action create-access-list](https://node.tevm.sh/reference/cli/create-access-list)
+- [tevm create-block-filter](https://node.tevm.sh/reference/cli/create-block-filter)
+- [tevm create-contract-event-filter](https://node.tevm.sh/reference/cli/create-contract-event-filter)
+- [tevm create-event-filter](https://node.tevm.sh/reference/cli/create-event-filter)
+- [tevm deploy](https://node.tevm.sh/reference/cli/deploy)
+- [tevm dump-state](https://node.tevm.sh/reference/cli/dump-state)
+- [tevm estimate-fees-per-gas](https://node.tevm.sh/reference/cli/estimate-fees-per-gas)
+- [tevm estimate-gas](https://node.tevm.sh/reference/cli/estimate-gas)
+- [tevm get-account](https://node.tevm.sh/reference/cli/get-account)
+- [tevm action get-balance](https://node.tevm.sh/reference/cli/get-balance)
+- [tevm get-block-number](https://node.tevm.sh/reference/cli/get-block-number)
+- [tevm get-block](https://node.tevm.sh/reference/cli/get-block)
+- [tevm get-bytecode](https://node.tevm.sh/reference/cli/get-bytecode)
+- [tevm get-chain-id](https://node.tevm.sh/reference/cli/get-chain-id)
+- [tevm get-ens-address](https://node.tevm.sh/reference/cli/get-ens-address)
+- [tevm get-ens-name](https://node.tevm.sh/reference/cli/get-ens-name)
+- [tevm get-ens-text](https://node.tevm.sh/reference/cli/get-ens-text)
+- [tevm get-gas-price](https://node.tevm.sh/reference/cli/get-gas-price)
+- [tevm get-storage-at](https://node.tevm.sh/reference/cli/get-storage-at)
+- [tevm get-transaction](https://node.tevm.sh/reference/cli/get-transaction)
+- [Tevm CLI](https://node.tevm.sh/reference/cli)
+- [tevm load-state](https://node.tevm.sh/reference/cli/load-state)
+- [tevm mine](https://node.tevm.sh/reference/cli/mine)
+- [tevm multicall](https://node.tevm.sh/reference/cli/multicall)
+- [tevm read-contract](https://node.tevm.sh/reference/cli/read-contract)
+- [tevm action send-raw-transaction](https://node.tevm.sh/reference/cli/send-raw-transaction)
+- [tevm serve](https://node.tevm.sh/reference/cli/serve)
+- [tevm set-account](https://node.tevm.sh/reference/cli/set-account)
+- [tevm set-code](https://node.tevm.sh/reference/cli/set-code)
+- [tevm set-nonce](https://node.tevm.sh/reference/cli/set-nonce)
+- [tevm set-storage-at](https://node.tevm.sh/reference/cli/set-storage-at)
+- [tevm action simulate-calls](https://node.tevm.sh/reference/cli/simulate-calls)
+- [@tevm/common](https://node.tevm.sh/reference/common)
+- [Solidity contract type generator](https://node.tevm.sh/reference/contract-type-generator)
+- [@tevm/contract](https://node.tevm.sh/reference/contract)
+- [@tevm/decorators](https://node.tevm.sh/reference/decorators)
+- [EVM](https://node.tevm.sh/reference/evm)
+- [Package Reference](https://node.tevm.sh/reference)
+- [@tevm/memory-client](https://node.tevm.sh/reference/memory-client)
+- [@tevm/node](https://node.tevm.sh/reference/node)
+- [@tevm/receipt-manager](https://node.tevm.sh/reference/receipt-manager)
+- [@tevm/rlp API Reference](https://node.tevm.sh/reference/rlp)
+- [@tevm/server](https://node.tevm.sh/reference/server)
+- [@tevm/state](https://node.tevm.sh/reference/state)
+- [Reusable EVM test fixtures](https://node.tevm.sh/reference/test-fixtures)
+- [@tevm/trie API Reference](https://node.tevm.sh/reference/trie)
+- [Transactions](https://node.tevm.sh/reference/tx)
+- [@tevm/txpool](https://node.tevm.sh/reference/txpool)
+- [@tevm/utils](https://node.tevm.sh/reference/utils)
+- [Virtual Machine](https://node.tevm.sh/reference/vm)
+
+## Engineering Wiki and Mythical History
+
+- [Start here](https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/start-here.md): Navigate TEVM's packages, native ZEVM core, and public Smithers Cloud coding factory.
+- [TEVM layered architecture](https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/architecture.md): Trace requests from the tevm facade through memory-client, actions, node, and native ZEVM.
+- [Native ZEVM engine and Smithers dogfooding](https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/zevm-native-engine.md): Explain how Smithers builds, pins, stamps, and caches native ZEVM, Voltaire, and Guillotine Mini.
+- [JSON-RPC wire contract and error model](https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/json-rpc-contract.md): Specify canonical hex encoding, negative error codes, BaseError hierarchy, and regression proof.
+- [Smithers Cloud coding factory and trust boundary](https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/coding-factory.md): Document QuickJS-planned flows, shared Smithers Cloud object store cache, and trusted vs untrusted execution.
+- [Public authenticated MCP and one-time sandbox auth](https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/mcp-and-byoa.md): Show how agents connect via OAuth 2.1 to smithers.sh/evmts/tevm/mcp and mint single-use sandbox tokens.
+- [Lighthouse-style backpressure and Uphill audit](https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/backpressure-and-uphill.md): Detail TEVM's continuous Uphill metrics across Footprint, Quality, Architecture, and Factory Health.
+- [Automated release, GitHub mirror, and docs publishing](https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/pages/release-and-docs-pipeline.md): Trace how merges from Smithers Cloud to GitHub main trigger Changesets releases, docs, and llms.txt.
+- [Mythical History](https://smithers.sh/evmts/tevm/blob/main/.smithers/history/MYTHICAL.md): Clean from-scratch epic timeline of TEVM.

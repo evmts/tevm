@@ -2,103 +2,112 @@
 // smithers-display-name: Tevm Monorepo Split
 /** @jsxImportSource smithers-orchestrator */
 import {
+	createSmithers,
+	OpenCodeAgent,
 	ClaudeCodeAgent as SmithersClaudeCodeAgent,
 	CodexAgent as SmithersCodexAgent,
-	OpenCodeAgent,
-	createSmithers,
-} from "smithers-orchestrator";
-import { z } from "zod/v4";
+} from 'smithers-orchestrator'
+import { z } from 'zod/v4'
 
-const MONO = "/Users/williamcory/tevm-monorepo";
-const STAGE = "/Users/williamcory/tevm-split";
-const ORG = "evmts";
+const MONO = '/Users/williamcory/tevm-monorepo'
+const STAGE = '/Users/williamcory/tevm-split'
+const ORG = 'evmts'
 
 /** One target repo per lane. `paths` are filter-repo paths from the monorepo root. */
 const REPOS = [
 	{
-		key: "tevm-contract",
-		sub: "contract",
-		paths: ["packages/contract"],
-		blurb: "The @tevm/contract package — the shared kernel type surface used by BOTH the core node and the bundler. Extract it first-class because both sides depend on it.",
+		key: 'tevm-contract',
+		sub: 'contract',
+		paths: ['packages/contract'],
+		blurb:
+			'The @tevm/contract package — the shared kernel type surface used by BOTH the core node and the bundler. Extract it first-class because both sides depend on it.',
 	},
 	{
-		key: "tevm-utils",
-		sub: "utils",
-		paths: ["packages/utils"],
-		blurb: "The @tevm/utils package — shared low-level helpers used by core and bundler.",
+		key: 'tevm-utils',
+		sub: 'utils',
+		paths: ['packages/utils'],
+		blurb: 'The @tevm/utils package — shared low-level helpers used by core and bundler.',
 	},
 	{
-		key: "tevm-logger",
-		sub: "logger",
-		paths: ["packages/logger"],
-		blurb: "The @tevm/logger package — shared logging used by core and bundler.",
+		key: 'tevm-logger',
+		sub: 'logger',
+		paths: ['packages/logger'],
+		blurb: 'The @tevm/logger package — shared logging used by core and bundler.',
 	},
 	{
-		key: "tevm-test",
-		sub: "test",
-		paths: ["extensions/test-matchers", "extensions/test-node", "test/test-utils", "test/vitest-matchers", "test/test-matchers"],
-		blurb: "The tevm test library: matchers, the test node, vitest matchers and test utils. Publishes @tevm/test-matchers, @tevm/test-node, @tevm/test-utils. This is the showcase library the evmts/viem PR consumes.",
-	},
-	{
-		key: "tevm-ethers",
-		sub: "ethers",
-		paths: ["extensions/ethers"],
-		blurb: "The @tevm/ethers extension — ethers.js integration. Cadence tracks ethers releases.",
-	},
-	{
-		key: "tevm-mud",
-		sub: "mud",
-		paths: ["bundler-packages/mud"],
-		blurb: "The @tevm/mud integration — cadence tracks MUD releases, audience is MUD game devs.",
-	},
-	{
-		key: "tevm-cli",
-		sub: "cli",
-		paths: ["cli", "bundler-packages/tevm-run"],
-		blurb: "The tevm CLI plus tevm-run. App-shaped: ships binaries and an ink UI, not a library.",
-	},
-	{
-		key: "tevm-bundler",
-		sub: "bundler",
+		key: 'tevm-test',
+		sub: 'test',
 		paths: [
-			"bundler-packages/base-bundler",
-			"bundler-packages/bun",
-			"bundler-packages/bundler-cache",
-			"bundler-packages/compiler",
-			"bundler-packages/config",
-			"bundler-packages/esbuild",
-			"bundler-packages/requirejs",
-			"bundler-packages/resolutions",
-			"bundler-packages/resolutions-rs",
-			"bundler-packages/rollup",
-			"bundler-packages/rspack",
-			"bundler-packages/runtime",
-			"bundler-packages/runtime-rs",
-			"bundler-packages/solc",
-			"bundler-packages/solc-rs",
-			"bundler-packages/unplugin",
-			"bundler-packages/vite",
-			"bundler-packages/webpack",
-			"lsp",
-			"packages/effect",
+			'extensions/test-matchers',
+			'extensions/test-node',
+			'test/test-utils',
+			'test/vitest-matchers',
+			'test/test-matchers',
 		],
-		blurb: "The whole bundler pipeline (config, compiler, solc/solc-rs, resolutions/resolutions-rs, runtime/runtime-rs, base-bundler, unplugin and every bundler adapter), PLUS the LSP and the vscode extension (they share the resolution/compiler pipeline), PLUS @tevm/effect. Note: whatsabi is deliberately EXCLUDED (rolled into voltaire, being deleted), and mud + tevm-run go to their own repos.",
+		blurb:
+			'The tevm test library: matchers, the test node, vitest matchers and test utils. Publishes @tevm/test-matchers, @tevm/test-node, @tevm/test-utils. This is the showcase library the evmts/viem PR consumes.',
 	},
 	{
-		key: "tevm-examples",
-		sub: "examples",
-		paths: ["examples"],
-		blurb: "All example apps. They consume PUBLISHED packages only, which doubles as an integration smoke-test suite.",
+		key: 'tevm-ethers',
+		sub: 'ethers',
+		paths: ['extensions/ethers'],
+		blurb: 'The @tevm/ethers extension — ethers.js integration. Cadence tracks ethers releases.',
 	},
-] as const;
+	{
+		key: 'tevm-mud',
+		sub: 'mud',
+		paths: ['bundler-packages/mud'],
+		blurb: 'The @tevm/mud integration — cadence tracks MUD releases, audience is MUD game devs.',
+	},
+	{
+		key: 'tevm-cli',
+		sub: 'cli',
+		paths: ['cli', 'bundler-packages/tevm-run'],
+		blurb: 'The tevm CLI plus tevm-run. App-shaped: ships binaries and an ink UI, not a library.',
+	},
+	{
+		key: 'tevm-bundler',
+		sub: 'bundler',
+		paths: [
+			'bundler-packages/base-bundler',
+			'bundler-packages/bun',
+			'bundler-packages/bundler-cache',
+			'bundler-packages/compiler',
+			'bundler-packages/config',
+			'bundler-packages/esbuild',
+			'bundler-packages/requirejs',
+			'bundler-packages/resolutions',
+			'bundler-packages/resolutions-rs',
+			'bundler-packages/rollup',
+			'bundler-packages/rspack',
+			'bundler-packages/runtime',
+			'bundler-packages/runtime-rs',
+			'bundler-packages/solc',
+			'bundler-packages/solc-rs',
+			'bundler-packages/unplugin',
+			'bundler-packages/vite',
+			'bundler-packages/webpack',
+			'lsp',
+			'packages/effect',
+		],
+		blurb:
+			'The whole bundler pipeline (config, compiler, solc/solc-rs, resolutions/resolutions-rs, runtime/runtime-rs, base-bundler, unplugin and every bundler adapter), PLUS the LSP and the vscode extension (they share the resolution/compiler pipeline), PLUS @tevm/effect. Note: whatsabi is deliberately EXCLUDED (rolled into voltaire, being deleted), and mud + tevm-run go to their own repos.',
+	},
+	{
+		key: 'tevm-examples',
+		sub: 'examples',
+		paths: ['examples'],
+		blurb: 'All example apps. They consume PUBLISHED packages only, which doubles as an integration smoke-test suite.',
+	},
+] as const
 
-const codex = (cwd: string) => new SmithersCodexAgent({ model: "gpt-5.6-sol", cwd, skipGitRepoCheck: true });
-const opus = (cwd: string) => new SmithersClaudeCodeAgent({ model: "opus", cwd });
-const kimi = (cwd: string) => new OpenCodeAgent({ model: "kimi-for-coding/k3", cwd });
+const codex = (cwd: string) => new SmithersCodexAgent({ model: 'gpt-5.6-sol', cwd, skipGitRepoCheck: true })
+const opus = (cwd: string) => new SmithersClaudeCodeAgent({ model: 'opus', cwd })
+const kimi = (cwd: string) => new OpenCodeAgent({ model: 'kimi-for-coding/k3', cwd })
 
 const extractSchema = z.looseObject({
 	repo: z.string(),
-	repoUrl: z.string().default(""),
+	repoUrl: z.string().default(''),
 	pushed: z.boolean().default(false),
 	packages: z.array(z.string()).default([]),
 	buildPasses: z.boolean().default(false),
@@ -106,32 +115,32 @@ const extractSchema = z.looseObject({
 	publishingSetUp: z.boolean().default(false),
 	manualStepsRemaining: z.array(z.string()).default([]),
 	summary: z.string(),
-});
+})
 
 const docsSchema = z.looseObject({
 	repo: z.string(),
-	vocsVersion: z.string().default(""),
+	vocsVersion: z.string().default(''),
 	pagesWritten: z.array(z.string()).default([]),
-	deployTarget: z.string().default(""),
+	deployTarget: z.string().default(''),
 	summary: z.string(),
-});
+})
 
 const uiSchema = z.looseObject({
 	repo: z.string(),
 	summary: z.string(),
 	componentsBuilt: z.array(z.string()).default([]),
-});
+})
 
 const reportSchema = z.looseObject({
 	reportPath: z.string(),
 	reposCreated: z.array(z.string()).default([]),
 	blockers: z.array(z.string()).default([]),
 	summary: z.string(),
-});
+})
 
 const inputSchema = z.object({
 	dryRun: z.boolean().default(false),
-});
+})
 
 const { Workflow, Task, Sequence, Parallel, smithers } = createSmithers({
 	input: inputSchema,
@@ -139,7 +148,7 @@ const { Workflow, Task, Sequence, Parallel, smithers } = createSmithers({
 	docs: docsSchema,
 	ui: uiSchema,
 	report: reportSchema,
-});
+})
 
 /** Shared context every lane needs so the repos agree with each other without a barrier. */
 const CONVENTIONS = `SHARED CONVENTIONS — every lane must follow these so the repos line up:
@@ -151,25 +160,28 @@ const CONVENTIONS = `SHARED CONVENTIONS — every lane must follow these so the 
 - Every repo: pnpm, changesets, biome (copy the monorepo's biome.json), tsconfig extending @tevm/tsconfig or an inlined equivalent, and the repo's own CI.
 - Package manager: pnpm 9.x. Node 24 (.nvmrc), matching the monorepo.
 - Docs subdomain for this repo: <sub>.tevm.sh (assigned per lane below). The umbrella docs stay at tevm.sh.
-- Do not delete anything from ${MONO} in your lane. A separate cleanup PR removes the extracted trees after the new repos are live.`;
+- Do not delete anything from ${MONO} in your lane. A separate cleanup PR removes the extracted trees after the new repos are live.`
 
 export default smithers((ctx) => {
-	const extracts = ctx.outputs.extract ?? [];
-	const docs = ctx.outputs.docs ?? [];
-	const uis = ctx.outputs.ui ?? [];
+	const extracts = ctx.outputs.extract ?? []
+	const docs = ctx.outputs.docs ?? []
+	const uis = ctx.outputs.ui ?? []
 
 	const rollup = [
-		...extracts.map((e: any) => `EXTRACT ${e.repo}: ${e.repoUrl || "(no url)"} pushed=${e.pushed} build=${e.buildPasses} tests=${e.testsPass} publishing=${e.publishingSetUp}\n  ${e.summary}\n  manual: ${(e.manualStepsRemaining ?? []).join("; ") || "none"}`),
+		...extracts.map(
+			(e: any) =>
+				`EXTRACT ${e.repo}: ${e.repoUrl || '(no url)'} pushed=${e.pushed} build=${e.buildPasses} tests=${e.testsPass} publishing=${e.publishingSetUp}\n  ${e.summary}\n  manual: ${(e.manualStepsRemaining ?? []).join('; ') || 'none'}`,
+		),
 		...docs.map((d: any) => `DOCS ${d.repo}: vocs=${d.vocsVersion} deploy=${d.deployTarget}\n  ${d.summary}`),
 		...uis.map((u: any) => `UI ${u.repo}: ${u.summary}`),
-	].join("\n\n");
+	].join('\n\n')
 
 	return (
 		<Workflow name="tevm-split">
 			<Sequence>
 				<Parallel>
 					{REPOS.map((r) => {
-						const dir = `${STAGE}/${r.key}`;
+						const dir = `${STAGE}/${r.key}`
 						return (
 							<Sequence>
 								<Task id={`extract-${r.key}`} output={extractSchema} agent={codex(STAGE)}>
@@ -179,14 +191,14 @@ WHAT THIS REPO IS:
 ${r.blurb}
 
 MONOREPO PATHS THAT MOVE INTO IT:
-${r.paths.map((p) => `- ${p}`).join("\n")}
+${r.paths.map((p) => `- ${p}`).join('\n')}
 
 ${CONVENTIONS}
 
 STEPS:
 1. mkdir -p ${STAGE} && git clone ${MONO} ${dir} && cd ${dir}
 2. Run git-filter-repo (installed at /opt/homebrew/bin/git-filter-repo) keeping ONLY the paths above, so git history and blame for those files survive:
-   git filter-repo --force ${r.paths.map((p) => `--path ${p}`).join(" ")}
+   git filter-repo --force ${r.paths.map((p) => `--path ${p}`).join(' ')}
    Then restructure the tree so the packages sit at a sensible root (e.g. packages/<name>/ or a single-package root if there is only one). Use \`git filter-repo --path-rename\` for the move so history follows the rename.
 3. Write the repo root: package.json (pnpm workspaces if multi-package), pnpm-workspace.yaml, .nvmrc (24), biome.json copied from the monorepo, tsconfig, .gitignore, LICENSE (copy from monorepo), and a real README explaining what the repo is, how it relates to tevm, and how to install.
 4. Rewire EVERY dependency that used to be \`workspace:*\`/\`workspace:^\` and now lives in another repo to a published caret range per the conventions. Keep intra-repo deps as workspace refs. Check the actual latest published version with \`npm view <pkg> version\` and use \`^<that>\`; if a package has never been published, use ^1.0.0 and list it under manualStepsRemaining.
@@ -242,7 +254,7 @@ Report what you built.`}
 									</Task>
 								</Parallel>
 							</Sequence>
-						);
+						)
 					})}
 				</Parallel>
 				<Task id="report" output={reportSchema} agent={opus(MONO)}>
@@ -260,5 +272,5 @@ Report the file path, the repos confirmed created, and any blockers.`}
 				</Task>
 			</Sequence>
 		</Workflow>
-	);
-});
+	)
+})

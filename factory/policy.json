@@ -6,6 +6,45 @@
 		"name": "tevm",
 		"defaultBranch": "main"
 	},
+	"cloud": {
+		"origin": "https://smithers.sh",
+		"repoUrl": "https://smithers.sh/evmts/tevm",
+		"mcpUrl": "https://smithers.sh/evmts/tevm/mcp",
+		"objectStore": "https://build.smithers.sh",
+		"docsUrl": "https://node.tevm.sh",
+		"docsIndexUrl": "https://node.tevm.sh/llms.txt",
+		"publicTodos": true,
+		"publicFactory": true,
+		"githubMirror": "two-way"
+	},
+	"cache": {
+		"provider": "smithers-cloud-object-store",
+		"endpoint": "https://build.smithers.sh",
+		"readSecret": "SMITHERS_CACHE_READ_TOKEN",
+		"writeSecret": "SMITHERS_CACHE_WRITE_TOKEN"
+	},
+	"trust": {
+		"maintainers": ["roninjin10"],
+		"acceptExecutionFrom": ["smithers-sandbox", "maintainer"],
+		"allowUntrustedExecution": true,
+		"untrustedCacheRead": true,
+		"untrustedCacheWrite": false,
+		"untrustedSkipGates": false,
+		"oneTimeAuthRequiredForSandboxes": true,
+		"protectedPaths": [
+			"WORKSPACE.ts",
+			"PACKAGE.ts",
+			"mise.toml",
+			".nvmrc",
+			"factory/policy.json",
+			"factory/native-dependencies.json",
+			".smithers/FACTORY.ts",
+			".smithers/factory.json",
+			".smithers/workflows",
+			".github/PACKAGE.ts",
+			".github/workflows"
+		]
+	},
 	"toolchain": {
 		"node": "24.22.3",
 		"pnpm": "10.33.4",
@@ -49,8 +88,8 @@
 		"candidateDiff": "explicit-smthrs-invocation-or-factory-ready-label",
 		"pullRequest": "factory-ready-label-and-factory-approval-environment",
 		"fork": "explicit-contributor-action",
-		"release": "manual-smithers-approval",
-		"deploy": "manual-smithers-approval"
+		"release": "maintainer-merge-or-manual-smithers-approval",
+		"deploy": "maintainer-merge-or-manual-smithers-approval"
 	},
 	"gates": {
 		"intake": ["//factory:issueIntakeTest", "//factory:policyLint"],

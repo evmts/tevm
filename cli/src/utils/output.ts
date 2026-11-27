@@ -140,14 +140,14 @@ function decodeFrame(frame: TraceFrame, abi: readonly unknown[] | undefined): st
 		return undefined
 	}
 	try {
-		const decoded = decodeFunctionData({ abi: abi as any, data: frame.input })
+		const decoded = decodeFunctionData({ abi: abi as import('viem').Abi, data: frame.input })
 		const call = `${decoded.functionName}(${(decoded.args ?? []).map(formatArgument).join(', ')})`
 		if (!frame.output || frame.output === '0x' || frame.error) {
 			return call
 		}
 		try {
 			const output = decodeFunctionResult({
-				abi: abi as any,
+				abi: abi as import('viem').Abi,
 				functionName: decoded.functionName,
 				data: frame.output,
 			})

@@ -1,6 +1,72 @@
 /**
  * Common types and interfaces for actions
  */
+import type { Abi } from 'viem'
+
+/**
+ * Normalized CLI options record passed through useAction.
+ */
+export type CliActionOptions = Record<string, unknown>
+
+/**
+ * Callable method signature exposed by CLI execution clients.
+ */
+export type CliClientMethod = (...args: readonly unknown[]) => Promise<unknown>
+
+/**
+ * Client surface shared between Viem public clients and Tevm memory clients.
+ */
+export interface CliClient {
+	createAccessList: CliClientMethod
+	createBlockFilter: CliClientMethod
+	createContractEventFilter: CliClientMethod
+	createEventFilter: CliClientMethod
+	estimateFeesPerGas: CliClientMethod
+	estimateGas: CliClientMethod
+	getBalance: CliClientMethod
+	getBlock: CliClientMethod
+	getBlockNumber: (params?: unknown) => Promise<bigint>
+	getBytecode: CliClientMethod
+	getChainId: CliClientMethod
+	getEnsAddress: CliClientMethod
+	getEnsName: CliClientMethod
+	getEnsText: CliClientMethod
+	getGasPrice: CliClientMethod
+	getStorageAt: CliClientMethod
+	getTransaction: CliClientMethod
+	multicall: CliClientMethod
+	readContract: CliClientMethod
+	request: CliClientMethod
+	sendRawTransaction: CliClientMethod
+	setCode?: CliClientMethod
+	setNonce?: CliClientMethod
+	simulateCalls?: CliClientMethod
+	tevmCall: CliClientMethod
+	tevmClose: () => Promise<void>
+	tevmContract: (params: unknown) => Promise<{
+		data?: unknown
+		executionGasUsed?: bigint
+		errors?: Error[]
+		[key: string]: unknown
+	}>
+	tevmDeploy: (params: unknown) => Promise<{
+		createdAddress?: `0x${string}`
+		[key: string]: unknown
+	}>
+	tevmDumpState: () => Promise<`0x${string}`>
+	tevmGetAccount: (params: unknown) => Promise<{
+		deployedBytecode?: `0x${string}`
+		[key: string]: unknown
+	}>
+	tevmLoadState: CliClientMethod
+	tevmMine: CliClientMethod
+	tevmSetAccount: CliClientMethod
+	transport: {
+		tevm: {
+			request: CliClientMethod
+		}
+	}
+}
 
 /**
  * Base parameters that can be passed to most Tevm actions
@@ -24,9 +90,9 @@ export interface BaseActionParams {
  */
 export interface ReadContractParams extends BaseActionParams {
 	address: string
-	abi: any
+	abi: Abi
 	functionName: string
-	args?: any[]
+	args?: readonly unknown[]
 }
 
 /**

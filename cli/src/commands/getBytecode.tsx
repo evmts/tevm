@@ -128,10 +128,10 @@ export default function GetBytecode({ options }: Props) {
 		},
 
 		// Execute the action
-		executeAction: async (client: any, params: any): Promise<any> => {
+		executeAction: async (client, params): Promise<unknown> => {
 			if (typeof client.tevmGetAccount === 'function') {
 				const account = await client.tevmGetAccount({
-					address: params.address,
+					address: params['address'],
 					returnStorage: false,
 				})
 				return account.deployedBytecode

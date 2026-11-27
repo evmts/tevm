@@ -1,10 +1,150 @@
 {
-  "summary": "Tevm's in-memory Ethereum execution playground.",
+  "apiVersion": 1,
+  "name": "evmts/tevm",
+  "summary": "TEVM: in-memory Ethereum node on native ZEVM, shared Smithers Cloud object store, Lighthouse Uphill backpressure, public MCP, wiki, and automated releases.",
+  "contributes": {
+    "triggers": [
+      {
+        "on": "github.push",
+        "flow": "ci",
+        "branches": [
+          "main"
+        ],
+        "title": "TEVM + ZEVM CI"
+      },
+      {
+        "on": "github.pull_request",
+        "flow": "ci",
+        "branches": [
+          "main"
+        ],
+        "title": "PR CI"
+      },
+      {
+        "on": "github.push",
+        "flow": "uphill",
+        "branches": [
+          "main"
+        ],
+        "title": "Lighthouse Uphill Audit"
+      },
+      {
+        "on": "github.pull_request",
+        "flow": "uphill",
+        "branches": [
+          "main"
+        ],
+        "title": "PR Lighthouse Uphill Audit"
+      },
+      {
+        "on": "github.push",
+        "flow": "release",
+        "branches": [
+          "main",
+          "v1"
+        ],
+        "title": "Automated Release Train"
+      },
+      {
+        "on": "github.push",
+        "flow": "docs-publish",
+        "branches": [
+          "main"
+        ],
+        "title": "Automated Docs & Factory Portal Publish"
+      },
+      {
+        "on": "github.push",
+        "flow": "wiki-refresh",
+        "branches": [
+          "main"
+        ],
+        "title": "Wiki & Mythical History Refresh"
+      },
+      {
+        "on": "github.pull_request",
+        "flow": "parity",
+        "branches": [
+          "main"
+        ],
+        "title": "Ethereum Spec Parity"
+      },
+      {
+        "on": "github.push",
+        "flow": "benchmarks",
+        "branches": [
+          "main"
+        ],
+        "title": "Incremental Benchmarks"
+      },
+      {
+        "on": "github.pull_request",
+        "flow": "benchmarks",
+        "branches": [
+          "main"
+        ],
+        "title": "PR Benchmarks"
+      },
+      {
+        "on": "cron",
+        "flow": "parity",
+        "cron": "0 3 * * *",
+        "title": "Nightly Ethereum Conformance"
+      },
+      {
+        "on": "cron",
+        "flow": "uphill",
+        "cron": "0 6 * * *",
+        "title": "Daily Lighthouse Audit"
+      },
+      {
+        "on": "cron",
+        "flow": "wiki-refresh",
+        "cron": "17 9 * * 1",
+        "title": "Weekly Wiki & Mythical Refresh"
+      },
+      {
+        "on": "manual",
+        "flow": "ci",
+        "title": "Run TEVM + ZEVM CI"
+      },
+      {
+        "on": "manual",
+        "flow": "uphill",
+        "title": "Run Lighthouse Uphill Audit"
+      },
+      {
+        "on": "manual",
+        "flow": "release",
+        "title": "Run Release Rehearsal or Publish"
+      },
+      {
+        "on": "manual",
+        "flow": "docs-publish",
+        "title": "Build & Publish Docs + Portal"
+      },
+      {
+        "on": "manual",
+        "flow": "parity",
+        "title": "Run Ethereum Spec Parity"
+      },
+      {
+        "on": "manual",
+        "flow": "benchmarks",
+        "title": "Run Incremental Benchmarks"
+      },
+      {
+        "on": "manual",
+        "flow": "wiki-refresh",
+        "title": "Refresh Wiki & Mythical History"
+      }
+    ]
+  },
   "flows": [
     {
       "id": "playground/exec",
       "description": "Deploy or call a contract and inspect Tevm opcodes and gas",
-      "summary": "Deploy or call a contract and inspect opcodes and gas.",
+      "summary": "Deploy or call a contract and inspect opcodes and gas on native ZEVM.",
       "featured": true,
       "kind": "mdx",
       "path": ".smithers/flows/playground/exec/flow.mdx",
@@ -51,12 +191,311 @@
       "model": null,
       "modelInvocable": false,
       "flows": []
+    },
+    {
+      "id": "ci",
+      "description": "Full TEVM + ZEVM Smithers Cloud CI graph with shared object store cache, trust gates, and Lighthouse Uphill audit.",
+      "summary": "Run ZEVM native build, factory checks, builds, typechecks, tests, docs, and Uphill.",
+      "featured": true,
+      "kind": "ts",
+      "path": ".smithers/workflows/ci.ts",
+      "capabilities": [
+        "sandbox:job"
+      ],
+      "model": null,
+      "modelInvocable": true,
+      "flows": []
+    },
+    {
+      "id": "uphill",
+      "description": "Run TEVM Lighthouse-style Backpressure Audit (Footprint, Quality, Architecture, and Factory Health) via Uphill.",
+      "summary": "Score Footprint, Quality, Architecture, and Factory Health in a Lighthouse audit report.",
+      "featured": true,
+      "kind": "ts",
+      "path": ".smithers/workflows/uphill.ts",
+      "capabilities": [
+        "sandbox:job"
+      ],
+      "model": null,
+      "modelInvocable": true,
+      "flows": []
+    },
+    {
+      "id": "release",
+      "description": "Build ZEVM and @tevm/* packages, run publish smoke checks, and release to npm with provenance on trusted main merges.",
+      "summary": "Verify publish smoke and execute the Changesets npm release train on trusted merges.",
+      "featured": true,
+      "kind": "ts",
+      "path": ".smithers/workflows/release.ts",
+      "capabilities": [
+        "sandbox:job"
+      ],
+      "model": null,
+      "modelInvocable": true,
+      "flows": []
+    },
+    {
+      "id": "docs-publish",
+      "description": "Build and publish TEVM Node docs (with llms.txt), Core docs, and the personalized Factory & Lighthouse Audit portal on main merges.",
+      "summary": "Build and publish TEVM docs, llms.txt, and the personalized Factory UI on main merges.",
+      "featured": true,
+      "kind": "ts",
+      "path": ".smithers/workflows/docs-publish.ts",
+      "capabilities": [
+        "sandbox:job"
+      ],
+      "model": null,
+      "modelInvocable": true,
+      "flows": []
+    },
+    {
+      "id": "parity",
+      "description": "Run Ethereum Execution Spec Tests, GeneralStateTests, and RPC parity suites against native ZEVM.",
+      "summary": "Verify Ethereum Execution Spec, GeneralStateTests, and RPC parity on ZEVM.",
+      "featured": true,
+      "kind": "ts",
+      "path": ".smithers/workflows/parity.ts",
+      "capabilities": [
+        "sandbox:job"
+      ],
+      "model": null,
+      "modelInvocable": true,
+      "flows": []
+    },
+    {
+      "id": "benchmarks",
+      "description": "Run incremental Smithers benchmarks across all TEVM packages via the shared Smithers Cloud object store cache.",
+      "summary": "Run incremental package benchmarks keyed against the shared Smithers Cloud cache.",
+      "featured": false,
+      "kind": "ts",
+      "path": ".smithers/workflows/benchmarks.ts",
+      "capabilities": [
+        "sandbox:job"
+      ],
+      "model": null,
+      "modelInvocable": true,
+      "flows": []
+    },
+    {
+      "id": "wiki-refresh",
+      "description": "Validate TEVM Obsidian wiki citations, wikilinks, mythical history epics, and Smithers Cloud factory projections after main merges.",
+      "summary": "Keep the Obsidian wiki, mythical history, and factory projections verified on main.",
+      "featured": false,
+      "kind": "ts",
+      "path": ".smithers/workflows/wiki-refresh.ts",
+      "capabilities": [
+        "sandbox:job"
+      ],
+      "model": null,
+      "modelInvocable": true,
+      "flows": []
+    },
+    {
+      "id": "checks/review",
+      "description": "Multi-lens TEVM review covering JSON-RPC wire contracts, ZEVM native ABI, state isolation, regression proof, Uphill Lighthouse metrics, and trust boundaries.",
+      "summary": "Review JSON-RPC contracts, ZEVM ABI, regression proof, Uphill scores, and trust boundaries.",
+      "featured": true,
+      "kind": "mdx",
+      "path": ".smithers/flows/checks/review/flow.mdx",
+      "capabilities": [
+        "fs:read:**",
+        "proc:spawn:rg *",
+        "proc:spawn:jj --no-pager *"
+      ],
+      "model": "gpt-6.2-astra",
+      "modelInvocable": true,
+      "flows": [],
+      "budget": {
+        "tokens": 64000,
+        "milliseconds": 600000
+      }
+    },
+    {
+      "id": "issue/repro",
+      "description": "Reproduce and validate a TEVM, ZEVM, JSON-RPC, or bundler defect with real local fixtures before planning a fix.",
+      "summary": "Reproduce a TEVM or ZEVM issue with minimal real fixtures before planning a fix.",
+      "featured": true,
+      "kind": "mdx",
+      "path": ".smithers/flows/issue/repro/flow.mdx",
+      "capabilities": [
+        "fs:read:**",
+        "proc:spawn:rg *",
+        "proc:spawn:jj --no-pager *",
+        "proc:spawn:node *",
+        "proc:spawn:pnpm *"
+      ],
+      "model": "gpt-6.2-sol",
+      "modelInvocable": true,
+      "flows": [],
+      "budget": {
+        "tokens": 64000,
+        "milliseconds": 900000
+      }
+    },
+    {
+      "id": "issue/poc",
+      "description": "Implement a bounded failing-first regression test and proof-of-concept Change for a maintainer-accepted TEVM TODO.",
+      "summary": "Build a failing-first regression test and bounded PoC for a maintainer-accepted TODO.",
+      "featured": true,
+      "kind": "mdx",
+      "path": ".smithers/flows/issue/poc/flow.mdx",
+      "capabilities": [
+        "fs:read:**",
+        "fs:write:**",
+        "proc:spawn:rg *",
+        "proc:spawn:jj --no-pager *",
+        "proc:spawn:node *",
+        "proc:spawn:pnpm *",
+        "proc:spawn:uphill *"
+      ],
+      "model": "gpt-6.2-sol",
+      "modelInvocable": true,
+      "flows": [],
+      "budget": {
+        "tokens": 100000,
+        "milliseconds": 1800000
+      }
+    },
+    {
+      "id": "pr-triage",
+      "description": "Triage an external or internal TEVM pull request from its metadata and diff alone without executing untrusted PR code.",
+      "summary": "Assess pull request scope, tests, and protected paths from its diff without running untrusted code.",
+      "featured": true,
+      "kind": "mdx",
+      "path": ".smithers/flows/pr-triage/flow.mdx",
+      "capabilities": [
+        "fs:read:**",
+        "proc:spawn:rg *"
+      ],
+      "model": "gpt-6.2-astra",
+      "modelInvocable": true,
+      "flows": [],
+      "budget": {
+        "tokens": 48000,
+        "milliseconds": 600000
+      }
+    },
+    {
+      "id": "conformance-review",
+      "description": "Audit TEVM Ethereum spec conformance, ZEVM/Voltaire/Guillotine pin drift, Uphill Lighthouse scores, and incremental benchmark deltas.",
+      "summary": "Audit Ethereum spec conformance, native pin drift, Uphill scores, and benchmark deltas.",
+      "featured": false,
+      "kind": "mdx",
+      "path": ".smithers/flows/conformance-review/flow.mdx",
+      "capabilities": [
+        "fs:read:**",
+        "proc:spawn:rg *",
+        "proc:spawn:jj --no-pager *",
+        "proc:spawn:node *",
+        "proc:spawn:pnpm *",
+        "proc:spawn:uphill *"
+      ],
+      "model": "gpt-6.2-sol",
+      "modelInvocable": true,
+      "flows": [],
+      "budget": {
+        "tokens": 80000,
+        "milliseconds": 2400000
+      }
     }
   ],
-  "on": [],
+  "on": [
+    {
+      "event": "issue.labeled:todo",
+      "flow": "issue/poc",
+      "description": "Implement every maintainer-accepted TEVM TODO as a failing-first Change"
+    },
+    {
+      "event": "change.opened",
+      "flow": "checks/review",
+      "description": "Review every Change across RPC contract, ZEVM ABI, regression proof, and Uphill metrics"
+    },
+    {
+      "event": "change.updated",
+      "flow": "checks/review",
+      "description": "Re-review every updated Change"
+    },
+    {
+      "event": "change.landed",
+      "flow": "wiki-refresh",
+      "description": "Refresh wiki citations, mythical history, and factory projections after landing"
+    },
+    {
+      "event": "github.push:main",
+      "flow": "docs-publish",
+      "description": "Publish Node docs, llms.txt, and Factory Portal after every merge to main"
+    },
+    {
+      "event": "github.push:main",
+      "flow": "release",
+      "description": "Run the Changesets release train after every merge to main"
+    },
+    {
+      "event": "schedule:0 3 * * *",
+      "flow": "parity",
+      "description": "Nightly Ethereum Execution Spec and GeneralStateTests parity run"
+    },
+    {
+      "event": "schedule:0 6 * * *",
+      "flow": "uphill",
+      "description": "Daily Lighthouse-style Uphill backpressure audit"
+    },
+    {
+      "event": "schedule:17 9 * * 1",
+      "flow": "conformance-review",
+      "description": "Weekly Monday conformance, native pin hygiene, and benchmark audit"
+    }
+  ],
   "github": {
     "mirror": "pull",
-    "issues": "read",
-    "changes": "send-upstream"
+    "issues": "two-way",
+    "changes": "send-upstream",
+    "maintainers": [
+      "roninjin10"
+    ],
+    "protectedPaths": [
+      "WORKSPACE.ts",
+      "PACKAGE.ts",
+      "mise.toml",
+      ".nvmrc",
+      "factory/policy.json",
+      "factory/native-dependencies.json",
+      ".smithers/FACTORY.ts",
+      ".smithers/factory.json",
+      ".smithers/workflows",
+      ".github/PACKAGE.ts",
+      ".github/workflows"
+    ]
+  },
+  "cache": {
+    "provider": "smithers-cloud-object-store",
+    "endpoint": "https://build.smithers.sh",
+    "readSecret": "SMITHERS_CACHE_READ_TOKEN",
+    "writeSecret": "SMITHERS_CACHE_WRITE_TOKEN"
+  },
+  "mcp": {
+    "url": "https://smithers.sh/evmts/tevm/mcp",
+    "oauthProtectedResource": "https://smithers.sh/.well-known/oauth-protected-resource/evmts/tevm/mcp",
+    "publicReads": true,
+    "publicTodos": true,
+    "oneTimeSandboxAuth": true
+  },
+  "trust": {
+    "acceptExecutionFrom": [
+      "smithers-sandbox",
+      "maintainer"
+    ],
+    "maintainers": [
+      "roninjin10"
+    ],
+    "allowUntrustedExecution": true,
+    "untrustedCacheRead": true,
+    "untrustedCacheWrite": false,
+    "untrustedSkipGates": false
+  },
+  "wiki": {
+    "catalog": ".smithers/coding-project.json",
+    "root": ".smithers/wiki",
+    "mythicalHistory": ".smithers/history/mythical.json"
   }
 }

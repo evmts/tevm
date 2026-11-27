@@ -1,0 +1,22 @@
+---
+description: Implement a bounded failing-first regression test and proof-of-concept Change for a maintainer-accepted TEVM TODO.
+capabilities:
+  - "fs:read:**"
+  - "fs:write:**"
+  - "proc:spawn:rg *"
+  - "proc:spawn:jj --no-pager *"
+  - "proc:spawn:node *"
+  - "proc:spawn:pnpm *"
+  - "proc:spawn:uphill *"
+model: gpt-6.2-sol
+modelInvocable: true
+budget:
+  tokens: 100000
+  milliseconds: 1800000
+---
+Implement a bounded proof of concept for one maintainer-accepted TEVM TODO:
+
+1. Verify via Smithers Cloud MCP (`issue_get` / `todo_list` at `https://smithers.sh/evmts/tevm/mcp`) that the TODO is accepted by a maintainer (`roninjin10`).
+2. Follow the implementation sequence in `AGENTS.md`: public types + JSDoc first -> smallest failing regression test -> minimal coherent fix -> recursive barrels + `tevm` facade + changeset.
+3. Run focused package tests, `pnpm exec smthrs target //factory:check`, `pnpm exec smthrs target //:mechanicalPrePush`, and `uphill --compare HEAD --compact` (zero Uphill score regressions allowed).
+4. Record the stacked Change / PR and post verification evidence via Smithers Cloud MCP (`work_link_post` / `issue_comment`). Never self-approve or merge.

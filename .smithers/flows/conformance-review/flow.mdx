@@ -1,0 +1,22 @@
+---
+description: Audit TEVM Ethereum spec conformance, ZEVM/Voltaire/Guillotine pin drift, Uphill Lighthouse scores, and incremental benchmark deltas.
+capabilities:
+  - "fs:read:**"
+  - "proc:spawn:rg *"
+  - "proc:spawn:jj --no-pager *"
+  - "proc:spawn:node *"
+  - "proc:spawn:pnpm *"
+  - "proc:spawn:uphill *"
+model: gpt-6.2-sol
+modelInvocable: true
+budget:
+  tokens: 80000
+  milliseconds: 2400000
+---
+Run TEVM's scheduled weekly conformance, native pin hygiene, and Lighthouse backpressure audit:
+
+1. Check `factory/native-dependencies.json` against `../zevm`, `../voltaire`, and `../guillotine-mini`.
+2. Run `pnpm exec smthrs target //test:parityFast`, `//test:conformanceFast`, and `//factory:check`.
+3. Run `uphill check && uphill --compact` and inspect category trends (Footprint, Quality, Architecture & Testing, Factory Health).
+4. Check `.smithers/wiki/` and `.smithers/history/mythical.json` freshness (`node scripts/factory/verify-wiki.mjs`).
+5. Draft actionable TODO candidates via Smithers Cloud MCP (`todo_draft` / `issue_create`) for any regressions or top Uphill opportunities.

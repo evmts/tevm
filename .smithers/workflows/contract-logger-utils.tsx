@@ -1,62 +1,68 @@
 // smithers-source: authored
 // smithers-display-name: Contract Logger Utils
 /** @jsxImportSource smithers-orchestrator */
-import { ClaudeCodeAgent as SmithersClaudeCodeAgent, CodexAgent as SmithersCodexAgent, createSmithers } from "smithers-orchestrator";
-import { z } from "zod/v4";
+import {
+	createSmithers,
+	ClaudeCodeAgent as SmithersClaudeCodeAgent,
+	CodexAgent as SmithersCodexAgent,
+} from 'smithers-orchestrator'
+import { z } from 'zod/v4'
 
-const STAGE = "/Users/williamcory/stack-prod";
-const MONO = "/Users/williamcory/tevm-monorepo";
-const ORG = "evmts";
+const STAGE = '/Users/williamcory/stack-prod'
+const MONO = '/Users/williamcory/tevm-monorepo'
+const ORG = 'evmts'
 
-const codex = (cwd: string) => new SmithersCodexAgent({ model: "gpt-5.6-sol", cwd, skipGitRepoCheck: true });
-const opus = (cwd: string) => new SmithersClaudeCodeAgent({ model: "opus", cwd });
+const codex = (cwd: string) => new SmithersCodexAgent({ model: 'gpt-5.6-sol', cwd, skipGitRepoCheck: true })
+const opus = (cwd: string) => new SmithersClaudeCodeAgent({ model: 'opus', cwd })
 
 const verifySchema = z.looseObject({
 	repo: z.string(),
 	buildPasses: z.boolean().default(false),
 	testsPass: z.boolean().default(false),
-	testOutput: z.string().default(""),
+	testOutput: z.string().default(''),
 	docsBuild: z.boolean().default(false),
-	vocsVersion: z.string().default(""),
+	vocsVersion: z.string().default(''),
 	publishWired: z.boolean().default(false),
-	versionChosen: z.string().default(""),
-	prUrl: z.string().default(""),
+	versionChosen: z.string().default(''),
+	prUrl: z.string().default(''),
 	blockers: z.array(z.string()).default([]),
 	humanActionsNeeded: z.array(z.string()).default([]),
 	summary: z.string(),
-});
+})
 
 const planSchema = z.looseObject({
 	feasible: z.boolean().default(false),
-	voltaireJsBindings: z.string().default(""),
-	categorized: z.string().default(""),
+	voltaireJsBindings: z.string().default(''),
+	categorized: z.string().default(''),
 	callSites: z.number().default(0),
-	recommendation: z.string().default(""),
-	reportPath: z.string().default(""),
+	recommendation: z.string().default(''),
+	reportPath: z.string().default(''),
 	blockers: z.array(z.string()).default([]),
 	summary: z.string(),
-});
+})
 
-const inputSchema = z.object({ execute: z.boolean().default(false) });
+const inputSchema = z.object({ execute: z.boolean().default(false) })
 
 const { Workflow, Task, Parallel, smithers } = createSmithers({
 	input: inputSchema,
 	verify: verifySchema,
 	plan: planSchema,
-});
+})
 
 const REPOS = [
 	{
-		key: "tevm-contract",
-		sub: "contract",
-		blurb: "The @tevm/contract package — the shared type surface used by BOTH the tevm core node and the bundler. It is the genuine boundary between those two worlds, which is why it gets its own repo even though core has 9 dependents on it and the bundler only 3.",
+		key: 'tevm-contract',
+		sub: 'contract',
+		blurb:
+			'The @tevm/contract package — the shared type surface used by BOTH the tevm core node and the bundler. It is the genuine boundary between those two worlds, which is why it gets its own repo even though core has 9 dependents on it and the bundler only 3.',
 	},
 	{
-		key: "tevm-logger",
-		sub: "logger",
-		blurb: "The @tevm/logger package — small, generic logging used across core (5 dependents) and the bundler (2). Standalone enough to version on its own cadence.",
+		key: 'tevm-logger',
+		sub: 'logger',
+		blurb:
+			'The @tevm/logger package — small, generic logging used across core (5 dependents) and the bundler (2). Standalone enough to version on its own cadence.',
 	},
-] as const;
+] as const
 
 const RULES = `GROUND RULES:
 - Work only in your own clone under ${STAGE}/<repo>. Never touch ${MONO} (a live session works there) or a sibling lane's directory.
@@ -65,7 +71,7 @@ const RULES = `GROUND RULES:
 - Run every build/test you claim and paste REAL output. A precise blocker beats a false success.
 - Anything needing a human (npm scope, secret, DNS/Vercel domain, token, 2FA) goes in humanActionsNeeded as a concrete instruction.
 - Cross-repo deps are PUBLISHED packages with caret ranges — never workspace:* and never pinned exact. Verify each with \`npm view <pkg> version\`.
-- IMPORTANT: @tevm/utils is being retired in favour of voltaire and has NO repo of its own (evmts/tevm-utils was created in error and is archived). Do not add a dependency on any tevm-utils repo. If this package imports @tevm/utils, depend on its PUBLISHED version from core for now and note it.`;
+- IMPORTANT: @tevm/utils is being retired in favour of voltaire and has NO repo of its own (evmts/tevm-utils was created in error and is archived). Do not add a dependency on any tevm-utils repo. If this package imports @tevm/utils, depend on its PUBLISHED version from core for now and note it.`
 
 export default smithers((ctx) => (
 	<Workflow name="contract-logger-utils">
@@ -110,4 +116,4 @@ Report: whether it is feasible, what you found about voltaire's JS bindings, the
 			</Task>
 		</Parallel>
 	</Workflow>
-));
+))

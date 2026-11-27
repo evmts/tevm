@@ -893,3 +893,359 @@ code {
 		transition-duration: 0.01ms;
 	}
 }
+
+/* Personalized Role Switcher & Control Plane Banners */
+.tevm-role-switcher {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 3px;
+	border: 1px solid rgb(23 19 22 / 0.14);
+	border-radius: 999px;
+	background: rgb(255 255 255 / 0.72);
+}
+
+.tevm-role-pill {
+	border: 0;
+	border-radius: 999px;
+	padding: 5px 12px;
+	background: transparent;
+	color: rgb(23 19 22 / 0.72);
+	font-size: 12px;
+	font-weight: 600;
+	cursor: pointer;
+	transition:
+		background 140ms ease,
+		color 140ms ease;
+}
+
+.tevm-role-pill:hover {
+	color: #171316;
+}
+
+.tevm-role-pill.is-active {
+	background: #171316;
+	color: #fffaf5;
+}
+
+.tevm-role-banner {
+	margin: 24px clamp(20px, 4vw, 48px) 0;
+}
+
+.tevm-role-banner--maintainer {
+	border-color: rgb(238 63 152 / 0.45);
+}
+
+.tevm-role-banner--contributor {
+	border-color: rgb(0 168 107 / 0.45);
+}
+
+/* Lighthouse-Style Backpressure Audit Gauges */
+.lh-gauges {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 20px;
+	padding: 12px 0 20px;
+}
+
+.lh-gauge {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 6px;
+}
+
+.lh-gauge__ring {
+	position: relative;
+	width: 108px;
+	height: 108px;
+}
+
+.lh-gauge__ring svg {
+	width: 100%;
+	height: 100%;
+}
+
+.lh-gauge__track {
+	fill: rgb(23 19 22 / 0.04);
+	stroke: rgb(23 19 22 / 0.1);
+	stroke-width: 8;
+}
+
+.lh-gauge__arc {
+	fill: none;
+	stroke-width: 8;
+	stroke-linecap: round;
+	transition: stroke-dashoffset 600ms ease-out;
+}
+
+.lh-gauge__score {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: var(--font-mono, monospace);
+	font-size: 28px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+.lh-gauge--good .lh-gauge__track {
+	fill: rgb(0 204 102 / 0.12);
+}
+
+.lh-gauge--good .lh-gauge__arc {
+	stroke: #00cc66;
+}
+
+.lh-gauge--good .lh-gauge__score {
+	color: #008844;
+}
+
+.lh-gauge--average .lh-gauge__track {
+	fill: rgb(255 170 51 / 0.14);
+}
+
+.lh-gauge--average .lh-gauge__arc {
+	stroke: #ffaa33;
+}
+
+.lh-gauge--average .lh-gauge__score {
+	color: #b85c00;
+}
+
+.lh-gauge--poor .lh-gauge__track {
+	fill: rgb(255 51 51 / 0.14);
+}
+
+.lh-gauge--poor .lh-gauge__arc {
+	stroke: #ff3333;
+}
+
+.lh-gauge--poor .lh-gauge__score {
+	color: #c20000;
+}
+
+.lh-gauge__label {
+	font-size: 14px;
+	font-weight: 650;
+}
+
+.lh-gauge__sub {
+	font-size: 12px;
+	opacity: 0.65;
+}
+
+.lh-scale {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 18px;
+	padding: 10px 0 18px;
+	margin-bottom: 16px;
+	border-bottom: 1px solid rgb(23 19 22 / 0.1);
+	font-size: 12px;
+	opacity: 0.8;
+}
+
+.lh-scale__item {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.lh-dot {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+}
+
+.lh-dot--good {
+	background: #00cc66;
+}
+
+.lh-dot--average {
+	background: #ffaa33;
+	border-radius: 2px;
+}
+
+.lh-dot--poor {
+	background: #ff3333;
+}
+
+.lh-category-desc {
+	margin: 0 0 14px;
+	font-size: 14px;
+	opacity: 0.8;
+}
+
+.lh-metrics-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 10px;
+}
+
+.lh-metric-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 12px 14px;
+	border: 1px solid rgb(23 19 22 / 0.1);
+	border-radius: 8px;
+}
+
+.lh-metric-row__main {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	flex: 1 1 320px;
+}
+
+.lh-metric-row__desc {
+	margin: 3px 0 0;
+	font-size: 13px;
+	opacity: 0.75;
+}
+
+.lh-metric-row__meta {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.lh-chip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 40px;
+	padding: 2px 8px;
+	border-radius: 999px;
+	font-family: var(--font-mono, monospace);
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.lh-chip--good {
+	background: rgb(0 204 102 / 0.16);
+	color: #008844;
+}
+
+.lh-chip--average {
+	background: rgb(255 170 51 / 0.18);
+	color: #b85c00;
+}
+
+.lh-chip--poor {
+	background: rgb(255 51 51 / 0.18);
+	color: #c20000;
+}
+
+.lh-opportunities {
+	margin-top: 22px;
+	padding-top: 16px;
+	border-top: 1px solid rgb(23 19 22 / 0.1);
+}
+
+.lh-opportunities__title {
+	margin: 0 0 10px;
+	font-size: 14px;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	opacity: 0.7;
+}
+
+.lh-opportunities ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 8px;
+}
+
+.lh-opportunities li {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	font-size: 13px;
+}
+
+.lh-gain {
+	font-family: var(--font-mono, monospace);
+	font-weight: 700;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: rgb(0 204 102 / 0.16);
+	color: #008844;
+}
+
+.lh-run-box {
+	margin-top: 20px;
+	padding-top: 14px;
+	border-top: 1px solid rgb(23 19 22 / 0.1);
+}
+
+/* Trust Boundary, MCP, Wiki & Mythical History */
+.tevm-trust-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 18px;
+	margin-bottom: 18px;
+}
+
+.tevm-trust-list {
+	margin: 0;
+	padding-left: 18px;
+	display: grid;
+	gap: 8px;
+	font-size: 13.5px;
+	line-height: 1.5;
+}
+
+.tevm-wiki-links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 8px;
+}
+
+.tevm-mythical-list {
+	display: grid;
+	gap: 14px;
+}
+
+.tevm-mythical-chapters {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 12px;
+}
+
+.tevm-mythical-chapters li {
+	padding: 10px 12px;
+	border-left: 2px solid rgb(238 63 152 / 0.5);
+	background: rgb(23 19 22 / 0.03);
+	border-radius: 0 6px 6px 0;
+}
+
+.tevm-mythical-chapters__desc {
+	margin: 4px 0 6px;
+	font-size: 13px;
+	opacity: 0.8;
+}
+
+.tevm-mythical-notes {
+	margin-top: 14px;
+	padding-top: 10px;
+	border-top: 1px dashed rgb(23 19 22 / 0.16);
+	font-size: 12.5px;
+	opacity: 0.8;
+}

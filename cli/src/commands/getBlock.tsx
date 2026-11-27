@@ -143,7 +143,7 @@ export default function GetBlock({ options }: Props) {
 		},
 
 		// Execute the action
-		executeAction: async (client: any, params: any): Promise<any> => {
+		executeAction: async (client, params): Promise<unknown> => {
 			return await client.getBlock(params)
 		},
 	})
@@ -155,12 +155,14 @@ export default function GetBlock({ options }: Props) {
 
 	// Render the action UI with appropriate targeting
 	let targetDesc = 'latest block'
-	if (actionResult.options['blockHash']) {
-		targetDesc = `block ${actionResult.options['blockHash'].substring(0, 10)}...`
+	const blockHashOption =
+		typeof actionResult.options['blockHash'] === 'string' ? actionResult.options['blockHash'] : undefined
+	if (blockHashOption) {
+		targetDesc = `block ${blockHashOption.substring(0, 10)}...`
 	} else if (actionResult.options['blockNumber']) {
-		targetDesc = `block #${actionResult.options['blockNumber']}`
+		targetDesc = `block #${String(actionResult.options['blockNumber'])}`
 	} else if (actionResult.options['blockTag'] && actionResult.options['blockTag'] !== 'latest') {
-		targetDesc = `${actionResult.options['blockTag']} block`
+		targetDesc = `${String(actionResult.options['blockTag'])} block`
 	}
 
 	return (

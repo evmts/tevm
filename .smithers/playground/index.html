@@ -4,34 +4,54 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-VO3dUnFjP0gW51llHD3z+Tn35s6zPJIxfSiV1UPay4Y='; style-src 'sha256-o/BBGy3rdfW6DopsHwdDtGow3wndRGFJcv9sS01WYJI='; base-uri 'none'; form-action 'none'; connect-src 'none'">
-<title>Tevm playground</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-VSsD6bdovPo7ByOqwZ2G6HUNLdRxgk327UK70Bbm+bw='; style-src 'sha256-WWQK++osb2c9SJaxWLKKnc9gvA0nEejvOnEbOtPfK00='; base-uri 'none'; form-action 'none'; connect-src 'none'">
+<title>TEVM in-memory EVM playground</title>
 <style>
-:root { color-scheme: light dark; font: 15px/1.5 system-ui, sans-serif }
-body { margin: 0; padding: clamp(16px, 4vw, 40px); background: Canvas; color: CanvasText }
-main { max-width: 760px; margin: auto }
-h1 { margin: 0 0 24px; font-size: clamp(24px, 5vw, 38px); line-height: 1.1 }
+:root { color-scheme: light dark; font: 15px/1.5 system-ui, -apple-system, sans-serif }
+body { margin: 0; padding: clamp(16px, 3vw, 32px); background: Canvas; color: CanvasText }
+main { max-width: 820px; margin: auto }
+header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 16px; margin-bottom: 16px }
+h1 { margin: 0; font-size: clamp(20px, 4vw, 28px); line-height: 1.15 }
+.badge { font-size: 12px; font-weight: 600; padding: 2px 10px; border: 1px solid GrayText; border-radius: 999px; opacity: 0.85 }
+.presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px }
+.preset { font-size: 13px; padding: 5px 12px; border-radius: 999px; border: 1px solid GrayText; background: Canvas; color: CanvasText; cursor: pointer }
+.preset:hover { border-color: Highlight }
 form, label { display: grid; gap: 8px }
-form { gap: 16px; border: 1px solid GrayText; padding: clamp(14px, 3vw, 24px); border-radius: 12px }
-label { font-weight: 600 }
-select, textarea, input, button { font: inherit; color: inherit; padding: 8px; border: 1px solid GrayText; border-radius: 6px }
+form { gap: 14px; border: 1px solid GrayText; padding: clamp(14px, 3vw, 22px); border-radius: 12px }
+label { font-weight: 600; font-size: 14px }
+select, textarea, input, button { font: inherit; color: inherit; padding: 8px 10px; border: 1px solid GrayText; border-radius: 6px }
 select, textarea, input { background: Canvas; width: 100%; box-sizing: border-box }
-textarea, input[type=text], output, td { font-family: ui-monospace, monospace }
-textarea { min-height: 74px; resize: vertical }
+textarea, input[type=text], output, td { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px }
+textarea { min-height: 70px; resize: vertical }
 .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px }
-button { justify-self: start; padding: 8px 18px; font-weight: 650; background: ButtonFace; cursor: pointer }
+.actions { display: flex; align-items: center; gap: 12px }
+#run { padding: 8px 20px; font-weight: 650; background: ButtonFace; cursor: pointer }
 button:disabled { opacity: 0.6; cursor: default }
 :focus-visible { outline: 2px solid Highlight; outline-offset: 2px }
-#status { min-height: 1.5em; margin-bottom: 0 }
-output { display: block; white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 1rem }
+#status { margin: 0; font-size: 14px; opacity: 0.9 }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0 }
+.kpi { border: 1px solid GrayText; border-radius: 8px; padding: 10px 12px }
+.kpi span { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.75 }
+.kpi strong { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; overflow-wrap: anywhere }
+output { display: block; white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 1rem; padding: 10px; border: 1px solid GrayText; border-radius: 8px }
 table { width: 100%; border-collapse: collapse; text-align: left }
-th, td { padding: 6px; border-bottom: 1px solid GrayText }
+caption { text-align: left; font-weight: 600; margin-bottom: 6px }
+th, td { padding: 6px 8px; border-bottom: 1px solid GrayText }
 [hidden] { display: none !important }
 </style>
 </head>
 <body>
 <main>
-<h1>Tevm playground</h1>
+<header>
+  <h1>TEVM live EVM playground</h1>
+  <span class="badge">Native ZEVM · Sandboxed</span>
+</header>
+<div class="presets" role="group" aria-label="Bytecode presets">
+  <button type="button" class="preset" data-preset="deploy42">Deploy &amp; return 42</button>
+  <button type="button" class="preset" data-preset="callAdd">Runtime 2 + 40</button>
+  <button type="button" class="preset" data-preset="storage">SSTORE &amp; SLOAD</button>
+  <button type="button" class="preset" data-preset="revert">Revert demo</button>
+</div>
 <form>
   <div class="controls">
     <label>Operation
@@ -47,10 +67,13 @@ th, td { padding: 6px; border-bottom: 1px solid GrayText }
   <label>Calldata
     <input name="calldata" type="text" value="0x" maxlength="2050" spellcheck="false" autocomplete="off">
   </label>
-  <button type="button" disabled>Run</button>
+  <div class="actions">
+    <button id="run" type="button" disabled>Run in ZEVM</button>
+    <p id="status" role="status">Connecting to Smithers…</p>
+  </div>
 </form>
-<p id="status" role="status">Connecting to Smithers…</p>
 <section id="result" aria-label="Execution result" hidden>
+  <div class="summary" id="kpis"></div>
   <output aria-label="Result"></output>
   <table hidden>
     <caption>Opcode trace</caption>
@@ -62,29 +85,56 @@ th, td { padding: 6px; border-bottom: 1px solid GrayText }
 <script>
 const host = "https://smithers.sh"
 const form = document.querySelector("form")
-const button = form.querySelector("button")
+const button = document.querySelector("#run")
 const status = document.querySelector("#status")
 const result = document.querySelector("#result")
+const kpis = document.querySelector("#kpis")
 const output = result.querySelector("output")
 const table = result.querySelector("table")
 const rows = table.querySelector("tbody")
 const method = form.elements.method
 const nonce = document.documentElement.dataset.smithersNonce
 const initId = "playground"
+const presets = {
+  deploy42: { method: "deploy", bytecode: "0x600a600c600039600a6000f3602a60005260206000f3", calldata: "0x", gas: 100000 },
+  callAdd: { method: "call", bytecode: "0x600260280160005260206000f3", calldata: "0x", gas: 100000 },
+  storage: { method: "call", bytecode: "0x602a60005560005460005260206000f3", calldata: "0x", gas: 100000 },
+  revert: { method: "call", bytecode: "0x60046000fd", calldata: "0x", gas: 100000 }
+}
 let port
 let pending
 let nextId = 0
 
+function syncLabel() {
+  document.querySelector("#bytecode-label").textContent = method.value === "call" ? "Runtime bytecode" : "Contract initcode"
+}
+
+function addKpi(label, value) {
+  const card = document.createElement("div")
+  card.className = "kpi"
+  const title = document.createElement("span")
+  title.textContent = label
+  const strong = document.createElement("strong")
+  strong.textContent = String(value)
+  card.append(title, strong)
+  kpis.append(card)
+}
+
 function paint(value) {
   const { steps, ...summary } = value
+  kpis.replaceChildren()
+  addKpi("Outcome", summary.failed ? "Reverted" : "Success")
+  addKpi("Gas used", summary.gasUsed ?? "-")
+  addKpi("Return", summary.returnValue ?? "0x")
+  if (summary.address) addKpi("Deployed at", summary.address)
   output.textContent = JSON.stringify(summary, null, 2)
   rows.replaceChildren()
   for (const step of Array.isArray(steps) ? steps.slice(0, 256) : []) {
     const row = rows.insertRow()
     for (const key of ["pc", "op", "gas", "gasCost", "depth"]) {
       const cell = row.insertCell()
-      const value = step?.[key]
-      cell.textContent = typeof value === "number" || typeof value === "string" ? value : ""
+      const cellVal = step?.[key]
+      cell.textContent = typeof cellVal === "number" || typeof cellVal === "string" ? cellVal : ""
     }
   }
   table.hidden = rows.rows.length === 0
@@ -107,6 +157,18 @@ function receive(event) {
   } else {
     status.textContent = "Execution unavailable"
   }
+}
+
+for (const presetBtn of document.querySelectorAll(".preset")) {
+  presetBtn.addEventListener("click", () => {
+    const chosen = presets[presetBtn.dataset.preset]
+    if (!chosen) return
+    form.elements.method.value = chosen.method
+    form.elements.bytecode.value = chosen.bytecode
+    form.elements.calldata.value = chosen.calldata
+    form.elements.gas.value = String(chosen.gas)
+    syncLabel()
+  })
 }
 
 if (parent !== window && /^[A-Za-z0-9_-]{22,128}$/.test(nonce ?? "")) {
@@ -158,11 +220,7 @@ button.addEventListener("click", (event) => {
   port.postMessage({ jsonrpc: "2.0", id, method: "playground/exec", params })
 })
 
-method.addEventListener("change", () => {
-  const runtime = method.value === "call"
-  document.querySelector("#bytecode-label").textContent = runtime ? "Runtime bytecode" : "Contract initcode"
-})
-
+method.addEventListener("change", syncLabel)
 </script>
 </body>
 </html>

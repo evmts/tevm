@@ -3,6 +3,7 @@ name: release
 on:
   push:
     branches:
+      - main
       - v1
   workflow_dispatch:
 concurrency:
@@ -27,9 +28,8 @@ jobs:
       - name: Checkout pinned native sources
         run: node scripts/factory/checkout-native.mjs
       - uses: "./.github/actions/setup"
-      - name: Require stable mode
-        run: "test ! -f .changeset/pre.json"
       - name: Create version PR or publish approved packages
+        if: "hashFiles('.changeset/pre.json') == ''"
         uses: changesets/action@v1
         with:
           version: pnpm release:version

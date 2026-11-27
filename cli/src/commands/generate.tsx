@@ -212,14 +212,18 @@ export default function Generate({ args, options }: Props) {
 						// Actual implementation using Tevm bundler
 						try {
 							setCurrentTask(`Loading config for ${fileName}...`)
-							const configEffect = loadConfig(cwd)
+							const configEffect = loadConfig(cwd) as unknown as import('effect').Effect.Effect<
+								Parameters<typeof bundler>[0] & { cacheDir: string },
+								unknown,
+								never
+							>
 							const config =
 								process.env['TEVM_JSON'] === 'true'
-									? runSync(provide(configEffect as any, Logger.replace(Logger.defaultLogger, Logger.none)))
-									: runSync(configEffect as any)
+									? runSync(provide(configEffect, Logger.replace(Logger.defaultLogger, Logger.none)))
+									: runSync(configEffect)
 
 							setCurrentTask(`Creating cache for ${fileName}...`)
-							const solcCache = createCache((config as any).cacheDir, fao, cwd)
+							const solcCache = createCache(config.cacheDir, fao, cwd)
 
 							setCurrentTask(`Bundling ${fileName}...`)
 							const logger =
@@ -232,7 +236,7 @@ export default function Generate({ args, options }: Props) {
 											warn: () => undefined,
 										}
 									: console
-							const plugin = bundler(config as any, logger as Console, fao, solc, solcCache, 'tevm/contract')
+							const plugin = bundler(config, logger as Console, fao, solc, solcCache, 'tevm/contract')
 							const tsContent = await plugin.resolveTsModule(sourcePath, cwd, false, true)
 
 							// Ensure directory exists
