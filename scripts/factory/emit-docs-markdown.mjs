@@ -33,15 +33,21 @@ export function mdxToCleanMarkdown(raw, fallbackTitle) {
 }
 
 /**
- * Writes clean .md mirrors + llms.txt into `distDir` and — when present (Vocs v2 / Waku) —
- * into `<distDir>/public` so static hosts serving `dist/public` serve every route with HTTP 200.
+ * Writes clean .md mirrors + llms.txt into `distDir` and any active static output
+ * directories created by Vocs v2 / Waku (`<distDir>/public`) or Vercel Build Output API v3
+ * (`<docsDir>/.vercel/output/static` and `<root>/.vercel/output/static`).
  * @param {{ root?: string, distDir?: string }} [options]
  */
 export async function emitDocsMarkdown({ root = repositoryRoot, distDir = resolve(root, 'docs/node/dist') } = {}) {
 	const pagesDir = resolve(root, 'docs/node/pages')
 	const files = await listDocFiles(pagesDir)
-	const publicDir = resolve(distDir, 'public')
-	const targetDirs = existsSync(publicDir) ? [distDir, publicDir] : [distDir]
+	const candidates = [
+		distDir,
+		resolve(distDir, 'public'),
+		resolve(dirname(distDir), '.vercel/output/static'),
+		resolve(root, '.vercel/output/static'),
+	]
+	const targetDirs = [...new Set(candidates.filter((dir, index) => index === 0 || existsSync(dir)))]
 	const written = []
 
 	/** @param {string} route @param {string} content */

@@ -35,20 +35,25 @@ test('emitDocsMarkdown writes every llms.txt route as a real .md file', async ()
 	}
 })
 
-test('emitDocsMarkdown also populates dist/public for Vocs v2 / Waku static builds', async () => {
-	const outDir = await mkdtemp(join(tmpdir(), 'tevm-docs-v2-'))
+test('emitDocsMarkdown also populates dist/public and .vercel/output/static when present', async () => {
+	const workDir = await mkdtemp(join(tmpdir(), 'tevm-docs-v2-'))
+	const outDir = join(workDir, 'dist')
 	const publicDir = join(outDir, 'public')
+	const vercelStaticDir = join(workDir, '.vercel/output/static')
 	await mkdir(publicDir, { recursive: true })
+	await mkdir(vercelStaticDir, { recursive: true })
 	try {
 		const result = await emitDocsMarkdown({ distDir: outDir })
-		assert.equal(result.targetDirs.length, 2)
-		assert.equal(existsSync(join(publicDir, 'llms.txt')), true)
-		assert.equal(existsSync(join(publicDir, 'getting-started/overview.md')), true)
-		assert.equal(existsSync(join(publicDir, 'wiki/start-here.md')), true)
-		assert.equal(existsSync(join(publicDir, 'wiki/mythical-history.md')), true)
-		const llms = await readFile(join(publicDir, 'llms.txt'), 'utf8')
+		assert.equal(result.targetDirs.length, 3)
+		for (const dir of [outDir, publicDir, vercelStaticDir]) {
+			assert.equal(existsSync(join(dir, 'llms.txt')), true)
+			assert.equal(existsSync(join(dir, 'getting-started/overview.md')), true)
+			assert.equal(existsSync(join(dir, 'wiki/start-here.md')), true)
+			assert.equal(existsSync(join(dir, 'wiki/mythical-history.md')), true)
+		}
+		const llms = await readFile(join(vercelStaticDir, 'llms.txt'), 'utf8')
 		assert.match(llms, /Public Coding Factory/)
 	} finally {
-		await rm(outDir, { recursive: true, force: true })
+		await rm(workDir, { recursive: true, force: true })
 	}
 })

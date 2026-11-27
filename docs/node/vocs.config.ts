@@ -47,6 +47,7 @@ export default defineConfig({
 		{
 			text: 'Ecosystem',
 			items: [
+				{ text: 'Smithers Factory', link: 'https://smithers.sh/evmts/tevm' },
 				{ text: 'Viem', link: 'https://viem.sh/' },
 				{ text: 'ZEVM Docs', link: 'https://zevm.sh/docs' },
 				{ text: 'ZEVM GitHub', link: 'https://github.com/evmts/zevm' },
