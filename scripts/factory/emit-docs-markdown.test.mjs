@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { existsSync } from 'node:fs'
-import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
@@ -30,6 +30,24 @@ test('emitDocsMarkdown writes every llms.txt route as a real .md file', async ()
 		}
 		assert.equal(existsSync(join(outDir, 'wiki/start-here.md')), true)
 		assert.equal(existsSync(join(outDir, 'wiki/mythical-history.md')), true)
+	} finally {
+		await rm(outDir, { recursive: true, force: true })
+	}
+})
+
+test('emitDocsMarkdown also populates dist/public for Vocs v2 / Waku static builds', async () => {
+	const outDir = await mkdtemp(join(tmpdir(), 'tevm-docs-v2-'))
+	const publicDir = join(outDir, 'public')
+	await mkdir(publicDir, { recursive: true })
+	try {
+		const result = await emitDocsMarkdown({ distDir: outDir })
+		assert.equal(result.targetDirs.length, 2)
+		assert.equal(existsSync(join(publicDir, 'llms.txt')), true)
+		assert.equal(existsSync(join(publicDir, 'getting-started/overview.md')), true)
+		assert.equal(existsSync(join(publicDir, 'wiki/start-here.md')), true)
+		assert.equal(existsSync(join(publicDir, 'wiki/mythical-history.md')), true)
+		const llms = await readFile(join(publicDir, 'llms.txt'), 'utf8')
+		assert.match(llms, /Public Coding Factory/)
 	} finally {
 		await rm(outDir, { recursive: true, force: true })
 	}

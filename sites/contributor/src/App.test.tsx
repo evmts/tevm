@@ -23,16 +23,21 @@ describe('contributor portal', () => {
 		const viewerHtml = renderToStaticMarkup(<App initialRole="viewer" />)
 		expect(viewerHtml).toContain('data-audience="viewer"')
 		expect(viewerHtml).toContain('Public TEVM Factory on Smithers Cloud')
+		expect(viewerHtml).toContain('Open Workbench')
+		expect(viewerHtml).toContain('Public TODOs')
 		expect(viewerHtml).not.toContain('Maintainer Control Plane')
 
 		const contributorHtml = renderToStaticMarkup(<App initialRole="contributor" />)
 		expect(contributorHtml).toContain('data-audience="contributor"')
 		expect(contributorHtml).toContain('Welcome back, Contributor')
+		expect(contributorHtml).toContain('Attach MCP')
 		expect(contributorHtml).toContain('uphill check')
 
 		const maintainerHtml = renderToStaticMarkup(<App initialRole="maintainer" />)
 		expect(maintainerHtml).toContain('data-audience="maintainer"')
 		expect(maintainerHtml).toContain('Maintainer Control Plane')
+		expect(maintainerHtml).toContain('Cloud Flows')
+		expect(maintainerHtml).toContain('Review Changes')
 		expect(maintainerHtml).toContain('One-Time Sandbox Auth')
 	})
 

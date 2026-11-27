@@ -30,6 +30,10 @@ const ROLE_OPTIONS: Array<{ id: ViewerRole; label: string; hint: string }> = [
 
 const RoleBanner = ({ role }: { role: ViewerRole }) => {
 	const { trust, cloud, repository } = factoryData
+	const workbenchUrl = `${repository.smithersUrl}/workbench`
+	const flowsUrl = `${repository.smithersUrl}/flows`
+	const issuesUrl = `${repository.smithersUrl}/issues`
+	const changesUrl = `${repository.smithersUrl}/changes`
 	if (role === 'maintainer') {
 		return (
 			<Card className="tevm-role-banner tevm-role-banner--maintainer" aria-label="Maintainer control plane">
@@ -49,6 +53,15 @@ const RoleBanner = ({ role }: { role: ViewerRole }) => {
 						<Badge variant="outline">{trust.protectedPaths.length} protected paths</Badge>
 						<Badge variant="outline">cache: read + write</Badge>
 						<Badge variant="outline">one-time sandbox auth active</Badge>
+						<ExternalAction href={workbenchUrl} variant="outline" size="sm">
+							Open Workbench
+						</ExternalAction>
+						<ExternalAction href={flowsUrl} variant="ghost" size="sm">
+							Cloud Flows
+						</ExternalAction>
+						<ExternalAction href={changesUrl} variant="ghost" size="sm">
+							Review Changes
+						</ExternalAction>
 					</div>
 				</CardContent>
 			</Card>
@@ -73,6 +86,15 @@ const RoleBanner = ({ role }: { role: ViewerRole }) => {
 						<Badge variant="outline">public TODOs open</Badge>
 						<Badge variant="outline">untrusted runs encouraged</Badge>
 						<Badge variant="outline">read-only shared cache</Badge>
+						<ExternalAction href={workbenchUrl} variant="outline" size="sm">
+							Open Workbench
+						</ExternalAction>
+						<ExternalAction href={issuesUrl} variant="ghost" size="sm">
+							Public TODOs
+						</ExternalAction>
+						<Button asChild variant="ghost" size="sm">
+							<a href="#mcp">Attach MCP</a>
+						</Button>
 					</div>
 				</CardContent>
 			</Card>
@@ -90,6 +112,19 @@ const RoleBanner = ({ role }: { role: ViewerRole }) => {
 				</div>
 				<Badge variant="outline">public viewer</Badge>
 			</CardHeader>
+			<CardContent>
+				<div className="tevm-wiki-links">
+					<ExternalAction href={workbenchUrl} variant="outline" size="sm">
+						Open Workbench
+					</ExternalAction>
+					<ExternalAction href={issuesUrl} variant="ghost" size="sm">
+						Public TODOs
+					</ExternalAction>
+					<Button asChild variant="ghost" size="sm">
+						<a href="#wiki">Read Wiki</a>
+					</Button>
+				</div>
+			</CardContent>
 		</Card>
 	)
 }

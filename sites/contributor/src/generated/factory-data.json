@@ -333,9 +333,9 @@
 						"title": "Test ratio",
 						"description": "Maintain at least an 80% test-to-source line ratio in every workspace package, especially `@tevm/cli` and `@tevm/errors`.",
 						"kind": "count",
-						"score": 79,
+						"score": 80,
 						"weight": 2,
-						"passed": 8,
+						"passed": 11,
 						"total": 14
 					},
 					{
@@ -421,6 +421,24 @@
 		],
 		"opportunities": [
 			{
+				"category": "architecture",
+				"metric": "test-ratio",
+				"item": "@tevm/cli",
+				"items": 1,
+				"value": 17,
+				"target": 80,
+				"gain": 4
+			},
+			{
+				"category": "architecture",
+				"metric": "test-ratio",
+				"item": "@tevm/errors",
+				"items": 1,
+				"value": 55,
+				"target": 80,
+				"gain": 4
+			},
+			{
 				"category": "footprint",
 				"metric": "runtime-deps",
 				"item": "@tevm/cli",
@@ -455,24 +473,6 @@
 				"value": 43687,
 				"target": 35000,
 				"gain": 2
-			},
-			{
-				"category": "architecture",
-				"metric": "test-ratio",
-				"item": "@tevm/cli",
-				"items": 1,
-				"value": 15,
-				"target": 80,
-				"gain": 1
-			},
-			{
-				"category": "architecture",
-				"metric": "test-ratio",
-				"item": "@tevm/errors",
-				"items": 1,
-				"value": 52,
-				"target": 80,
-				"gain": 1
 			}
 		]
 	},
@@ -867,6 +867,38 @@
 				"label": "//:ci",
 				"title": "Complete CI",
 				"summary": "Build, cover, test, lint, document, validate Rust, and enforce factory and changeset policy across the monorepo."
+			},
+			{
+				"id": "trust-boundary",
+				"group": "checks",
+				"workspace": ".",
+				"label": "//factory:trustBoundaryTest",
+				"title": "Trust boundary audit",
+				"summary": "Verify build.smithers.sh read/write cache split and ensure untrusted PRs never receive write or publish secrets."
+			},
+			{
+				"id": "sandbox-auth",
+				"group": "checks",
+				"workspace": ".",
+				"label": "//factory:sandboxAuthTest",
+				"title": "One-time sandbox auth",
+				"summary": "Verify single-use HMAC-SHA256 sandbox credential minting, replay protection, and privilege-escalation refusal."
+			},
+			{
+				"id": "cloud-workflows",
+				"group": "checks",
+				"workspace": ".",
+				"label": "//factory:cloudWorkflowsTest",
+				"title": "Cloud workflow verifier",
+				"summary": "Verify every QuickJS-Realm cloud workflow, trigger binding, and personalized Smithers Home layout."
+			},
+			{
+				"id": "wiki-and-history",
+				"group": "checks",
+				"workspace": ".",
+				"label": "//factory:wikiAndHistoryTest",
+				"title": "Wiki and mythical history",
+				"summary": "Verify Obsidian wikilinks, coding-project catalog integrity, and Mythical History markdown rendering."
 			},
 			{
 				"id": "source-integrity",

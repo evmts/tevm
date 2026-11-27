@@ -120,9 +120,9 @@
 					"title": "Test ratio",
 					"description": "Maintain at least an 80% test-to-source line ratio in every workspace package, especially `@tevm/cli` and `@tevm/errors`.",
 					"kind": "count",
-					"score": 79,
+					"score": 80,
 					"weight": 2,
-					"passed": 8,
+					"passed": 11,
 					"total": 14
 				},
 				{
@@ -208,6 +208,24 @@
 	],
 	"opportunities": [
 		{
+			"category": "architecture",
+			"metric": "test-ratio",
+			"item": "@tevm/cli",
+			"items": 1,
+			"value": 17,
+			"target": 80,
+			"gain": 4
+		},
+		{
+			"category": "architecture",
+			"metric": "test-ratio",
+			"item": "@tevm/errors",
+			"items": 1,
+			"value": 55,
+			"target": 80,
+			"gain": 4
+		},
+		{
 			"category": "footprint",
 			"metric": "runtime-deps",
 			"item": "@tevm/cli",
@@ -242,24 +260,6 @@
 			"value": 43687,
 			"target": 35000,
 			"gain": 2
-		},
-		{
-			"category": "architecture",
-			"metric": "test-ratio",
-			"item": "@tevm/cli",
-			"items": 1,
-			"value": 15,
-			"target": 80,
-			"gain": 1
-		},
-		{
-			"category": "architecture",
-			"metric": "test-ratio",
-			"item": "@tevm/errors",
-			"items": 1,
-			"value": 52,
-			"target": 80,
-			"gain": 1
 		}
 	]
 }

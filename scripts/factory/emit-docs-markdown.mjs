@@ -8,6 +8,7 @@
  * Markdown so Smithers Cloud's in-app Docs tab and `/docs evmts/tevm` search
  * render every TEVM page natively.
  */
+import { existsSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -32,22 +33,33 @@ export function mdxToCleanMarkdown(raw, fallbackTitle) {
 }
 
 /**
- * Writes clean .md mirrors + llms.txt into `distDir`.
+ * Writes clean .md mirrors + llms.txt into `distDir` and — when present (Vocs v2 / Waku) —
+ * into `<distDir>/public` so static hosts serving `dist/public` serve every route with HTTP 200.
  * @param {{ root?: string, distDir?: string }} [options]
  */
 export async function emitDocsMarkdown({ root = repositoryRoot, distDir = resolve(root, 'docs/node/dist') } = {}) {
 	const pagesDir = resolve(root, 'docs/node/pages')
 	const files = await listDocFiles(pagesDir)
+	const publicDir = resolve(distDir, 'public')
+	const targetDirs = existsSync(publicDir) ? [distDir, publicDir] : [distDir]
 	const written = []
+
+	/** @param {string} route @param {string} content */
+	async function writeToTargets(route, content) {
+		const rel = route.replace(/^\//, '')
+		for (const dir of targetDirs) {
+			const target = resolve(dir, rel)
+			await mkdir(dirname(target), { recursive: true })
+			await writeFile(target, content)
+		}
+		written.push(route)
+	}
 
 	for (const file of files) {
 		const route = pageMarkdownRoute(pagesDir, file)
-		const target = resolve(distDir, route.replace(/^\//, ''))
 		const raw = await readFile(file, 'utf8')
 		const fallback = route === '/index.md' ? 'TEVM Node' : (route.replace(/\.md$/, '').split('/').at(-1) ?? 'Guide')
-		await mkdir(dirname(target), { recursive: true })
-		await writeFile(target, mdxToCleanMarkdown(raw, fallback))
-		written.push(route)
+		await writeToTargets(route, mdxToCleanMarkdown(raw, fallback))
 	}
 
 	// Mirror Obsidian Engineering Wiki pages and Mythical History into /wiki/*.md
@@ -55,27 +67,20 @@ export async function emitDocsMarkdown({ root = repositoryRoot, distDir = resolv
 	for (const page of wikiCatalog.pages ?? []) {
 		const src = resolve(root, page.document)
 		const route = `/wiki/${page.id}.md`
-		const target = resolve(distDir, route.replace(/^\//, ''))
 		const raw = await readFile(src, 'utf8')
-		await mkdir(dirname(target), { recursive: true })
-		await writeFile(target, mdxToCleanMarkdown(raw, page.title))
-		written.push(route)
+		await writeToTargets(route, mdxToCleanMarkdown(raw, page.title))
 	}
 
 	const mythicalSrc = resolve(root, '.smithers/history/MYTHICAL.md')
-	const mythicalRoute = '/wiki/mythical-history.md'
-	await mkdir(dirname(resolve(distDir, 'wiki/mythical-history.md')), { recursive: true })
-	await writeFile(resolve(distDir, 'wiki/mythical-history.md'), await readFile(mythicalSrc, 'utf8'))
-	written.push(mythicalRoute)
+	await writeToTargets('/wiki/mythical-history.md', await readFile(mythicalSrc, 'utf8'))
 
 	const llms = await renderLlmsTxt(root)
-	await writeFile(resolve(distDir, 'llms.txt'), llms)
-	written.push('/llms.txt')
+	await writeToTargets('/llms.txt', llms)
 
-	return { count: written.length, routes: written }
+	return { count: written.length, routes: written, targetDirs }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
 	const result = await emitDocsMarkdown()
-	console.log(`emitted ${result.count} markdown docs and llms.txt into docs/node/dist`)
+	console.log(`emitted ${result.count} markdown docs and llms.txt into ${result.targetDirs.join(', ')}`)
 }

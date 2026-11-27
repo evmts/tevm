@@ -322,20 +322,20 @@ quality:
 architecture:
   test-ratio:
     "*": { target: 80 }
-    "@tevm/actions": { baseline: 63 }
-    "@tevm/cli": { baseline: 15 }
+    "@tevm/actions": { baseline: 129 }
+    "@tevm/cli": { baseline: 17 }
     "@tevm/common": { baseline: 725 }
-    "@tevm/contract": { baseline: 55 }
-    "@tevm/errors": { baseline: 52 }
+    "@tevm/contract": { baseline: 70 }
+    "@tevm/errors": { baseline: 55 }
     "@tevm/http-client": { baseline: 185 }
     "@tevm/jsonrpc": { baseline: 362 }
-    "@tevm/mcp": { baseline: 76 }
+    "@tevm/mcp": { baseline: 91 }
     "@tevm/memory-client": { baseline: 194 }
     "@tevm/node": { baseline: 681 }
     "@tevm/predeploys": { baseline: 140 }
     "@tevm/server": { baseline: 144 }
     "@tevm/utils": { baseline: 128 }
-    "@tevm/viem": { baseline: 65 }
+    "@tevm/viem": { baseline: 180 }
   tevm-facade-exports:
     "*": { baseline: pass }
   docs-links:

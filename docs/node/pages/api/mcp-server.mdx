@@ -7,6 +7,42 @@ import { McpLoopDiagram, UnderTheHood } from '../../components'
 
 # MCP server for AI agents
 
+TEVM ships **two complementary MCP surfaces** for AI coding agents:
+
+1. **Public Smithers Cloud Coding Factory MCP (`https://smithers.sh/evmts/tevm/mcp`)** — authenticated over OAuth 2.1 + PKCE so Claude Code, Codex, Antigravity, and Cursor can read repo state, create artifacts, file TODOs and issues, open Changes/PRs, and manage stacks of changesets directly against the public TEVM coding factory.
+2. **Local EVM Execution MCP (`@tevm/mcp`)** — stdio server exposing Tevm's native ZEVM engine and bundled `solc` compiler for isolated local/forked EVM sessions, Solidity compilation, contract calls, and opcode tracing.
+
+## Public Smithers Cloud Factory MCP
+
+Connect any OAuth 2.1 MCP client directly to TEVM's hosted coding factory at `https://smithers.sh/evmts/tevm/mcp`:
+
+```sh
+# Claude Code
+claude mcp add --transport http tevm-smithers https://smithers.sh/evmts/tevm/mcp
+
+# Print ready-to-paste setup snippets for Claude Code, Codex, Antigravity, and Cursor
+node scripts/factory/sandbox-auth.mjs mcp-guide
+```
+
+### One-time sandbox authentication
+
+Sandboxed agents running inside Smithers-controlled sandboxes or maintainer lanes use single-use, TTL-bounded HMAC-SHA256 credentials (never passed via command-line flags):
+
+```sh
+node scripts/factory/sandbox-auth.mjs mint \
+  --subject agent-sandbox \
+  --actor roninjin10 \
+  --trust trusted-sandbox \
+  --scope cache:read,cache:write,mcp:read,mcp:write \
+  --ttl 600
+```
+
+Untrusted contributor runs are encouraged and receive read-only shared cache hits on `https://build.smithers.sh`, while write cache tokens, gate attestation, and release secrets remain strictly isolated to trusted sandboxes and maintainers.
+
+---
+
+## Local EVM Execution MCP (`@tevm/mcp`)
+
 `@tevm/mcp` exposes Tevm's native ZEVM engine and bundled `solc` compiler over the [Model Context Protocol (MCP)](https://modelcontextprotocol.io) stdio transport. An AI coding agent can spin up isolated local or forked chains, compile Solidity, deploy contracts, send transactions, inspect storage, and trace reverts without touching your host environment or external dev nodes.
 
 <McpLoopDiagram />
