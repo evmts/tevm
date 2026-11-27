@@ -1,2 +1,0 @@
-export function instrumentAst(astNode: import("solc-typed-ast").SourceUnit, options: import("./InstrumentAstOptions.js").InstrumentAstOptions, logger: import("@tevm/logger").Logger): import("solc-typed-ast").SourceUnit;
-//# sourceMappingURL=instrumentAst.d.ts.map

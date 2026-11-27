@@ -1,1 +1,0 @@
-{"version":3,"file":"loadAbi.d.ts","sourceRoot":"","sources":["../../src/loadAbi.js"],"names":[],"mappings":"AAYO,0FAPJ;IAA+C,OAAO,EAA9C,OAAO,aAAa,EAAE,OAAO;IACE,MAAM,EAArC,OAAO,MAAM,EAAE,MAAM;IACO,WAAW,EAAvC,MAAM,GAAG,SAAS;IACD,aAAa,EAA9B,OAAO;IACqB,eAAe,EAA3C,MAAM,GAAG,SAAS;CAC1B,GAAU,UAAU,CAAC,cAAc,kBAAkB,EAAE,QAAQ,CAAC,CAyBlE"}

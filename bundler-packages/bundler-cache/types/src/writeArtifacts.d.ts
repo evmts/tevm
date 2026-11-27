@@ -1,2 +1,0 @@
-export function writeArtifacts(cwd: string, cacheDir: string, entryModuleId: string, resolvedArtifacts: import("@tevm/compiler").ResolvedArtifacts, fs: import("./types.js").FileAccessObject, compileFingerprint?: string): Promise<string>;
-//# sourceMappingURL=writeArtifacts.d.ts.map
