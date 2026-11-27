@@ -1,5 +1,11 @@
 # @tevm/contract
 
+## 1.0.0-rc.155
+
+### Patch Changes
+
+- @tevm/node@1.0.0-rc.155
+
 ## 1.0.0-rc.154
 
 ### Major Changes

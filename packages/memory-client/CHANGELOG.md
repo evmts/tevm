@@ -1,5 +1,12 @@
 # @tevm/client
 
+## 1.0.0-rc.155
+
+### Patch Changes
+
+- @tevm/actions@1.0.0-rc.155
+- @tevm/node@1.0.0-rc.155
+
 ## 1.0.0-rc.154
 
 ### Major Changes

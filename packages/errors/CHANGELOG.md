@@ -1,5 +1,11 @@
 # @tevm/errors
 
+## 1.0.0-rc.155
+
+### Patch Changes
+
+- 4fe6241: Fix `ForkError` plain-object cause wrapping so constructing `ForkError` with an `{ code, message }` cause no longer throws `TypeError: Cannot construct BaseError instances directly`, tighten `invariant` condition typing from `any` to `unknown`, remove explicit `any` and unused `@ts-expect-error` directives across `@tevm/cli`, and fix forked editor script brace generation in `generateTemplates`.
+
 ## 1.0.0-rc.154
 
 ### Major Changes

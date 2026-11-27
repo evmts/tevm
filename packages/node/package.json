@@ -1,6 +1,6 @@
 {
 	"name": "@tevm/node",
-	"version": "1.0.0-rc.154",
+	"version": "1.0.0-rc.155",
 	"private": false,
 	"description": "Serialized JSON-RPC engine over ZEVM: native Node-API addon by default, pluggable WASM backend for browsers",
 	"keywords": [
