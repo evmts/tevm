@@ -207,9 +207,8 @@ const wikiAndHistoryTest = S.Shell.Test({
 })
 
 const llmsTxtLint = S.Shell.Test({
-	bin: S.Runtime.bin,
-	args: ['scripts/factory/generate-llms-txt.mjs'],
-	data: [docsLlmsInputs, scripts],
+	command: 'node scripts/factory/generate-llms-txt.mjs && node --test scripts/factory/emit-docs-markdown.test.mjs',
+	data: [docsLlmsInputs, smithersCloudInputs, scripts],
 })
 
 const llmsTxtWrite = S.Shell.Diff({

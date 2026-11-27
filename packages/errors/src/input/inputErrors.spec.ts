@@ -76,7 +76,7 @@ const assertInputErrorContract = (
 	expect(error.metaMessages).toEqual([metaHint])
 	expect(error.cause).toBe(rootCause)
 	expect(error.walk()).toBe(rootCause)
-	expect(error.walk((candidate) => candidate instanceof TypeError)).toBe(rootCause)
+	expect(error.walk((candidate: unknown) => candidate instanceof TypeError)).toBe(rootCause)
 	expect(error.message).toContain(sampleMessage)
 	expect(error.message).toContain(metaHint)
 	expect(error.message).toContain('https://tevm.sh')
@@ -374,7 +374,7 @@ describe('Input parameter validation error classes (-32602)', () => {
 
 	describe('Cross-cutting input error edge cases', () => {
 		it('supports custom docsBaseUrl and docsPath overrides on subclasses', () => {
-			const error = new InvalidAddressLikeOverrideCheck()
+			const error = createInvalidToOverrideError()
 			expect(error.code).toBe(-32602)
 			expect(error.message).toContain('https://node.tevm.sh/api/json-rpc')
 		})
@@ -393,7 +393,7 @@ describe('Input parameter validation error classes (-32602)', () => {
 	})
 })
 
-function InvalidAddressLikeOverrideCheck() {
+function createInvalidToOverrideError() {
 	return new InvalidToError('Invalid recipient address', {
 		docsBaseUrl: 'https://node.tevm.sh',
 		docsPath: '/api/json-rpc',

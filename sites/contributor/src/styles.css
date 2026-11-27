@@ -895,6 +895,23 @@ code {
 }
 
 /* Personalized Role Switcher & Control Plane Banners */
+.tevm-shell .sui-card-header {
+	flex-wrap: wrap;
+	gap: 10px 14px;
+	align-items: flex-start;
+}
+
+.tevm-shell .sui-card-header > div {
+	flex: 1 1 220px;
+	min-width: 0;
+}
+
+.tevm-shell .sui-card-header .sui-badge,
+.tevm-shell .sui-card-header .sui-status-pill {
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+
 .tevm-role-switcher {
 	display: inline-flex;
 	align-items: center;

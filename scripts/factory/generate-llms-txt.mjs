@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
  * Generates docs/node/public/llms.txt from docs/node/pages/ and .smithers/coding-project.json
- * so https://node.tevm.sh/llms.txt powers Smithers Cloud's Docs tab and MCP docs_list/docs_read.
+ * using canonical `.md` routes on https://node.tevm.sh so Smithers Cloud's in-app Docs tab
+ * (which only fetches same-origin Markdown files listed in llms.txt) renders every TEVM doc,
+ * Engineering Wiki page, and Mythical History chapter natively.
  */
 import { existsSync } from 'node:fs'
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
@@ -9,22 +11,30 @@ import { dirname, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { assert, readJson, repositoryRoot } from './lib.mjs'
 
-const DOCS_ORIGIN = 'https://node.tevm.sh'
+export const DOCS_ORIGIN = 'https://node.tevm.sh'
 const SMITHERS_REPO = 'https://smithers.sh/evmts/tevm'
-const PAGES_ROOT = resolve(repositoryRoot, 'docs/node/pages')
 const OUTPUT_PATH = resolve(repositoryRoot, 'docs/node/public/llms.txt')
 
-async function listMdx(dir) {
+/**
+ * Lists all .md/.mdx files under a directory sorted deterministically.
+ * @param {string} dir
+ */
+export async function listDocFiles(dir) {
 	const out = []
 	for (const entry of await readdir(dir, { withFileTypes: true })) {
 		const full = resolve(dir, entry.name)
-		if (entry.isDirectory()) out.push(...(await listMdx(full)))
+		if (entry.isDirectory()) out.push(...(await listDocFiles(full)))
 		else if (entry.name.endsWith('.mdx') || entry.name.endsWith('.md')) out.push(full)
 	}
 	return out.sort()
 }
 
-function extractTitle(content, fallback) {
+/**
+ * Extracts a human-readable title from YAML frontmatter or the first Markdown H1.
+ * @param {string} content
+ * @param {string} fallback
+ */
+export function extractDocTitle(content, fallback) {
 	const fmTitle = /^title:\s*["']?([^"'\n]+)["']?/m.exec(content)?.[1]?.trim()
 	if (fmTitle) return fmTitle
 	const h1 = /^#\s+(.+)$/m.exec(content)?.[1]?.trim()
@@ -32,13 +42,27 @@ function extractTitle(content, fallback) {
 	return fallback
 }
 
-function pageRoute(file) {
-	const rel = relative(PAGES_ROOT, file)
+/**
+ * Extracts an optional one-line description from YAML frontmatter.
+ * @param {string} content
+ */
+export function extractDocDescription(content) {
+	const fmDesc = /^description:\s*["']?([^"'\n]+)["']?/m.exec(content)?.[1]?.trim()
+	return fmDesc || ''
+}
+
+/**
+ * Maps a docs/node/pages file to its served .md path (never bare "/").
+ * @param {string} pagesRoot
+ * @param {string} file
+ */
+export function pageMarkdownRoute(pagesRoot, file) {
+	const rel = relative(pagesRoot, file)
 		.replaceAll('\\', '/')
 		.replace(/\.(?:mdx|md)$/, '')
-	if (rel === 'index') return '/'
-	if (rel.endsWith('/index')) return `/${rel.slice(0, -'/index'.length)}`
-	return `/${rel}`
+	if (rel === 'index') return '/index.md'
+	if (rel.endsWith('/index')) return `/${rel.slice(0, -'/index'.length)}.md`
+	return `/${rel}.md`
 }
 
 const sectionTitles = {
@@ -52,24 +76,26 @@ const sectionTitles = {
 }
 
 /**
- * Renders deterministic llms.txt markdown index.
+ * Renders deterministic llms.txt markdown index with same-origin .md links.
  * @param {string} [root]
  */
 export async function renderLlmsTxt(root = repositoryRoot) {
 	const pagesDir = resolve(root, 'docs/node/pages')
-	const files = await listMdx(pagesDir)
+	const files = await listDocFiles(pagesDir)
 	const wikiCatalog = await readJson(resolve(root, '.smithers/coding-project.json'))
 
-	/** @type {Map<string, Array<{ title: string, url: string }>>} */
+	/** @type {Map<string, Array<{ title: string, url: string, description: string }>>} */
 	const grouped = new Map()
 	for (const file of files) {
 		const rel = relative(pagesDir, file).replaceAll('\\', '/')
 		const top = rel.includes('/') ? rel.split('/')[0] : 'introduction'
 		const content = await readFile(file, 'utf8')
-		const route = pageRoute(file)
-		const title = extractTitle(content, route === '/' ? 'TEVM Node' : (route.split('/').at(-1) ?? 'Guide'))
+		const mdRoute = pageMarkdownRoute(pagesDir, file)
+		const fallback = mdRoute === '/index.md' ? 'TEVM Node' : (mdRoute.replace(/\.md$/, '').split('/').at(-1) ?? 'Guide')
+		const title = extractDocTitle(content, fallback)
+		const description = extractDocDescription(content)
 		const list = grouped.get(top) ?? []
-		list.push({ title, url: `${DOCS_ORIGIN}${route}` })
+		list.push({ title, url: `${DOCS_ORIGIN}${mdRoute}`, description })
 		grouped.set(top, list)
 	}
 
@@ -80,7 +106,7 @@ export async function renderLlmsTxt(root = repositoryRoot) {
 		'',
 		`- Public Coding Factory: ${SMITHERS_REPO}`,
 		`- Authenticated MCP Endpoint: ${SMITHERS_REPO}/mcp`,
-		`- Shared Build Object Store: https://build.smithers.sh`,
+		'- Shared Build Object Store: https://build.smithers.sh',
 		'- GitHub Mirror: https://github.com/evmts/tevm',
 		'',
 	]
@@ -91,18 +117,18 @@ export async function renderLlmsTxt(root = repositoryRoot) {
 		if (!entries?.length) continue
 		lines.push(`## ${sectionTitles[key] ?? key}`, '')
 		for (const item of entries) {
-			lines.push(`- [${item.title}](${item.url})`)
+			lines.push(
+				item.description ? `- [${item.title}](${item.url}): ${item.description}` : `- [${item.title}](${item.url})`,
+			)
 		}
 		lines.push('')
 	}
 
 	lines.push('## Engineering Wiki and Mythical History', '')
 	for (const page of wikiCatalog.pages ?? []) {
-		lines.push(`- [${page.title}](${SMITHERS_REPO}/blob/main/${page.document}): ${page.purpose}`)
+		lines.push(`- [${page.title}](${DOCS_ORIGIN}/wiki/${page.id}.md): ${page.purpose}`)
 	}
-	lines.push(
-		`- [Mythical History](${SMITHERS_REPO}/blob/main/.smithers/history/MYTHICAL.md): Clean from-scratch epic timeline of TEVM.`,
-	)
+	lines.push(`- [Mythical History](${DOCS_ORIGIN}/wiki/mythical-history.md): Clean from-scratch epic timeline of TEVM.`)
 	lines.push('')
 
 	return `${lines.join('\n').trimEnd()}\n`

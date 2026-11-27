@@ -14,12 +14,12 @@ type Props = {
 }
 
 type IndicatorProps = {
-	isSelected: boolean
+	isSelected?: boolean
 }
 
 type ItemProps = {
 	label: string
-	isSelected: boolean
+	isSelected?: boolean
 }
 
 const IndicatorComponent = ({ isSelected }: IndicatorProps) => {

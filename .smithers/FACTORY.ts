@@ -478,11 +478,11 @@ export const homeDeclaration = {
 					actions: [
 						{ label: 'Get started', url: 'https://node.tevm.sh/getting-started/overview' },
 						{ label: 'Docs', url: 'https://node.tevm.sh' },
-						{ label: 'Browse code', url: 'https://smithers.sh/evmts/tevm/tree/main' },
+						{ label: 'Browse on GitHub', url: 'https://github.com/evmts/tevm' },
 					],
 					announcement: {
-						label: 'Public Smithers Cloud coding factory with live MCP, open TODOs, and Lighthouse backpressure',
-						url: 'https://smithers.sh/evmts/tevm',
+						label: 'Public Smithers Cloud factory with MCP and Uphill audit',
+						url: 'https://smithers.sh/evmts/tevm/workbench',
 					},
 				},
 				{
@@ -559,7 +559,7 @@ export const homeDeclaration = {
 					],
 					more: {
 						label: 'Browse all packages',
-						url: 'https://smithers.sh/evmts/tevm/tree/main/packages',
+						url: 'https://github.com/evmts/tevm/tree/main/packages',
 					},
 				},
 				{
@@ -588,19 +588,19 @@ export const homeDeclaration = {
 							label: 'Wiki + History',
 							title: 'Engineering Wiki & Mythical History',
 							text: 'Obsidian-compatible architecture wiki and clean from-scratch epic timeline.',
-							url: 'https://smithers.sh/evmts/tevm/blob/main/.smithers/wiki/README.md',
+							url: 'https://github.com/evmts/tevm/blob/main/.smithers/wiki/README.md',
 						},
 						{
 							label: 'Backpressure',
 							title: 'Lighthouse Audit Report',
 							text: 'Continuous Uphill scoring across Footprint, Quality, Architecture, and Factory Health.',
-							url: 'https://smithers.sh/evmts/tevm/blob/main/.agents/uphill/rules.md',
+							url: 'https://github.com/evmts/tevm/blob/main/.agents/uphill/rules.md',
 						},
 						{
 							label: 'BYOA MCP',
 							title: 'Public Authenticated MCP Server',
-							text: 'Attach Claude Code, Codex, or Antigravity via OAuth 2.1 to create issues, TODOs, and PRs.',
-							url: 'https://smithers.sh/evmts/tevm/mcp',
+							text: 'Connect Claude Code, Codex, or Antigravity to smithers.sh/evmts/tevm/mcp via OAuth 2.1.',
+							url: 'https://node.tevm.sh/api/mcp-server',
 						},
 					],
 				},
@@ -633,7 +633,9 @@ export const homeDeclaration = {
 						{ label: 'Smithers Cloud', url: 'https://smithers.sh/evmts/tevm' },
 						{ label: 'GitHub mirror', url: 'https://github.com/evmts/tevm' },
 						{ label: 'Node documentation', url: 'https://node.tevm.sh' },
-						{ label: 'MCP endpoint', url: 'https://smithers.sh/evmts/tevm/mcp' },
+						{ label: 'MCP setup guide', url: 'https://node.tevm.sh/api/mcp-server' },
+						{ label: 'Engineering wiki', url: 'https://github.com/evmts/tevm/blob/main/.smithers/wiki/README.md' },
+						{ label: 'Mythical history', url: 'https://github.com/evmts/tevm/blob/main/.smithers/history/MYTHICAL.md' },
 						{ label: 'Telegram', url: 'https://t.me/+ANThR9bHDLAwMjUx' },
 						{ label: 'X / Twitter', url: 'https://x.com/tevmtools' },
 					],

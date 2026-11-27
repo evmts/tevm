@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vocs dev",
     "build": "bun build:app",
-    "build:app": "vocs build",
+    "build:app": "vocs build && node ../../scripts/factory/emit-docs-markdown.mjs",
     "preview": "vocs preview",
     "test": "vitest"
   },

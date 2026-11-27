@@ -114,7 +114,7 @@ describe('@tevm/errors wire contract and BaseError invariants', () => {
 			expect(err.message).toContain('domain failure')
 			expect(err.message).toContain('native zevm cause')
 			expect(err.walk()).toBe(rootCause)
-			expect(err.walk((e) => e === err)).toBe(err)
+			expect(err.walk((e: unknown) => e === err)).toBe(err)
 		}
 	})
 
