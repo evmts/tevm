@@ -1,0 +1,2 @@
+export function tolerantSignatureLookup(inner: import("@shazow/whatsabi").loaders.SignatureLookup, onError?: (error: unknown) => void): import("@shazow/whatsabi").loaders.SignatureLookup;
+//# sourceMappingURL=tolerantSignatureLookup.d.ts.map

@@ -1,0 +1,2 @@
+export function createCompiler(options?: import("./CreateCompilerOptions.js").CreateCompilerOptions): import("./CreateCompilerResult.js").CreateCompilerResult;
+//# sourceMappingURL=createCompiler.d.ts.map

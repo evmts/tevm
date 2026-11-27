@@ -1,5 +1,7 @@
 # TEVM contributor and coding-agent contract
 
+Follow the [Uphill rules](.agents/uphill/rules.md), which `uphill rules --write` rewrites from each metric's description: @.agents/uphill/rules.md
+
 This file is the short, enforceable repository contract. `CONTRIBUTING.md` explains the contributor workflow; `CLAUDE.md` carries deeper TEVM domain context. More specific `AGENTS.md` files may narrow these rules for their subtree.
 
 ## Authority and scope

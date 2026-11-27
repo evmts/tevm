@@ -1,0 +1,2 @@
+export function extractCompatibleSolcVersions(sourceOrSpecifiers: string | string[], logger: import("@tevm/logger").Logger): (keyof import("@tevm/solc").Releases)[];
+//# sourceMappingURL=extractCompatibleSolcVersions.d.ts.map

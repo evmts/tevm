@@ -1,0 +1,2 @@
+export function generateDtsBody(artifacts: import("@tevm/compiler").Artifacts, includeBytecode: boolean): import("effect/Effect").Effect<string, never, never>;
+//# sourceMappingURL=generateTevmBodyDts.d.ts.map

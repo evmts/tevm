@@ -144,3 +144,6 @@ g/
 # Transient release manifest backup and ownership lock
 /.changeset/.publish-prep-backup.json
 /.changeset/.publish-prep-lock/
+
+# Uphill generated reports
+.uphill/

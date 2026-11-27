@@ -1,0 +1,2 @@
+export function readArtifacts(cacheDir: string, fs: import("./types.js").FileAccessObject, cwd: string, entryModuleId: string, compileFingerprint?: string): Promise<import("@tevm/compiler").ResolvedArtifacts | undefined>;
+//# sourceMappingURL=readArtifacts.d.ts.map

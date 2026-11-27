@@ -1,0 +1,2 @@
+export function validateFiles(filePaths: string[], language: import("@tevm/solc").SolcLanguage | undefined, logger: import("@tevm/logger").Logger): string[];
+//# sourceMappingURL=validateFiles.d.ts.map

@@ -1,0 +1,2 @@
+export function validateShadowOptions(astSourceNodes: import("solc-typed-ast").SourceUnit[], options: import("../CompileSourceWithShadowOptions.js").CompileSourceWithShadowOptions, sourceLanguage: import("@tevm/solc").SolcLanguage, logger: import("@tevm/logger").Logger): import("./ValidatedShadowOptions.js").ValidatedShadowOptions;
+//# sourceMappingURL=validateShadowOptions.d.ts.map

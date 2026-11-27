@@ -1,0 +1,61 @@
+# Continuous metrics and hill climbing for evmts/tevm.
+# Scripts run from the repository root and append metric lines to $UPHILL_METRICS.
+
+footprint:
+  run: bun .agents/uphill/metrics/footprint.ts
+  title: Footprint
+  description: Keep every @tevm/* package lean, modular, and minimal in runtime dependencies.
+  # Gzipped source bytes per published workspace package.
+  package-source-bytes:
+    poor: 40kB
+    description: Keep each @tevm/* package's source footprint lean; split heavy adapters and avoid bundling dead code.
+  # Source lines per production module (TigerStyle modularity: target <= 250 lines).
+  module-lines:
+    poor: 500
+    description: Keep every production source module under 250 lines with one exported concept per file (AGENTS.md).
+  # Direct runtime dependency count per workspace package.
+  runtime-deps:
+    poor: 10
+    description: Keep direct runtime dependencies minimal (<= 3 per core package); avoid pulling heavy libraries into core packages.
+
+quality:
+  run: bun .agents/uphill/metrics/quality.ts
+  title: Quality
+  description: Enforce strict typing, JSDoc discipline, zero stray console calls, and TigerStyle function limits across packages.
+  # Disallow explicit `any` annotations and casts in production code.
+  explicit-any:
+    weight: 2
+    description: "Never use `: any` or `as any` in production source; use explicit types or `unknown` with narrowing."
+  # Disallow TypeScript suppression directives in production code.
+  ts-suppressions:
+    weight: 2
+    description: Eliminate `@ts-ignore`, `@ts-expect-error`, and `@ts-nocheck` directives from production source.
+  # Disallow stray console.log/debug calls in library packages (use @tevm/logger instead).
+  console-calls:
+    description: Never leave `console.log` or `console.debug` in library packages under `packages/`; route diagnostics through the logger.
+  # Disallow unresolved TODO/FIXME/HACK/XXX markers in production code.
+  todo-fixme:
+    description: Resolve or convert `TODO`/`FIXME`/`HACK` comments into tracked issues or explained workarounds with removal conditions (AGENTS.md).
+  # TigerStyle: every function body should fit on one screen (<= 70 lines).
+  function-length:
+    description: Keep functions at or under 70 lines (TigerStyle); decompose long handlers and parsers into focused helpers.
+  # AGENTS.md: exported runtime concepts under packages/ must carry JSDoc documentation.
+  jsdoc-exports:
+    description: Document every exported runtime symbol in `packages/*/src/` with complete JSDoc (AGENTS.md).
+
+architecture:
+  run: bun .agents/uphill/metrics/architecture.ts
+  title: Architecture & Testing
+  description: Maintain high test depth per package, synchronized `tevm` facade exports, and valid documentation links.
+  # Test-to-source line percentage per workspace package (ambitious target: >= 80%).
+  test-ratio:
+    better: higher
+    poor: 25
+    weight: 2
+    description: Maintain at least an 80% test-to-source line ratio in every workspace package, especially `@tevm/cli` and `@tevm/errors`.
+  # Every subpath export in tevm/package.json must resolve to an existing file in tevm/.
+  tevm-facade-exports:
+    description: Keep every subpath in `tevm/package.json` synchronized with its facade directory and barrel exports (AGENTS.md).
+  # Verify local Markdown links in top-level contributor docs resolve cleanly.
+  docs-links:
+    description: Keep all relative Markdown links in `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, and `CLAUDE.md` valid.

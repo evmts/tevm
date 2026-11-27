@@ -1,0 +1,2 @@
+export function writeArtifactsSync(cwd: string, cacheDir: string, entryModuleId: string, resolvedArtifacts: import("@tevm/compiler").ResolvedArtifacts, fs: import("./types.js").FileAccessObject, compileFingerprint?: string): string;
+//# sourceMappingURL=writeArtifactsSync.d.ts.map

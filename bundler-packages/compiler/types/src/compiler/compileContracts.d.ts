@@ -1,0 +1,2 @@
+export function compileContract<TIncludeAsts, TIncludeBytecode>(filePath: string, basedir: string, config: import("@tevm/config").ResolvedCompilerConfig, includeAst: TIncludeAsts, includeBytecode: TIncludeBytecode, fao: import("../types.js").FileAccessObject, logger: import("../types.js").Logger, solc: any): Promise<import("../types.js").CompiledContracts<TIncludeAsts>>;
+//# sourceMappingURL=compileContracts.d.ts.map

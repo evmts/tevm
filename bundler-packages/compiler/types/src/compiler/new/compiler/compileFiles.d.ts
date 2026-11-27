@@ -1,0 +1,2 @@
+export function compileFiles<TLanguage extends import("@tevm/solc").SolcLanguage, TCompilationOutput extends import("./CompilationOutputOption.js").CompilationOutputOption[] | undefined, TFilePaths extends string[]>(filePaths: TFilePaths, options?: import("./CompileBaseOptions.js").CompileBaseOptions<TLanguage, TCompilationOutput>): Promise<import("./CompileFilesResult.js").CompileFilesResult<TCompilationOutput, TFilePaths>>;
+//# sourceMappingURL=compileFiles.d.ts.map

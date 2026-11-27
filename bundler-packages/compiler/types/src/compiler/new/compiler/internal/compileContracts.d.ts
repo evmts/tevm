@@ -1,0 +1,4 @@
+export function compileContracts<TLanguage extends import("@tevm/solc").SolcLanguage, TCompilationOutput extends import("../CompilationOutputOption.js").CompilationOutputOption[] | undefined>(solc: import("@tevm/solc").Solc, sources: {
+    [sourcePath: string]: TLanguage extends "SolidityAST" ? import("@tevm/solc").SolcAst : string;
+}, options: import("./ValidatedCompileBaseOptions.js").ValidatedCompileBaseOptions<TLanguage, TCompilationOutput>, logger: import("@tevm/logger").Logger): import("./CompileContractsResult.js").CompileContractsResult<TCompilationOutput>;
+//# sourceMappingURL=compileContracts.d.ts.map

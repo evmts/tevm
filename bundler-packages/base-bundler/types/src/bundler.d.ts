@@ -1,0 +1,2 @@
+export function bundler(config: import("@tevm/config").ResolvedCompilerConfig, logger: import("./types.js").Logger, fao: import("./types.js").FileAccessObject, solc: import("@tevm/solc").Solc, cache: import("@tevm/bundler-cache").Cache, contractPackage?: "tevm/contract" | "@tevm/contract" | undefined): ReturnType<import("./types.js").Bundler>;
+//# sourceMappingURL=bundler.d.ts.map

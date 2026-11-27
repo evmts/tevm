@@ -1,0 +1,3 @@
+export function moduleFactory(absolutePath: string, rawCode: string, remappings: Record<string, string>, libs: ReadonlyArray<string>, fao: import("./types.js").FileAccessObject, sync: boolean): import("effect/Effect").Effect<Map<string, import("./types.js").ModuleInfo>, ModuleFactoryError, never>;
+export type ModuleFactoryError = import("./resolveImports.js").ResolveImportsError | import("./utils/safeFao.js").ReadFileError | import("./utils/resolveImportPath.js").CouldNotResolveImportError | import("./utils/updatePragma.js").NoPragmaFoundError;
+//# sourceMappingURL=moduleFactory.d.ts.map

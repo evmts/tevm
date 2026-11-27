@@ -1,0 +1,1 @@
+{"version":3,"file":"bundler.d.ts","sourceRoot":"","sources":["../../src/bundler.js"],"names":[],"mappings":"AAwFO,gCAvEI,OAAO,cAAc,EAAE,sBAAsB,UAC7C,OAAO,YAAY,EAAE,MAAM,OAC3B,OAAO,YAAY,EAAE,gBAAgB,QACrC,OAAO,YAAY,EAAE,IAAI,SACzB,OAAO,qBAAqB,EAAE,KAAK,oBACnC,eAAe,GAAG,gBAAgB,GAAG,SAAS,GAC5C,UAAU,CAAC,OAAO,YAAY,EAAE,OAAO,CAAC,CAgOpD"}

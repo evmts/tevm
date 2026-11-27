@@ -1,0 +1,2 @@
+export function compileSources<TLanguage extends import("@tevm/solc").SolcLanguage, TCompilationOutput extends import("./CompilationOutputOption.js").CompilationOutputOption[] | undefined>(sources: Record<string, TLanguage extends "SolidityAST" ? import("@tevm/solc").SolcAst : string>, options?: import("./CompileBaseOptions.js").CompileBaseOptions<TLanguage, TCompilationOutput>): Promise<import("./CompileSourcesResult.js").CompileSourcesResult<TCompilationOutput>>;
+//# sourceMappingURL=compileSources.d.ts.map

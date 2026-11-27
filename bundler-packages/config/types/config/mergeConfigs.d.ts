@@ -1,0 +1,2 @@
+export function mergeConfigs(configs: Array<import("../types.js").CompilerConfig>): import("effect/Effect").Effect<import("../types.js").CompilerConfig, never, never>;
+//# sourceMappingURL=mergeConfigs.d.ts.map

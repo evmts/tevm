@@ -1,0 +1,2 @@
+export function validateSolcVersion<TLanguage extends import("@tevm/solc").SolcLanguage>(source: TLanguage extends "SolidityAST" ? import("../AstInput.js").AstInput | import("../AstInput.js").AstInput[] : string | string[], options: import("../CompileBaseOptions.js").CompileBaseOptions<TLanguage>, logger: import("@tevm/logger").Logger): keyof import("@tevm/solc").Releases;
+//# sourceMappingURL=validateSolcVersion.d.ts.map

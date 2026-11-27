@@ -1,0 +1,2 @@
+export function generateRuntime(artifacts: import("@tevm/compiler").Artifacts, moduleType: import("./types.js").ModuleType, includeBytecode: boolean, tevmPackage: "tevm/contract" | "@tevm/contract"): import("effect/Effect").Effect<string, never, never>;
+//# sourceMappingURL=generateRuntime.d.ts.map

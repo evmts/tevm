@@ -265,6 +265,7 @@ const github = S.Generate({
 		'workflows/factory-configure.yml',
 		'workflows/factory-intake.yml',
 		'workflows/factory-issue.yml',
+		'workflows/uphill.yml',
 	],
 	data: [
 		S.file('//scripts/factory/render-github.mjs'),

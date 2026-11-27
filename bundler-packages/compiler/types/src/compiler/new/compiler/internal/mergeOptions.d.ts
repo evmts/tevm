@@ -1,0 +1,2 @@
+export function mergeOptions(options?: import("../CompileBaseOptions.js").CompileBaseOptions | undefined, overrides?: import("../CompileBaseOptions.js").CompileBaseOptions | undefined): import("../CompileBaseOptions.js").CompileBaseOptions;
+//# sourceMappingURL=mergeOptions.d.ts.map

@@ -1,0 +1,3 @@
+export function validateBaseOptions<TLanguage extends import("@tevm/solc").SolcLanguage, TCompilationOutput extends import("../CompilationOutputOption.js").CompilationOutputOption[] | undefined>(source: object | object[] | string | string[], options: import("../CompileBaseOptions.js").CompileBaseOptions<TLanguage, TCompilationOutput> | undefined, logger: import("@tevm/logger").Logger): import("./ValidatedCompileBaseOptions.js").ValidatedCompileBaseOptions<TLanguage, TCompilationOutput>;
+export type ValidatedSource<TLanguage extends import("@tevm/solc").SolcLanguage> = TLanguage extends "SolidityAST" ? import("@tevm/solc").SolcAst | import("@tevm/solc").SolcAst[] : string | string[];
+//# sourceMappingURL=validateBaseOptions.d.ts.map

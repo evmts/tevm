@@ -1,0 +1,2 @@
+export function generateTevmBody(artifacts: import("@tevm/compiler").Artifacts, moduleType: import("./types.js").ModuleType, includeBytecode: boolean): import("effect/Effect").Effect<string, never, never>;
+//# sourceMappingURL=generateTevmBody.d.ts.map
